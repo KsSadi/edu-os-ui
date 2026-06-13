@@ -339,21 +339,7 @@ body { background: #F8FAFC; }
 <body>
 
 <!-- NAV -->
-<nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-logo">
-    <img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;">
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="features.html">Features</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="contact.html">Contact</a>
-    <a href="ai-features.html" class="active" style="color:#4F46E5;font-weight:700;">✨ AI Features</a>
-  </div>
-  <div class="nav-cta">
-    <a href="contact.html" class="btn btn-outline btn-sm">📅 Book Demo</a>
-  </div>
-</nav>
+<script src="nav-footer.js" data-page="ai"></script>
 
 <!-- HERO -->
 <div class="">
@@ -1372,42 +1358,10 @@ body { background: #F8FAFC; }
   </div>
 </div>
 
-<footer class="footer">
-  <div class="footer-grid container">
-    <div>
-      <div class="footer-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></div>
-      <div class="footer-desc">Bangladesh's AI-powered school management platform.</div>
-    </div>
-    <div class="footer-col">
-      <h4>Product</h4>
-      <a href="features.html">Features</a>
-      <a href="ai-features.html" style="font-weight:700;">✨ AI Features</a>
-      <a href="pricing.html">Pricing</a>
-    </div>
-    <div class="footer-col">
-      <h4>Company</h4>
-      <a href="#">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="#">Blog</a>
-    </div>
-    <div class="footer-col">
-      <h4>Support</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Privacy Policy</a>
-      <a href="admin/login.html" style="font-weight:700;">🔐 Admin Login</a>
-    </div>
-  </div>
-  <div class="footer-bottom container">
-    <div>© 2026 EduOS. All rights reserved.</div>
-    <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;background:#22C55E;border-radius:50%;display:inline-block;"></span> All systems operational</div>
-  </div>
-</footer>
+<!-- footer injected by nav-footer.js -->
 
 <script>
-// Nav scroll effect
-window.addEventListener('scroll', () => {
-  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 20);
-});
+// nav scroll handled by nav-footer.js
 
 // Floating role navigator — scroll-active state
 const roleMap = {

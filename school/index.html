@@ -7,6 +7,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="school.css">
 <style>
+/* Floating particles */
+.hero-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.hero-particle {
+  position: absolute; border-radius: 50%;
+  animation: particle-float linear infinite;
+}
+@keyframes particle-float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+
+/* Animated counter */
+.hstat-num[data-count] { transition: all 0.3s; }
+
+/* Shimmer on hero badge */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 /* ── HERO ── */
 .hero {
   background: 
@@ -970,54 +992,12 @@
 </style>
 </head>
 <body>
-
-<!-- TOP BAR -->
-<div class="top-bar">
-  <div class="top-bar-left">
-    <span class="top-bar-item">📞 +880 2-9876543</span>
-    <span class="top-bar-item">✉ info@dhakahigh.edu.bd</span>
-    <span class="top-bar-item">📍 Road 4, Dhanmondi, Dhaka 1205</span>
-  </div>
-  <div class="top-bar-right">
-    <a href="school-results.html">Results</a>
-    <a href="school-notices.html">Notices</a>
-    <a href="school-admission.html">Admissions</a>
-    <button class="lang-btn">বাংলা</button>
-  </div>
-</div>
-
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="index.html" class="school-identity">
-      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
-      <div class="school-name-wrap">
-        <div class="school-name">Dhaka High School</div>
-        <div class="school-tagline">Excellence in Education Since 1962</div>
-      </div>
-    </a>
-    <div class="nav-links">
-      <a href="index.html"             class="nav-link active">Home</a>
-      <a href="school-about.html"      class="nav-link">About</a>
-      <a href="school-notices.html"    class="nav-link">Notices</a>
-      <a href="school-admission.html"  class="nav-link">Admission</a>
-      <a href="school-results.html"    class="nav-link">Results</a>
-      <a href="school-contact.html"    class="nav-link">Contact</a>
-    </div>
-    <div class="nav-actions">
-      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
-      <a href="auth/login.html"            class="btn-portal">🔐 Student Portal</a>
-    </div>
-    <button class="ham-btn" onclick="toggleMobileNav()">
-      <span class="ham-line"></span>
-      <span class="ham-line"></span>
-      <span class="ham-line"></span>
-    </button>
-  </div>
-</nav>
+<script src="school-nav-footer.js" data-page="home"></script>
+<!-- topbar + nav injected by school-nav-footer.js -->
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-particles" id="heroParticles"></div>
   <div class="hero-pattern"></div>
   <div class="hero-glow glow-1"></div>
   <div class="hero-glow glow-2"></div>
@@ -1038,13 +1018,13 @@
         <a href="school-about.html" class="btn btn-outline-navy btn-lg">Learn More →</a>
       </div>
       <div class="hero-stats">
-        <div class="hstat"><div class="hstat-num">62+</div><div class="hstat-lbl">Years of Excellence</div></div>
+        <div class="hstat"><div class="hstat-num" data-count="62" data-suffix="+">62+</div><div class="hstat-lbl">Years of Excellence</div></div>
         <div class="hstat-div"></div>
-        <div class="hstat"><div class="hstat-num">1,248</div><div class="hstat-lbl">Current Students</div></div>
+        <div class="hstat"><div class="hstat-num" data-count="1248" data-suffix="">1,248</div><div class="hstat-lbl">Current Students</div></div>
         <div class="hstat-div"></div>
-        <div class="hstat"><div class="hstat-num">98.4%</div><div class="hstat-lbl">SSC Pass Rate 2024</div></div>
+        <div class="hstat"><div class="hstat-num" data-count="984" data-suffix="%" data-divisor="10">98.4%</div><div class="hstat-lbl">SSC Pass Rate 2024</div></div>
         <div class="hstat-div"></div>
-        <div class="hstat"><div class="hstat-num">68</div><div class="hstat-lbl">Qualified Teachers</div></div>
+        <div class="hstat"><div class="hstat-num" data-count="68" data-suffix="">68</div><div class="hstat-lbl">Qualified Teachers</div></div>
       </div>
     </div>
 
@@ -1370,47 +1350,7 @@
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-top">
-    <div class="footer-school">
-      <div class="footer-logo-row">
-        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
-        <div class="footer-school-name">Dhaka High School</div>
-      </div>
-      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
-      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
-    </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <a href="school-about.html">About School</a>
-      <a href="school-notices.html">Notice Board</a>
-      <a href="school-admission.html">Admission</a>
-      <a href="school-results.html">Results</a>
-      <a href="school-contact.html">Contact</a>
-    </div>
-    <div class="footer-col">
-      <h4>Portals</h4>
-      <a href="auth/login.html">Student Portal</a>
-      <a href="auth/login.html">Teacher Portal</a>
-      <a href="auth/login.html">Parent Portal</a>
-      <a href="auth/login.html">Admin Login</a>
-    </div>
-    <div class="footer-col">
-      <h4>Contact</h4>
-      <a href="tel:+88029876543">+880 2-9876543</a>
-      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
-      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
-      <a href="#">EIIN: 108765</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div>© 2026 Dhaka High School. All rights reserved.</div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;">
-      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
-    </div>
-  </div>
-</footer>
+<!-- footer injected by school-nav-footer.js -->
 
 <script>
 function filterNotice(btn, cat) {
@@ -1450,6 +1390,81 @@ function closeLightbox() {
 </div>
 
 <script src="../demo-nav.js"></script>
+<script>
+/* ── Hero Particles ── */
+(function () {
+  var container = document.getElementById('heroParticles');
+  if (!container) return;
+  var colors = [
+    'rgba(8,145,178,0.18)', 'rgba(8,145,178,0.12)',
+    'rgba(224,122,45,0.18)', 'rgba(224,122,45,0.10)',
+    'rgba(34,211,238,0.15)', 'rgba(34,211,238,0.08)',
+    'rgba(8,145,178,0.22)', 'rgba(224,122,45,0.22)'
+  ];
+  for (var i = 0; i < 20; i++) {
+    var p = document.createElement('div');
+    p.className = 'hero-particle';
+    var size = 4 + Math.random() * 12;
+    var left = Math.random() * 100;
+    var dur  = 8 + Math.random() * 12;
+    var delay = -(Math.random() * dur);
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText =
+      'width:' + size + 'px;' +
+      'height:' + size + 'px;' +
+      'left:' + left + '%;' +
+      'background:' + color + ';' +
+      'animation-duration:' + dur + 's;' +
+      'animation-delay:' + delay + 's;';
+    container.appendChild(p);
+  }
+})();
+
+/* ── Animated Stat Counters ── */
+(function () {
+  var counters = document.querySelectorAll('.hstat-num[data-count]');
+  if (!counters.length || !window.IntersectionObserver) return;
+
+  function animateCounter(el) {
+    var target  = parseFloat(el.getAttribute('data-count'));
+    var suffix  = el.getAttribute('data-suffix') || '';
+    var divisor = parseFloat(el.getAttribute('data-divisor')) || 1;
+    var duration = 1800;
+    var start = null;
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function step(ts) {
+      if (!start) start = ts;
+      var progress = Math.min((ts - start) / duration, 1);
+      var val = target * easeOut(progress) / divisor;
+      var display;
+      if (divisor > 1) {
+        display = val.toFixed(1);
+      } else {
+        display = Math.round(val);
+        if (display >= 1000) {
+          display = display.toLocaleString();
+        }
+      }
+      el.textContent = display + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  counters.forEach(function (el) { observer.observe(el); });
+})();
+</script>
 </body>
 </html>
 

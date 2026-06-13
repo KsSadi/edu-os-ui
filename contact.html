@@ -1,349 +1,567 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact & Book a Demo — EduOS</title>
+<title>Contact Us — EduOS by Prathomik</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.contact-layout {
-  display: grid; grid-template-columns: 1fr 1.3fr; gap: 64px;
-  max-width: 1200px; margin: 0 auto; padding: 96px 5%;
+
+/* ── PAGE HERO ──────────────────────────────────────────── */
+.ct-hero {
+  background: linear-gradient(145deg, #F5F3FF 0%, #EEF2FF 50%, #F0F9FF 100%);
+  padding: 120px 5% 72px;
+  text-align: center;
+  border-bottom: 1px solid rgba(124,58,237,0.08);
+  position: relative; overflow: hidden;
+}
+.ct-hero::before {
+  content: '';
+  position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+}
+.ct-hero-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.18);
+  border-radius: 100px; padding: 5px 14px;
+  font-family: 'Sora', sans-serif; font-size: .7rem; font-weight: 800;
+  color: #7C3AED; text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 20px;
+}
+.ct-hero h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 800;
+  color: #111827; line-height: 1.2; margin-bottom: 16px;
+}
+.ct-hero h1 span {
+  background: linear-gradient(90deg, #7C3AED, #4F46E5, #06B6D4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ct-hero-sub {
+  font-size: 1.05rem; color: #6B7280; max-width: 560px;
+  margin: 0 auto 36px; line-height: 1.7;
+}
+.ct-hero-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+.ct-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  color: #fff; padding: 13px 24px; border-radius: 12px;
+  font-family: 'Sora', sans-serif; font-size: .9rem; font-weight: 700;
+  text-decoration: none; transition: all .2s;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+}
+.ct-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.48); }
+.ct-btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; color: #374151; padding: 13px 24px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+  text-decoration: none; border: 1.5px solid #E5E7EB; transition: all .2s;
+}
+.ct-btn-ghost:hover { border-color: #7C3AED; color: #7C3AED; background: #F5F3FF; }
+
+/* ── QUICK CONTACT CARDS ─────────────────────────────── */
+.ct-cards-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  max-width: 900px; margin: 0 auto; padding: 0 5%;
+  transform: translateY(-40px);
+}
+.ct-card {
+  background: #fff; border-radius: 18px;
+  border: 1.5px solid #F3F4F6;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  padding: 28px 24px; text-align: center;
+  transition: all .22s;
+}
+.ct-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.2); }
+.ct-card-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin: 0 auto 14px;
+}
+.ct-card-icon.purple { background: #F5F3FF; }
+.ct-card-icon.green  { background: #F0FDF4; }
+.ct-card-icon.blue   { background: #EFF6FF; }
+.ct-card-label { font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.ct-card-val { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; color: #111827; }
+.ct-card-val a { color: #7C3AED; text-decoration: none; }
+.ct-card-val a:hover { text-decoration: underline; }
+.ct-card-sub { font-size: .78rem; color: #9CA3AF; margin-top: 4px; }
+
+/* ── MAIN LAYOUT ─────────────────────────────────────── */
+.ct-main {
+  max-width: 1160px; margin: 0 auto; padding: 0 5% 80px;
+  display: grid; grid-template-columns: 1fr 1.45fr; gap: 48px;
   align-items: start;
 }
-.contact-left { padding-top: 12px; }
-.contact-left h1 { font-size: 2.4rem; font-weight: 800; color: var(--ink); margin-bottom: 14px; }
-.contact-left p { font-size: 1rem; color: var(--muted); line-height: 1.75; margin-bottom: 36px; }
 
-.contact-item {
-  display: flex; align-items: flex-start; gap: 16px;
-  padding: 18px 0; border-bottom: 1px solid var(--border);
+/* ── LEFT: Reasons + Info ────────────────────────────── */
+.ct-section-label {
+  font-family: 'Sora', sans-serif; font-size: .72rem; font-weight: 800;
+  color: #7C3AED; text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 10px;
 }
-.contact-item:last-of-type { border: none; }
-.contact-icon-box {
-  width: 44px; height: 44px; border-radius: 10px;
-  background: var(--blue-light); display: flex; align-items: center;
-  justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+.ct-left-title {
+  font-family: 'Sora', sans-serif; font-size: 1.45rem; font-weight: 800;
+  color: #111827; line-height: 1.3; margin-bottom: 10px;
 }
-.contact-item-title { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
-.contact-item-val { font-size: .88rem; color: var(--muted); }
-.contact-item-val a { color: var(--blue); text-decoration: none; font-weight: 600; }
+.ct-left-sub {
+  font-size: .9rem; color: #6B7280; line-height: 1.7; margin-bottom: 28px;
+}
 
-/* Why Demo section */
-.why-demo { margin-top: 36px; background: var(--blue-light); border-radius: 16px; padding: 24px; }
-.why-demo h3 { font-family:'Sora',sans-serif; font-size: .95rem; font-weight: 700; color: var(--blue); margin-bottom: 14px; }
-.why-item { display: flex; gap: 10px; font-size: .85rem; color: var(--ink-3); margin-bottom: 10px; align-items: flex-start; }
-.why-item::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+/* Reason cards */
+.ct-reasons { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.ct-reason {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: #fff; border: 1.5px solid #F3F4F6;
+  border-radius: 14px; padding: 16px 18px;
+  transition: border-color .2s;
+}
+.ct-reason:hover { border-color: rgba(124,58,237,0.2); }
+.ct-reason-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.ct-reason-title { font-family: 'Sora', sans-serif; font-size: .85rem; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.ct-reason-desc { font-size: .78rem; color: #6B7280; line-height: 1.5; }
 
-/* Form card */
-.form-card {
-  background: #fff; border-radius: 20px;
-  border: 1.5px solid var(--border); box-shadow: var(--card-shadow);
+/* AI highlight box */
+.ct-ai-box {
+  background: linear-gradient(135deg, #0D0E28 0%, #1a0a3d 100%);
+  border-radius: 18px; padding: 24px 22px; margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.ct-ai-box::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(167,139,250,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.ct-ai-box-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
+  border-radius: 100px; padding: 3px 10px;
+  font-family: 'Sora', sans-serif; font-size: .62rem; font-weight: 800;
+  color: #A78BFA; text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 12px;
+}
+.ct-ai-box h4 {
+  font-family: 'Sora', sans-serif; font-size: .95rem; font-weight: 800;
+  color: #fff; margin-bottom: 8px; line-height: 1.35; position: relative;
+}
+.ct-ai-box p {
+  font-size: .78rem; color: rgba(255,255,255,0.5); line-height: 1.65; margin-bottom: 14px;
+  position: relative;
+}
+.ct-ai-points {
+  display: flex; flex-direction: column; gap: 6px; position: relative;
+}
+.ct-ai-point {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: .76rem; color: rgba(255,255,255,0.55); line-height: 1.45;
+}
+.ct-ai-point::before { content: '✦'; color: #A78BFA; font-size: .55rem; margin-top: 3px; flex-shrink: 0; }
+
+/* Hours */
+.ct-hours {
+  display: flex; align-items: center; gap: 12px;
+  background: #F9FAFB; border-radius: 12px; padding: 14px 16px;
+}
+.ct-hours-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #22C55E;
+  box-shadow: 0 0 8px rgba(34,197,94,0.5);
+  animation: ct-pulse 2s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes ct-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.ct-hours-text { font-size: .78rem; color: #374151; }
+.ct-hours-text strong { color: #111827; font-weight: 700; }
+
+/* ── RIGHT: Form ─────────────────────────────────────── */
+.ct-form-card {
+  background: #fff; border-radius: 22px;
+  border: 1.5px solid #F3F4F6;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
   padding: 40px;
+  position: sticky; top: 88px;
 }
-.form-card h2 { font-family:'Sora',sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
-.form-card .form-sub { font-size: .88rem; color: var(--muted); margin-bottom: 28px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-section-title { font-family:'Sora',sans-serif; font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing:.06em; margin: 24px 0 12px; border-top: 1px solid var(--border); padding-top: 20px; }
-.form-section-title:first-of-type { border: none; padding-top: 0; margin-top: 0; }
-
-/* Time slot picker */
-.slot-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 8px; }
-.slot-btn {
-  padding: 10px 8px; border-radius: 8px; border: 1.5px solid var(--border);
-  background: var(--bg); font-size: .8rem; font-weight: 600; color: var(--ink-3);
-  cursor: pointer; transition: all .15s; text-align: center;
+.ct-form-card h2 { font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 800; color: #111827; margin-bottom: 5px; }
+.ct-form-sub { font-size: .85rem; color: #9CA3AF; margin-bottom: 28px; line-height: 1.5; }
+.ct-form-divider { height: 1px; background: #F3F4F6; margin: 22px 0; }
+.ct-form-section {
+  font-family: 'Sora', sans-serif; font-size: .7rem; font-weight: 800;
+  color: #9CA3AF; text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 14px;
 }
-.slot-btn:hover, .slot-btn.selected { background: var(--blue); color: #fff; border-color: var(--blue); }
+.ct-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ct-form-group { margin-bottom: 14px; }
+.ct-form-label {
+  display: block; font-family: 'Sora', sans-serif;
+  font-size: .74rem; font-weight: 700; color: #374151;
+  margin-bottom: 6px;
+}
+.ct-form-input, .ct-form-select, .ct-form-textarea {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid #E5E7EB; border-radius: 10px;
+  padding: 10px 13px; font-size: .87rem; color: #111827;
+  font-family: 'DM Sans', sans-serif;
+  background: #FAFAFA; outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+.ct-form-input:focus, .ct-form-select:focus, .ct-form-textarea:focus {
+  border-color: #7C3AED; background: #fff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+.ct-form-textarea { resize: vertical; min-height: 90px; }
 
-/* Interest checkboxes */
-.checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.check-item {
+/* Topic chips */
+.ct-topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ct-topic {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border);
-  background: var(--bg); cursor: pointer; font-size: .82rem; color: var(--ink-3);
-  transition: all .15s;
+  padding: 9px 12px; border-radius: 9px;
+  border: 1.5px solid #E5E7EB; background: #FAFAFA;
+  cursor: pointer; font-size: .79rem; color: #374151;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all .15s; user-select: none;
 }
-.check-item:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
-.check-item input { accent-color: var(--blue); }
+.ct-topic:hover { border-color: #7C3AED; background: #F5F3FF; color: #7C3AED; }
+.ct-topic input { accent-color: #7C3AED; }
+
+/* Submit btn */
+.ct-submit-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  color: #fff; border: none; border-radius: 12px;
+  font-family: 'Sora', sans-serif; font-size: .92rem; font-weight: 700;
+  cursor: pointer; transition: all .22s; margin-top: 6px;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.35);
+  letter-spacing: .01em;
+}
+.ct-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.5); }
+.ct-submit-note { font-size: .72rem; color: #9CA3AF; text-align: center; margin-top: 10px; }
 
 /* Success state */
-.success-state {
-  display: none; text-align: center; padding: 40px 20px;
+.ct-success {
+  display: none; text-align: center; padding: 32px 16px;
 }
-.success-icon { font-size: 3.5rem; margin-bottom: 16px; }
-.success-title { font-family:'Sora',sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; }
-.success-msg { font-size: .95rem; color: var(--muted); line-height: 1.7; }
+.ct-success-icon { font-size: 3.2rem; margin-bottom: 14px; }
+.ct-success-title { font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 800; color: #059669; margin-bottom: 10px; }
+.ct-success-msg { font-size: .88rem; color: #6B7280; line-height: 1.75; }
+.ct-success-msg a { color: #7C3AED; font-weight: 600; text-decoration: none; }
 
-/* Stats row */
-.contact-stats {
-  background: var(--ink); padding: 48px 5%; margin-bottom: 0;
+/* ── STATS BAR ───────────────────────────────────────── */
+.ct-stats {
+  background: linear-gradient(135deg, #1a0a3d 0%, #0D0E28 100%);
+  padding: 48px 5%;
 }
-.stats-row { display: flex; justify-content: center; gap: 64px; flex-wrap: wrap; }
-.cstat { text-align: center; }
-.cstat-num { font-family:'Sora',sans-serif; font-size: 2rem; font-weight: 800; color: #fff; }
-.cstat-label { font-size: .82rem; color: #94A3B8; margin-top: 4px; }
+.ct-stats-row {
+  display: flex; justify-content: center; gap: 56px;
+  flex-wrap: wrap; max-width: 900px; margin: 0 auto;
+}
+.ct-stat { text-align: center; }
+.ct-stat-num {
+  font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800;
+  background: linear-gradient(90deg, #A78BFA, #60A5FA);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ct-stat-label { font-size: .78rem; color: #6B7280; margin-top: 4px; }
 
-/* Teams row */
-.team-section { padding: 80px 5%; background: var(--bg); }
-.team-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; max-width: 1100px; margin: 40px auto 0; }
-.team-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 24px; text-align: center; }
-.team-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 12px; }
-.team-name { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
-.team-role { font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
-.team-dept { font-size: .72rem; background: var(--blue-light); color: var(--blue); padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+/* ── FAQ STRIP ───────────────────────────────────────── */
+.ct-faq { background: #fff; padding: 72px 5%; }
+.ct-faq-inner { max-width: 760px; margin: 0 auto; }
+.ct-faq-title { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; color: #111827; text-align: center; margin-bottom: 36px; }
+.ct-faq-item {
+  border: 1.5px solid #F3F4F6; border-radius: 14px; margin-bottom: 10px;
+  overflow: hidden;
+}
+.ct-faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer;
+  font-family: 'Sora', sans-serif; font-size: .88rem; font-weight: 700; color: #111827;
+  transition: background .15s;
+}
+.ct-faq-q:hover { background: #F9FAFB; }
+.ct-faq-q .faq-arrow { color: #9CA3AF; font-size: .75rem; transition: transform .2s; }
+.ct-faq-item.open .faq-arrow { transform: rotate(180deg); }
+.ct-faq-a {
+  display: none; padding: 0 20px 16px;
+  font-size: .83rem; color: #6B7280; line-height: 1.7;
+}
+.ct-faq-item.open .ct-faq-a { display: block; }
 
-@media(max-width:900px){ .contact-layout{grid-template-columns:1fr;} }
-@media(max-width:640px){ .form-row{grid-template-columns:1fr;} .slot-grid{grid-template-columns:repeat(2,1fr);} .checkbox-grid{grid-template-columns:1fr;} .team-grid{grid-template-columns:1fr 1fr;} .stats-row{gap:32px;} }
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media(max-width:960px) {
+  .ct-main { grid-template-columns: 1fr; }
+  .ct-form-card { position: static; }
+}
+@media(max-width:640px) {
+  .ct-cards-row { grid-template-columns: 1fr; transform: translateY(-24px); }
+  .ct-form-row { grid-template-columns: 1fr; }
+  .ct-topic-grid { grid-template-columns: 1fr; }
+  .ct-form-card { padding: 28px 22px; }
+  .ct-stats-row { gap: 32px; }
+  .ct-hero { padding: 110px 5% 56px; }
+}
+
 </style>
 </head>
 <body>
 
-<nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="features.html">Features</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="contact.html" class="active">Contact</a>
-    <a href="ai-features.html" style="color:#6366F1;font-weight:700;">✨ AI Features</a>
+<script src="nav-footer.js" data-page="contact"></script>
+
+<!-- ══ HERO ════════════════════════════════════════════════ -->
+<section class="ct-hero">
+  <div class="ct-hero-chip">✉️ Get in Touch</div>
+  <h1>We'd love to <span>hear from you</span></h1>
+  <p class="ct-hero-sub">Whether you want to explore EduOS for your school, learn about our AI features, discuss partnerships, or just ask a question — we're here.</p>
+  <div class="ct-hero-actions">
+    <a href="#contact-form" class="ct-btn-primary">📅 Book a Free Demo</a>
+    <a href="mailto:info@prathomik.com" class="ct-btn-ghost">✉️ Email Us Directly</a>
   </div>
-  <div class="nav-cta">
-    <a href="contact.html" class="btn btn-outline btn-sm">📅 Book Demo</a>
+</section>
+
+<!-- ══ QUICK CONTACT CARDS ══════════════════════════════════ -->
+<div class="ct-cards-row">
+  <div class="ct-card">
+    <div class="ct-card-icon purple">📧</div>
+    <div class="ct-card-label">Email</div>
+    <div class="ct-card-val"><a href="mailto:info@prathomik.com">info@prathomik.com</a></div>
+    <div class="ct-card-sub">We reply within 4 business hours</div>
   </div>
-</nav>
-
-<div class="pt-nav" style="background:linear-gradient(145deg,#F0F5FF 0%,#fff 80%);">
-  <div class="contact-layout">
-
-    <!-- LEFT: Info -->
-    <div class="contact-left">
-      <div class="section-label">📅 Book a Demo</div>
-      <h1>See EduOS in action — live, with your questions</h1>
-      <p>Our team will walk you through the platform, show you how it works for your school type, and answer every question you have. No pressure. No sales pitch. Just a real demo.</p>
-
-      <div class="contact-item">
-        <div class="contact-icon-box">📞</div>
-        <div>
-          <div class="contact-item-title">Phone / WhatsApp</div>
-          <div class="contact-item-val"><a href="tel:+8801700000000">+880 1700-000000</a></div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon-box">📧</div>
-        <div>
-          <div class="contact-item-title">Email</div>
-          <div class="contact-item-val"><a href="mailto:hello@prathomik.edu.bd">hello@prathomik.edu.bd</a></div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon-box">📍</div>
-        <div>
-          <div class="contact-item-title">Office</div>
-          <div class="contact-item-val">House 12, Road 4, Banani, Dhaka 1213, Bangladesh</div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon-box">🕐</div>
-        <div>
-          <div class="contact-item-title">Business Hours</div>
-          <div class="contact-item-val">Sunday – Thursday · 9:00 AM – 6:00 PM BST</div>
-        </div>
-      </div>
-
-      <div class="why-demo">
-        <h3>What happens in the demo?</h3>
-        <div class="why-item">We walk through all features relevant to your school type</div>
-        <div class="why-item">Live Q&A — ask anything about how the system works</div>
-        <div class="why-item">See real data from a demo school environment</div>
-        <div class="why-item">Get a personalized pricing quote on the spot</div>
-        <div class="why-item">30 minutes — we respect your time</div>
-      </div>
-    </div>
-
-    <!-- RIGHT: Form -->
-    <div class="form-card">
-      <div id="formContent">
-        <h2>Book Your Free Demo</h2>
-        <p class="form-sub">Fill in your details and we'll confirm your slot within 2 hours (business days).</p>
-
-        <div class="form-section-title">Your Information</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Your Name *</label>
-            <input type="text" class="form-input" placeholder="Abdul Karim">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Designation *</label>
-            <input type="text" class="form-input" placeholder="Principal / Head Teacher">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Mobile Number *</label>
-            <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" placeholder="principal@school.edu.bd">
-          </div>
-        </div>
-
-        <div class="form-section-title">School Details</div>
-        <div class="form-group">
-          <label class="form-label">School / College Name *</label>
-          <input type="text" class="form-input" placeholder="e.g. Dhaka High School">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Institution Type *</label>
-            <select class="form-select">
-              <option value="">Select type...</option>
-              <option>Primary School (Class 1–5)</option>
-              <option>Secondary School (Class 6–10)</option>
-              <option>Higher Secondary College</option>
-              <option>School + College (Dual)</option>
-              <option>Madrasa</option>
-              <option>Vocational Institute</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Number of Students</label>
-            <select class="form-select">
-              <option value="">Select range...</option>
-              <option>Under 100</option>
-              <option>100 – 300</option>
-              <option>300 – 800</option>
-              <option>800 – 2,500</option>
-              <option>2,500+</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">District</label>
-            <input type="text" class="form-input" placeholder="e.g. Dhaka, Chittagong...">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Upazila / Area</label>
-            <input type="text" class="form-input" placeholder="e.g. Banani, Pahartali...">
-          </div>
-        </div>
-
-        <div class="form-section-title">Modules You're Interested In</div>
-        <div class="checkbox-grid">
-          <label class="check-item"><input type="checkbox"> 🧑‍🎓 Student Admission</label>
-          <label class="check-item"><input type="checkbox" checked> 📅 Attendance Tracking</label>
-          <label class="check-item"><input type="checkbox" checked> 💰 Fee Collection</label>
-          <label class="check-item"><input type="checkbox"> 📝 Results & GPA</label>
-          <label class="check-item"><input type="checkbox"> 🪪 ID Card Generator</label>
-          <label class="check-item"><input type="checkbox"> 👨‍👩‍👧 Parent Portal</label>
-          <label class="check-item"><input type="checkbox"> 💻 Online Exams</label>
-          <label class="check-item"><input type="checkbox"> 🛒 Marketplace</label>
-        </div>
-
-        <div class="form-section-title">Preferred Demo Time</div>
-        <div class="form-group">
-          <label class="form-label">Date (Any upcoming weekday)</label>
-          <input type="date" class="form-input">
-        </div>
-        <div class="form-label" style="margin-bottom:8px;">Time Slot (Bangladesh Standard Time)</div>
-        <div class="slot-grid">
-          <button class="slot-btn" onclick="selectSlot(this)">9:00 AM</button>
-          <button class="slot-btn" onclick="selectSlot(this)">10:30 AM</button>
-          <button class="slot-btn selected" onclick="selectSlot(this)">12:00 PM</button>
-          <button class="slot-btn" onclick="selectSlot(this)">2:00 PM</button>
-          <button class="slot-btn" onclick="selectSlot(this)">3:30 PM</button>
-          <button class="slot-btn" onclick="selectSlot(this)">5:00 PM</button>
-        </div>
-
-        <div class="form-group mt-6">
-          <label class="form-label">Any specific questions or requirements?</label>
-          <textarea class="form-textarea" placeholder="Tell us about your school's current challenges, what you're hoping to solve, or any specific features you'd like to see..."></textarea>
-        </div>
-
-        <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px;" onclick="submitForm()">
-          📅 Book My Free Demo
-        </button>
-        <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:10px;">We'll confirm within 2 business hours. No spam, ever.</p>
-      </div>
-
-      <!-- Success State -->
-      <div class="success-state" id="successState">
-        <div class="success-icon">🎉</div>
-        <div class="success-title">Demo Booked Successfully!</div>
-        <div class="success-msg">
-          Thank you! We've received your request.<br><br>
-          Our team will call you within <strong>2 business hours</strong> to confirm your demo slot and send a calendar invite.<br><br>
-          <strong>In the meantime:</strong><br>
-          Explore our <a href="features.html" style="color:var(--blue);">features page</a> or check out <a href="pricing.html" style="color:var(--blue);">pricing plans</a>.
-        </div>
-        <a href="index.html" class="btn btn-primary btn-lg" style="margin-top:24px;">Back to Home</a>
-      </div>
-    </div>
-
+  <div class="ct-card">
+    <div class="ct-card-icon green">📞</div>
+    <div class="ct-card-label">Phone / WhatsApp</div>
+    <div class="ct-card-val"><a href="tel:+8801741022832">+880 1741-022832</a></div>
+    <div class="ct-card-sub">Sun – Thu · 9 AM – 6 PM BST</div>
+  </div>
+  <div class="ct-card">
+    <div class="ct-card-icon blue">📍</div>
+    <div class="ct-card-label">Built in Bangladesh</div>
+    <div class="ct-card-val" style="font-size:.88rem;">Dhaka, Bangladesh</div>
+    <div class="ct-card-sub">A Prathomik innovation</div>
   </div>
 </div>
 
-<!-- STATS -->
-<div class="contact-stats">
-  <div class="stats-row">
-    <div class="cstat"><div class="cstat-num">500+</div><div class="cstat-label">Schools in pipeline</div></div>
-    <div class="cstat"><div class="cstat-num">< 2hrs</div><div class="cstat-label">Demo confirmation time</div></div>
-    <div class="cstat"><div class="cstat-num">30 min</div><div class="cstat-label">Average demo length</div></div>
-    <div class="cstat"><div class="cstat-num">Free</div><div class="cstat-label">30-day trial after demo</div></div>
+<!-- ══ MAIN CONTENT ═════════════════════════════════════════ -->
+<div class="ct-main" id="contact-form">
+
+  <!-- LEFT -->
+  <div class="ct-left">
+    <div class="ct-section-label">Why reach out?</div>
+    <div class="ct-left-title">Any reason is a good reason to connect</div>
+    <div class="ct-left-sub">Our team knows Bangladesh's education system inside out. Whether it's a quick question or a deep conversation — we're ready.</div>
+
+    <div class="ct-reasons">
+      <div class="ct-reason">
+        <div class="ct-reason-icon" style="background:#F5F3FF;">🎓</div>
+        <div>
+          <div class="ct-reason-title">Demo for your school</div>
+          <div class="ct-reason-desc">See a live walkthrough of EduOS tailored to your institution type — primary, secondary, college, or madrasa.</div>
+        </div>
+      </div>
+      <div class="ct-reason">
+        <div class="ct-reason-icon" style="background:#F0FDF4;">💰</div>
+        <div>
+          <div class="ct-reason-title">Pricing & custom plans</div>
+          <div class="ct-reason-desc">Ask about special rates for government schools, rural institutes, and large chains. We have flexible plans.</div>
+        </div>
+      </div>
+      <div class="ct-reason">
+        <div class="ct-reason-icon" style="background:#EFF6FF;">🤝</div>
+        <div>
+          <div class="ct-reason-title">Partnership & resellers</div>
+          <div class="ct-reason-desc">Interested in becoming a district reseller or integration partner? Let's build Bangladesh's EdTech ecosystem together.</div>
+        </div>
+      </div>
+      <div class="ct-reason">
+        <div class="ct-reason-icon" style="background:#FFF7ED;">🛠️</div>
+        <div>
+          <div class="ct-reason-title">Technical support</div>
+          <div class="ct-reason-desc">Already using EduOS and need help? Our support team is reachable via email, phone, and WhatsApp.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI highlight -->
+    <div class="ct-ai-box">
+      <div class="ct-ai-box-tag">✨ AI Features</div>
+      <h4>Curious about EduOS AI? Let's show you what it can do.</h4>
+      <p>Our AI layer isn't just automation — it actively helps teachers, principals, and parents make smarter decisions every day.</p>
+      <div class="ct-ai-points">
+        <div class="ct-ai-point">Auto-generates exam questions from the Bangladesh curriculum</div>
+        <div class="ct-ai-point">Detects at-risk students from attendance & grade patterns</div>
+        <div class="ct-ai-point">Writes personalized progress reports for parents in seconds</div>
+        <div class="ct-ai-point">AI chatbot answers teacher & student queries 24/7</div>
+        <div class="ct-ai-point">Smart fee reminders sent automatically via SMS & WhatsApp</div>
+      </div>
+    </div>
+
+    <!-- Hours -->
+    <div class="ct-hours">
+      <div class="ct-hours-dot"></div>
+      <div class="ct-hours-text">
+        <strong>We're available now</strong> · Sunday – Thursday, 9:00 AM – 6:00 PM Bangladesh Standard Time
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Form -->
+  <div class="ct-form-card">
+    <div id="ctFormContent">
+      <h2>Send us a message</h2>
+      <p class="ct-form-sub">Fill in the form and our team will get back to you within 4 business hours.</p>
+
+      <div class="ct-form-section">Your Information</div>
+      <div class="ct-form-row">
+        <div class="ct-form-group">
+          <label class="ct-form-label">Full Name *</label>
+          <input type="text" class="ct-form-input" placeholder="e.g. Abdul Karim">
+        </div>
+        <div class="ct-form-group">
+          <label class="ct-form-label">Designation</label>
+          <input type="text" class="ct-form-input" placeholder="Principal / Teacher / Parent">
+        </div>
+      </div>
+      <div class="ct-form-row">
+        <div class="ct-form-group">
+          <label class="ct-form-label">Phone / WhatsApp *</label>
+          <input type="tel" class="ct-form-input" placeholder="+880 1741-022832">
+        </div>
+        <div class="ct-form-group">
+          <label class="ct-form-label">Email Address</label>
+          <input type="email" class="ct-form-input" placeholder="you@school.edu.bd">
+        </div>
+      </div>
+
+      <div class="ct-form-divider"></div>
+      <div class="ct-form-section">School / Organisation (optional)</div>
+      <div class="ct-form-row">
+        <div class="ct-form-group">
+          <label class="ct-form-label">School Name</label>
+          <input type="text" class="ct-form-input" placeholder="e.g. Dhaka High School">
+        </div>
+        <div class="ct-form-group">
+          <label class="ct-form-label">District</label>
+          <input type="text" class="ct-form-input" placeholder="e.g. Dhaka, Sylhet...">
+        </div>
+      </div>
+
+      <div class="ct-form-divider"></div>
+      <div class="ct-form-section">How can we help?</div>
+      <div class="ct-topic-grid" style="margin-bottom:14px;">
+        <label class="ct-topic"><input type="checkbox"> 📅 Book a Live Demo</label>
+        <label class="ct-topic"><input type="checkbox"> ✨ Learn about AI Features</label>
+        <label class="ct-topic"><input type="checkbox"> 💰 Pricing & Plans</label>
+        <label class="ct-topic"><input type="checkbox"> 🤝 Partnership / Reseller</label>
+        <label class="ct-topic"><input type="checkbox"> 🛠️ Technical Support</label>
+        <label class="ct-topic"><input type="checkbox"> 💬 General Enquiry</label>
+      </div>
+
+      <div class="ct-form-group">
+        <label class="ct-form-label">Your message *</label>
+        <textarea class="ct-form-textarea" placeholder="Tell us about your school, what you're looking for, or any questions you have about EduOS or our AI features..."></textarea>
+      </div>
+
+      <button class="ct-submit-btn" onclick="ctSubmit()">Send Message →</button>
+      <p class="ct-submit-note">📩 We reply to every message. No spam, ever. · <a href="mailto:info@prathomik.com" style="color:#7C3AED;text-decoration:none;">info@prathomik.com</a></p>
+    </div>
+
+    <!-- Success -->
+    <div class="ct-success" id="ctSuccess">
+      <div class="ct-success-icon">✅</div>
+      <div class="ct-success-title">Message Sent!</div>
+      <div class="ct-success-msg">
+        Thank you for reaching out.<br><br>
+        Our team will get back to you at <strong>info@prathomik.com</strong> or call you on <strong>+880 1741-022832</strong> within 4 business hours.<br><br>
+        In the meantime, explore our <a href="ai-features.html">AI Features</a> or check our <a href="pricing.html">Pricing Plans</a>.
+      </div>
+      <a href="index.html" class="ct-btn-primary" style="display:inline-flex;margin-top:24px;">← Back to Home</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ STATS BAR ════════════════════════════════════════════ -->
+<div class="ct-stats">
+  <div class="ct-stats-row">
+    <div class="ct-stat">
+      <div class="ct-stat-num">&lt; 4 hrs</div>
+      <div class="ct-stat-label">Average reply time</div>
+    </div>
+    <div class="ct-stat">
+      <div class="ct-stat-num">30 min</div>
+      <div class="ct-stat-label">Free demo session</div>
+    </div>
+    <div class="ct-stat">
+      <div class="ct-stat-num">30 days</div>
+      <div class="ct-stat-label">Free trial after demo</div>
+    </div>
+    <div class="ct-stat">
+      <div class="ct-stat-num">Free</div>
+      <div class="ct-stat-label">No credit card needed</div>
+    </div>
   </div>
 </div>
 
-<!-- TEAM -->
-<section class="team-section">
-  <div class="container" style="text-align:center;margin-bottom:8px;">
-    <div class="section-label" style="justify-content:center;">👥 Our Team</div>
-    <h2 class="section-title">Who you'll be talking to</h2>
-    <p class="section-sub" style="margin:0 auto;">Real people, not bots. Our team understands Bangladesh's education system deeply.</p>
-  </div>
-  <div class="team-grid container">
-    <div class="team-card">
-      <div class="team-avatar">👨‍💼</div>
-      <div class="team-name">Arif Rahman</div>
-      <div class="team-role">Chief Executive Officer</div>
-      <div class="team-dept">Leadership</div>
+<!-- ══ FAQ ═══════════════════════════════════════════════════ -->
+<section class="ct-faq">
+  <div class="ct-faq-inner">
+    <div class="ct-faq-title">Frequently asked questions</div>
+
+    <div class="ct-faq-item open">
+      <div class="ct-faq-q" onclick="toggleFaq(this)">
+        Is EduOS suitable for government schools? <span class="faq-arrow">▼</span>
+      </div>
+      <div class="ct-faq-a">Yes. EduOS is designed specifically for the Bangladesh education system — including government primary and secondary schools. We follow NCTB curriculum standards and support MPO-listed institutions with tailored pricing.</div>
     </div>
-    <div class="team-card">
-      <div class="team-avatar">👩‍💻</div>
-      <div class="team-name">Nusrat Jahan</div>
-      <div class="team-role">Head of Product</div>
-      <div class="team-dept">Product</div>
+
+    <div class="ct-faq-item">
+      <div class="ct-faq-q" onclick="toggleFaq(this)">
+        How does the AI work — do teachers need to be tech-savvy? <span class="faq-arrow">▼</span>
+      </div>
+      <div class="ct-faq-a">Not at all. Our AI features are built to be used by anyone — no technical knowledge needed. A teacher can generate 50 exam questions with one click, or get a student's full progress report written automatically. We also provide full onboarding training.</div>
     </div>
-    <div class="team-card">
-      <div class="team-avatar">👨‍🎓</div>
-      <div class="team-name">Tanvir Hossain</div>
-      <div class="team-role">Sales Lead</div>
-      <div class="team-dept">Sales</div>
+
+    <div class="ct-faq-item">
+      <div class="ct-faq-q" onclick="toggleFaq(this)">
+        What does the free demo include? <span class="faq-arrow">▼</span>
+      </div>
+      <div class="ct-faq-a">A 30-minute live session where our team walks you through the platform based on your school type. You'll see real features, ask any questions, and get a personalized pricing quote on the spot. Completely free, no commitment required.</div>
     </div>
-    <div class="team-card">
-      <div class="team-avatar">👩‍🏫</div>
-      <div class="team-name">Shahana Begum</div>
-      <div class="team-role">Customer Success</div>
-      <div class="team-dept">Support</div>
+
+    <div class="ct-faq-item">
+      <div class="ct-faq-q" onclick="toggleFaq(this)">
+        Can I reach you on WhatsApp? <span class="faq-arrow">▼</span>
+      </div>
+      <div class="ct-faq-a">Yes! You can WhatsApp us directly at <strong>+880 1741-022832</strong>. Our team responds Sunday through Thursday, 9 AM to 6 PM BST. For after-hours queries, send a message and we'll reply first thing next business morning.</div>
+    </div>
+
+    <div class="ct-faq-item">
+      <div class="ct-faq-q" onclick="toggleFaq(this)">
+        Is there a plan for rural or low-income schools? <span class="faq-arrow">▼</span>
+      </div>
+      <div class="ct-faq-a">Absolutely. Bridging the urban-rural education gap is central to our mission. We offer special subsidized pricing for rural upazilas, NGO-run schools, and government-affiliated institutions. Contact us and we'll work out a plan that fits your budget.</div>
     </div>
   </div>
 </section>
 
-<footer class="footer">
-  <div class="footer-grid container">
-    <div><div class="footer-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></div><div class="footer-desc">Bangladesh's digital education platform.</div></div>
-    <div class="footer-col"><h4>Product</h4><a href="features.html">Features</a><a href="pricing.html">Pricing</a><a href="ai-features.html">✨ AI Features</a></div>
-    <div class="footer-col"><h4>Company</h4><a href="#">About</a><a href="contact.html">Contact</a><a href="#">Blog</a></div>
-    <div class="footer-col"><h4>Support</h4><a href="#">Help</a><a href="#">Privacy</a><a href="admin/login.html" style="font-weight:700;">🔐 Admin Login</a></div>
-  </div>
-  <div class="footer-bottom container"><div>© 2026 EduOS. All rights reserved.</div><div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;background:#22C55E;border-radius:50%;display:inline-block;"></span> All systems operational</div></div>
-</footer>
+<!-- footer injected by nav-footer.js -->
 
 <script>
-window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>20);});
-function selectSlot(btn){document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
-function submitForm(){document.getElementById('formContent').style.display='none';document.getElementById('successState').style.display='block';}
+function ctSubmit() {
+  document.getElementById('ctFormContent').style.display = 'none';
+  document.getElementById('ctSuccess').style.display = 'block';
+}
+function toggleFaq(el) {
+  const item = el.parentElement;
+  item.classList.toggle('open');
+}
 </script>
 <script src="../demo-nav.js"></script>
 </body>

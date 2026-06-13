@@ -67,36 +67,8 @@
 </style>
 </head>
 <body>
-
-<div class="top-bar">
-  <div class="top-bar-left"><span class="top-bar-item">📞 +880 2-9876543</span><span class="top-bar-item">✉ admission@dhakahigh.edu.bd</span></div>
-  <div class="top-bar-right"><a href="school-results.html">Results</a><a href="school-notices.html">Notices</a><button class="lang-btn">বাংলা</button></div>
-</div>
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="index.html" class="school-identity">
-      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
-      <div class="school-name-wrap"><div class="school-name">Dhaka High School</div><div class="school-tagline">Excellence in Education Since 1962</div></div>
-    </a>
-    <div class="nav-links">
-      <a href="index.html"             class="nav-link">Home</a>
-      <a href="school-about.html"      class="nav-link">About</a>
-      <a href="school-notices.html"    class="nav-link">Notices</a>
-      <a href="school-admission.html"  class="nav-link active">Admission</a>
-      <a href="school-results.html"    class="nav-link">Results</a>
-      <a href="school-contact.html"    class="nav-link">Contact</a>
-    </div>
-    <div class="nav-actions">
-      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
-      <a href="auth/login.html" class="btn-portal">🔐 Student Portal</a>
-    </div>
-    <button class="ham-btn" onclick="toggleMobileNav()">
-      <span class="ham-line"></span>
-      <span class="ham-line"></span>
-      <span class="ham-line"></span>
-    </button>
-  </div>
-</nav>
+<script src="school-nav-footer.js" data-page="admission"></script>
+<!-- topbar + nav injected by school-nav-footer.js -->
 
 <div class="page-hero">
   <div class="page-hero-inner">
@@ -296,46 +268,7 @@
   </div>
 </div>
 
-<footer class="footer">
-  <div class="footer-top">
-    <div class="footer-school">
-      <div class="footer-logo-row">
-        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
-        <div class="footer-school-name">Dhaka High School</div>
-      </div>
-      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
-      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
-    </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <a href="school-about.html">About School</a>
-      <a href="school-notices.html">Notice Board</a>
-      <a href="school-admission.html">Admission</a>
-      <a href="school-results.html">Results</a>
-      <a href="school-contact.html">Contact</a>
-    </div>
-    <div class="footer-col">
-      <h4>Portals</h4>
-      <a href="auth/login.html">Student Portal</a>
-      <a href="auth/login.html">Teacher Portal</a>
-      <a href="auth/login.html">Parent Portal</a>
-      <a href="auth/login.html">Admin Login</a>
-    </div>
-    <div class="footer-col">
-      <h4>Contact</h4>
-      <a href="tel:+88029876543">+880 2-9876543</a>
-      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
-      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
-      <a href="#">EIIN: 108765</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div>© 2026 Dhaka High School. All rights reserved.</div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;">
-      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
-    </div>
-  </div>
-</footer>
+<!-- footer injected by school-nav-footer.js -->
 
 <script>
 function selectClass(el, name, seats) {

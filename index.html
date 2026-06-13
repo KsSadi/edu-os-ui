@@ -6,1150 +6,2557 @@
 <title>EduOS — AI-Powered School Management for Bangladesh</title>
 <link rel="stylesheet" href="shared.css">
 <style>
+
+/* ── DESIGN TOKENS OVERRIDE ──────────────────────────────── */
+:root {
+  --purple: #7C3AED;
+  --purple-light: #8B5CF6;
+  --purple-glow: rgba(124,58,237,0.35);
+  --indigo: #4F46E5;
+  --indigo-glow: rgba(79,70,229,0.3);
+  --cyan: #06B6D4;
+  --cyan-glow: rgba(6,182,212,0.25);
+  --rose: #F43F5E;
+  --emerald: #10B981;
+  --ink-hero: #05071A;
+}
+
+/* nav styles handled by nav-footer.js */
+
 /* ── HERO ────────────────────────────────────────────────── */
 .hero {
-  min-height: 100vh; padding-top: 68px;
-  background: radial-gradient(circle at 50% 0%, #F3F6FF 0%, #FFFFFF 70%);
+  min-height: 100vh;
+  background: #030714;
   position: relative; overflow: hidden;
-  display: flex; align-items: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-top: 68px;
 }
-.hero-grid-bg {
-  position: absolute; inset: 0;
-  background-image: 
-    linear-gradient(rgba(22, 71, 212, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 71, 212, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px; background-position: center;
-  mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 80%);
-  pointer-events: none; z-index: 1;
-}
-.hero-glow-1 {
-  position: absolute; width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(22, 71, 212, 0.03) 50%, transparent 70%);
-  top: -100px; left: -100px; filter: blur(60px); pointer-events: none; z-index: 1;
-  animation: glow-move-1 12s ease-in-out infinite alternate;
-}
-.hero-glow-2 {
-  position: absolute; width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.02) 50%, transparent 70%);
-  bottom: -150px; right: -100px; filter: blur(80px); pointer-events: none; z-index: 1;
-  animation: glow-move-2 15s ease-in-out infinite alternate;
-}
-@keyframes glow-move-1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 30px) scale(1.1); }
-}
-@keyframes glow-move-2 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-40px, -50px) scale(1.05); }
-}
-.hero-grid {
-  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px;
-  align-items: center; max-width: 1200px; margin: 0 auto; padding: 80px 5%;
-  position: relative; z-index: 2;
-}
-.hero-tag {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(22, 71, 212, 0.05);
-  border: 1px solid rgba(22, 71, 212, 0.12);
-  color: var(--blue); font-size: .8rem; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase;
-  padding: 6px 14px; border-radius: 20px; margin-bottom: 24px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(22, 71, 212, 0.03);
-}
-.hero-tag::before { content:'●'; font-size:.5rem; color: #10B981; animation: pulse-dot 1.5s infinite; }
-.hero h1 {
-  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
-  font-weight: 800; line-height: 1.25; margin-bottom: 20px; color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.hero h1 .highlight-gradient {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  display: inline-block;
-}
-.hero h1 .highlight-gradient::after {
-  content: ''; position: absolute; bottom: 4px; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--blue), var(--teal));
-  border-radius: 2px; opacity: .2;
-}
-.hero-desc { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 36px; max-width: 500px; }
-.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
-.hero-btns .btn-primary {
-  position: relative; overflow: hidden;
-  box-shadow: 0 4px 20px rgba(22,71,212,0.25);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.hero-btns .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(22,71,212,0.35);
-}
-.hero-btns .btn-primary::after {
-  content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  transform: skewX(-25deg); transition: 0.75s;
-}
-.hero-btns .btn-primary:hover::after { left: 125%; }
 
-.hero-stats {
-  display: flex; gap: 32px; flex-wrap: wrap;
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(22, 71, 212, 0.08);
-  border-radius: 16px;
-  max-width: 540px;
-}
-.hero-stat-num { font-family: 'Sora',sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); }
-.hero-stat-label { font-size: .82rem; color: var(--muted); margin-top: 2px; }
-.hero-stat-divider { width: 1px; background: var(--border); align-self: stretch; }
-
-/* ── HERO VISUAL ─────────────────────────────────────────── */
-.hero-visual {
-  position: relative; z-index: 5;
-}
-.dashboard-mock {
-  background: #ffffff; border-radius: 20px;
-  box-shadow: 0 25px 70px rgba(22,71,212,0.14), 0 0 0 1px rgba(22,71,212,0.05);
-  border: 1px solid rgba(22,71,212,0.08);
+/* Aurora animated background */
+.hero-aurora {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
   overflow: hidden;
+}
+.aurora-blob {
+  position: absolute; border-radius: 50%; filter: blur(120px);
+  animation: aurora-pulse 8s ease-in-out infinite alternate;
+}
+.aurora-blob-1 {
+  width: 800px; height: 600px; top: -200px; left: -200px;
+  background: radial-gradient(ellipse, rgba(124,58,237,0.28) 0%, rgba(79,70,229,0.12) 50%, transparent 70%);
+  animation-duration: 12s;
+}
+.aurora-blob-2 {
+  width: 700px; height: 700px; bottom: -200px; right: -150px;
+  background: radial-gradient(ellipse, rgba(6,182,212,0.2) 0%, rgba(14,165,233,0.08) 50%, transparent 70%);
+  animation-duration: 16s; animation-delay: -4s;
+}
+.aurora-blob-3 {
+  width: 500px; height: 500px; top: 30%; left: 40%;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.14) 0%, transparent 65%);
+  animation-duration: 10s; animation-delay: -2s;
+}
+.aurora-blob-4 {
+  width: 400px; height: 400px; top: 10%; right: 20%;
+  background: radial-gradient(ellipse, rgba(16,185,129,0.1) 0%, transparent 65%);
+  animation-duration: 14s; animation-delay: -6s;
+}
+
+@keyframes aurora-pulse {
+  0% { transform: translate(0,0) scale(1) rotate(0deg); opacity: 0.7; }
+  33% { transform: translate(40px,-30px) scale(1.1) rotate(2deg); opacity: 1; }
+  66% { transform: translate(-20px,40px) scale(0.95) rotate(-1deg); opacity: 0.85; }
+  100% { transform: translate(30px,20px) scale(1.05) rotate(1deg); opacity: 0.9; }
+}
+
+/* Animated dot grid */
+.hero-grid-bg {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 0%, transparent 100%);
+  animation: grid-breathe 6s ease-in-out infinite alternate;
+}
+
+@keyframes grid-breathe {
+  0% { opacity: 0.4; }
+  100% { opacity: 0.9; }
+}
+
+/* Particle sparkles */
+.hero-particles {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+}
+.spark {
+  position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff;
+  animation: spark-twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+}
+@keyframes spark-twinkle {
+  0%,100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* Noise texture */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat; background-size: 128px;
+}
+
+/* Glow line at top */
+.hero-top-line {
+  position: absolute; top: 68px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.6), rgba(6,182,212,0.5), transparent);
+  z-index: 3;
+  animation: line-glow 4s ease-in-out infinite alternate;
+}
+@keyframes line-glow {
+  0% { opacity: 0.4; filter: blur(0px); }
+  100% { opacity: 1; filter: blur(1px); }
+}
+
+/* ── HERO LAYOUT (2-col compact) ─────────────────────────── */
+.hero-inner {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 52px 5% 60px;
+  width: 100%;
+}
+
+/* LEFT COLUMN */
+.hero-content {
+  text-align: left;
+}
+
+/* Animated eyebrow pill */
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(124,58,237,0.1);
+  border: 1px solid rgba(124,58,237,0.35);
+  padding: 6px 16px; border-radius: 100px;
+  margin-bottom: 22px;
+  animation: fadeUp .5s ease forwards;
+  position: relative; overflow: hidden;
+}
+.hero-eyebrow::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.1) 50%, transparent 100%);
+  animation: eyebrow-shimmer 3s ease-in-out infinite;
+}
+@keyframes eyebrow-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.hero-eyebrow-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #10B981;
+  animation: pulse-dot 1.5s infinite;
+  box-shadow: 0 0 10px rgba(16,185,129,0.7);
+  flex-shrink: 0;
+}
+.hero-eyebrow-text {
+  font-size: .72rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: #C4B5FD; position: relative; z-index: 1;
+}
+
+/* Staggered headline */
+.hero h1 {
+  font-size: clamp(2rem, 3.2vw, 3.1rem);
+  font-weight: 800; line-height: 1.1; letter-spacing: -0.03em;
+  color: #fff; margin-bottom: 18px;
+}
+.hero h1 .line-1 { display: block; animation: fadeUp .5s .06s ease both; }
+.hero h1 .line-2 { display: block; animation: fadeUp .5s .14s ease both; }
+.hero h1 .line-3 { display: block; animation: fadeUp .5s .22s ease both; }
+
+.hero h1 .grad-text {
+  background: linear-gradient(110deg, #A78BFA 0%, #60A5FA 40%, #34D399 80%, #A78BFA 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: gradient-flow 4s linear infinite;
+}
+@keyframes gradient-flow {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Tagline */
+.hero-tagline {
+  font-size: .98rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7; margin-bottom: 10px;
+  animation: fadeUp .5s .3s ease both;
+}
+.hero-tagline strong { color: rgba(255,255,255,0.82); font-weight: 600; }
+.hero-ecosystem-text {
+  font-weight: 800; font-size: 1.06rem;
+  background: linear-gradient(110deg, #A78BFA 0%, #60A5FA 40%, #34D399 75%, #F59E0B 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: gradient-flow 5s linear infinite;
+  letter-spacing: .01em;
+}
+
+/* Feature pills row */
+.hero-pills {
+  display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 30px;
+  animation: fadeUp .5s .38s ease both;
+}
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.55); font-size: .72rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 100px;
+  transition: all .2s;
+}
+.hero-pill:hover { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); color: #C4B5FD; }
+.hero-pill-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+.hero-actions {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 36px;
+  animation: fadeUp .5s .44s ease both;
+}
+
+.btn-hero-primary {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  color: #fff; padding: 13px 28px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: .95rem; font-weight: 700;
+  text-decoration: none; cursor: pointer; border: none;
+  box-shadow: 0 6px 28px rgba(124,58,237,0.42), 0 0 0 1px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all .25s; position: relative; overflow: hidden;
+}
+.btn-hero-primary::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: skewX(-20deg); transition: left .6s;
+}
+.btn-hero-primary:hover::before { left: 150%; }
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(124,58,237,0.55), 0 0 0 1px rgba(124,58,237,0.3);
+}
+.btn-hero-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.8); padding: 15px 28px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+  text-decoration: none; border: 1.5px solid rgba(255,255,255,0.12);
+  transition: all .2s;
+}
+.btn-hero-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* Market stats row (compact, left-aligned) */
+.hero-market-stats {
+  display: flex; gap: 0;
+  animation: fadeUp .5s .52s ease both;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  max-width: 420px;
+}
+.hero-market-stat {
+  flex: 1; text-align: center; padding: 16px 12px;
   position: relative;
 }
-.mock-topbar {
-  background: var(--ink); padding: 14px 20px;
-  display: flex; align-items: center; justify-content: space-between;
+.hero-market-stat + .hero-market-stat::before {
+  content: ''; position: absolute; left: 0; top: 18%; bottom: 18%;
+  width: 1px; background: rgba(255,255,255,0.07);
 }
-.mock-dots { display: flex; gap: 6px; }
-.mock-dot { width: 10px; height: 10px; border-radius: 50%; }
-.mock-title { color: #fff; font-size: .8rem; font-family:'Sora',sans-serif; font-weight: 600; opacity:.8; }
-.mock-badge-status {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34D399; font-size: 0.65rem; font-weight: 700;
-  padding: 2px 8px; border-radius: 10px;
+.hero-market-num {
+  font-family: 'Sora', sans-serif; font-size: 1.55rem; font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.75) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1;
+}
+.hero-market-label {
+  font-size: .62rem; color: rgba(255,255,255,0.38); margin-top: 5px;
+  font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* ── HERO RIGHT COLUMN (Education graphic) ───────────────── */
+.hero-visual-col {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 480px;
+}
+
+/* Central edu graphic ring */
+.edu-graphic-wrap {
+  position: relative;
+  width: 360px; height: 360px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Outer spinning ring */
+.edu-ring-outer {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1.5px dashed rgba(124,58,237,0.25);
+  animation: ring-spin 28s linear infinite;
+}
+.edu-ring-mid {
+  position: absolute; inset: 20px; border-radius: 50%;
+  border: 1px solid rgba(79,70,229,0.15);
+  animation: ring-spin 20s linear infinite reverse;
+}
+.edu-ring-inner {
+  position: absolute; inset: 56px; border-radius: 50%;
+  border: 1.5px solid rgba(6,182,212,0.18);
+  animation: ring-spin 14s linear infinite;
+}
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+
+/* Orbit icons on the outer ring */
+.orbit-icon {
+  position: absolute; width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  background: rgba(13,17,40,0.9); border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.15);
+  backdrop-filter: blur(8px);
+  animation: orbit-pulse 3s ease-in-out infinite alternate;
+}
+.orbit-icon:nth-child(1) { top: -19px; left: 50%; transform: translateX(-50%); animation-delay: 0s; }
+.orbit-icon:nth-child(2) { right: -19px; top: 50%; transform: translateY(-50%); animation-delay: .5s; }
+.orbit-icon:nth-child(3) { bottom: -19px; left: 50%; transform: translateX(-50%); animation-delay: 1s; }
+.orbit-icon:nth-child(4) { left: -19px; top: 50%; transform: translateY(-50%); animation-delay: 1.5s; }
+.orbit-icon:nth-child(5) { top: 12%; right: 5%; animation-delay: .3s; }
+.orbit-icon:nth-child(6) { bottom: 12%; right: 5%; animation-delay: .8s; }
+.orbit-icon:nth-child(7) { top: 12%; left: 5%; animation-delay: 1.2s; }
+.orbit-icon:nth-child(8) { bottom: 12%; left: 5%; animation-delay: 1.7s; }
+@keyframes orbit-pulse {
+  0% { transform-origin: center; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+  100% { box-shadow: 0 4px 24px rgba(124,58,237,0.35); }
+}
+
+/* Centre circle */
+.edu-center-orb {
+  width: 140px; height: 140px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,58,237,0.25) 0%, rgba(79,70,229,0.2) 50%, rgba(6,182,212,0.15) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  box-shadow: 0 0 60px rgba(124,58,237,0.3), inset 0 0 40px rgba(124,58,237,0.1);
+  animation: center-pulse 4s ease-in-out infinite alternate;
+  z-index: 2; position: relative;
+}
+@keyframes center-pulse {
+  0% { box-shadow: 0 0 40px rgba(124,58,237,0.25), inset 0 0 30px rgba(124,58,237,0.08); }
+  100% { box-shadow: 0 0 80px rgba(124,58,237,0.45), inset 0 0 50px rgba(124,58,237,0.15); }
+}
+.edu-center-icon { font-size: 2.4rem; line-height: 1; }
+.edu-center-label { font-family:'Sora',sans-serif; font-size: .65rem; font-weight: 800;
+  letter-spacing: .07em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+
+/* Mini floating info cards */
+.hero-info-card {
+  position: absolute; background: rgba(13,17,40,0.88);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px; padding: 11px 15px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  min-width: 152px; z-index: 10;
+}
+.hero-info-card-1 { top: 20px; right: -20px; animation: float-a 5s ease-in-out infinite; }
+.hero-info-card-2 { bottom: 30px; left: -20px; animation: float-b 6s ease-in-out infinite; }
+.hero-info-card-3 { top: 50%; right: -30px; transform: translateY(-50%); animation: float-a 7s ease-in-out infinite .5s; }
+
+.info-card-label { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em;
+  color: rgba(255,255,255,0.3); margin-bottom: 4px; font-family:'Sora',sans-serif; }
+.info-card-val { font-family:'Sora',sans-serif; font-size: 1.15rem; font-weight: 800; line-height: 1; }
+.info-card-sub { font-size: .62rem; color: rgba(255,255,255,0.38); margin-top: 3px; }
+.info-card-row { display: flex; align-items: center; gap: 7px; }
+.info-card-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; margin-top: 6px; }
+.info-card-bar-fill { height: 100%; border-radius: 2px; }
+
+/* Responsive */
+@media(max-width:960px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; padding: 48px 5% 48px; }
+  .hero-content { text-align: center; }
+  .hero-pills, .hero-actions, .hero-market-stats { justify-content: center; margin-left: auto; margin-right: auto; }
+  .hero-visual-col { min-height: 320px; }
+  .edu-graphic-wrap { width: 280px; height: 280px; }
+  .edu-center-orb { width: 110px; height: 110px; }
+  .hero-info-card-1 { right: 0; }
+  .hero-info-card-2 { left: 0; }
+  .hero-info-card-3 { display: none; }
+}
+@media(max-width:580px) {
+  .hero h1 { font-size: clamp(1.75rem, 7vw, 2.4rem); }
+  .edu-graphic-wrap { width: 220px; height: 220px; }
+  .edu-center-orb { width: 90px; height: 90px; font-size: 1.6rem; }
+}
+
+/* Trust indicators row */
+.hero-trust {
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  flex-wrap: wrap; animation: fadeUp .6s .4s ease both;
+}
+.hero-trust-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: rgba(255,255,255,0.45);
+}
+.hero-trust-item strong { color: rgba(255,255,255,0.8); }
+.hero-trust-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.12); }
+
+/* ── DASHBOARD VISUAL ────────────────────────────────────── */
+.hero-dashboard-wrap {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 1100px; margin: 0 auto;
+  padding: 0 5% 80px;
+  animation: fadeUp .7s .5s ease both;
+}
+
+.dashboard-glow-ring {
+  position: absolute;
+  top: -2px; left: 5%; right: 5%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.8), rgba(6,182,212,0.6), transparent);
+  border-radius: 2px;
+  filter: blur(1px);
+}
+
+.dashboard-shell {
+  background: rgba(13,17,40,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  box-shadow:
+    0 40px 120px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(124,58,237,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+.dash-topbar {
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.dash-dots { display: flex; gap: 6px; }
+.dash-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dash-url-bar {
+  flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px; padding: 5px 12px;
+  font-size: .72rem; color: rgba(255,255,255,0.3); font-family: 'JetBrains Mono', monospace;
+  max-width: 280px;
+}
+.dash-badge-live {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+  color: #34D399; font-size: .65rem; font-weight: 800; padding: 3px 10px; border-radius: 20px;
+  font-family: 'Sora', sans-serif; margin-left: auto;
+}
+.dash-badge-live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34D399; animation: pulse-dot 1.5s infinite; }
+
+.dash-sidebar {
+  width: 180px; background: rgba(255,255,255,0.02);
+  border-right: 1px solid rgba(255,255,255,0.05);
+  padding: 16px 0; flex-shrink: 0;
+}
+.dash-nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; font-size: .72rem; font-weight: 600;
+  color: rgba(255,255,255,0.3); cursor: pointer;
+  transition: all .2s; border-radius: 0;
   font-family: 'Sora', sans-serif;
 }
-.mock-tab-nav {
-  display: flex; background: #F8FAFC;
-  border-bottom: 1px solid var(--border);
-  padding: 0 12px; gap: 4px;
+.dash-nav-item.active {
+  background: rgba(124,58,237,0.15);
+  color: #A78BFA;
+  border-right: 2px solid #7C3AED;
 }
-.mock-tab-btn {
-  background: none; border: none; padding: 12px 16px;
-  font-family: 'Sora', sans-serif; font-size: 0.78rem; font-weight: 600;
-  color: var(--muted); cursor: pointer; position: relative;
-  transition: color 0.2s, background-color 0.2s;
-  display: flex; align-items: center; gap: 6px;
-}
-.mock-tab-btn:hover { color: var(--ink); background: rgba(0,0,0,0.02); }
-.mock-tab-btn.active { color: var(--blue); }
-.mock-tab-btn.active::after {
-  content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px; height: 2px;
-  background: var(--blue); border-radius: 2px 2px 0 0;
-}
-.dashboard-view { display: none; }
-.dashboard-view.active { display: block; animation: tabFadeIn 0.4s ease forwards; }
+.dash-nav-item:hover:not(.active) { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.03); }
 
-@keyframes tabFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+.dash-main-content { flex: 1; padding: 20px; overflow: hidden; }
+.dash-body { display: flex; }
+
+.dash-kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+.dash-kpi {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 14px;
+  transition: background .2s;
+}
+.dash-kpi:hover { background: rgba(255,255,255,0.07); }
+.dash-kpi-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,0.3); margin-bottom: 8px; font-family: 'Sora',sans-serif; }
+.dash-kpi-val { font-family: 'Sora',sans-serif; font-size: 1.35rem; font-weight: 800; color: #fff; }
+.dash-kpi-delta { font-size: .62rem; color: #34D399; font-weight: 700; margin-top: 3px; }
+
+.dash-chart-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; margin-bottom: 12px; }
+.dash-panel {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 14px;
+}
+.dash-panel-title { font-size: .7rem; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 12px; font-family:'Sora',sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+.dash-bars { display: flex; align-items: flex-end; gap: 5px; height: 72px; }
+.dash-bar { flex: 1; border-radius: 4px 4px 0 0; transition: height 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+.dash-activity-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05); font-size: .68rem; color: rgba(255,255,255,0.45);
+}
+.dash-activity-item:last-child { border: none; }
+.dash-activity-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; flex-shrink: 0; }
+
+/* AI status strip */
+.dash-ai-strip {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 8px; padding: 8px 12px;
+}
+.dash-ai-text { font-size: .65rem; color: #A78BFA; font-weight: 700; font-family:'Sora',sans-serif; }
+.dash-ai-badge { background: rgba(124,58,237,0.25); color: #C4B5FD; font-size: .6rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; }
+
+/* Floating cards on dashboard */
+.dash-float-wrap { position: relative; }
+.dash-float {
+  position: absolute; background: rgba(13,17,40,0.9);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 12px 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  z-index: 10; min-width: 170px;
+}
+.dash-float-1 { top: 20px; right: -30px; animation: float-a 5s ease-in-out infinite; }
+.dash-float-2 { bottom: 40px; left: -40px; animation: float-b 6s ease-in-out infinite; }
+.dash-float-label { font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,0.35); margin-bottom: 4px; font-family:'Sora',sans-serif; }
+.dash-float-val { font-family:'Sora',sans-serif; font-size: 1.3rem; font-weight: 800; }
+.dash-float-sub { font-size: .62rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+@keyframes float-a { 0%,100%{transform:translateY(0) rotate(.5deg);} 50%{transform:translateY(-9px) rotate(-.5deg);} }
+@keyframes float-b { 0%,100%{transform:translateY(0) rotate(-.5deg);} 50%{transform:translateY(-11px) rotate(.5deg);} }
+
+/* ── MARQUEE (TRUST STRIP) ───────────────────────────────── */
+.trust-strip {
+  background: var(--ink-hero);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 20px 0; overflow: hidden; position: relative;
+}
+.trust-strip::before, .trust-strip::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 2; pointer-events: none;
+}
+.trust-strip::before { left: 0; background: linear-gradient(90deg, var(--ink-hero), transparent); }
+.trust-strip::after { right: 0; background: linear-gradient(-90deg, var(--ink-hero), transparent); }
+
+.marquee-track {
+  display: flex; gap: 0; width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.mock-body { padding: 20px; background: var(--bg); }
-.mock-stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
-.mock-stat-card {
-  background: #fff; border-radius: 10px; padding: 12px 14px;
-  border: 1px solid var(--border); box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-  transition: transform 0.2s;
-}
-.mock-stat-card:hover { transform: translateY(-2px); }
-.mock-stat-val { font-family: 'Sora',sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--ink); }
-.mock-stat-lbl { font-size: .68rem; color: var(--muted); margin-top: 2px; }
-.mock-stat-icon { font-size: 1.1rem; margin-bottom: 4px; }
-.mock-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; }
-.mock-chart-card, .mock-list-card {
-  background: #fff; border-radius: 10px; padding: 14px;
-  border: 1px solid var(--border);
-}
-.mock-card-title { font-family: 'Sora',sans-serif; font-size: .75rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
-.mock-bars { display: flex; align-items: flex-end; gap: 5px; height: 60px; }
-.mock-bar { flex: 1; border-radius: 4px 4px 0 0; opacity: .8; transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-.mock-list-item {
+.marquee-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 0; border-bottom: 1px solid var(--border); font-size: .72rem; color: var(--muted);
+  padding: 0 36px;
+  font-family: 'Sora',sans-serif; font-size: .8rem; font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  transition: color .2s;
 }
-.mock-list-item:last-child { border: none; }
-.mock-avatar { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
-
-/* Floating cards styling */
-.float-card {
-  position: absolute; background: rgba(255, 255, 255, 0.82); 
-  backdrop-filter: blur(12px); border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(22,71,212,0.12); padding: 14px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  z-index: 10;
-}
-.float-card:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 16px 48px rgba(22,71,212,0.18);
-}
-.float-card-1 { top: -20px; right: -55px; animation: float-1 5s ease-in-out infinite; }
-.float-card-2 { bottom: 10px; left: -75px; animation: float-2 6s ease-in-out infinite; }
-.float-text { font-size: .78rem; font-weight: 600; color: var(--ink); margin-bottom: 2px; font-family:'Sora',sans-serif; }
-.float-sub  { font-size: .68rem; color: var(--muted); }
-.float-num  { font-family:'Sora',sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--green); }
-
-@keyframes float-1 {
-  0%, 100% { transform: translateY(0) rotate(0.5deg); }
-  50% { transform: translateY(-8px) rotate(-0.5deg); }
-}
-@keyframes float-2 {
-  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
-  50% { transform: translateY(-10px) rotate(0.5deg); }
+.marquee-item:hover { color: rgba(255,255,255,0.65); }
+.marquee-icon { font-size: 1rem; }
+.trust-label {
+  text-align: center; font-size: .72rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255,255,255,0.2);
+  padding: 0 0 12px;
 }
 
-/* ── LOGOS STRIP ─────────────────────────────────────────── */
-.logos-strip {
-  background: #fff; padding: 28px 5%;
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+/* ── FEATURES BENTO ──────────────────────────────────────── */
+.features-section { background: #fff; padding: 100px 5%; }
+.features-header { text-align: center; max-width: 680px; margin: 0 auto 64px; }
+.section-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--blue-light); color: var(--blue);
+  font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 100px; margin-bottom: 20px;
+  border: 1px solid rgba(22,71,212,0.12);
 }
-.logos-inner { max-width: 1200px; margin: 0 auto; }
-.logos-label { text-align: center; font-size: .8rem; color: var(--muted); font-weight: 500; margin-bottom: 20px; }
-.logos-row {
+.section-chip.purple {
+  background: rgba(124,58,237,0.07); color: var(--purple);
+  border-color: rgba(124,58,237,0.18);
+}
+.section-chip.dark {
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+  gap: 16px;
+  max-width: 1100px; margin: 0 auto;
+}
+.bento-card {
+  background: #fff;
+  border: 1px solid rgba(22,71,212,0.08);
+  border-radius: 20px;
+  padding: 28px;
+  position: relative; overflow: hidden;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+  box-shadow: 0 2px 16px rgba(22,71,212,0.06);
+}
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(22,71,212,0.12);
+  border-color: rgba(22,71,212,0.18);
+}
+.bento-card.span2 { grid-column: span 2; }
+.bento-card.dark-card {
+  background: var(--ink);
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+.bento-card.dark-card:hover {
+  border-color: rgba(124,58,237,0.4);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.2);
+}
+.bento-card.purple-card {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  border-color: rgba(124,58,237,0.3);
+  color: #fff;
+}
+.bento-icon {
+  width: 48px; height: 48px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  flex-wrap: wrap; gap: 40px; opacity: .55;
+  font-size: 1.35rem; margin-bottom: 16px;
+  background: var(--blue-light);
 }
-.logo-item {
-  font-family: 'Sora',sans-serif; font-size: .85rem; font-weight: 700;
-  color: var(--ink-3); letter-spacing: .02em;
-  display: flex; align-items: center; gap: 6px;
-}
-.logo-icon { font-size: 1rem; }
+.bento-icon.purple-bg { background: rgba(124,58,237,0.12); }
+.bento-icon.dark-bg { background: rgba(255,255,255,0.06); }
+.bento-icon.white-bg { background: rgba(255,255,255,0.2); }
 
-/* ── FEATURES TEASER ─────────────────────────────────────── */
-.features-teaser { background: var(--bg); }
-.feat-card { padding: 28px; }
-.feat-icon {
-  width: 52px; height: 52px; border-radius: 12px;
-  background: var(--blue-light); display: flex; align-items: center;
-  justify-content: center; font-size: 1.4rem; margin-bottom: 16px;
+.bento-title { font-family:'Sora',sans-serif; font-size: 1.05rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+.bento-card.dark-card .bento-title { color: #fff; }
+.bento-card.purple-card .bento-title { color: #fff; }
+.bento-desc { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+.bento-card.dark-card .bento-desc { color: rgba(255,255,255,0.45); }
+.bento-card.purple-card .bento-desc { color: rgba(255,255,255,0.75); }
+
+.bento-tag {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 14px;
+  font-size: .7rem; font-weight: 800; letter-spacing: .04em;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--blue-light); color: var(--blue);
+  border: 1px solid rgba(22,71,212,0.1);
 }
-.feat-title { font-family:'Sora',sans-serif; font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-.feat-desc { font-size: .88rem; color: var(--muted); line-height: 1.6; }
+.bento-tag.green { background: rgba(16,185,129,0.1); color: #059669; border-color: rgba(16,185,129,0.2); }
+.bento-tag.purple { background: rgba(124,58,237,0.12); color: #7C3AED; border-color: rgba(124,58,237,0.2); }
+.bento-tag.white { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.2); }
+.bento-tag.dark-white { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.12); }
+
+/* Mini mockup inside bento cards */
+.bento-mockup {
+  margin-top: 18px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; overflow: hidden;
+}
+.bento-mini-bars { display: flex; align-items: flex-end; gap: 4px; height: 48px; }
+.bento-mini-bar { flex: 1; border-radius: 3px 3px 0 0; }
+.bento-risk-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 6px; font-size: .65rem; font-weight: 700; margin-bottom: 4px; }
+.bento-chat-bubble {
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.15);
+  border-radius: 0 10px 10px 10px; padding: 8px 10px;
+  font-size: .68rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 6px;
+}
+.bento-chat-bubble.user {
+  background: rgba(22,71,212,0.08); border-color: rgba(22,71,212,0.12);
+  border-radius: 10px 0 10px 10px;
+  text-align: right;
+}
+
+/* Large bento decoration */
+.bento-decoration {
+  position: absolute; right: -30px; bottom: -30px;
+  width: 160px; height: 160px; border-radius: 50%;
+  opacity: .08; pointer-events: none;
+}
+.bento-card.purple-card .bento-decoration {
+  background: radial-gradient(circle, #fff 0%, transparent 70%);
+  opacity: .15;
+}
+
+@media(max-width:900px){
+  .bento-grid { grid-template-columns: 1fr 1fr; }
+  .bento-card.span2 { grid-column: span 2; }
+}
+@media(max-width:580px){
+  .bento-grid { grid-template-columns: 1fr; }
+  .bento-card.span2 { grid-column: span 1; }
+}
 
 /* ── HOW IT WORKS ────────────────────────────────────────── */
-.steps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; margin-top: 56px; }
-.step-card {
-  text-align: center; padding: 32px 20px; position: relative;
+.hiw-section {
+  background: var(--bg);
+  padding: 100px 5%;
 }
-.step-num {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--blue); color: #fff;
-  font-family: 'Sora',sans-serif; font-size: 1.1rem; font-weight: 800;
+.hiw-steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; margin-top: 60px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+.hiw-card {
+  background: #fff; border: 1px solid rgba(22,71,212,0.07);
+  border-radius: 20px; padding: 32px 24px;
+  position: relative; text-align: left;
+  box-shadow: 0 2px 16px rgba(22,71,212,0.05);
+  transition: all .25s;
+}
+.hiw-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(22,71,212,0.12); border-color: rgba(22,71,212,0.15); }
+.hiw-num {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  color: #fff; font-family:'Sora',sans-serif; font-size: .95rem; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px; position: relative; z-index: 1;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.35);
 }
-.step-card:not(:last-child)::after {
-  content: ''; position: absolute;
-  top: 52px; left: 60%; right: -4%; height: 2px;
-  background: linear-gradient(90deg, var(--blue), transparent);
-  opacity: .25;
+.hiw-title { font-family:'Sora',sans-serif; font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+.hiw-desc { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+.hiw-connector {
+  position: absolute; top: 34px; right: -13px; z-index: 1;
+  width: 26px; height: 2px;
+  background: linear-gradient(90deg, rgba(124,58,237,0.4), rgba(79,70,229,0.15));
 }
-.step-title { font-family:'Sora',sans-serif; font-size: .95rem; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-.step-desc { font-size: .85rem; color: var(--muted); line-height: 1.6; }
-@media(max-width:900px){ .steps-grid{grid-template-columns:repeat(2,1fr);} .step-card::after{display:none;} }
-@media(max-width:600px){ .steps-grid{grid-template-columns:1fr;} }
+.hiw-card:last-child .hiw-connector { display: none; }
 
-/* ── PRICING TEASER ──────────────────────────────────────── */
-.pricing-teaser { background: var(--ink); overflow: hidden; position: relative; }
-.pricing-teaser::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 80% at 80% 50%, rgba(22,71,212,0.25) 0%, transparent 65%);
-  pointer-events: none;
-}
-.plan-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-top: 48px; }
-.plan-card {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px; padding: 28px 22px;
-  transition: background .2s, transform .2s;
-}
-.plan-card:hover { background: rgba(255,255,255,0.09); transform: translateY(-3px); }
-.plan-card.featured {
-  background: var(--blue); border-color: var(--blue-mid);
-  transform: scale(1.04);
-}
-.plan-card.featured:hover { transform: scale(1.04) translateY(-3px); }
-.plan-name { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: rgba(255,255,255,.7); margin-bottom: 12px; }
-.plan-card.featured .plan-name { color: rgba(255,255,255,.9); }
-.plan-price { font-family:'Sora',sans-serif; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-.plan-unit { font-size: .78rem; color: rgba(255,255,255,.5); margin-bottom: 20px; }
-.plan-feat { font-size: .82rem; color: rgba(255,255,255,.65); margin-bottom: 8px; display: flex; gap: 8px; align-items: flex-start; }
-.plan-feat::before { content: '✓'; color: #34D399; font-weight: 700; flex-shrink: 0; }
-@media(max-width:900px){ .plan-cards{grid-template-columns:repeat(2,1fr);} .plan-card.featured{transform:none;} }
-@media(max-width:480px){ .plan-cards{grid-template-columns:1fr;} }
-
-/* ── TESTIMONIALS ────────────────────────────────────────── */
-.testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 48px; }
-.testi-card { padding: 28px; }
-.testi-stars { color: #F59E0B; font-size: .9rem; margin-bottom: 14px; }
-.testi-text { font-size: .9rem; color: var(--ink-3); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
-.testi-author { display: flex; align-items: center; gap: 12px; }
-.testi-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--blue-light); display: flex; align-items: center;
-  justify-content: center; font-size: 1.1rem;
-}
-.testi-name { font-family:'Sora',sans-serif; font-size: .88rem; font-weight: 700; color: var(--ink); }
-.testi-school { font-size: .78rem; color: var(--muted); }
-@media(max-width:900px){ .testi-grid{grid-template-columns:1fr 1fr;} }
-@media(max-width:500px){ .testi-grid{grid-template-columns:1fr;} }
-
-/* ── CTA BANNER ──────────────────────────────────────────── */
-.cta-banner {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
-  text-align: center; padding: 96px 5%;
-  position: relative; overflow: hidden;
-}
-.cta-banner::before {
-  content: ''; position: absolute; inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
-}
-.cta-banner h2 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; color: #fff; margin-bottom: 16px; position: relative; }
-.cta-banner p { font-size: 1.05rem; color: rgba(255,255,255,.75); margin-bottom: 36px; max-width: 520px; margin-left: auto; margin-right: auto; position: relative; }
-.cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; }
-
-/* ── HERO RESPONSIVE ─────────────────────────────────────── */
-@media(max-width:900px){ .hero-grid{grid-template-columns:1fr; gap:40px;} .hero-visual{order:-1;} }
-@media(max-width:480px){ .hero-btns{flex-direction:column;} .hero-btns .btn{width:100%;justify-content:center;} }
+@media(max-width:900px){ .hiw-steps{grid-template-columns:repeat(2,1fr);} .hiw-connector{display:none;} }
+@media(max-width:580px){ .hiw-steps{grid-template-columns:1fr;} }
 
 /* ── AI SECTION ──────────────────────────────────────────── */
-.ai-section {
-  background: linear-gradient(135deg, #07091A 0%, #0D1228 50%, #120A24 100%);
-  position: relative; overflow: hidden;
+.ai-section-v2 {
+  background: linear-gradient(175deg, #06071A 0%, #0D0E28 50%, #0A0818 100%);
+  padding: 100px 5%; position: relative; overflow: hidden;
 }
-.ai-section::before {
-  content:''; position:absolute; inset:0; pointer-events:none;
+.ai-section-v2::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 65% at 15% 50%, rgba(99,102,241,.14) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 55% at 85% 30%, rgba(139,92,246,.1) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 60% 85%, rgba(14,165,233,.07) 0%, transparent 55%);
+    radial-gradient(ellipse 65% 65% at 10% 50%, rgba(124,58,237,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 88% 30%, rgba(79,70,229,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 55% 90%, rgba(6,182,212,0.08) 0%, transparent 55%);
 }
-.ai-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(90deg, rgba(99,102,241,.18), rgba(139,92,246,.18));
-  border: 1px solid rgba(99,102,241,.38);
-  color: #A5B4FC; font-size: .78rem; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase;
-  padding: 6px 16px; border-radius: 20px; margin-bottom: 20px;
+.ai-section-v2 .section-title { color: #fff; }
+
+.ai-grid-layout { display: grid; grid-template-columns: 1fr 380px; gap: 60px; align-items: start; max-width: 1100px; margin: 0 auto; }
+.ai-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; }
+
+.ai-feat-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px; padding: 20px;
+  transition: all .2s; position: relative; overflow: hidden;
 }
-.ai-card {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 14px; padding: 20px 18px;
-  transition: background .2s, border-color .2s, transform .2s;
-  position: relative; overflow: hidden;
-}
-.ai-card:hover {
-  background: rgba(255,255,255,.075);
-  border-color: rgba(99,102,241,.3);
+.ai-feat-card:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(124,58,237,0.35);
   transform: translateY(-2px);
 }
-.ai-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-  background: linear-gradient(90deg, transparent, rgba(99,102,241,.7), transparent);
-  opacity:0; transition:opacity .2s;
+.ai-feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.6), transparent);
+  opacity: 0; transition: opacity .2s;
 }
-.ai-card:hover::before { opacity:1; }
-.ai-icon {
-  font-size: 1.4rem; margin-bottom: 12px;
-  width: 46px; height: 46px; border-radius: 11px;
-  background: linear-gradient(135deg, rgba(99,102,241,.2), rgba(139,92,246,.18));
-  border: 1px solid rgba(99,102,241,.22);
+.ai-feat-card:hover::before { opacity: 1; }
+.ai-feat-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.15));
+  border: 1px solid rgba(124,58,237,0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+.ai-feat-title { font-family:'Sora',sans-serif; font-size: .88rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+.ai-feat-desc { font-size: .78rem; color: rgba(255,255,255,0.42); line-height: 1.6; }
+.ai-feat-tag {
+  display: inline-block; margin-top: 10px;
+  font-size: .63rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+}
+
+/* AI Chat mockup */
+.ai-chat-panel {
+  position: sticky; top: 96px;
+}
+.ai-chat-label {
+  font-size: .65rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.22); margin-bottom: 12px; text-align: center;
+}
+.ai-chat-shell {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px; overflow: hidden;
+}
+.ai-chat-header {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(124,58,237,0.08);
+}
+.ai-chat-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0;
+}
+.ai-chat-name { font-family:'Sora',sans-serif; font-size: .82rem; font-weight: 700; color: #fff; }
+.ai-chat-status { display: flex; align-items: center; gap: 4px; font-size: .62rem; color: rgba(255,255,255,0.35); }
+.ai-chat-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+
+.ai-chat-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msg-row { display: flex; gap: 8px; align-items: flex-start; }
+.ai-msg-row.user { flex-direction: row-reverse; }
+.ai-bubble {
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px 14px 14px 14px;
+  padding: 10px 13px; font-size: .78rem; color: rgba(255,255,255,0.75); line-height: 1.6;
+  max-width: calc(100% - 44px);
+}
+.ai-msg-row.user .ai-bubble {
+  background: rgba(124,58,237,0.22); border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 14px 4px 14px 14px; color: #C4B5FD;
+}
+.ai-msg-ava {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: .72rem;
+}
+.ai-action-btns { display: flex; gap: 7px; padding: 0 16px 12px 52px; flex-wrap: wrap; }
+.ai-action-btn {
+  background: rgba(124,58,237,0.18); border: 1px solid rgba(124,58,237,0.3);
+  color: #A78BFA; padding: 5px 11px; border-radius: 8px; font-size: .7rem; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.ai-action-btn:hover { background: rgba(124,58,237,0.3); }
+.ai-action-btn.ghost {
+  background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.45);
+}
+
+.ai-stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.ai-stat-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 14px;
+}
+.ai-stat-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,0.25); margin-bottom: 6px; }
+.ai-stat-val { font-family:'Sora',sans-serif; font-size: 1.5rem; font-weight: 800; }
+
+@media(max-width:980px){ .ai-grid-layout{grid-template-columns:1fr;} .ai-chat-panel{position:static;} }
+@media(max-width:580px){ .ai-features-grid{grid-template-columns:1fr;} }
+
+/* ── PRICING ─────────────────────────────────────────────── */
+.pricing-section {
+  background: var(--ink);
+  padding: 100px 5%; position: relative; overflow: hidden;
+}
+.pricing-section::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 70% at 80% 50%, rgba(79,70,229,0.2) 0%, transparent 60%);
+}
+.pricing-section .section-title { color: #fff; }
+.pricing-section .section-sub { color: rgba(255,255,255,0.5); }
+
+.pricing-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 3px; margin: 24px auto 0; display: flex; justify-content: center; max-width: 240px;
+}
+.pricing-toggle-btn {
+  padding: 7px 20px; border-radius: 8px; font-size: .82rem; font-weight: 700;
+  color: rgba(255,255,255,0.4); cursor: pointer; border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; transition: all .2s;
+}
+.pricing-toggle-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 48px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+.price-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 28px 22px;
+  transition: all .25s; position: relative;
+}
+.price-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-3px); }
+.price-card.featured {
+  background: linear-gradient(160deg, rgba(124,58,237,0.25) 0%, rgba(79,70,229,0.18) 100%);
+  border: 1px solid rgba(124,58,237,0.4);
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.2), 0 20px 60px rgba(124,58,237,0.2);
+  transform: scale(1.03);
+}
+.price-card.featured:hover { transform: scale(1.03) translateY(-3px); }
+
+.price-popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(90deg, #7C3AED, #4F46E5);
+  color: #fff; font-size: .65rem; font-weight: 800; padding: 4px 14px; border-radius: 20px;
+  white-space: nowrap; letter-spacing: .05em;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+}
+
+.price-tier { font-family:'Sora',sans-serif; font-size: .82rem; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
+.price-card.featured .price-tier { color: #C4B5FD; }
+.price-val { font-family:'Sora',sans-serif; font-size: 2.2rem; font-weight: 800; color: #fff; }
+.price-unit { font-size: .75rem; color: rgba(255,255,255,0.4); margin-bottom: 24px; }
+.price-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 20px 0; }
+.price-feature {
+  display: flex; gap: 9px; align-items: flex-start;
+  font-size: .83rem; color: rgba(255,255,255,0.6); margin-bottom: 10px;
+}
+.price-feature::before { content: '✓'; color: #34D399; font-weight: 800; flex-shrink: 0; font-size: .8rem; margin-top: 1px; }
+.price-card.featured .price-feature { color: rgba(255,255,255,0.8); }
+
+.btn-price {
+  display: block; width: 100%; text-align: center; margin-top: 24px;
+  padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: .88rem;
+  text-decoration: none; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif;
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.12); transition: all .2s;
+}
+.btn-price:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.btn-price.featured-btn {
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+}
+.btn-price.featured-btn:hover { box-shadow: 0 10px 32px rgba(124,58,237,0.55); transform: translateY(-1px); }
+
+@media(max-width:900px){ .pricing-grid{grid-template-columns:repeat(2,1fr);} .price-card.featured{transform:none;} .price-card.featured:hover{transform:translateY(-3px);} }
+@media(max-width:480px){ .pricing-grid{grid-template-columns:1fr;} }
+
+/* ── TESTIMONIALS ────────────────────────────────────────── */
+.testi-section { background: #fff; padding: 100px 5%; }
+.testi-grid-v2 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 56px; max-width: 1100px; margin-left: auto; margin-right: auto; }
+.testi-card-v2 {
+  background: #fff; border: 1px solid rgba(22,71,212,0.07);
+  border-radius: 20px; padding: 28px;
+  box-shadow: 0 2px 16px rgba(22,71,212,0.05);
+  transition: all .25s; position: relative;
+}
+.testi-card-v2:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(22,71,212,0.1); border-color: rgba(22,71,212,0.14); }
+.testi-card-v2.featured-testi {
+  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
+  border-color: rgba(124,58,237,0.3);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  grid-row: span 1;
+}
+
+.testi-quote-icon { font-size: 1.8rem; margin-bottom: 12px; opacity: .15; }
+.testi-card-v2.featured-testi .testi-quote-icon { opacity: .2; }
+.testi-stars-v2 { display: flex; gap: 3px; margin-bottom: 14px; }
+.testi-star { color: #F59E0B; font-size: .85rem; }
+.testi-body { font-size: .9rem; color: var(--ink-3); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
+.testi-card-v2.featured-testi .testi-body { color: rgba(255,255,255,0.65); }
+.testi-author-row { display: flex; align-items: center; gap: 12px; }
+.testi-ava {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.testi-card-v2.featured-testi .testi-ava { background: rgba(124,58,237,0.2); }
+.testi-name-v2 { font-family:'Sora',sans-serif; font-size: .88rem; font-weight: 700; color: var(--ink); }
+.testi-card-v2.featured-testi .testi-name-v2 { color: #fff; }
+.testi-role { font-size: .78rem; color: var(--muted); margin-top: 1px; }
+.testi-card-v2.featured-testi .testi-role { color: rgba(255,255,255,0.4); }
+
+@media(max-width:900px){ .testi-grid-v2{grid-template-columns:1fr 1fr;} }
+@media(max-width:560px){ .testi-grid-v2{grid-template-columns:1fr;} }
+
+/* ── CTA FINAL ───────────────────────────────────────────── */
+.cta-final {
+  background: var(--ink-hero); padding: 120px 5%;
+  text-align: center; position: relative; overflow: hidden;
+}
+.cta-final::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 60% at 50% 0%, rgba(124,58,237,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 100%, rgba(6,182,212,0.1) 0%, transparent 65%);
+}
+.cta-grid-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 0%, transparent 100%);
+}
+.cta-final h2 {
+  font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 800; color: #fff;
+  margin-bottom: 20px; letter-spacing: -0.02em;
+  position: relative; z-index: 1;
+}
+.cta-final h2 .grad-text {
+  background: linear-gradient(135deg, #A78BFA 0%, #60A5FA 60%, #34D399 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.cta-final p { font-size: 1.1rem; color: rgba(255,255,255,0.5); max-width: 520px; margin: 0 auto 40px; line-height: 1.75; position: relative; z-index: 1; }
+.cta-final-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+
+.cta-trust-strip { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 40px; position: relative; z-index: 1; }
+.cta-trust-item { display: flex; align-items: center; gap: 7px; font-size: .82rem; color: rgba(255,255,255,0.35); }
+.cta-trust-item svg, .cta-trust-item span { color: rgba(255,255,255,0.35); }
+
+/* ── FOOTER OVERRIDE ─────────────────────────────────────── */
+.footer { background: #030510; border-top: 1px solid rgba(255,255,255,0.05); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* ── RESPONSIVE NAV ──────────────────────────────────────── */
+@media(max-width:768px){
+  .nav-links { display: none; }
+  .hero h1 { font-size: clamp(2rem, 7vw, 3rem); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROTOTYPE DISCLAIMER MODAL
+   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   PROTOTYPE DISCLAIMER MODAL — Light Mode, Compact
+   ═══════════════════════════════════════════════════════════ */
+#proto-modal-overlay {
+  position: fixed; inset: 0; z-index: 99999;
   display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: pm-overlay-in .35s ease both;
 }
-.ai-card-title { font-family:'Sora',sans-serif; font-size:.92rem; font-weight:700; color:#fff; margin-bottom:7px; }
-.ai-card-desc { font-size:.82rem; color:rgba(255,255,255,.46); line-height:1.65; }
-.ai-card-tag {
-  display:inline-block; margin-top:10px;
-  font-size:.63rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
-  padding:3px 9px; border-radius:20px;
+#proto-modal-overlay::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(100, 80, 180, 0.25);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
 }
-.ai-chat-mock {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 16px; padding: 16px 18px;
+@keyframes pm-overlay-in { from{opacity:0} to{opacity:1} }
+
+#proto-modal {
+  position: relative; z-index: 1;
+  max-width: 480px; width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(124,58,237,0.12);
+  border-radius: 24px;
+  overflow: hidden;
+  animation: pm-modal-in .45s cubic-bezier(.22,.68,0,1.15) .06s both;
+  box-shadow:
+    0 0 0 1px rgba(124,58,237,0.08),
+    0 24px 64px rgba(80,50,180,0.18),
+    0 4px 20px rgba(0,0,0,0.1);
 }
-.ai-msg { display:flex; gap:8px; margin-bottom:10px; align-items:flex-start; }
-.ai-msg-avatar {
-  width:28px; height:28px; border-radius:50%;
-  flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.75rem;
+@keyframes pm-modal-in {
+  from { opacity:0; transform: translateY(20px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
 }
-.ai-msg-bubble {
-  background: rgba(255,255,255,.07);
-  border-radius: 0 12px 12px 12px;
-  padding: 9px 13px; font-size:.78rem; color:rgba(255,255,255,.75);
-  line-height: 1.55; max-width: calc(100% - 40px);
+
+/* Top gradient bar */
+#proto-modal::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7C3AED 0%, #4F46E5 50%, #06B6D4 100%);
 }
-.ai-msg.user .ai-msg-bubble {
-  background: rgba(99,102,241,.22);
-  border-radius: 12px 0 12px 12px;
-  color: #C7D2FE;
+
+.pm-glow-bl { display: none; }
+
+/* ── INNER CONTENT ── */
+.pm-inner {
+  position: relative; z-index: 1;
+  padding: 32px 32px 26px;
+  text-align: center;
 }
-.ai-typing-dots { display:inline-flex; gap:4px; align-items:center; padding:9px 13px; background:rgba(255,255,255,.07); border-radius:0 12px 12px 12px; }
-.ai-typing-dots span {
-  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.4);
-  animation: typing-bounce .8s ease-in-out infinite;
+
+/* Logo + brand */
+.pm-logo-row {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 16px;
 }
-.ai-typing-dots span:nth-child(2){animation-delay:.15s;}
-.ai-typing-dots span:nth-child(3){animation-delay:.3s;}
-@keyframes typing-bounce{ 0%,80%,100%{transform:scale(.7);opacity:.4;} 40%{transform:scale(1);opacity:1;} }
-.ai-stats-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
-.ai-stat-mini {
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
-  border-radius:12px; padding:14px;
+.pm-logo-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
 }
-.ai-stat-mini-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:rgba(255,255,255,.28); margin-bottom:6px; }
-.ai-stat-mini-val { font-family:'Sora',sans-serif; font-size:1.5rem; font-weight:800; }
-@media(max-width:980px){ .ai-layout{ grid-template-columns:1fr!important; } .ai-right{ position:static!important; } }
+.pm-logo-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.2rem; font-weight: 800;
+  color: #111827; letter-spacing: -.02em;
+}
+.pm-logo-name span {
+  background: linear-gradient(90deg, #7C3AED, #4F46E5);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Status chip */
+.pm-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  border-radius: 100px; padding: 4px 12px 4px 8px;
+  font-family: 'Sora', sans-serif;
+  font-size: .63rem; font-weight: 800; letter-spacing: .07em;
+  color: #92400E; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.pm-chip-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 6px rgba(245,158,11,0.6);
+  animation: pm-dot-pulse 2s ease-in-out infinite;
+}
+@keyframes pm-dot-pulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:.35; }
+}
+
+/* Title */
+.pm-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.15rem; font-weight: 800; line-height: 1.35;
+  color: #111827; margin-bottom: 6px;
+}
+.pm-subtitle {
+  font-size: .84rem; color: #6B7280;
+  line-height: 1.5; margin-bottom: 20px;
+}
+
+/* Divider */
+.pm-divider {
+  height: 1px; background: #F3F4F6;
+  margin: 0 -32px 18px;
+}
+
+/* Compact disclaimer rows */
+.pm-rows {
+  display: flex; flex-direction: column; gap: 9px;
+  margin-bottom: 16px; text-align: left;
+}
+.pm-row {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.pm-row-dot {
+  flex-shrink: 0; margin-top: 6px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #7C3AED;
+}
+.pm-row-text {
+  font-size: .83rem; color: #6B7280; line-height: 1.5;
+}
+.pm-row-text strong { color: #374151; font-weight: 600; }
+
+/* Warning strip */
+.pm-warn {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #FFFBEB;
+  border: 1px solid #FCD34D;
+  border-radius: 10px; padding: 10px 13px;
+  margin-bottom: 20px; text-align: left;
+}
+.pm-warn-icon { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+.pm-warn-text { font-size: .8rem; color: #78350F; line-height: 1.55; }
+.pm-warn-text strong { color: #92400E; font-weight: 700; }
+
+/* Action buttons */
+.pm-actions {
+  display: flex; gap: 10px;
+}
+.pm-btn-primary {
+  flex: 1;
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  color: #fff; border: none; border-radius: 11px;
+  padding: 13px 18px;
+  font-family: 'Sora', sans-serif; font-size: .84rem; font-weight: 700;
+  cursor: pointer; transition: all .22s;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.35);
+  letter-spacing: .01em;
+}
+.pm-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(124,58,237,0.5);
+}
+.pm-btn-ghost {
+  flex-shrink: 0;
+  background: #F9FAFB;
+  color: #6B7280; border: 1px solid #E5E7EB;
+  border-radius: 11px; padding: 13px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: .8rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+  text-decoration: none; display: flex; align-items: center; justify-content: center;
+}
+.pm-btn-ghost:hover {
+  background: #F3F4F6; color: #374151; border-color: #D1D5DB;
+}
+
+/* Credit */
+.pm-credit {
+  margin-top: 14px;
+  font-size: .64rem; color: #9CA3AF; letter-spacing: .03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.pm-credit-sep { width: 1px; height: 12px; background: #E5E7EB; }
+.pm-credit a { display: flex; align-items: center; text-decoration: none; opacity: .8; transition: opacity .2s; }
+.pm-credit a:hover { opacity: 1; }
+.pm-credit-logo { height: 18px; width: auto; display: block; filter: brightness(0) saturate(100%) invert(27%) sepia(8%) saturate(500%) hue-rotate(185deg) brightness(95%); }
+
+/* ─── GLOBAL MOBILE FIXES ─────────────────────────────── */
+
+/* Base overflow guard */
+html, body { overflow-x: hidden; }
+
+/* Hero visual column — prevent bleed on mobile */
+@media(max-width:960px) {
+  .hero-visual-col { overflow: hidden; }
+  .hero-info-card-1, .hero-info-card-2 { display: none; }
+}
+
+/* Dashboard visual section */
+@media(max-width:640px) {
+  .hero-dashboard-wrap { padding: 0 16px 48px; }
+  .hero-dashboard-img { border-radius: 16px; }
+  .hero-market-stats { gap: 16px; }
+  .hero-market-item { gap: 6px; }
+  .hero-market-num { font-size: 1.6rem; }
+}
+
+/* Trust marquee */
+@media(max-width:640px) {
+  .marquee-track { gap: 32px; }
+  .marquee-logo { font-size: .8rem; }
+}
+
+/* Bangladesh map section */
+@media(max-width:900px) {
+  .bd-map-inner { flex-direction: column !important; }
+  .bd-map-visual { display: flex; justify-content: center; }
+  .bd-svg-map { max-width: 85vw; height: auto; }
+}
+@media(max-width:560px) {
+  .bd-map-section { padding: 64px 5%; }
+  .bd-map-heading { font-size: 1.5rem !important; line-height: 1.3; }
+  .bd-division-list { grid-template-columns: 1fr 1fr !important; }
+  .bd-stat-row { flex-wrap: wrap; gap: 16px; }
+  .bd-stat-box { min-width: 120px; }
+}
+
+/* Features bento */
+@media(max-width:480px) {
+  .bento-grid { gap: 12px; }
+  .bento-card { padding: 22px 18px; }
+  .bento-mockup { font-size: .72rem; }
+}
+
+/* How it works */
+@media(max-width:480px) {
+  .hiw-card { padding: 24px 18px; }
+}
+
+/* AI section */
+@media(max-width:640px) {
+  .ai-section-v2 { padding: 64px 5%; }
+  .ai-features-grid { gap: 12px !important; }
+  .ai-feat-card { padding: 22px 18px !important; }
+  .ai-chat-panel { display: none; }
+}
+
+/* Pricing */
+@media(max-width:640px) {
+  .pricing-grid { gap: 16px !important; }
+  .price-card { padding: 28px 20px !important; }
+}
+
+/* Testimonials */
+@media(max-width:480px) {
+  .testi-card-v2 { padding: 24px 18px; }
+}
+
+/* CTA final */
+@media(max-width:560px) {
+  .cta-final { padding: 72px 5%; }
+  .cta-final h2 { font-size: clamp(1.75rem, 8vw, 2.4rem) !important; }
+  .cta-final-btns { flex-direction: column; align-items: stretch; }
+  .btn-hero-primary, .btn-hero-secondary { justify-content: center; width: 100%; }
+  .cta-trust-strip { gap: 12px; }
+  .cta-trust-item { font-size: .75rem; }
+}
+
+/* Section titles + subtitles */
+@media(max-width:560px) {
+  .section-title { font-size: clamp(1.5rem, 6vw, 2rem) !important; }
+  .section-sub { font-size: .88rem !important; }
+}
+
+/* Modal mobile */
+@media(max-width:480px) {
+  .pm-inner { padding: 26px 22px 22px; }
+  .pm-divider { margin: 0 -22px 16px; }
+  .pm-title { font-size: .95rem; }
+  .pm-actions { flex-direction: column; }
+  .pm-btn-ghost { justify-content: center; }
+}
+
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav" id="mainNav">
-  <a href="index.html" class="nav-logo">
-    <img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;">
-  </a>
-  <div class="nav-links">
-    <a href="index.html" class="active">Home</a>
-    <a href="features.html">Features</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="contact.html">Contact</a>
-    <a href="ai-features.html" style="color:#6366F1;font-weight:700;">✨ AI Features</a>
-  </div>
-  <div class="nav-cta">
-    <a href="contact.html" class="btn btn-outline btn-sm">📅 Book Demo</a>
-  </div>
-</nav>
+<!-- NAV injected by nav-footer.js -->
+<script src="nav-footer.js" data-page="home"></script>
 
-<!-- HERO -->
+<!-- ══ HERO ═══════════════════════════════════════════════ -->
 <section class="hero">
+  <!-- Aurora animated background -->
+  <div class="hero-aurora">
+    <div class="aurora-blob aurora-blob-1"></div>
+    <div class="aurora-blob aurora-blob-2"></div>
+    <div class="aurora-blob aurora-blob-3"></div>
+    <div class="aurora-blob aurora-blob-4"></div>
+  </div>
   <div class="hero-grid-bg"></div>
-  <div class="hero-glow-1"></div>
-  <div class="hero-glow-2"></div>
-  
-  <div class="hero-grid">
-    <div>
-      <div class="hero-tag anim-up">✨ AI-Powered · Built for Bangladesh</div>
-      <h1 class="anim-up-2">
-        Bangladesh's First <span class="highlight-gradient">AI-Powered Education</span><br>
-        Operating System
-      </h1>
-      <p class="hero-desc anim-up-3">
-        EduOS brings <strong style="color:var(--blue);">AI-powered automation</strong> to admissions, attendance, exams, fees, and parent communication — all in one platform built for Bangladesh schools.
-      </p>
-      <div class="hero-btns anim-up-4">
-        <a href="register.html" class="btn btn-primary btn-lg btn-shine">Start Free Trial →</a>
-        <a href="contact.html" class="btn btn-outline btn-lg">📅 Book a Demo</a>
+  <!-- Particle sparkles -->
+  <div class="hero-particles" id="heroParticles"></div>
+  <!-- Glowing top edge line -->
+  <div class="hero-top-line"></div>
+
+  <div class="hero-inner">
+
+    <!-- LEFT: Text content -->
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-dot"></div>
+        <span class="hero-eyebrow-text">AI-Powered · Built for Bangladesh</span>
       </div>
-      <div class="hero-stats anim-up-4">
-        <div class="hero-stat">
-          <div class="hero-stat-num">500+</div>
-          <div class="hero-stat-label">Schools Onboarding</div>
+
+      <h1>
+        <span class="line-1">Building the Digital</span>
+        <span class="line-2">Infrastructure</span>
+        <span class="line-3">for <span class="grad-text">Education</span></span>
+      </h1>
+
+      <p class="hero-tagline">
+        <span class="hero-ecosystem-text">One Platform. One Ecosystem. Millions of Learners.</span><br>
+        Manage admissions, attendance, exams, fees &amp; parent communication — powered by AI.
+      </p>
+
+      <!-- Feature pills -->
+      <div class="hero-pills">
+        <span class="hero-pill"><span class="hero-pill-dot" style="background:#A78BFA;"></span>School ERP</span>
+        <span class="hero-pill"><span class="hero-pill-dot" style="background:#34D399;"></span>AI Assistant</span>
+        <span class="hero-pill"><span class="hero-pill-dot" style="background:#60A5FA;"></span>Smart Payments</span>
+        <span class="hero-pill"><span class="hero-pill-dot" style="background:#F59E0B;"></span>Analytics</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="register.html" class="btn-hero-primary">
+          Start Free Trial
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="contact.html" class="btn-hero-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Book a Demo
+        </a>
+      </div>
+
+      <!-- Market Stats -->
+      <div class="hero-market-stats">
+        <div class="hero-market-stat">
+          <div class="hero-market-num" data-target="130">0</div>
+          <div class="hero-market-label">K+ Schools</div>
         </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat">
-          <div class="hero-stat-num">40M+</div>
-          <div class="hero-stat-label">Students in BD</div>
+        <div class="hero-market-stat">
+          <div class="hero-market-num" data-target="40">0</div>
+          <div class="hero-market-label">M+ Students</div>
         </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat">
-          <div class="hero-stat-num">99.9%</div>
-          <div class="hero-stat-label">Uptime SLA</div>
+        <div class="hero-market-stat">
+          <div class="hero-market-num" data-target="600">0</div>
+          <div class="hero-market-label">K+ Teachers</div>
         </div>
       </div>
     </div>
 
-    <!-- Dashboard Mock -->
-    <div class="hero-visual anim-up-3">
-      <!-- Floating cards -->
-      <div class="float-card float-card-1">
-        <div class="float-text">✅ Fee Collected</div>
-        <div class="float-num">৳ 12,400</div>
-        <div class="float-sub">Today — 38 payments</div>
+    <!-- RIGHT: Education graphic -->
+    <div class="hero-visual-col">
+      <div class="edu-graphic-wrap">
+        <!-- Concentric spinning rings -->
+        <div class="edu-ring-outer">
+          <!-- Orbit icons on outer ring (positioned via CSS nth-child) -->
+          <div class="orbit-icon" title="Admissions">🏫</div>
+          <div class="orbit-icon" title="AI Learning">🤖</div>
+          <div class="orbit-icon" title="Exams">📝</div>
+          <div class="orbit-icon" title="Fees">💰</div>
+          <div class="orbit-icon" title="Attendance">✅</div>
+          <div class="orbit-icon" title="Reports">📊</div>
+          <div class="orbit-icon" title="Parents">👨‍👩‍👧</div>
+          <div class="orbit-icon" title="Students">🎓</div>
+        </div>
+        <div class="edu-ring-mid"></div>
+        <div class="edu-ring-inner"></div>
+
+        <!-- Centre orb -->
+        <div class="edu-center-orb">
+          <div class="edu-center-icon">🏫</div>
+          <div class="edu-center-label">EduOS</div>
+        </div>
       </div>
-      <div class="float-card float-card-2" style="border-color:rgba(99,102,241,.25);">
-        <div class="float-text" style="color:#4F46E5;">🤖 AI Insight</div>
-        <div class="float-num" style="color:#6366F1;">3 Students</div>
-        <div class="float-sub">At-risk · Flagged by AI</div>
+
+      <!-- Floating info cards around the graphic -->
+      <div class="hero-info-card hero-info-card-1">
+        <div class="info-card-label">✅ Attendance Today</div>
+        <div class="info-card-row">
+          <div class="info-card-val" style="color:#34D399;">93.4%</div>
+        </div>
+        <div class="info-card-bar"><div class="info-card-bar-fill" style="width:93%;background:linear-gradient(90deg,#059669,#34D399);"></div></div>
+        <div class="info-card-sub">↑ +2.1% vs last week</div>
       </div>
 
-      <div class="dashboard-mock">
-        <div class="mock-topbar">
-          <div class="mock-dots">
-            <div class="mock-dot" style="background:#FF5F57;"></div>
-            <div class="mock-dot" style="background:#FFBD2E;"></div>
-            <div class="mock-dot" style="background:#28CA42;"></div>
-          </div>
-          <div class="mock-title">🏫 Dhaka High School — Admin Portal</div>
-          <div class="mock-badge-status">● Live</div>
+      <div class="hero-info-card hero-info-card-2">
+        <div class="info-card-label">🤖 AI Insight</div>
+        <div class="info-card-val" style="color:#A78BFA;">3 Students</div>
+        <div class="info-card-sub">At-risk · Flagged by AI today</div>
+      </div>
+
+      <div class="hero-info-card hero-info-card-3">
+        <div class="info-card-label">💰 Fees Collected</div>
+        <div class="info-card-val" style="color:#34D399;">৳ 2.4L</div>
+        <div class="info-card-bar"><div class="info-card-bar-fill" style="width:80%;background:linear-gradient(90deg,#7C3AED,#A78BFA);"></div></div>
+        <div class="info-card-sub">80% this month · via bKash/Nagad</div>
+      </div>
+    </div>
+
+  </div><!-- /.hero-inner -->
+</section>
+
+<!-- ══ TRUST MARQUEE ═══════════════════════════════════════ -->
+<div class="trust-strip">
+  <div class="trust-label">Trusted by forward-thinking schools across Bangladesh</div>
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-icon">🏫</span> Dhaka High School</div>
+    <div class="marquee-item"><span class="marquee-icon">📚</span> Chittagong College</div>
+    <div class="marquee-item"><span class="marquee-icon">🎓</span> Rajshahi Vidyalaya</div>
+    <div class="marquee-item"><span class="marquee-icon">🏛️</span> Sylhet Public School</div>
+    <div class="marquee-item"><span class="marquee-icon">📖</span> Khulna Model School</div>
+    <div class="marquee-item"><span class="marquee-icon">🏫</span> Comilla Academy</div>
+    <div class="marquee-item"><span class="marquee-icon">🎓</span> Barisal Institute</div>
+    <div class="marquee-item"><span class="marquee-icon">📚</span> Mymensingh College</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span class="marquee-icon">🏫</span> Dhaka High School</div>
+    <div class="marquee-item"><span class="marquee-icon">📚</span> Chittagong College</div>
+    <div class="marquee-item"><span class="marquee-icon">🎓</span> Rajshahi Vidyalaya</div>
+    <div class="marquee-item"><span class="marquee-icon">🏛️</span> Sylhet Public School</div>
+    <div class="marquee-item"><span class="marquee-icon">📖</span> Khulna Model School</div>
+    <div class="marquee-item"><span class="marquee-icon">🏫</span> Comilla Academy</div>
+    <div class="marquee-item"><span class="marquee-icon">🎓</span> Barisal Institute</div>
+    <div class="marquee-item"><span class="marquee-icon">📚</span> Mymensingh College</div>
+  </div>
+</div>
+
+<!-- ══ BANGLADESH NETWORK MAP ══════════════════════════════ -->
+<section class="bd-map-section">
+  <!-- background layers -->
+  <div class="bd-map-bg-mesh"></div>
+  <div class="bd-map-orb bd-map-orb-1"></div>
+  <div class="bd-map-orb bd-map-orb-2"></div>
+
+  <div class="bd-map-inner">
+
+    <!-- LEFT: text -->
+    <div class="bd-map-text">
+      <div class="section-chip purple" style="margin-bottom:20px;">🗺️ Nationwide Coverage</div>
+      <h2 class="bd-map-heading">
+        সারা বাংলাদেশকে<br>
+        <span class="bd-grad-text">একটি নেটওয়ার্কে</span><br>
+        সংযুক্ত করছে EduOS
+      </h2>
+      <p class="bd-map-sub">
+        From Teknaf to Tetulia — every school, every teacher, every student connected on a single AI-powered platform. EduOS is building Bangladesh's digital education backbone.
+      </p>
+
+      <div class="bd-division-list">
+        <div class="bd-div-item" data-div="dhaka">
+          <span class="bd-div-dot" style="background:#A78BFA;box-shadow:0 0 8px #A78BFA;"></span>
+          <span class="bd-div-name">Dhaka</span>
+          <span class="bd-div-count">142 schools</span>
         </div>
-        
-        <!-- Tabbed switcher navigation -->
-        <div class="mock-tab-nav">
-          <button class="mock-tab-btn active" data-tab="overview">📊 Overview</button>
-          <button class="mock-tab-btn" data-tab="ai">🤖 AI Modules</button>
-          <button class="mock-tab-btn" data-tab="finance">৳ Finance &amp; Fees</button>
+        <div class="bd-div-item" data-div="chittagong">
+          <span class="bd-div-dot" style="background:#34D399;box-shadow:0 0 8px #34D399;"></span>
+          <span class="bd-div-name">Chattogram</span>
+          <span class="bd-div-count">98 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="rajshahi">
+          <span class="bd-div-dot" style="background:#60A5FA;box-shadow:0 0 8px #60A5FA;"></span>
+          <span class="bd-div-name">Rajshahi</span>
+          <span class="bd-div-count">76 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="khulna">
+          <span class="bd-div-dot" style="background:#F59E0B;box-shadow:0 0 8px #F59E0B;"></span>
+          <span class="bd-div-name">Khulna</span>
+          <span class="bd-div-count">64 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="sylhet">
+          <span class="bd-div-dot" style="background:#F43F5E;box-shadow:0 0 8px #F43F5E;"></span>
+          <span class="bd-div-name">Sylhet</span>
+          <span class="bd-div-count">52 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="barisal">
+          <span class="bd-div-dot" style="background:#06B6D4;box-shadow:0 0 8px #06B6D4;"></span>
+          <span class="bd-div-name">Barishal</span>
+          <span class="bd-div-count">43 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="rangpur">
+          <span class="bd-div-dot" style="background:#C084FC;box-shadow:0 0 8px #C084FC;"></span>
+          <span class="bd-div-name">Rangpur</span>
+          <span class="bd-div-count">38 schools</span>
+        </div>
+        <div class="bd-div-item" data-div="mymensingh">
+          <span class="bd-div-dot" style="background:#FB923C;box-shadow:0 0 8px #FB923C;"></span>
+          <span class="bd-div-name">Mymensingh</span>
+          <span class="bd-div-count">29 schools</span>
+        </div>
+      </div>
+
+      <div class="bd-total-bar">
+        <div class="bd-total-num" id="bdSchoolCount">0</div>
+        <div class="bd-total-label">schools &amp; institutions connected across Bangladesh</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SVG Map — Real Bangladesh Geography -->
+    <div class="bd-map-visual">
+      <div class="bd-map-glow-ring"></div>
+      <svg class="bd-svg-map" viewBox="10 10 380 480" fill="none" xmlns="http://www.w3.org/2000/svg" id="bdMapSvg">
+        <defs>
+          <radialGradient id="mapGrad" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stop-color="rgba(124,58,237,0.22)"/>
+            <stop offset="60%" stop-color="rgba(79,70,229,0.10)"/>
+            <stop offset="100%" stop-color="rgba(6,182,212,0.04)"/>
+          </radialGradient>
+          <radialGradient id="mapGrad2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(124,58,237,0.08)"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+          <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="node-glow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="map-glow" x="-5%" y="-5%" width="110%" height="110%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- ── REAL BANGLADESH OUTLINE (GeoJSON projected) ── -->
+        <!-- Source: GeoJSON BGD country boundary, projected at 79px/degree -->
+        <!-- lon0=88.084, latMax=26.447, scale=79, pad=20 -->
+
+        <!-- Outer glow layer -->
+        <path d="M 382 368 L 382 425 L 353 413 L 358 476 L 335 435 L 331 395 L 316 357 L 283 311 L 210 308 L 217 340 L 192 384 L 159 368 L 147 383 L 125 374 L 94 367 L 82 302 L 54 243 L 68 195 L 20 174 L 38 145 L 87 116 L 31 74 L 59 20 L 121 54 L 159 58 L 166 113 L 241 124 L 314 123 L 360 136 L 324 203 L 288 208 L 264 253 L 307 294 L 320 243 L 342 243 Z"
+          fill="url(#mapGrad2)" stroke="rgba(167,139,250,0.15)" stroke-width="12" filter="url(#map-glow)" opacity="0.7"/>
+
+        <!-- Main outline fill -->
+        <path class="bd-outline" d="M 382 368 L 382 425 L 353 413 L 358 476 L 335 435 L 331 395 L 316 357 L 283 311 L 210 308 L 217 340 L 192 384 L 159 368 L 147 383 L 125 374 L 94 367 L 82 302 L 54 243 L 68 195 L 20 174 L 38 145 L 87 116 L 31 74 L 59 20 L 121 54 L 159 58 L 166 113 L 241 124 L 314 123 L 360 136 L 324 203 L 288 208 L 264 253 L 307 294 L 320 243 L 342 243 Z"
+          fill="url(#mapGrad)" stroke="rgba(124,58,237,0.55)" stroke-width="1.8" stroke-linejoin="round"/>
+
+        <!-- Subtle inner highlight -->
+        <path d="M 380 370 L 380 423 L 354 414 L 358 473 L 337 436 L 332 397 L 317 359 L 284 313 L 212 310 L 219 341 L 193 382 L 161 369 L 149 382 L 127 375 L 97 368 L 84 304 L 57 245 L 70 197 L 24 176 L 41 147 L 89 118 L 34 76 L 61 23 L 122 56 L 160 60 L 167 114 L 241 126 L 313 125 L 358 138 L 322 204 L 289 209 L 265 254 L 307 293 L 321 244 L 342 244 Z"
+          fill="none" stroke="rgba(167,139,250,0.12)" stroke-width="1"/>
+
+        <!-- ── DIVISION BOUNDARY LINES (internal) ── -->
+        <g opacity="0.18" stroke-dasharray="5 4" stroke-width="0.9">
+          <!-- Rangpur | Rajshahi boundary (horizontal ~lat 25.0 → y≈123) -->
+          <line x1="59" y1="123" x2="241" y2="123" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Rajshahi | Dhaka boundary (vertical ~lon 89.5 → x≈119) -->
+          <line x1="119" y1="123" x2="119" y2="253" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Dhaka | Mymensingh (horizontal ~lat 24.1 → y≈203) -->
+          <line x1="119" y1="203" x2="288" y2="203" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Mymensingh | Sylhet (vertical ~lon 91.3 → x≈258) -->
+          <line x1="258" y1="123" x2="258" y2="253" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Dhaka | Chittagong (vertical ~lon 91.1 → x≈242) -->
+          <line x1="242" y1="203" x2="283" y2="311" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Dhaka | Khulna / Barisal boundary (~lat 23.2 → y≈258) -->
+          <line x1="82" y1="258" x2="242" y2="258" stroke="rgba(167,139,250,0.6)"/>
+          <!-- Khulna | Barisal (vertical ~lon 90.1 → x≈161) -->
+          <line x1="161" y1="258" x2="159" y2="384" stroke="rgba(167,139,250,0.6)"/>
+        </g>
+
+        <!-- ── NETWORK CONNECTION LINES ── -->
+        <g id="bdNetLines">
+          <!-- Dhaka ↔ Chattogram -->
+          <line class="net-line" x1="201" y1="228" x2="283" y2="280" stroke="rgba(52,211,153,0.65)" stroke-width="1.2" stroke-dasharray="220" stroke-dashoffset="220"/>
+          <!-- Dhaka ↔ Rajshahi -->
+          <line class="net-line" x1="201" y1="228" x2="96" y2="193" stroke="rgba(96,165,250,0.65)" stroke-width="1.2" stroke-dasharray="200" stroke-dashoffset="200"/>
+          <!-- Dhaka ↔ Mymensingh -->
+          <line class="net-line" x1="201" y1="228" x2="207" y2="168" stroke="rgba(251,146,60,0.65)" stroke-width="1.2" stroke-dasharray="130" stroke-dashoffset="130"/>
+          <!-- Dhaka ↔ Khulna -->
+          <line class="net-line" x1="201" y1="228" x2="107" y2="315" stroke="rgba(245,158,11,0.65)" stroke-width="1.2" stroke-dasharray="215" stroke-dashoffset="215"/>
+          <!-- Dhaka ↔ Barishal -->
+          <line class="net-line" x1="201" y1="228" x2="172" y2="338" stroke="rgba(6,182,212,0.65)" stroke-width="1.2" stroke-dasharray="185" stroke-dashoffset="185"/>
+          <!-- Dhaka ↔ Sylhet -->
+          <line class="net-line" x1="201" y1="228" x2="296" y2="168" stroke="rgba(244,63,94,0.65)" stroke-width="1.2" stroke-dasharray="170" stroke-dashoffset="170"/>
+          <!-- Rajshahi ↔ Rangpur -->
+          <line class="net-line" x1="96" y1="193" x2="88" y2="100" stroke="rgba(192,132,252,0.65)" stroke-width="1.2" stroke-dasharray="150" stroke-dashoffset="150"/>
+          <!-- Chattogram ↔ Sylhet -->
+          <line class="net-line" x1="283" y1="280" x2="296" y2="168" stroke="rgba(167,139,250,0.5)" stroke-width="1" stroke-dasharray="160" stroke-dashoffset="160"/>
+          <!-- Khulna ↔ Barishal -->
+          <line class="net-line" x1="107" y1="315" x2="172" y2="338" stroke="rgba(52,211,153,0.5)" stroke-width="1" stroke-dasharray="120" stroke-dashoffset="120"/>
+          <!-- Mymensingh ↔ Sylhet -->
+          <line class="net-line" x1="207" y1="168" x2="296" y2="168" stroke="rgba(244,63,94,0.4)" stroke-width="1" stroke-dasharray="130" stroke-dashoffset="130"/>
+          <!-- Rajshahi ↔ Khulna -->
+          <line class="net-line" x1="96" y1="193" x2="107" y2="315" stroke="rgba(245,158,11,0.4)" stroke-width="1" stroke-dasharray="175" stroke-dashoffset="175"/>
+        </g>
+
+        <!-- ── MOTION PATHS FOR DATA PACKETS ── -->
+        <defs>
+          <path id="p-dhaka-ctg" d="M 201 228 C 240 248 265 268 283 280"/>
+          <path id="p-dhaka-raj" d="M 201 228 C 160 215 128 204 96 193"/>
+          <path id="p-dhaka-khu" d="M 201 228 C 160 265 134 292 107 315"/>
+          <path id="p-dhaka-syl" d="M 201 228 C 240 205 268 185 296 168"/>
+          <path id="p-raj-rng"   d="M 96 193 C 94 162 91 131 88 100"/>
+          <path id="p-dhaka-bar" d="M 201 228 C 190 280 180 310 172 338"/>
+          <path id="p-mym-syl"   d="M 207 168 C 235 168 268 168 296 168"/>
+        </defs>
+
+        <!-- ── TRAVELLING DATA PACKETS ── -->
+        <g>
+          <circle r="3.5" fill="#A78BFA" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="2s" repeatCount="indefinite" begin="0s"><mpath href="#p-dhaka-ctg"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+          </circle>
+          <circle r="3" fill="#60A5FA" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="2.5s" repeatCount="indefinite" begin="0.7s"><mpath href="#p-dhaka-raj"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="0.7s"/>
+          </circle>
+          <circle r="3" fill="#34D399" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="2.8s" repeatCount="indefinite" begin="1.4s"><mpath href="#p-dhaka-khu"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.8s" repeatCount="indefinite" begin="1.4s"/>
+          </circle>
+          <circle r="3" fill="#F43F5E" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.4s"><mpath href="#p-dhaka-syl"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" repeatCount="indefinite" begin="0.4s"/>
+          </circle>
+          <circle r="2.5" fill="#C084FC" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="1.8s" repeatCount="indefinite" begin="1s"><mpath href="#p-raj-rng"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+          </circle>
+          <circle r="2.5" fill="#06B6D4" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="2.4s" repeatCount="indefinite" begin="1.8s"><mpath href="#p-dhaka-bar"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.4s" repeatCount="indefinite" begin="1.8s"/>
+          </circle>
+          <circle r="2" fill="#FB923C" filter="url(#glow-filter)" opacity="0">
+            <animateMotion dur="1.6s" repeatCount="indefinite" begin="2.2s"><mpath href="#p-mym-syl"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" dur="1.6s" repeatCount="indefinite" begin="2.2s"/>
+          </circle>
+        </g>
+
+        <!-- ── DIVISION NODES (real geographic centres) ── -->
+        <!--
+          Real division HQ coords → projected (lon-88.084)*79+20, (26.447-lat)*79+20
+          Dhaka:       90.4074, 23.7104  → x=201, y=228
+          Chattogram:  91.8123, 22.3569  → x=283, y=280 (city approx)
+          Rajshahi:    88.6041, 24.3745  → x=96,  y=193 (slight adjust)
+          Khulna:      89.5679, 22.8156  → x=107, y=315 (approx)
+          Sylhet:      91.8833, 24.8949  → x=296, y=168 (approx)
+          Barishal:    90.3563, 22.7010  → x=172, y=338 (approx)
+          Rangpur:     89.2482, 25.7439  → x=88,  y=100 (approx)
+          Mymensingh:  90.4074, 24.7471  → x=207, y=168 (approx)
+        -->
+
+        <!-- Dhaka — Hub (largest) -->
+        <g class="bd-node" id="node-dhaka">
+          <circle cx="201" cy="228" r="22" fill="rgba(124,58,237,0.1)" class="node-pulse-ring"/>
+          <circle cx="201" cy="228" r="15" fill="rgba(124,58,237,0.18)" class="node-pulse-ring-2"/>
+          <circle cx="201" cy="228" r="9" fill="#7C3AED" filter="url(#node-glow)"/>
+          <circle cx="201" cy="228" r="5" fill="#C4B5FD"/>
+          <text x="201" y="248" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="9.5" font-family="Sora,sans-serif" font-weight="800" letter-spacing="0.3">Dhaka</text>
+        </g>
+
+        <!-- Chattogram -->
+        <g class="bd-node" id="node-ctg">
+          <circle cx="283" cy="280" r="17" fill="rgba(52,211,153,0.1)" class="node-pulse-ring"/>
+          <circle cx="283" cy="280" r="11" fill="rgba(52,211,153,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="283" cy="280" r="6.5" fill="#34D399" filter="url(#node-glow)"/>
+          <circle cx="283" cy="280" r="3.5" fill="#D1FAE5"/>
+          <text x="298" y="278" text-anchor="start" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Chattogram</text>
+        </g>
+
+        <!-- Rajshahi -->
+        <g class="bd-node" id="node-raj">
+          <circle cx="96" cy="193" r="15" fill="rgba(96,165,250,0.1)" class="node-pulse-ring"/>
+          <circle cx="96" cy="193" r="9" fill="rgba(96,165,250,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="96" cy="193" r="6" fill="#60A5FA" filter="url(#node-glow)"/>
+          <circle cx="96" cy="193" r="3" fill="#BFDBFE"/>
+          <text x="80" y="191" text-anchor="end" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Rajshahi</text>
+        </g>
+
+        <!-- Khulna -->
+        <g class="bd-node" id="node-khu">
+          <circle cx="107" cy="315" r="15" fill="rgba(245,158,11,0.1)" class="node-pulse-ring"/>
+          <circle cx="107" cy="315" r="9" fill="rgba(245,158,11,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="107" cy="315" r="6" fill="#F59E0B" filter="url(#node-glow)"/>
+          <circle cx="107" cy="315" r="3" fill="#FEF3C7"/>
+          <text x="90" y="313" text-anchor="end" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Khulna</text>
+        </g>
+
+        <!-- Sylhet -->
+        <g class="bd-node" id="node-syl">
+          <circle cx="296" cy="168" r="15" fill="rgba(244,63,94,0.1)" class="node-pulse-ring"/>
+          <circle cx="296" cy="168" r="9" fill="rgba(244,63,94,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="296" cy="168" r="6" fill="#F43F5E" filter="url(#node-glow)"/>
+          <circle cx="296" cy="168" r="3" fill="#FECDD3"/>
+          <text x="310" y="166" text-anchor="start" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Sylhet</text>
+        </g>
+
+        <!-- Barishal -->
+        <g class="bd-node" id="node-bar">
+          <circle cx="172" cy="338" r="14" fill="rgba(6,182,212,0.1)" class="node-pulse-ring"/>
+          <circle cx="172" cy="338" r="9" fill="rgba(6,182,212,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="172" cy="338" r="5.5" fill="#06B6D4" filter="url(#node-glow)"/>
+          <circle cx="172" cy="338" r="3" fill="#A5F3FC"/>
+          <text x="186" y="336" text-anchor="start" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Barishal</text>
+        </g>
+
+        <!-- Rangpur -->
+        <g class="bd-node" id="node-rng">
+          <circle cx="88" cy="100" r="14" fill="rgba(192,132,252,0.1)" class="node-pulse-ring"/>
+          <circle cx="88" cy="100" r="9" fill="rgba(192,132,252,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="88" cy="100" r="5.5" fill="#C084FC" filter="url(#node-glow)"/>
+          <circle cx="88" cy="100" r="3" fill="#E9D5FF"/>
+          <text x="72" y="98" text-anchor="end" fill="rgba(255,255,255,0.8)" font-size="8.5" font-family="Sora,sans-serif" font-weight="700">Rangpur</text>
+        </g>
+
+        <!-- Mymensingh -->
+        <g class="bd-node" id="node-mym">
+          <circle cx="207" cy="168" r="13" fill="rgba(251,146,60,0.1)" class="node-pulse-ring"/>
+          <circle cx="207" cy="168" r="8" fill="rgba(251,146,60,0.2)" class="node-pulse-ring-2"/>
+          <circle cx="207" cy="168" r="5.5" fill="#FB923C" filter="url(#node-glow)"/>
+          <circle cx="207" cy="168" r="3" fill="#FED7AA"/>
+          <text x="215" y="157" text-anchor="start" fill="rgba(255,255,255,0.75)" font-size="8" font-family="Sora,sans-serif" font-weight="700">Mymensingh</text>
+        </g>
+
+        <!-- ── SCATTERED SCHOOL DOTS inside map ── -->
+        <g opacity="0.55">
+          <circle cx="185" cy="210" r="2.2" fill="rgba(167,139,250,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.1s" repeatCount="indefinite"/></circle>
+          <circle cx="220" cy="245" r="1.8" fill="rgba(52,211,153,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.8s" repeatCount="indefinite" begin="0.4s"/></circle>
+          <circle cx="155" cy="238" r="1.8" fill="rgba(96,165,250,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.4s" repeatCount="indefinite" begin="0.8s"/></circle>
+          <circle cx="230" cy="210" r="2" fill="rgba(245,158,11,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.6s" repeatCount="indefinite" begin="1.2s"/></circle>
+          <circle cx="145" cy="270" r="1.8" fill="rgba(192,132,252,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.2s" repeatCount="indefinite" begin="0.2s"/></circle>
+          <circle cx="250" cy="300" r="1.8" fill="rgba(251,146,60,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.9s" repeatCount="indefinite" begin="1.5s"/></circle>
+          <circle cx="130" cy="175" r="1.8" fill="rgba(167,139,250,0.8)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.5s" repeatCount="indefinite" begin="0.6s"/></circle>
+          <circle cx="175" cy="305" r="1.8" fill="rgba(6,182,212,0.9)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2s" repeatCount="indefinite" begin="1.8s"/></circle>
+          <circle cx="190" cy="155" r="1.5" fill="rgba(244,63,94,0.8)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.7s" repeatCount="indefinite" begin="0.9s"/></circle>
+          <circle cx="260" cy="235" r="1.5" fill="rgba(52,211,153,0.8)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.3s" repeatCount="indefinite" begin="1.3s"/></circle>
+          <circle cx="120" cy="225" r="1.5" fill="rgba(96,165,250,0.8)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.6s" repeatCount="indefinite" begin="0.5s"/></circle>
+          <circle cx="110" cy="148" r="1.5" fill="rgba(245,158,11,0.8)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.5s" repeatCount="indefinite" begin="2.1s"/></circle>
+          <circle cx="168" cy="362" r="1.5" fill="rgba(6,182,212,0.7)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2.7s" repeatCount="indefinite" begin="0.3s"/></circle>
+          <circle cx="270" cy="185" r="1.5" fill="rgba(244,63,94,0.7)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="2s" repeatCount="indefinite" begin="1.1s"/></circle>
+          <circle cx="145" cy="130" r="1.5" fill="rgba(192,132,252,0.7)"><animate attributeName="opacity" values="0.25;0.9;0.25" dur="1.9s" repeatCount="indefinite" begin="1.6s"/></circle>
+        </g>
+      </svg>
+
+      <!-- Live ticker below map -->
+      <div class="bd-map-ticker" id="bdTicker">
+        <div class="bd-ticker-dot"></div>
+        <div class="bd-ticker-text" id="bdTickerText">🏫 Dhaka High School just joined EduOS</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* ── BD MAP SECTION ──────────────────────────────────────── */
+.bd-map-section {
+  background: #030714;
+  padding: 100px 5%;
+  position: relative; overflow: hidden;
+}
+.bd-map-bg-mesh {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 0%, transparent 100%);
+}
+.bd-map-orb {
+  position: absolute; border-radius: 50%; pointer-events: none; filter: blur(100px);
+}
+.bd-map-orb-1 {
+  width: 600px; height: 600px; top: -150px; left: -100px;
+  background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 65%);
+  animation: orb-drift-1 14s ease-in-out infinite alternate;
+}
+.bd-map-orb-2 {
+  width: 500px; height: 500px; bottom: -100px; right: -80px;
+  background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 65%);
+  animation: orb-drift-2 18s ease-in-out infinite alternate;
+}
+
+.bd-map-inner {
+  max-width: 1140px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  position: relative; z-index: 2;
+}
+
+/* LEFT text */
+.bd-map-heading {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+  font-weight: 800; line-height: 1.2;
+  color: #fff; margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+.bd-grad-text {
+  background: linear-gradient(110deg, #A78BFA 0%, #60A5FA 50%, #34D399 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: gradient-flow 4s linear infinite;
+}
+.bd-map-sub {
+  font-size: .95rem; color: rgba(255,255,255,0.45); line-height: 1.8;
+  margin-bottom: 32px; max-width: 440px;
+}
+
+/* Division list */
+.bd-division-list {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 32px;
+}
+.bd-div-item {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px; padding: 9px 12px;
+  transition: all .2s; cursor: default;
+}
+.bd-div-item:hover {
+  background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25);
+}
+.bd-div-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.bd-div-name {
+  font-family: 'Sora', sans-serif; font-size: .78rem; font-weight: 700;
+  color: rgba(255,255,255,0.75); flex: 1;
+}
+.bd-div-count {
+  font-size: .68rem; color: rgba(255,255,255,0.3); font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Counter */
+.bd-total-bar {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 16px 20px;
+  background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 14px;
+}
+.bd-total-num {
+  font-family: 'Sora', sans-serif; font-size: 2.2rem; font-weight: 800;
+  background: linear-gradient(135deg, #A78BFA, #60A5FA);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.bd-total-label { font-size: .82rem; color: rgba(255,255,255,0.4); line-height: 1.5; }
+
+/* RIGHT: map visual */
+.bd-map-visual {
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; gap: 20px;
+}
+.bd-map-glow-ring {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 340px; height: 340px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+  filter: blur(40px); pointer-events: none;
+  animation: center-pulse 5s ease-in-out infinite alternate;
+}
+
+.bd-svg-map {
+  width: 100%; max-width: 340px;
+  filter: drop-shadow(0 20px 60px rgba(124,58,237,0.25));
+}
+
+/* SVG node animations */
+.bd-outline {
+  animation: map-appear 1.2s ease forwards;
+}
+@keyframes map-appear {
+  from { opacity: 0; stroke-dashoffset: 2000; }
+  to   { opacity: 1; stroke-dashoffset: 0; }
+}
+
+.node-pulse-ring {
+  animation: node-ring-pulse 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+.node-pulse-ring-2 {
+  animation: node-ring-pulse 2.5s ease-in-out infinite 0.5s;
+  transform-origin: center;
+}
+@keyframes node-ring-pulse {
+  0%,100% { opacity: 0.3; r: 0; }
+  50% { opacity: 0; }
+}
+
+/* Network line draw-on animation */
+.net-line {
+  animation: line-draw 1.5s ease forwards;
+}
+.net-line:nth-child(1)  { animation-delay: 0.3s; }
+.net-line:nth-child(2)  { animation-delay: 0.6s; }
+.net-line:nth-child(3)  { animation-delay: 0.9s; }
+.net-line:nth-child(4)  { animation-delay: 1.1s; }
+.net-line:nth-child(5)  { animation-delay: 1.3s; }
+.net-line:nth-child(6)  { animation-delay: 1.5s; }
+.net-line:nth-child(7)  { animation-delay: 1.7s; }
+.net-line:nth-child(8)  { animation-delay: 1.9s; }
+.net-line:nth-child(9)  { animation-delay: 2.1s; }
+@keyframes line-draw { to { stroke-dashoffset: 0; } }
+
+/* Live ticker */
+.bd-map-ticker {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 100px; padding: 8px 16px;
+  max-width: 340px; width: 100%;
+}
+.bd-ticker-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #34D399;
+  box-shadow: 0 0 8px rgba(52,211,153,0.7); flex-shrink: 0;
+  animation: nf-pulse 1.5s infinite;
+}
+.bd-ticker-text {
+  font-size: .75rem; color: rgba(255,255,255,0.55); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: opacity .4s;
+}
+
+@media(max-width:900px) {
+  .bd-map-inner { grid-template-columns: 1fr; gap: 40px; }
+  .bd-map-heading { font-size: 1.8rem; }
+  .bd-svg-map { max-width: 260px; }
+}
+@media(max-width:560px) {
+  .bd-division-list { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ══ FEATURES BENTO ══════════════════════════════════════ -->
+<section class="features-section">
+  <div class="features-header">
+    <div class="section-chip">✦ Core Features</div>
+    <h2 class="section-title">Everything a school needs,<br>powered by AI</h2>
+    <p class="section-sub" style="margin:0 auto;">From first-day admission to annual results — every operation digitized, automated, and AI-enhanced in one platform.</p>
+  </div>
+
+  <div class="bento-grid">
+
+    <!-- Big card: Attendance AI -->
+    <div class="bento-card span2 dark-card">
+      <div class="bento-decoration"></div>
+      <div class="bento-icon dark-bg">📊</div>
+      <div class="bento-title">Smart Attendance AI</div>
+      <div class="bento-desc" style="max-width:420px;">Mark daily attendance via web or mobile. AI detects chronic absence patterns and sends instant SMS alerts to parents before a problem escalates.</div>
+      <span class="bento-tag dark-white">Auto SMS alerts</span>
+      <div class="bento-mockup" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.06);margin-top:20px;">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+          <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:8px;text-align:center;font-size:.6rem;color:#34D399;font-weight:700;font-family:'Sora',sans-serif;">Mon<br><span style="font-size:.8rem;">✓ 94%</span></div>
+          <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:8px;text-align:center;font-size:.6rem;color:#34D399;font-weight:700;font-family:'Sora',sans-serif;">Tue<br><span style="font-size:.8rem;">✓ 91%</span></div>
+          <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;text-align:center;font-size:.6rem;color:#F59E0B;font-weight:700;font-family:'Sora',sans-serif;">Wed<br><span style="font-size:.8rem;">⚠ 83%</span></div>
+          <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:8px;text-align:center;font-size:.6rem;color:#34D399;font-weight:700;font-family:'Sora',sans-serif;">Thu<br><span style="font-size:.8rem;">✓ 96%</span></div>
+          <div style="background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);border-radius:6px;padding:8px;text-align:center;font-size:.6rem;color:#F43F5E;font-weight:700;font-family:'Sora',sans-serif;">Fri<br><span style="font-size:.8rem;">✗ 71%</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:.62rem;color:rgba(255,255,255,0.25);font-family:'Sora',sans-serif;padding:4px 0;">🤖 AI: Friday absence spike detected · 3 parents notified automatically</div>
+      </div>
+    </div>
+
+    <!-- Fee Collection -->
+    <div class="bento-card">
+      <div class="bento-icon" style="background:rgba(16,185,129,0.1);">💰</div>
+      <div class="bento-title">bKash & Nagad Fee Collection</div>
+      <div class="bento-desc">Digital payments, auto-receipts, overdue reminders. Zero cash handling, zero discrepancies.</div>
+      <span class="bento-tag green">Reduce overdue 40%</span>
+      <div class="bento-mockup" style="margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:.65rem;color:var(--muted);margin-bottom:6px;"><span>Collected this month</span><span style="font-weight:700;color:var(--green);">৳2.4L · 80%</span></div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:80%;background:linear-gradient(90deg,#059669,#34D399);border-radius:3px;"></div></div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <span style="background:#fce4f3;color:#E5127D;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;font-family:'Sora',sans-serif;">bKash</span>
+          <span style="background:#fff3eb;color:#F26F21;font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;font-family:'Sora',sans-serif;">Nagad</span>
+          <span style="background:var(--blue-light);color:var(--blue);font-size:.55rem;font-weight:800;padding:2px 6px;border-radius:4px;">Card</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Results -->
+    <div class="bento-card purple-card">
+      <div class="bento-decoration"></div>
+      <div class="bento-icon white-bg">🤖</div>
+      <div class="bento-title">AI-Powered Results</div>
+      <div class="bento-desc">Auto GPA calculation, AI-written progress narratives, and printable marksheets generated in seconds.</div>
+      <span class="bento-tag white">Saves 3 days per term</span>
+    </div>
+
+    <!-- Student Admission -->
+    <div class="bento-card">
+      <div class="bento-icon">🧑‍🎓</div>
+      <div class="bento-title">Student Admission</div>
+      <div class="bento-desc">Digital forms, bulk Excel import, auto-generated ID numbers, printable ID cards with QR codes.</div>
+      <span class="bento-tag">5-min onboarding</span>
+    </div>
+
+    <!-- Digital ID -->
+    <div class="bento-card">
+      <div class="bento-icon" style="background:rgba(6,182,212,0.1);">🪪</div>
+      <div class="bento-title">Digital ID Cards</div>
+      <div class="bento-desc">Auto-generated ID cards with QR code, school branding, bulk PDF export for entire school in one click.</div>
+      <span class="bento-tag" style="background:rgba(6,182,212,0.1);color:#0891B2;border-color:rgba(6,182,212,0.2);">QR-enabled</span>
+    </div>
+
+    <!-- Parent Communication -->
+    <div class="bento-card">
+      <div class="bento-icon" style="background:rgba(245,158,11,0.1);">📢</div>
+      <div class="bento-title">Parent Communication</div>
+      <div class="bento-desc">Push notifications, SMS alerts, digital notice board — parents always in the loop in Bangla & English.</div>
+      <span class="bento-tag" style="background:rgba(245,158,11,0.1);color:#D97706;border-color:rgba(245,158,11,0.2);">Bangla + English</span>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:48px;">
+    <a href="features.html" class="btn btn-outline btn-lg">See All Features + AI Modules →</a>
+  </div>
+</section>
+
+<!-- ══ AI SECTION ══════════════════════════════════════════ -->
+<section class="ai-section-v2" id="ai-section">
+  <div class="container" style="position:relative;">
+    <div class="ai-grid-layout">
+
+      <!-- Left -->
+      <div>
+        <div class="section-chip purple">🤖 Artificial Intelligence</div>
+        <h2 class="section-title" style="color:#fff;margin-bottom:14px;">Your school gets smarter<br>every single day</h2>
+        <p class="section-sub" style="color:rgba(255,255,255,0.45);margin-bottom:0;max-width:460px;">EduOS embeds AI into every workflow — so teachers focus on teaching, while the platform handles analysis, prediction, and communication automatically.</p>
+
+        <div class="ai-features-grid">
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">🪄</div>
+            <div class="ai-feat-title">AI Question Generator</div>
+            <div class="ai-feat-desc">Auto-creates MCQ, short & essay questions from your syllabus. Exam-ready in seconds.</div>
+            <span class="ai-feat-tag" style="background:rgba(124,58,237,0.18);color:#A78BFA;border:1px solid rgba(124,58,237,0.3);">Saves 4 hrs/week</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">📊</div>
+            <div class="ai-feat-title">Fail-Risk Predictor</div>
+            <div class="ai-feat-desc">Identifies students likely to fail 30 days before exams using attendance + grade patterns.</div>
+            <span class="ai-feat-tag" style="background:rgba(16,185,129,0.12);color:#34D399;border:1px solid rgba(16,185,129,0.2);">Early intervention</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">💬</div>
+            <div class="ai-feat-title">AI Parent Assistant</div>
+            <div class="ai-feat-desc">24/7 chatbot answers parent queries in Bangla & English — results, fees, attendance instantly.</div>
+            <span class="ai-feat-tag" style="background:rgba(6,182,212,0.12);color:#06B6D4;border:1px solid rgba(6,182,212,0.2);">24/7 · Bilingual</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">📝</div>
+            <div class="ai-feat-title">Auto Report Narratives</div>
+            <div class="ai-feat-desc">AI writes personalized progress comments for every student's report card. Zero manual writing.</div>
+            <span class="ai-feat-tag" style="background:rgba(245,158,11,0.12);color:#F59E0B;border:1px solid rgba(245,158,11,0.2);">New in v2.0</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">💰</div>
+            <div class="ai-feat-title">Fee Default Predictor</div>
+            <div class="ai-feat-desc">Flags students likely to miss fee deadlines based on historical payment patterns.</div>
+            <span class="ai-feat-tag" style="background:rgba(244,63,94,0.12);color:#F43F5E;border:1px solid rgba(244,63,94,0.2);">Reduce overdue 40%</span>
+          </div>
+          <div class="ai-feat-card">
+            <div class="ai-feat-icon">📅</div>
+            <div class="ai-feat-title">Attendance Pattern AI</div>
+            <div class="ai-feat-desc">Detects chronic absenteeism trends and auto-alerts parents and admin before it escalates.</div>
+            <span class="ai-feat-tag" style="background:rgba(139,92,246,0.15);color:#C4B5FD;border:1px solid rgba(139,92,246,0.25);">Auto-alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: AI Chat Demo -->
+      <div class="ai-chat-panel">
+        <div class="ai-chat-label">✦ Live Demo — EduOS AI Assistant</div>
+        <div class="ai-chat-shell">
+          <div class="ai-chat-header">
+            <div class="ai-chat-avatar">🤖</div>
+            <div>
+              <div class="ai-chat-name">EduOS AI</div>
+              <div class="ai-chat-status">Online · Bangla &amp; English</div>
+            </div>
+          </div>
+          <div class="ai-chat-body">
+            <div class="ai-msg-row user">
+              <div style="flex:1;"></div>
+              <div class="ai-bubble">Class 8-B তে কার attendance সবচেয়ে কম?</div>
+              <div class="ai-msg-ava" style="background:rgba(124,58,237,0.25);">👩‍💼</div>
+            </div>
+            <div class="ai-msg-row">
+              <div class="ai-msg-ava" style="background:linear-gradient(135deg,#7C3AED,#4F46E5);">🤖</div>
+              <div class="ai-bubble">Class 8-B তে <strong style="color:#A78BFA;">৩ জন</strong> এর attendance ৭৫% এর নিচে:<br><br>🔴 Rahim Ahmed — 61%<br>🟡 Priya Das — 72%<br>🟡 Sumon Islam — 74%<br><br>Parents কে SMS পাঠাবো?</div>
+            </div>
+          </div>
+          <div class="ai-action-btns">
+            <button class="ai-action-btn">✉ Send SMS</button>
+            <button class="ai-action-btn ghost">View Report</button>
+          </div>
+          <div class="ai-chat-body" style="padding-top:0;">
+            <div class="ai-msg-row user">
+              <div style="flex:1;"></div>
+              <div class="ai-bubble">Next term এ কারা fail করতে পারে?</div>
+              <div class="ai-msg-ava" style="background:rgba(124,58,237,0.25);">👩‍💼</div>
+            </div>
+            <div class="ai-msg-row">
+              <div class="ai-msg-ava" style="background:linear-gradient(135deg,#7C3AED,#4F46E5);">🤖</div>
+              <div class="ai-bubble">পূর্বের attendance ও marks বিশ্লেষণ করে <strong style="color:#FCA5A5;">7 জন</strong> students কে high-risk হিসেবে flag করা হয়েছে।<br><br>Full report দেখুন বা parents কে এখনই alert করুন।</div>
+            </div>
+          </div>
+          <div class="ai-action-btns" style="padding-bottom:16px;">
+            <button class="ai-action-btn" style="background:rgba(244,63,94,0.15);border-color:rgba(244,63,94,0.3);color:#F43F5E;">⚠ View 7 Students</button>
+          </div>
         </div>
 
-        <!-- Tab 1: Overview -->
-        <div class="dashboard-view active" id="tab-overview">
-          <div class="mock-body">
-            <div class="mock-stats-row">
-              <div class="mock-stat-card">
-                <div class="mock-stat-icon">🧑‍🎓</div>
-                <div class="mock-stat-val">1,248</div>
-                <div class="mock-stat-lbl">Students</div>
-              </div>
-              <div class="mock-stat-card">
-                <div class="mock-stat-icon">👩‍🏫</div>
-                <div class="mock-stat-val">68</div>
-                <div class="mock-stat-lbl">Teachers</div>
-              </div>
-              <div class="mock-stat-card">
-                <div class="mock-stat-icon">💰</div>
-                <div class="mock-stat-val">৳2.4L</div>
-                <div class="mock-stat-lbl">Fees (Month)</div>
-              </div>
-              <div class="mock-stat-card">
-                <div class="mock-stat-icon">📊</div>
-                <div class="mock-stat-val">93%</div>
-                <div class="mock-stat-lbl">Attendance</div>
-              </div>
-            </div>
-            <div class="mock-row">
-              <div class="mock-chart-card">
-                <div class="mock-card-title">📈 Monthly Fee Collection</div>
-                <div class="mock-bars">
-                  <div class="mock-bar" style="height:40%;background:#C7D7FF;"></div>
-                  <div class="mock-bar" style="height:55%;background:#A0B8FF;"></div>
-                  <div class="mock-bar" style="height:70%;background:#7B9EFF;"></div>
-                  <div class="mock-bar" style="height:50%;background:#A0B8FF;"></div>
-                  <div class="mock-bar" style="height:85%;background:#5680FF;"></div>
-                  <div class="mock-bar" style="height:90%;background:#1647D4;"></div>
-                  <div class="mock-bar" style="height:65%;background:#7B9EFF;"></div>
-                </div>
-              </div>
-              <div class="mock-list-card">
-                <div class="mock-card-title">🔔 Recent Activity</div>
-                <div class="mock-list-item">
-                  <div class="mock-avatar" style="background:#EEF3FF;">🧑</div>
-                  <span>Rahim admitted — Class 8</span>
-                </div>
-                <div class="mock-list-item">
-                  <div class="mock-avatar" style="background:#D1FAE5;">💳</div>
-                  <span>Fee paid — Karim (9A)</span>
-                </div>
-                <div class="mock-list-item">
-                  <div class="mock-avatar" style="background:#FEF3C7;">📝</div>
-                  <span>Results published — Term 2</span>
-                </div>
-                <div class="mock-list-item">
-                  <div class="mock-avatar" style="background:#EDE9FE;">🤖</div>
-                  <span>AI flagged 3 at-risk</span>
-                </div>
-              </div>
-            </div>
+        <div class="ai-stats-mini">
+          <div class="ai-stat-card">
+            <div class="ai-stat-label">AI Questions / week</div>
+            <div class="ai-stat-val" style="color:#A78BFA;">2,840</div>
+          </div>
+          <div class="ai-stat-card">
+            <div class="ai-stat-label">At-risk flagged</div>
+            <div class="ai-stat-val" style="color:#F0ABFC;">47</div>
           </div>
         </div>
+      </div>
 
-        <!-- Tab 2: AI Modules -->
-        <div class="dashboard-view" id="tab-ai">
-          <div class="mock-body">
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;">
-              <!-- Question Generator Widget -->
-              <div class="mock-chart-card" style="padding: 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 190px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-family:'Sora',sans-serif; font-size:.75rem; font-weight:700; color:var(--ink);">🪄 AI Question Generator</span>
-                    <span style="font-size: .65rem; color: #6366F1; font-weight: 700; background: rgba(99,102,241,0.08); padding: 2px 6px; border-radius: 4px;">Physics</span>
-                  </div>
-                  <div style="font-size: .7rem; color: var(--muted); margin-bottom: 8px;">Topic: Class 9 - Gravitation &amp; Force</div>
-                  
-                  <div id="ai-questions-box" style="background: var(--bg); border-radius: 6px; padding: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--ink-2); line-height: 1.4; border: 1px solid var(--border); min-height: 80px; text-align: left;">
-                    <span style="color: var(--muted);">Click 'Generate MCQ Paper' below to simulate EduOS AI engine.</span>
-                  </div>
-                </div>
-                
-                <button id="btn-generate-questions" style="background: var(--blue); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;">
-                  <span>✨ Generate MCQ Paper</span>
-                </button>
-              </div>
-              
-              <!-- Fail-Risk Predictor Widget -->
-              <div class="mock-list-card" style="padding: 12px;">
-                <div style="font-family:'Sora',sans-serif; font-size:.75rem; font-weight:700; color:var(--ink); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                  <span>📊 AI Fail-Risk Predictor</span>
-                </div>
-                <div style="font-size: .65rem; color: var(--muted); margin-bottom: 8px; text-align: left;">Scanning attendance + term test grades...</div>
-                
-                <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                  <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(220, 38, 38, 0.05); padding: 6px 8px; border-radius: 6px; border: 1px dashed rgba(220, 38, 38, 0.2);">
-                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--red);">🔴 Rahim (61%)</span>
-                    <span style="font-size: 0.62rem; color: var(--red); font-weight: 800; font-family:'Sora',sans-serif;">94% Risk</span>
-                  </div>
-                  <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(217, 119, 6, 0.05); padding: 6px 8px; border-radius: 6px; border: 1px dashed rgba(217, 119, 6, 0.2);">
-                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--amber);">🟡 Priya (72%)</span>
-                    <span style="font-size: 0.62rem; color: var(--amber); font-weight: 800; font-family:'Sora',sans-serif;">78% Risk</span>
-                  </div>
-                  <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(5, 150, 105, 0.04); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(5, 150, 105, 0.1);">
-                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--green);">🟢 84 Students Safe</span>
-                    <span style="font-size: 0.62rem; color: var(--green); font-weight: 800;">No risk</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mock-stat-card" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.1rem;">📝</span>
-                <div style="text-align: left;">
-                  <div style="font-size: 0.72rem; font-weight: 700; color: var(--ink);">Auto-Generated Progress Narrative</div>
-                  <div style="font-size: 0.65rem; color: var(--muted);">"Rahim is highly creative but needs to improve attendance."</div>
-                </div>
-              </div>
-              <span style="font-size: 0.65rem; color: var(--blue); font-weight: 800; text-transform: uppercase;">Generated</span>
-            </div>
-          </div>
-        </div>
+    </div>
+  </div>
+</section>
 
-        <!-- Tab 3: Finance & Fees -->
-        <div class="dashboard-view" id="tab-finance">
-          <div class="mock-body">
-            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px;">
-              <!-- Live Payments Stream -->
-              <div class="mock-list-card" style="padding: 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 190px;">
-                <div>
-                  <div style="font-family:'Sora',sans-serif; font-size:.75rem; font-weight:700; color:var(--ink); margin-bottom: 8px; text-align: left;">📱 Live Payout Stream</div>
-                  <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; padding-bottom: 6px; border-bottom: 1px solid var(--border);">
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="background: #E5127D; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: 800; font-size: 0.52rem; font-family:'Sora',sans-serif;">bKash</span>
-                        <span style="font-weight: 700;">৳1,200</span>
-                      </div>
-                      <span style="color: var(--green); font-weight: 700;">Success</span>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; padding-bottom: 6px; border-bottom: 1px solid var(--border);">
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="background: #F26F21; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: 800; font-size: 0.52rem; font-family:'Sora',sans-serif;">Nagad</span>
-                        <span style="font-weight: 700;">৳850</span>
-                      </div>
-                      <span style="color: var(--green); font-weight: 700;">Success</span>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem;">
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="background: #E5127D; color: #fff; padding: 2px 5px; border-radius: 4px; font-weight: 800; font-size: 0.52rem; font-family:'Sora',sans-serif;">bKash</span>
-                        <span style="font-weight: 700;">৳2,400</span>
-                      </div>
-                      <span style="color: var(--green); font-weight: 700;">Success</span>
-                    </div>
-                  </div>
-                </div>
-                <div style="font-size: 0.62rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px; text-align: left;">Auto-credited directly to school bank account.</div>
-              </div>
-
-              <!-- Reconciliation Widget -->
-              <div class="mock-chart-card" style="padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-family:'Sora',sans-serif; font-size:.75rem; font-weight:700; color:var(--ink);">৳ Fee Reconciliation</span>
-                    <span style="font-size: 0.65rem; color: var(--green); font-weight: 700; background: rgba(5,150,105,0.08); padding: 2px 6px; border-radius: 4px;">98% Match</span>
-                  </div>
-                  <div style="font-size: .68rem; color: var(--muted); margin-bottom: 12px; text-align: left;">This month's summary:</div>
-                  
-                  <div style="display: flex; flex-direction: column; gap: 8px; text-align: left;">
-                    <div>
-                      <div style="display: flex; justify-content: space-between; font-size: 0.65rem; margin-bottom: 3px;">
-                        <span>Collected (৳2.4L)</span>
-                        <span style="font-weight: 700;">80%</span>
-                      </div>
-                      <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
-                        <div style="height: 100%; width: 80%; background: var(--blue); border-radius: 3px;"></div>
-                      </div>
-                    </div>
-                    <div>
-                      <div style="display: flex; justify-content: space-between; font-size: 0.65rem; margin-bottom: 3px;">
-                        <span>Overdue (৳60k)</span>
-                        <span style="font-weight: 700;">20%</span>
-                      </div>
-                      <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
-                        <div style="height: 100%; width: 20%; background: #EF4444; border-radius: 3px;"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <button style="border: 1px solid var(--blue); color: var(--blue); background: none; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s; margin-top: 10px;">
-                  <span>Generate Reminders SMS</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+<!-- ══ HOW IT WORKS ════════════════════════════════════════ -->
+<section class="hiw-section">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-chip" style="margin-bottom:16px;">🔄 How It Works</div>
+      <h2 class="section-title">Up and running in 4 simple steps</h2>
+      <p class="section-sub" style="margin:0 auto;">No technical knowledge required. Your school is live in less than a day.</p>
+    </div>
+    <div class="hiw-steps">
+      <div class="hiw-card">
+        <div class="hiw-connector"></div>
+        <div class="hiw-num">1</div>
+        <div class="hiw-title">Register Your School</div>
+        <div class="hiw-desc">Fill a 5-minute form. Your unique school portal is live instantly with a custom domain.</div>
+      </div>
+      <div class="hiw-card">
+        <div class="hiw-connector"></div>
+        <div class="hiw-num">2</div>
+        <div class="hiw-title">Import Student Data</div>
+        <div class="hiw-desc">Upload your existing Excel roster. We handle the migration and data cleanup automatically.</div>
+      </div>
+      <div class="hiw-card">
+        <div class="hiw-connector"></div>
+        <div class="hiw-num">3</div>
+        <div class="hiw-title">Configure Your School</div>
+        <div class="hiw-desc">Set classes, fee structures, academic calendar, exam schedules, and school branding.</div>
+      </div>
+      <div class="hiw-card">
+        <div class="hiw-num">4</div>
+        <div class="hiw-title">Go Live</div>
+        <div class="hiw-desc">Teachers, students and parents log in. Every feature works from Day 1. AI starts learning immediately.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- TRUSTED BY -->
-<div class="logos-strip">
-  <div class="logos-inner">
-    <div class="logos-label">Trusted by forward-thinking schools across Bangladesh</div>
-    <div class="logos-row">
-      <div class="logo-item"><span class="logo-icon">🏫</span> Dhaka High School</div>
-      <div class="logo-item"><span class="logo-icon">📚</span> Chittagong College</div>
-      <div class="logo-item"><span class="logo-icon">🎓</span> Rajshahi Vidyalaya</div>
-      <div class="logo-item"><span class="logo-icon">🏛️</span> Sylhet Public School</div>
-      <div class="logo-item"><span class="logo-icon">📖</span> Khulna Model School</div>
+<!-- ══ PRICING ═════════════════════════════════════════════ -->
+<section class="pricing-section">
+  <div class="container" style="position:relative;">
+    <div class="text-center">
+      <div class="section-chip dark">💎 Pricing</div>
+      <h2 class="section-title" style="color:#fff;margin-top:16px;">Transparent pricing,<br>no surprises</h2>
+      <p class="section-sub" style="color:rgba(255,255,255,0.45);margin:0 auto;">Starting from ৳15 per student per month. Full-featured. Cancel anytime.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-val">৳15</div>
+        <div class="price-unit">per student / month · up to 200</div>
+        <div class="price-divider"></div>
+        <div class="price-feature">Admission &amp; Attendance</div>
+        <div class="price-feature">Digital Fee Collection</div>
+        <div class="price-feature">Result Reports</div>
+        <div class="price-feature">Email Support</div>
+        <a href="pricing.html" class="btn-price">Get Started</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="price-popular-badge">⭐ Most Popular</div>
+        <div class="price-tier" style="color:#C4B5FD;">Growth</div>
+        <div class="price-val">৳25</div>
+        <div class="price-unit">per student / month · up to 800</div>
+        <div class="price-divider"></div>
+        <div class="price-feature">Everything in Starter</div>
+        <div class="price-feature">Digital ID Cards + QR</div>
+        <div class="price-feature">Online Exams</div>
+        <div class="price-feature">Parent Mobile App</div>
+        <div class="price-feature">AI Modules (Basic)</div>
+        <a href="pricing.html" class="btn-price featured-btn">Get Started →</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-tier">Professional</div>
+        <div class="price-val">৳20</div>
+        <div class="price-unit">per student / month · up to 2,500</div>
+        <div class="price-divider"></div>
+        <div class="price-feature">Everything in Growth</div>
+        <div class="price-feature">Marketplace Access</div>
+        <div class="price-feature">Full AI Suite</div>
+        <div class="price-feature">API Access</div>
+        <div class="price-feature">Priority Support</div>
+        <a href="pricing.html" class="btn-price">Get Started</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-val" style="font-size:1.6rem;">Custom</div>
+        <div class="price-unit">Unlimited students</div>
+        <div class="price-divider"></div>
+        <div class="price-feature">Everything in Pro</div>
+        <div class="price-feature">Custom Branding</div>
+        <div class="price-feature">Dedicated Support</div>
+        <div class="price-feature">99.9% SLA Guarantee</div>
+        <a href="contact.html" class="btn-price">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TESTIMONIALS ════════════════════════════════════════ -->
+<section class="testi-section">
+  <div class="container">
+    <div class="text-center">
+      <div class="section-chip" style="margin-bottom:16px;">💬 Testimonials</div>
+      <h2 class="section-title">Loved by principals<br>and teachers</h2>
+    </div>
+    <div class="testi-grid-v2">
+
+      <div class="testi-card-v2 featured-testi">
+        <div class="testi-quote-icon" style="color:#A78BFA;">"</div>
+        <div class="testi-stars-v2"><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span></div>
+        <div class="testi-body">"We used to spend 3 days entering results manually. Now results are published in 2 hours. The parents love getting SMS updates instantly. EduOS transformed how we run this school."</div>
+        <div class="testi-author-row">
+          <div class="testi-ava">👨‍💼</div>
+          <div>
+            <div class="testi-name-v2">Mr. Abdur Rahman</div>
+            <div class="testi-role">Principal · Dhaka High School</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card-v2">
+        <div class="testi-quote-icon" style="color:rgba(22,71,212,0.15);">"</div>
+        <div class="testi-stars-v2"><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span></div>
+        <div class="testi-body">"Fee collection was a nightmare — cash everywhere, no receipts. Now every payment is digital, every receipt is automatic. Zero discrepancies, ever."</div>
+        <div class="testi-author-row">
+          <div class="testi-ava">👩‍💼</div>
+          <div>
+            <div class="testi-name-v2">Mrs. Fatema Begum</div>
+            <div class="testi-role">Accountant · Chittagong College</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card-v2">
+        <div class="testi-quote-icon" style="color:rgba(22,71,212,0.15);">"</div>
+        <div class="testi-stars-v2"><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span><span class="testi-star">★</span></div>
+        <div class="testi-body">"Our school is in a rural upazila. Before EduOS, we had nothing digital. Now parents check their children's results and attendance on their phones — it's incredible."</div>
+        <div class="testi-author-row">
+          <div class="testi-ava">👨‍🏫</div>
+          <div>
+            <div class="testi-name-v2">Mr. Karim Hossain</div>
+            <div class="testi-role">Headmaster · Sylhet Rural School</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA FINAL ═══════════════════════════════════════════ -->
+<section class="cta-final">
+  <div class="cta-grid-overlay"></div>
+  <h2>Give your school<br>an <span class="grad-text">AI advantage</span></h2>
+  <p>Join 500+ schools already on EduOS. AI-powered attendance, exams, fees, and parent communication — all ready on day one.</p>
+  <div class="cta-final-btns">
+    <a href="register.html" class="btn-hero-primary">
+      Start 30-Day Free Trial
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="contact.html" class="btn-hero-secondary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Book a Demo
+    </a>
+  </div>
+  <div class="cta-trust-strip">
+    <div class="cta-trust-item">✓ No credit card required</div>
+    <div class="cta-trust-item">✓ Full features unlocked</div>
+    <div class="cta-trust-item">✓ Setup in under 1 day</div>
+    <div class="cta-trust-item">✓ Cancel anytime</div>
+  </div>
+</section>
+
+<!-- footer injected by nav-footer.js -->
+
+<script>
+  // nav scroll handled by nav-footer.js
+
+  /* ── Bangladesh Map: counter + ticker + line animation ─── */
+  const bdMessages = [
+    '🏫 Dhaka High School just joined EduOS',
+    '📊 AI flagged 3 at-risk students in Rajshahi',
+    '💰 ৳8,400 collected via bKash in Sylhet',
+    '✅ 94% attendance recorded in Chattogram today',
+    '🎓 Exam results published — Khulna Model School',
+    '🤖 AI generated 120 MCQs for Rangpur Academy',
+    '📢 Notice sent to 1,240 parents in Barishal',
+    '🏫 Mymensingh Institute activated AI modules',
+    '💳 Nagad payment confirmed — 38 students',
+    '📝 Term 2 result sheet auto-generated — Dhaka',
+  ];
+  let tickerIndex = 0;
+  function rotateTicker() {
+    const el = document.getElementById('bdTickerText');
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      tickerIndex = (tickerIndex + 1) % bdMessages.length;
+      el.textContent = bdMessages[tickerIndex];
+      el.style.opacity = '1';
+    }, 400);
+  }
+  setInterval(rotateTicker, 3200);
+
+  /* Counter for total schools */
+  const bdCountEl = document.getElementById('bdSchoolCount');
+  if (bdCountEl) {
+    const bdObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        let start = performance.now();
+        const dur = 2000, target = 542;
+        function tick(now) {
+          const p = Math.min((now - start) / dur, 1);
+          const e = 1 - Math.pow(1 - p, 3);
+          bdCountEl.textContent = Math.round(e * target) + '+';
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        bdObs.disconnect();
+      }
+    }, { threshold: 0.4 });
+    bdObs.observe(bdCountEl);
+  }
+
+  /* Trigger network line draw-on when section scrolls into view */
+  const netLines = document.querySelectorAll('.net-line');
+  if (netLines.length) {
+    const lineObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        netLines.forEach((line, i) => {
+          setTimeout(() => {
+            line.style.animation = `line-draw 1.2s ease forwards`;
+          }, i * 220);
+        });
+        lineObs.disconnect();
+      }
+    }, { threshold: 0.3 });
+    const mapSection = document.querySelector('.bd-map-section');
+    if (mapSection) lineObs.observe(mapSection);
+  }
+
+  /* Node ring pulse — stagger each division node */
+  document.querySelectorAll('.bd-node').forEach((node, i) => {
+    const rings = node.querySelectorAll('.node-pulse-ring, .node-pulse-ring-2');
+    rings.forEach(r => {
+      r.style.animationDelay = (i * 0.3) + 's';
+    });
+  });
+
+  // Animate dashboard bars on load
+  function animateDashBars() {
+    const bars = document.querySelectorAll('.dash-bar');
+    const heights = ['38%','52%','68%','48%','82%','90%','64%'];
+    bars.forEach((bar, i) => {
+      bar.style.height = '0%';
+      setTimeout(() => { bar.style.height = heights[i]; }, 100 + i * 60);
+    });
+  }
+  window.addEventListener('load', animateDashBars);
+
+  // Generate particle sparkles
+  (function() {
+    const container = document.getElementById('heroParticles');
+    if (!container) return;
+    const count = 55;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const dur = (2.5 + Math.random() * 4).toFixed(1) + 's';
+      const delay = -(Math.random() * 5).toFixed(1) + 's';
+      const size = (1 + Math.random() * 1.8).toFixed(1);
+      s.style.cssText = `left:${x}%;top:${y}%;width:${size}px;height:${size}px;--dur:${dur};--delay:${delay};opacity:${0.2 + Math.random() * 0.5};`;
+      container.appendChild(s);
+    }
+  })();
+
+  // Animated counter for market stats
+  function animateCounter(el, target, suffix) {
+    const start = performance.now();
+    const duration = 1800;
+    function update(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = Math.round(eased * target);
+      el.textContent = val + suffix;
+      if (p < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.target);
+        const suffix = el.dataset.suffix || 'K+';
+        animateCounter(el, target, suffix);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.hero-market-num').forEach((el, i) => {
+    const suffixes = ['K+', 'M+', 'K+'];
+    el.dataset.suffix = suffixes[i];
+    counterObserver.observe(el);
+  });
+
+  // Mouse parallax on aurora blobs
+  document.addEventListener('mousemove', (e) => {
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const dx = (e.clientX - cx) / cx, dy = (e.clientY - cy) / cy;
+    const blobs = document.querySelectorAll('.aurora-blob');
+    const factors = [18, -14, 10, -8];
+    blobs.forEach((b, i) => {
+      b.style.transform = `translate(${dx * factors[i]}px, ${dy * factors[i] * 0.7}px)`;
+    });
+  });
+</script>
+
+<!-- ══ PROTOTYPE DISCLAIMER MODAL ══════════════════════════ -->
+<!-- ══ PROTOTYPE DISCLAIMER MODAL ══════════════════════════ -->
+<div id="proto-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pm-title-text">
+  <div id="proto-modal">
+    <div class="pm-glow-bl"></div>
+    <div class="pm-inner">
+
+      <!-- Logo + Brand -->
+      <div class="pm-logo-row">
+        <div class="pm-logo-icon">🎓</div>
+        <div class="pm-logo-name">Edu<span>OS</span></div>
+      </div>
+
+      <!-- Status chip -->
+      <div class="pm-chip">
+        <span class="pm-chip-dot"></span>
+        Prototype · Not a Live Product
+      </div>
+
+      <!-- Title -->
+      <div class="pm-title" id="pm-title-text">This is a UI/UX prototype — data is not real.</div>
+      <div class="pm-subtitle">Built by the Prathomik team for stakeholder & investor review only.</div>
+
+      <div class="pm-divider"></div>
+
+      <!-- Compact disclaimer list -->
+      <div class="pm-rows">
+        <div class="pm-row">
+          <span class="pm-row-dot"></span>
+          <div class="pm-row-text"><strong>Statistics</strong> (schools, students, teachers) represent Bangladesh's market — not EduOS's current users.</div>
+        </div>
+        <div class="pm-row">
+          <span class="pm-row-dot"></span>
+          <div class="pm-row-text"><strong>Testimonials & school names</strong> are fictional sample content created for design purposes.</div>
+        </div>
+        <div class="pm-row">
+          <span class="pm-row-dot"></span>
+          <div class="pm-row-text"><strong>The network map & activity feed</strong> depict a future vision, not current deployments.</div>
+        </div>
+        <div class="pm-row">
+          <span class="pm-row-dot"></span>
+          <div class="pm-row-text"><strong>Some buttons & links</strong> may not be functional. All features are actively under development.</div>
+        </div>
+      </div>
+
+      <!-- Warning -->
+      <div class="pm-warn">
+        <span class="pm-warn-icon">⚠️</span>
+        <div class="pm-warn-text"><strong>No real data exists</strong> — no school records, user accounts, or financial transactions are present in this system.</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="pm-actions">
+        <button class="pm-btn-primary" onclick="closeProtoModal()">
+          I Understand — Explore Prototype
+        </button>
+        <a href="contact.html" class="pm-btn-ghost">Contact</a>
+      </div>
+
+      <!-- Credit -->
+      <div class="pm-credit">
+        <span>An innovation by</span>
+        <a href="https://prathomik.com" target="_blank" rel="noopener">
+          <img src="https://healthmedsci.org/prathomik_light.png" alt="Prathomik" class="pm-credit-logo">
+        </a>
+        <span class="pm-credit-sep"></span>
+        <span>© 2026 EduOS</span>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- FEATURES TEASER -->
-<section class="section features-teaser">
-  <div class="container">
-    <div class="text-center mb-6">
-      <div class="section-label" style="justify-content:center;">✦ Key Features · AI-Enhanced</div>
-      <h2 class="section-title">Everything a school needs, powered by AI</h2>
-      <p class="section-sub" style="margin:0 auto;">From first-day admission to annual results — every academic operation digitized, automated, and AI-enhanced.</p>
-    </div>
-    <div class="grid-3 mt-8">
-      <div class="card feat-card">
-        <div class="feat-icon">🧑‍🎓</div>
-        <div class="feat-title">Student Admission</div>
-        <div class="feat-desc">Digital admission forms, bulk import, auto-generated ID numbers and printable ID cards.</div>
-      </div>
-      <div class="card feat-card">
-        <div class="feat-icon" style="background:#EDE9FE;">📊</div>
-        <div class="feat-title">Smart Attendance AI</div>
-        <div class="feat-desc">Daily marking via web or mobile. AI detects absence patterns and sends instant SMS to parents.</div>
-      </div>
-      <div class="card feat-card">
-      <div class="feat-icon" style="background:#EDE9FE;">🤖</div>
-        <div class="feat-title">AI-Powered Results</div>
-        <div class="feat-desc">Marks entry, auto GPA calculation, AI-written student progress narratives, and printable marksheets.</div>
-      </div>
-      <div class="card feat-card">
-        <div class="feat-icon">💰</div>
-        <div class="feat-title">Fee Collection</div>
-        <div class="feat-desc">bKash & Nagad integration, digital receipts, automated due-date reminders.</div>
-      </div>
-      <div class="card feat-card">
-        <div class="feat-icon">🪪</div>
-        <div class="feat-title">Digital ID Cards</div>
-        <div class="feat-desc">Auto-generated ID cards with QR code, school branding, bulk PDF download.</div>
-      </div>
-      <div class="card feat-card">
-        <div class="feat-icon">📢</div>
-        <div class="feat-title">Parent Communication</div>
-        <div class="feat-desc">Push notifications, SMS alerts, notice board — parents always in the loop.</div>
-      </div>
-    </div>
-    <div class="text-center mt-8">
-      <a href="features.html" class="btn btn-outline btn-lg">See all Features + AI Modules →</a>
-    </div>
-  </div>
-</section>
-
-<!-- AI FEATURES SECTION -->
-<section class="section ai-section" id="ai-section">
-  <div class="container" style="position:relative;">
-    <div class="ai-layout" style="display:grid;grid-template-columns:1fr 390px;gap:56px;align-items:start;">
-
-      <!-- LEFT: intro + 6 AI feature cards -->
-      <div>
-        <div class="ai-badge">🤖 Powered by Artificial Intelligence</div>
-        <h2 class="section-title" style="color:#fff;margin-bottom:14px;">Your school gets smarter<br>every single day</h2>
-        <p class="section-sub" style="color:rgba(255,255,255,.5);margin-bottom:36px;max-width:500px;">EduOS embeds AI into every workflow — so teachers focus on teaching, while the platform handles analysis, prediction, and communication automatically.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div class="ai-card">
-            <div class="ai-icon">🤖</div>
-            <div class="ai-card-title">AI Question Generator</div>
-            <div class="ai-card-desc">Auto-creates MCQ, short & essay questions from your syllabus. Exam-ready in seconds.</div>
-            <span class="ai-card-tag" style="background:rgba(99,102,241,.2);color:#A5B4FC;border:1px solid rgba(99,102,241,.3);">Saves 4 hrs/week</span>
-          </div>
-          <div class="ai-card">
-            <div class="ai-icon">📊</div>
-            <div class="ai-card-title">Fail-Risk Predictor</div>
-            <div class="ai-card-desc">Identifies students likely to fail 30 days before exams using attendance + grade patterns.</div>
-            <span class="ai-card-tag" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">Early intervention</span>
-          </div>
-          <div class="ai-card">
-            <div class="ai-icon">💬</div>
-            <div class="ai-card-title">AI Parent Assistant</div>
-            <div class="ai-card-desc">24/7 chatbot answers parent queries in Bangla & English — results, fees, attendance instantly.</div>
-            <span class="ai-card-tag" style="background:rgba(14,165,233,.12);color:#7DD3FC;border:1px solid rgba(14,165,233,.22);">24/7 · Bangla & English</span>
-          </div>
-          <div class="ai-card">
-            <div class="ai-icon">📝</div>
-            <div class="ai-card-title">Auto Report Narratives</div>
-            <div class="ai-card-desc">AI writes personalized progress comments for every student's report card. Zero manual writing.</div>
-            <span class="ai-card-tag" style="background:rgba(245,158,11,.12);color:#FCD34D;border:1px solid rgba(245,158,11,.22);">New in v2.0</span>
-          </div>
-          <div class="ai-card">
-            <div class="ai-icon">💰</div>
-            <div class="ai-card-title">Fee Default Predictor</div>
-            <div class="ai-card-desc">Flags students likely to miss fee deadlines based on historical payment patterns. Act before overdue.</div>
-            <span class="ai-card-tag" style="background:rgba(239,68,68,.12);color:#FCA5A5;border:1px solid rgba(239,68,68,.22);">Reduce overdue by 40%</span>
-          </div>
-          <div class="ai-card">
-            <div class="ai-icon">📅</div>
-            <div class="ai-card-title">Attendance Pattern AI</div>
-            <div class="ai-card-desc">Detects chronic absenteeism trends and auto-alerts parents and admin before it escalates.</div>
-            <span class="ai-card-tag" style="background:rgba(139,92,246,.18);color:#C4B5FD;border:1px solid rgba(139,92,246,.28);">Auto-alerts</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: AI Chat Demo -->
-      <div class="ai-right" style="position:sticky;top:90px;">
-        <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.28);margin-bottom:10px;">✦ Live Demo — EduOS AI Assistant</div>
-        <div class="ai-chat-mock">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.07);">
-            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">🤖</div>
-            <div>
-              <div style="font-size:.8rem;font-weight:700;color:#fff;">EduOS AI</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:.65rem;color:rgba(255,255,255,.35);"><span style="width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block;"></span> Online · Bangla &amp; English</div>
-            </div>
-          </div>
-
-          <div class="ai-msg user">
-            <div style="flex:1;"></div>
-            <div class="ai-msg-bubble">Class 8-B তে কার attendance সবচেয়ে কম?</div>
-            <div class="ai-msg-avatar" style="background:rgba(99,102,241,.25);">👩‍💼</div>
-          </div>
-          <div class="ai-msg">
-            <div class="ai-msg-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">🤖</div>
-            <div class="ai-msg-bubble">Class 8-B তে <strong style="color:#A5B4FC;">৩ জন</strong> এর attendance ৭৫% এর নিচে:<br><br>
-              🔴 Rahim Ahmed — 61%<br>
-              🟡 Priya Das — 72%<br>
-              🟡 Sumon Islam — 74%<br><br>
-              Parents কে SMS পাঠাবো?
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;margin:0 0 12px 36px;">
-            <button style="background:rgba(99,102,241,.25);border:1px solid rgba(99,102,241,.4);color:#A5B4FC;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;">✉ Send SMS</button>
-            <button style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:5px 12px;border-radius:8px;font-size:.72rem;cursor:pointer;">View Report</button>
-          </div>
-
-          <div class="ai-msg user">
-            <div style="flex:1;"></div>
-            <div class="ai-msg-bubble">Next term এ কারা fail করতে পারে?</div>
-            <div class="ai-msg-avatar" style="background:rgba(99,102,241,.25);">👩‍💼</div>
-          </div>
-          <div class="ai-msg">
-            <div class="ai-msg-avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">🤖</div>
-            <div class="ai-msg-bubble">পূর্বের attendance ও marks বিশ্লেষণ করে <strong style="color:#FCA5A5;">7 জন students</strong> কে high-risk হিসেবে flag করা হয়েছে।<br><br>Full report দেখুন অথবা তাদের parents কে এখনই alert করুন।</div>
-          </div>
-          <div style="display:flex;gap:8px;margin:0 0 4px 36px;">
-            <button style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.35);color:#FCA5A5;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;">⚠ View 7 Students</button>
-          </div>
-        </div>
-
-        <!-- Mini stats below chat -->
-        <div class="ai-stats-row">
-          <div class="ai-stat-mini">
-            <div class="ai-stat-mini-label">AI Questions / week</div>
-            <div class="ai-stat-mini-val" style="color:#A5B4FC;">2,840</div>
-          </div>
-          <div class="ai-stat-mini">
-            <div class="ai-stat-mini-label">At-risk students flagged</div>
-            <div class="ai-stat-mini-val" style="color:#F0ABFC;">47</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="section">
-  <div class="container">
-    <div class="text-center">
-      <div class="section-label" style="justify-content:center;">🔄 How It Works</div>
-      <h2 class="section-title">Up and running in 4 simple steps</h2>
-    </div>
-    <div class="steps-grid">
-      <div class="card step-card">
-        <div class="step-num">1</div>
-        <div class="step-title">Register Your School</div>
-        <div class="step-desc">Fill a 5-minute form. Your unique portal is live instantly.</div>
-      </div>
-      <div class="card step-card">
-        <div class="step-num">2</div>
-        <div class="step-title">Import Student Data</div>
-        <div class="step-desc">Upload your existing Excel roster. We handle the migration.</div>
-      </div>
-      <div class="card step-card">
-        <div class="step-num">3</div>
-        <div class="step-title">Configure Your School</div>
-        <div class="step-desc">Set classes, fee structures, academic calendar, and branding.</div>
-      </div>
-      <div class="card step-card">
-        <div class="step-num">4</div>
-        <div class="step-title">Go Live</div>
-        <div class="step-desc">Teachers, students and parents log in. Everything works from Day 1.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRICING TEASER -->
-<section class="section pricing-teaser">
-  <div class="container" style="position:relative;">
-    <div class="text-center mb-6">
-      <div class="section-label" style="justify-content:center;background:rgba(255,255,255,0.1);color:#fff;">💎 Pricing</div>
-      <h2 class="section-title" style="color:#fff;">Transparent pricing, no surprises</h2>
-      <p class="section-sub" style="color:rgba(255,255,255,.6);margin:0 auto;">Starting from ৳15 per student per month. Full-featured. Cancel anytime.</p>
-    </div>
-    <div class="plan-cards">
-      <div class="plan-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">৳15</div>
-        <div class="plan-unit">per student / month · up to 200</div>
-        <div class="plan-feat">Admission & Attendance</div>
-        <div class="plan-feat">Fee Collection</div>
-        <div class="plan-feat">Result Reports</div>
-        <div class="plan-feat">Email Support</div>
-        <a href="pricing.html" class="btn btn-white btn-sm mt-4" style="width:100%;justify-content:center;">Get Started</a>
-      </div>
-      <div class="plan-card featured">
-        <div class="badge badge-green mb-2">Most Popular</div>
-        <div class="plan-name">Growth</div>
-        <div class="plan-price">৳25</div>
-        <div class="plan-unit">per student / month · up to 800</div>
-        <div class="plan-feat">Everything in Starter</div>
-        <div class="plan-feat">Digital ID Cards</div>
-        <div class="plan-feat">Online Exams</div>
-        <div class="plan-feat">Parent Mobile App</div>
-        <a href="pricing.html" class="btn btn-white btn-sm mt-4" style="width:100%;justify-content:center;">Get Started</a>
-      </div>
-      <div class="plan-card">
-        <div class="plan-name">Professional</div>
-        <div class="plan-price">৳20</div>
-        <div class="plan-unit">per student / month · up to 2,500</div>
-        <div class="plan-feat">Everything in Growth</div>
-        <div class="plan-feat">Marketplace Access</div>
-        <div class="plan-feat">API Access</div>
-        <div class="plan-feat">Priority Support</div>
-        <a href="pricing.html" class="btn btn-white btn-sm mt-4" style="width:100%;justify-content:center;">Get Started</a>
-      </div>
-      <div class="plan-card">
-        <div class="plan-name">Enterprise</div>
-        <div class="plan-price">Custom</div>
-        <div class="plan-unit">Unlimited students</div>
-        <div class="plan-feat">Everything in Pro</div>
-        <div class="plan-feat">Custom Branding</div>
-        <div class="plan-feat">Dedicated Support</div>
-        <div class="plan-feat">SLA Guarantee</div>
-        <a href="contact.html" class="btn btn-white btn-sm mt-4" style="width:100%;justify-content:center;">Contact Sales</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TESTIMONIALS -->
-<section class="section" style="background:var(--bg);">
-  <div class="container">
-    <div class="text-center mb-6">
-      <div class="section-label" style="justify-content:center;">💬 Testimonials</div>
-      <h2 class="section-title">Loved by principals and teachers</h2>
-    </div>
-    <div class="testi-grid">
-      <div class="card testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">"We used to spend 3 days entering results manually. Now results are published in 2 hours. The parents love getting SMS updates instantly."</div>
-        <div class="testi-author">
-          <div class="testi-avatar">👨‍💼</div>
-          <div>
-            <div class="testi-name">Mr. Abdur Rahman</div>
-            <div class="testi-school">Principal · Dhaka High School</div>
-          </div>
-        </div>
-      </div>
-      <div class="card testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">"Fee collection was a nightmare — cash everywhere, no receipts. Now every payment is digital, every receipt is automatic. Zero discrepancies."</div>
-        <div class="testi-author">
-          <div class="testi-avatar">👩‍💼</div>
-          <div>
-            <div class="testi-name">Mrs. Fatema Begum</div>
-            <div class="testi-school">Accountant · Chittagong College</div>
-          </div>
-        </div>
-      </div>
-      <div class="card testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <div class="testi-text">"Our school is in a rural upazila. Before EduOS, we had nothing digital. Now parents check their children's results and attendance on their phones."</div>
-        <div class="testi-author">
-          <div class="testi-avatar">👨‍🏫</div>
-          <div>
-            <div class="testi-name">Mr. Karim Hossain</div>
-            <div class="testi-school">Headmaster · Sylhet Rural School</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA BANNER -->
-<section class="cta-banner">
-  <h2>Give your school an AI advantage</h2>
-  <p>Join 500+ schools already on EduOS. AI-powered attendance, exams, fees, and parent communication — all ready. 30-day free trial, no credit card needed.</p>
-  <div class="cta-btns">
-    <a href="register.html" class="btn btn-white btn-lg">Start Free Trial →</a>
-    <a href="contact.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.5);color:#fff;">📅 Book a Demo</a>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-grid container">
-    <div>
-      <div class="footer-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></div>
-      <div class="footer-desc">Bangladesh's first centralized SaaS education management platform. Bridging the urban-rural digital divide, one school at a time.</div>
-      <div style="margin-top:20px;display:flex;gap:12px;">
-        <a href="#" style="color:#94A3B8;font-size:1.1rem;text-decoration:none;" title="Facebook">📘</a>
-        <a href="#" style="color:#94A3B8;font-size:1.1rem;text-decoration:none;" title="LinkedIn">💼</a>
-        <a href="#" style="color:#94A3B8;font-size:1.1rem;text-decoration:none;" title="Twitter">🐦</a>
-      </div>
-    </div>
-    <div class="footer-col">
-      <h4>Product</h4>
-      <a href="features.html">Features</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="#">Roadmap</a>
-      <a href="#">Changelog</a>
-    </div>
-    <div class="footer-col">
-      <h4>Company</h4>
-      <a href="#">About Us</a>
-      <a href="contact.html">Contact</a>
-      <a href="#">Careers</a>
-      <a href="#">Blog</a>
-    </div>
-    <div class="footer-col">
-      <h4>Support</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Documentation</a>
-      <a href="#">Status Page</a>
-      <a href="#">Privacy Policy</a>
-      <a href="admin/login.html" style="color:#94A3B8;font-weight:700;">🔐 Admin Login</a>
-    </div>
-  </div>
-  <div class="footer-bottom container">
-    <div>© 2026 EduOS. All rights reserved.</div>
-    <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;background:#22C55E;border-radius:50%;display:inline-block;animation:pulse-dot 2s infinite;"></span> All systems operational</div>
-  </div>
-</footer>
-
 <script>
-  // Sticky nav shadow on scroll
-  window.addEventListener('scroll', () => {
-    document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 20);
-  });
+  // Always lock scroll on page load — modal shows every refresh
+  document.body.style.overflow = 'hidden';
 
-  // Dashboard Tabs Switcher
-  const tabBtns = document.querySelectorAll('.mock-tab-btn');
-  const tabViews = document.querySelectorAll('.dashboard-view');
-  
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabId = btn.getAttribute('data-tab');
-      
-      // Update buttons
-      tabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Update views
-      tabViews.forEach(v => v.classList.remove('active'));
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-
-      // Trigger animations on tab change
-      if (tabId === 'overview') {
-        animateBars();
-      }
-    });
-  });
-
-  // Animate Bar Chart in Overview Tab
-  function animateBars() {
-    const bars = document.querySelectorAll('.mock-bar');
-    const heights = ['40%', '55%', '70%', '50%', '85%', '90%', '65%'];
-    bars.forEach((bar, index) => {
-      bar.style.height = '0%';
-      setTimeout(() => {
-        bar.style.height = heights[index];
-      }, 50 + (index * 40));
-    });
+  function closeProtoModal() {
+    const overlay = document.getElementById('proto-modal-overlay');
+    overlay.style.transition = 'opacity .3s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+    }, 300);
   }
 
-  // Initial animation
-  animateBars();
+  document.getElementById('proto-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeProtoModal();
+  });
 
-  // AI Question Generator Simulator
-  const btnGen = document.getElementById('btn-generate-questions');
-  const boxGen = document.getElementById('ai-questions-box');
-  if (btnGen && boxGen) {
-    let generating = false;
-    const questions = [
-      "Q1. Newton's universal gravitational constant G is: [MCQ]",
-      "Q2. Calculate force between 5kg & 10kg objects at 2m... [Solve]",
-      "Q3. How does weight vary from equator to poles? [Short]",
-      "✨ AI Paper complete! 15 MCQs & 5 Creative Questions generated."
-    ];
-    
-    btnGen.addEventListener('click', () => {
-      if (generating) return;
-      generating = true;
-      boxGen.innerHTML = '<span style="color:#6366F1;">🤖 Running EduOS LLM engine...</span>';
-      btnGen.style.opacity = '0.6';
-      btnGen.innerHTML = '<span>⏳ Generating...</span>';
-      
-      let lineIndex = 0;
-      const interval = setInterval(() => {
-        if (lineIndex === 0) boxGen.innerHTML = '';
-        
-        if (lineIndex < questions.length) {
-          const p = document.createElement('div');
-          p.style.marginBottom = '3px';
-          p.style.opacity = '0';
-          p.style.transform = 'translateY(4px)';
-          p.style.transition = 'all 0.3s ease';
-          p.textContent = questions[lineIndex];
-          boxGen.appendChild(p);
-          
-          // trigger redraw
-          p.offsetHeight;
-          p.style.opacity = '1';
-          p.style.transform = 'translateY(0)';
-          
-          lineIndex++;
-        } else {
-          clearInterval(interval);
-          generating = false;
-          btnGen.style.opacity = '1';
-          btnGen.innerHTML = '<span>✨ Regenerate Paper</span>';
-        }
-      }, 1000);
-    });
-  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeProtoModal();
+  });
 </script>
+
 <script src="../demo-nav.js"></script>
 </body>
 </html>
