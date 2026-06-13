@@ -1,0 +1,484 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ID Card Generator &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- Page layout -- */
+.id-layout { display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
+
+/* -- Controls panel -- */
+.controls-section { margin-bottom: 20px; }
+.cs-title { font-size: .78rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+/* -- Template picker -- */
+.template-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.tpl-card {
+  border: 2px solid var(--border); border-radius: 10px;
+  padding: 10px 8px; text-align: center; cursor: pointer;
+  transition: all .15s;
+}
+.tpl-card:hover { border-color: var(--blue); }
+.tpl-card.on { border-color: var(--blue); background: var(--blue-pale); }
+.tpl-preview { height: 44px; border-radius: 6px; margin-bottom: 6px; }
+.tpl-name { font-size: .72rem; font-weight: 700; color: var(--muted); }
+.tpl-card.on .tpl-name { color: var(--blue); }
+
+/* -- Color palette -- */
+.color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-dot {
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  border: 2.5px solid transparent; transition: transform .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.color-dot:hover, .color-dot.on { transform: scale(1.2); border-color: var(--ink); }
+
+/* -- ID CARD -- */
+.id-card-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  background: #1a1a2e; border-radius: 16px; padding: 24px;
+}
+.id-card {
+  width: 320px;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,.4);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  position: relative;
+  transition: all .3s;
+}
+/* Front face */
+.id-front, .id-back { width: 320px; }
+
+/* Card header band */
+.id-header {
+  padding: 16px 18px 14px;
+  display: flex; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
+}
+.id-header::before {
+  content: ''; position: absolute; top: -20px; right: -20px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+.id-school-crest { font-size: 1.8rem; flex-shrink: 0; }
+.id-school-name { font-size: .72rem; font-weight: 800; color: rgba(255,255,255,.95); line-height: 1.3; }
+.id-school-sub  { font-size: .6rem;  color: rgba(255,255,255,.65); margin-top: 1px; }
+.id-year-badge {
+  margin-left: auto; background: rgba(255,255,255,.15);
+  padding: 3px 8px; border-radius: 8px;
+  font-size: .62rem; font-weight: 800; color: rgba(255,255,255,.9);
+  flex-shrink: 0; border: 1px solid rgba(255,255,255,.2);
+}
+
+/* Card body */
+.id-body {
+  background: var(--white); padding: 16px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.id-photo {
+  width: 72px; height: 84px; border-radius: 8px;
+  background: linear-gradient(135deg,#2563EB,#3B82F6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; font-weight: 800; color: #fff;
+  flex-shrink: 0; border: 2px solid var(--border);
+  overflow: hidden; position: relative;
+}
+.id-info { flex: 1; min-width: 0; }
+.id-name { font-size: .92rem; font-weight: 800; color: var(--ink); line-height: 1.2; margin-bottom: 4px; }
+.id-name-bn { font-size: .68rem; color: var(--muted); margin-bottom: 8px; }
+.id-detail-row { display: flex; gap: 4px; align-items: baseline; margin-bottom: 3px; }
+.id-detail-key { font-size: .62rem; color: var(--muted); font-weight: 700; width: 56px; flex-shrink: 0; text-transform: uppercase; }
+.id-detail-val { font-size: .72rem; color: var(--ink-3); font-weight: 600; }
+.id-detail-val.mono { font-family: 'DM Mono', monospace; font-size: .7rem; }
+
+/* Barcode strip */
+.id-barcode-strip {
+  padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.barcode-lines { display: flex; gap: 1.5px; align-items: flex-end; height: 28px; }
+.barcode-line { width: 2px; background: var(--ink); border-radius: 0; }
+.id-card-id { font-family: 'DM Mono',monospace; font-size: .65rem; color: var(--muted); }
+.id-blood { padding: 3px 8px; border-radius: 6px; font-size: .66rem; font-weight: 800; }
+
+/* Card footer strap */
+.id-footer {
+  padding: 8px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .62rem; color: rgba(255,255,255,.8);
+}
+
+/* Back of card */
+.id-back { display: none; }
+.id-back.show { display: block; }
+.id-back-header { padding: 12px 18px; font-size: .7rem; font-weight: 800; color: rgba(255,255,255,.9); }
+.id-back-body { background: var(--white); padding: 14px 18px; }
+.id-back-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: .78rem; }
+.id-back-row:last-child { border: none; }
+.id-back-key { color: var(--muted); font-size: .72rem; font-weight: 600; }
+.id-back-val { font-weight: 700; color: var(--ink-2); }
+.id-qr {
+  width: 64px; height: 64px; border-radius: 6px;
+  background: repeating-linear-gradient(0deg, #000 0px, #000 2px, #fff 2px, #fff 4px);
+  opacity: .8;
+}
+
+/* Print sheet / batch grid */
+.print-grid {
+  display: grid; grid-template-columns: repeat(2,320px);
+  gap: 16px; justify-content: center;
+  background: #f0f0f0; padding: 24px; border-radius: 12px;
+  display: none;
+}
+.print-grid.show { display: grid; }
+
+/* Actions bar */
+.id-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* Student picker row */
+.student-pick-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s; font-size: .84rem;
+}
+.student-pick-row:hover { background: var(--blue-pale); }
+.student-pick-row.on { background: var(--blue-pale); border-left: 3px solid var(--blue); }
+.sp-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+.sp-name { font-weight: 700; color: var(--ink-2); flex: 1; }
+.sp-class { font-size: .72rem; color: var(--muted); }
+
+/* Batch select checkboxes */
+.batch-check { accent-color: var(--blue); width: 15px; height: 15px; cursor: pointer; }
+
+/* Toast */
+.toast-stack { position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+.toast { background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s; }
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:1100px){ .id-layout{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Student Management</div>
+        <div class="page-title">ID Card Generator</div>
+        <div class="page-sub">Design, preview, and print student identity cards. Print individually or in bulk.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Opening batch selector&middot;','&#x2705;')"> Batch Print</button>
+        <button class="btn btn-primary" onclick="printCard()"> Print / Download</button>
+      </div>
+    </div>
+
+    <div class="id-layout">
+
+      <!-- LEFT: Controls + Student Picker -->
+      <div>
+
+        <!-- Student selector -->
+        <div class="card" style="margin-bottom:18px;">
+          <div class="card-header"><div class="card-title"> Select Student</div></div>
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+            <div class="search-bar">
+              <span class="sb-search-icon">&#x1F50D;</span>
+              <input type="text" placeholder="Search by name or ID&middot;" oninput="filterPicker(this.value)">
+            </div>
+          </div>
+          <div id="studentPicker" style="max-height:220px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- Customization -->
+        <div class="card">
+          <div class="card-header"><div class="card-title"> Customize Card</div></div>
+          <div class="card-body">
+
+            <!-- Template -->
+            <div class="controls-section">
+              <div class="cs-title"> Template Style</div>
+              <div class="template-grid">
+                <div class="tpl-card on" onclick="selectTemplate(this,'navy')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#0C1B45,#1E3A5F);"></div>
+                  <div class="tpl-name">Navy Blue</div>
+                </div>
+                <div class="tpl-card" onclick="selectTemplate(this,'forest')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#064E3B,#065F46);"></div>
+                  <div class="tpl-name">Forest Green</div>
+                </div>
+                <div class="tpl-card" onclick="selectTemplate(this,'crimson')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#7F1D1D,#991B1B);"></div>
+                  <div class="tpl-name">Crimson</div>
+                </div>
+                <div class="tpl-card" onclick="selectTemplate(this,'indigo')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#3730A3,#4338CA);"></div>
+                  <div class="tpl-name">Deep Indigo</div>
+                </div>
+                <div class="tpl-card" onclick="selectTemplate(this,'slate')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#1E293B,#334155);"></div>
+                  <div class="tpl-name">Slate</div>
+                </div>
+                <div class="tpl-card" onclick="selectTemplate(this,'custom')">
+                  <div class="tpl-preview" style="background:linear-gradient(135deg,#F59E0B,#D97706);"></div>
+                  <div class="tpl-name">Gold</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Show/hide fields -->
+            <div class="controls-section">
+              <div class="cs-title"> Visible Fields</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.83rem;">
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">Student Photo</span></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">Blood Group</span></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">Bengali Name</span></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">QR Code (back)</span></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">Father's Name</span></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked onchange="updateCard()"><span class="toggle-slider"></span></label><span class="toggle-label">Barcode</span></div>
+              </div>
+            </div>
+
+            <!-- Print options -->
+            <div class="controls-section">
+              <div class="cs-title"> Print Settings</div>
+              <div class="form-group mb-4">
+                <label class="form-label">Paper Size</label>
+                <select class="form-select" style="font-size:.83rem;">
+                  <option>A4 (2 cards per row)</option>
+                  <option>A5 (1 card per row)</option>
+                  <option>Credit Card Size (CR-80)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Print Side</label>
+                <div style="display:flex;gap:12px;">
+                  <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;"><input type="radio" name="side" checked style="accent-color:var(--blue);" onclick="showFront()"> Front Only</label>
+                  <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;"><input type="radio" name="side" style="accent-color:var(--blue);" onclick="showBack()"> Both Sides</label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Card Preview -->
+      <div>
+        <div class="id-card-wrap">
+
+          <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:-4px;">FRONT</div>
+
+          <!-- ID CARD FRONT -->
+          <div class="id-card" id="idCardFront">
+            <div class="id-header" id="cardHeader" style="background:linear-gradient(135deg,#0C1B45 0%,#1E3A5F 100%);">
+              <div class="id-school-crest"></div>
+              <div>
+                <div class="id-school-name">Dhaka High School</div>
+                <div class="id-school-sub">dhaka-high.prathomik.edu.bd</div>
+              </div>
+              <div class="id-year-badge">2024&#x2013;25</div>
+            </div>
+
+            <div class="id-body">
+              <div class="id-photo" id="cardPhoto">FI</div>
+              <div class="id-info">
+                <div class="id-name" id="cardName">Farhan Islam</div>
+                <div class="id-name-bn" id="cardNameBn"> </div>
+                <div class="id-detail-row">
+                  <div class="id-detail-key">Class</div>
+                  <div class="id-detail-val" id="cardClass">Class IX&middot;A</div>
+                </div>
+                <div class="id-detail-row">
+                  <div class="id-detail-key">Roll</div>
+                  <div class="id-detail-val mono" id="cardRoll">043</div>
+                </div>
+                <div class="id-detail-row">
+                  <div class="id-detail-key">Student ID</div>
+                  <div class="id-detail-val mono" id="cardId">STU-2024-043</div>
+                </div>
+                <div class="id-detail-row" id="cardBloodRow">
+                  <div class="id-detail-key">Blood</div>
+                  <div class="id-detail-val"><span class="id-blood" style="background:#FEE2E2;color:#991B1B;" id="cardBlood">B+</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="id-barcode-strip" id="cardBarcodeStrip">
+              <div class="barcode-lines" id="barcodeLines"></div>
+              <div class="id-card-id" id="barcodeNum">STU-2024-043</div>
+            </div>
+
+            <div class="id-footer" id="cardFooter" style="background:linear-gradient(135deg,#0C1B45,#1E3A5F);">
+              <span>If found, please return to school office</span>
+              <span>01711-123456</span>
+            </div>
+          </div>
+
+          <!-- ID CARD BACK (hidden unless "Both Sides") -->
+          <div class="id-back" id="idCardBack">
+            <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;text-align:center;margin-bottom:8px;margin-top:4px;">BACK</div>
+            <div class="id-card">
+              <div class="id-header" id="cardBackHeader" style="background:linear-gradient(135deg,#0C1B45,#1E3A5F);">
+                <div style="font-size:.75rem;font-weight:800;color:rgba(255,255,255,.9);">STUDENT IDENTITY CARD &middot; 2024&#x2013;25</div>
+              </div>
+              <div class="id-back-body">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                  <div style="flex:1;">
+                    <div class="id-back-row"><span class="id-back-key">Full Name</span><span class="id-back-val">Farhan Islam</span></div>
+                    <div class="id-back-row"><span class="id-back-key">Father</span><span class="id-back-val">Md. Karim Islam</span></div>
+                    <div class="id-back-row"><span class="id-back-key">Father Mobile</span><span class="id-back-val" style="font-family:'DM Mono',monospace;font-size:.73rem;">01711-000111</span></div>
+                    <div class="id-back-row"><span class="id-back-key">Address</span><span class="id-back-val" style="font-size:.72rem;">House 14, Kafrul, Dhaka</span></div>
+                    <div class="id-back-row"><span class="id-back-key">Admission</span><span class="id-back-val">Jan 15, 2020</span></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div class="id-qr"></div>
+                    <div style="font-size:.6rem;color:var(--muted);font-family:'DM Mono',monospace;">Scan to verify</div>
+                  </div>
+                </div>
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.64rem;color:var(--muted);line-height:1.6;text-align:center;">
+                  This card is the property of Dhaka High School. Unauthorized use is prohibited.
+                  Valid for Session 2024&#x2013;25 only.
+                </div>
+              </div>
+              <div class="id-footer" style="background:linear-gradient(135deg,#0C1B45,#1E3A5F);">
+                <span>dhaka-high.prathomik.edu.bd</span>
+                <span>EIIN: 108765</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="id-actions">
+            <button class="btn btn-primary" onclick="printCard()">&#x1F5A8;&#xFE0F; Print</button>
+            <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);" onclick="showToast('Downloading PNG&middot;','&#x2705;')">PNG</button>
+            <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08);" onclick="showToast('Downloading PDF&middot;','&#x2705;')"> PDF</button>
+          </div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.3);text-align:center;">320 &middot; 200 px &middot; Credit card size</div>
+        </div>
+      </div>
+
+    </div><!-- id-layout -->
+
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// -- Students data --
+const students = [
+  {name:'Farhan Islam',   bn:' ',   cls:'Class IX&middot;A',  roll:'043', id:'STU-2024-043', blood:'B+',  color:'#2563EB', initials:'FI'},
+  {name:'Rahela Khatun',  bn:' ',    cls:'Class IX&middot;A',  roll:'012', id:'STU-2024-012', blood:'A+',  color:'#059669', initials:'RK'},
+  {name:'Imran Hossain',  bn:' ',    cls:'Class X&middot;A',   roll:'028', id:'STU-2024-028', blood:'O+',  color:'#7C3AED', initials:'IH'},
+  {name:'Tasnim Akter',   bn:' ',   cls:'Class IX&middot;B',  roll:'007', id:'STU-2024-007', blood:'AB+', color:'#D97706', initials:'TA'},
+  {name:'Saif Rahman',    bn:' ',      cls:'Class XI&middot;A',  roll:'055', id:'STU-2024-055', blood:'B-',  color:'#0891B2', initials:'SR'},
+  {name:'Sanjida Begum',  bn:' ',    cls:'Class XII&middot;A', roll:'018', id:'STU-2024-018', blood:'O-',  color:'#E11D48', initials:'SB'},
+];
+
+let activeIdx = 0;
+let bgGradient = 'linear-gradient(135deg,#0C1B45 0%,#1E3A5F 100%)';
+
+// Build student picker
+function buildPicker(){
+  document.getElementById('studentPicker').innerHTML = students.map((s,i)=>`
+    <div class="student-pick-row ${i===0?'on':''}" onclick="selectStudent(${i})" id="spRow${i}">
+      <input type="checkbox" class="batch-check" onclick="event.stopPropagation()" ${i<2?'checked':''}>
+      <div class="sp-avatar" style="background:${s.color};">${s.initials}</div>
+      <div class="sp-name">${s.name}</div>
+      <div class="sp-class">${s.cls}</div>
+    </div>`).join('');
+}
+
+function selectStudent(i){
+  activeIdx = i;
+  document.querySelectorAll('.student-pick-row').forEach((r,j)=>r.classList.toggle('on',j===i));
+  updateCard();
+}
+
+function updateCard(){
+  const s = students[activeIdx];
+  document.getElementById('cardName').textContent    = s.name;
+  document.getElementById('cardNameBn').textContent  = s.bn;
+  document.getElementById('cardClass').textContent   = s.cls;
+  document.getElementById('cardRoll').textContent    = s.roll;
+  document.getElementById('cardId').textContent      = s.id;
+  document.getElementById('cardBlood').textContent   = s.blood;
+  document.getElementById('barcodeNum').textContent  = s.id;
+  document.getElementById('cardPhoto').textContent   = s.initials;
+  document.getElementById('cardPhoto').style.background = `linear-gradient(135deg,${s.color},${s.color}cc)`;
+}
+
+function filterPicker(q){
+  const lq = q.toLowerCase();
+  document.querySelectorAll('.student-pick-row').forEach(r=>{
+    r.style.display = (!lq || r.textContent.toLowerCase().includes(lq)) &middot; '' : 'none';
+  });
+}
+
+// -- Template selection --
+const themes = {
+  navy:    'linear-gradient(135deg,#0C1B45 0%,#1E3A5F 100%)',
+  forest:  'linear-gradient(135deg,#064E3B 0%,#065F46 100%)',
+  crimson: 'linear-gradient(135deg,#7F1D1D 0%,#991B1B 100%)',
+  indigo:  'linear-gradient(135deg,#3730A3 0%,#4338CA 100%)',
+  slate:   'linear-gradient(135deg,#1E293B 0%,#334155 100%)',
+  custom:  'linear-gradient(135deg,#92400E 0%,#D97706 100%)',
+};
+function selectTemplate(el, key){
+  document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  bgGradient = themes[key];
+  document.getElementById('cardHeader').style.background     = bgGradient;
+  document.getElementById('cardFooter').style.background     = bgGradient;
+  document.getElementById('cardBackHeader').style.background = bgGradient;
+}
+
+// -- Front / back toggle --
+function showFront(){ document.getElementById('idCardBack').classList.remove('show'); }
+function showBack() { document.getElementById('idCardBack').classList.add('show'); }
+
+// -- Generate barcode lines --
+function genBarcode(){
+  const cont = document.getElementById('barcodeLines');
+  let html = '';
+  for(let i=0;i<40;i++){
+    const h = 12 + Math.random()*14;
+    const w = Math.random() > 0.6 ৳3 : 1.5;
+    html += `<div class="barcode-line" style="height:${h}px;width:${w}px;"></div>`;
+  }
+  cont.innerHTML = html;
+}
+
+// -- Print --
+function printCard(){ showToast('Sending to printer&middot;','&#x2705;'); }
+
+// -- Toast --
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+
+buildPicker();
+genBarcode();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

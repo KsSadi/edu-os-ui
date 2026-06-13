@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Detail — EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* Product image panel */
+.product-img-panel{background:linear-gradient(135deg,#F0FDF4,#D1FAE5);border-radius:18px;height:320px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;margin-bottom:12px;border:1.5px solid #A7F3D0;transition:all .2s;}
+.product-img-panel::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(5,150,105,.08);}
+.product-img-panel .main-emoji{font-size:5rem;line-height:1;transition:transform .2s,opacity .2s;}
+.gallery-thumbs{display:flex;gap:8px;}
+.thumb{width:60px;height:60px;border-radius:10px;background:var(--mkt-pale);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.7rem;cursor:pointer;transition:all .15s;}
+.thumb.on{border-color:var(--mkt);background:var(--mkt-light);box-shadow:0 0 0 3px var(--mkt-light);}
+.thumb:hover:not(.on){border-color:#94A3B8;background:var(--bg);}
+
+/* Product info */
+.prod-category{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mkt);margin-bottom:5px;}
+.prod-title{font-size:1.5rem;font-weight:900;color:var(--ink);line-height:1.25;margin-bottom:8px;}
+.prod-rating{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.stars{color:#F59E0B;letter-spacing:1px;font-size:.9rem;}
+.rating-val{font-size:.82rem;font-weight:800;color:var(--ink);}
+.rating-count{font-size:.78rem;color:var(--muted);}
+.prod-price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;}
+.prod-price{font-size:2rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.prod-old-price{font-size:1.1rem;font-family:'DM Mono',monospace;color:var(--muted);text-decoration:line-through;}
+.prod-discount{font-size:.78rem;font-weight:800;background:#FEF2F2;color:#DC2626;padding:3px 10px;border-radius:8px;}
+
+/* Stock badge */
+.stock-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:16px;}
+.stock-badge.in-stock{background:var(--mkt-pale);color:var(--mkt-dark);border:1.5px solid var(--mkt-light);}
+.stock-badge.out-stock{background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA;}
+
+/* Qty selector */
+.qty-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.qty-label{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.qty-ctrl{display:flex;align-items:center;border:2px solid var(--border);border-radius:10px;overflow:hidden;}
+.qty-btn{width:36px;height:36px;border:none;background:var(--bg);cursor:pointer;font-size:1rem;font-weight:800;color:var(--muted);transition:background .1s;display:flex;align-items:center;justify-content:center;}
+.qty-btn:hover{background:var(--mkt-light);color:var(--mkt);}
+.qty-num{width:40px;text-align:center;font-size:.9rem;font-weight:800;font-family:'DM Mono',monospace;color:var(--ink);}
+
+/* CTA buttons */
+.cta-row{display:flex;gap:10px;margin-bottom:24px;}
+.btn-add-cart{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:12px;background:var(--mkt);color:#fff;border:none;font-size:.92rem;font-weight:800;cursor:pointer;transition:all .15s;}
+.btn-add-cart:hover{background:var(--mkt-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(5,150,105,.35);}
+.btn-wishlist{width:48px;height:48px;border-radius:12px;border:2px solid var(--border);background:var(--white);cursor:pointer;font-size:1.2rem;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.btn-wishlist:hover,.btn-wishlist.on{border-color:#E11D48;background:#FFF1F2;}
+
+/* Delivery info strip */
+.delivery-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.ds-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;background:var(--white);}
+.ds-icon{font-size:1.3rem;margin-bottom:4px;}
+.ds-label{font-size:.7rem;font-weight:800;color:var(--ink-2);}
+.ds-val{font-size:.65rem;color:var(--muted);}
+
+/* Tabs */
+.detail-tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.dtab{padding:9px 18px;font-size:.83rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.dtab.on{color:var(--mkt);border-bottom-color:var(--mkt);}
+.dtab:hover{color:var(--ink-2);}
+.tab-panel{display:none;}
+.tab-panel.on{display:block;}
+
+/* Specs table */
+.specs-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+.specs-table tr:nth-child(even){background:var(--bg);}
+.specs-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--ink-2);}
+.specs-table td:first-child{font-weight:700;color:var(--ink);width:40%;}
+
+/* Reviews */
+.review-card{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.rev-author{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.rev-av{width:30px;height:30px;border-radius:50%;background:var(--mkt);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;}
+.rev-name{font-size:.82rem;font-weight:800;color:var(--ink-2);}
+.rev-date{font-size:.7rem;color:var(--muted);}
+.rev-text{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.rev-stars{color:#F59E0B;font-size:.8rem;}
+
+/* Related products */
+.related-card{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s;background:var(--white);}
+.related-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--mkt);}
+.rc-img{height:80px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:var(--bg);border-bottom:1px solid var(--border);}
+.rc-info{padding:10px 12px;}
+.rc-name{font-size:.82rem;font-weight:800;color:var(--ink-2);margin-bottom:3px;line-height:1.3;}
+.rc-price{font-size:.9rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+/* Cart drawer */
+.cart-drawer{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--white);box-shadow:-4px 0 30px rgba(0,0,0,.15);z-index:200;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;}
+.cart-drawer.open{transform:none;}
+.cart-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199;}
+.cart-overlay.open{display:block;}
+.cart-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);}
+.cart-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.cart-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:center;}
+.ci-img{width:48px;height:48px;border-radius:10px;background:var(--mkt-pale);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.ci-name{font-size:.84rem;font-weight:700;color:var(--ink-2);margin-bottom:2px;}
+.ci-price{font-size:.82rem;font-weight:800;color:var(--mkt);font-family:'DM Mono',monospace;}
+.ci-qty{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+.cq-btn{width:28px;height:28px;border:none;background:var(--bg);cursor:pointer;font-size:.9rem;font-weight:800;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .1s;}
+.cq-btn:hover{background:var(--mkt-light);color:var(--mkt);}
+.cq-num{width:30px;text-align:center;font-size:.82rem;font-weight:800;font-family:'DM Mono',monospace;}
+.cart-foot{padding:16px 20px;border-top:1px solid var(--border);}
+.cart-subtotal{display:flex;justify-content:space-between;font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:10px;}
+/* Cart FAB */
+.cart-fab{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:var(--mkt);color:#fff;border:none;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(5,150,105,.4);transition:all .15s;z-index:100;display:flex;align-items:center;justify-content:center;}
+.cart-fab:hover{transform:scale(1.08);background:var(--mkt-dark);}
+.cart-count{position:absolute;top:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#EF4444;color:#fff;font-size:.62rem;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+        <div class="review-card">
+          <div class="rev-author"><div class="rev-av">RK</div><div><div class="rev-name">Rafiul Karim</div><div class="rev-date">Class X · 2 weeks ago</div></div><div style="margin-left:auto;"><span class="rev-stars">★★★★★</span></div></div>
+          <div class="rev-text">Excellent book! All SSC topics are covered perfectly. The solved examples are very clear and helped me a lot for my board exams. Highly recommended for Science students.</div>
+        </div>
+        <div class="review-card">
+          <div class="rev-author"><div class="rev-av">TJ</div><div><div class="rev-name">Tasnim Jahan</div><div class="rev-date">Class IX · 1 month ago</div></div><div style="margin-left:auto;"><span class="rev-stars">★★★★★</span></div></div>
+          <div class="rev-text">Good quality print and very comprehensive. The past paper questions at the end of each chapter are super helpful. Delivery was fast — arrived in 2 days.</div>
+        </div>
+        <div class="review-card">
+          <div class="rev-author"><div class="rev-av">MH</div><div><div class="rev-name">Mahmudul Hasan</div><div class="rev-date">Class X · 5 weeks ago</div></div><div style="margin-left:auto;"><span class="rev-stars">★★★★☆</span></div></div>
+          <div class="rev-text">Very good book overall. Only 4 stars because a few pages near the back had a light printing issue. Content-wise it is the best maths guide I have used.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="anim-3" style="margin-top:32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:.92rem;font-weight:900;color:var(--ink);">📦 Related Products</div>
+        <a href="market-catalogue.html" style="font-size:.78rem;font-weight:700;color:var(--mkt);text-decoration:none;">View all →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+        <div class="related-card" onclick="showToast('Opening product…','📗')"><div class="rc-img">📗</div><div class="rc-info"><div class="rc-name">Bangla 1st Paper — Class IX</div><div class="rc-price">৳ 180</div></div></div>
+        <div class="related-card" onclick="showToast('Opening product…','📘')"><div class="rc-img">📘</div><div class="rc-info"><div class="rc-name">English Grammar & Composition</div><div class="rc-price">৳ 165</div></div></div>
+        <div class="related-card" onclick="showToast('Opening product…','⚗️')"><div class="rc-img">⚗️</div><div class="rc-info"><div class="rc-name">Physics Guide — Class IX</div><div class="rc-price">৳ 195</div></div></div>
+        <div class="related-card" onclick="showToast('Opening product…','🧪')"><div class="rc-img">🧪</div><div class="rc-info"><div class="rc-name">Chemistry Lab Manual IX</div><div class="rc-price">৳ 140</div></div></div>
+        <div class="related-card" onclick="showToast('Opening product…','📝')"><div class="rc-img">📝</div><div class="rc-info"><div class="rc-name">SSC Model Test Questions</div><div class="rc-price">৳ 250</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Cart overlay -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+<!-- Cart drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <div class="cart-title">🛒 My Cart <span id="cartCountHead" style="font-size:.8rem;color:var(--muted);"></span></div>
+    <button style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted);" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody">
+    <div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:3rem;margin-bottom:10px;">🛒</div>
+      <div style="font-size:.88rem;">Your cart is empty</div>
+      <div style="font-size:.78rem;margin-top:4px;">Add items to get started</div>
+    </div>
+  </div>
+  <div class="cart-foot" id="cartFoot" style="display:none;">
+    <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal" style="font-family:'DM Mono',monospace;color:var(--mkt);">৳ 0</span></div>
+    <div style="display:flex;gap:6px;align-items:center;font-size:.72rem;color:var(--muted);margin-bottom:12px;"><span>🚚</span>Free delivery for orders over ৳ 500</div>
+    <a href="market-order.html" class="btn btn-primary" style="width:100%;justify-content:center;background:var(--mkt);border-color:var(--mkt);display:flex;">Proceed to Checkout →</a>
+  </div>
+</div>
+
+<!-- Cart FAB -->
+<button class="cart-fab" id="cartFab" onclick="toggleCart()">🛒<div class="cart-count" id="cartCount" style="display:none;">0</div></button>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let qty=1, wishlisted=false;
+
+function switchImg(el){
+  document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const emoji=document.getElementById('mainEmoji');
+  emoji.style.opacity='0';emoji.style.transform='scale(.85)';
+  setTimeout(()=>{
+    emoji.textContent=el.dataset.emoji;
+    emoji.style.opacity='1';emoji.style.transform='scale(1)';
+  },150);
+}
+
+function changeQty(delta){
+  qty=Math.max(1,Math.min(5,qty+delta));
+  document.getElementById('qtyVal').textContent=qty;
+}
+/* ── Cart state (single product page) ── */
+const PRODUCT={id:2,name:'Higher Mathematics Textbook IX–X',price:220,emoji:'📐'};
+let cart={}; // id -> qty
+
+function addToCart(){
+  cart[PRODUCT.id]=(cart[PRODUCT.id]||0)+qty;
+  updateCartUI();
+  toggleCart();
+  showToast(`${PRODUCT.emoji} ×${qty} added to cart`,'🛒');
+}
+
+function changeCartQty(id,delta){
+  cart[id]=(cart[id]||0)+delta;
+  if(cart[id]<=0)delete cart[id];
+  updateCartUI();
+}
+
+function updateCartUI(){
+  const total=Object.values(cart).reduce((a,b)=>a+b,0);
+  const subtotal=Object.entries(cart).reduce((a,[id,q])=>{
+    return id==PRODUCT.id?a+(PRODUCT.price*q):a;
+  },0);
+  // FAB & notif dot
+  const countEl=document.getElementById('cartCount');
+  countEl.textContent=total;
+  countEl.style.display=total>0?'flex':'none';
+  document.getElementById('cartNotifDot').style.display=total>0?'block':'none';
+  // Drawer head
+  document.getElementById('cartCountHead').textContent=total>0?`(${total} item${total>1?'s':''})`:'  ';
+  document.getElementById('cartSubtotal').textContent=`৳ ${subtotal.toLocaleString()}`;
+  document.getElementById('cartFoot').style.display=total>0?'block':'none';
+  if(total===0){
+    document.getElementById('cartBody').innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:3rem;margin-bottom:10px;">🛒</div><div style="font-size:.88rem;">Your cart is empty</div></div>';
+    return;
+  }
+  document.getElementById('cartBody').innerHTML=Object.entries(cart).map(([id,q])=>{
+    const p=id==PRODUCT.id?PRODUCT:null;if(!p)return'';
+    return`<div class="cart-item">
+      <div class="ci-img">${p.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-price">৳ ${(p.price*q).toLocaleString()}</div>
+      </div>
+      <div class="ci-qty">
+        <button class="cq-btn" onclick="changeCartQty(${id},-1)">−</button>
+        <div class="cq-num">${q}</div>
+        <button class="cq-btn" onclick="changeCartQty(${id},1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCart(){
+  const d=document.getElementById('cartDrawer'),o=document.getElementById('cartOverlay');
+  d.classList.toggle('open');o.classList.toggle('open');
+}
+function toggleWish(){
+  wishlisted=!wishlisted;
+  const btn=document.getElementById('wishBtn');
+  btn.textContent=wishlisted?'❤️':'🤍';
+  btn.classList.toggle('on',wishlisted);
+  showToast(wishlisted?'Added to Wishlist':'Removed from Wishlist', wishlisted?'❤️':'🤍');
+}
+function switchTab(id,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  el.classList.add('on');
+}
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

@@ -1,0 +1,394 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student List &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- Student card (grid view) -- */
+.student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.student-card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 20px 16px; text-align: center;
+  box-shadow: var(--shadow-sm); cursor: pointer;
+  transition: all .18s; position: relative;
+}
+.student-card:hover { border-color: var(--blue); box-shadow: var(--shadow); transform: translateY(-2px); }
+.student-card.selected { border-color: var(--blue); background: var(--blue-pale); }
+.sc-select { position: absolute; top: 12px; left: 12px; }
+.sc-select input { accent-color: var(--blue); width: 15px; height: 15px; }
+.sc-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: 800; color: #fff;
+  border: 2.5px solid var(--white); box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.sc-name { font-size: .9rem; font-weight: 700; color: var(--ink-2); margin-bottom: 2px; }
+.sc-id   { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--muted); margin-bottom: 8px; }
+.sc-badges { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+.sc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc-stat-block { background: var(--bg); border-radius: 7px; padding: 6px 8px; }
+.sc-stat-num { font-size: .88rem; font-weight: 800; color: var(--ink); }
+.sc-stat-lbl { font-size: .62rem; color: var(--muted); font-weight: 600; }
+.sc-actions { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
+
+/* -- List row view -- */
+.student-list-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  transition: background .12s; cursor: pointer;
+}
+.student-list-row:hover { background: var(--blue-pale); }
+.student-list-row:last-child { border: none; }
+.slr-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.slr-name  { font-size: .88rem; font-weight: 700; color: var(--ink-2); }
+.slr-meta  { font-size: .74rem; color: var(--muted); margin-top: 1px; }
+.slr-col   { min-width: 0; }
+.slr-class { width: 110px; flex-shrink: 0; }
+.slr-fee   { width: 110px; flex-shrink: 0; font-size: .83rem; }
+.slr-att   { width: 90px;  flex-shrink: 0; }
+.slr-acts  { flex-shrink: 0; display: flex; gap: 4px; margin-left: auto; }
+
+/* -- Stats strip -- */
+.stu-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 24px; }
+.ss-b { background: var(--white); padding: 16px 18px; }
+.ss-n { font-size: 1.5rem; font-weight: 800; color: var(--ink); }
+.ss-l { font-size: .72rem; color: var(--muted); margin-top: 3px; font-weight: 600; }
+
+/* -- Filter toolbar -- */
+.filter-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.view-toggle { display: flex; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+.vt-btn { padding: 6px 10px; border: none; background: var(--white); font-size: .9rem; cursor: pointer; transition: background .12s; }
+.vt-btn.on { background: var(--blue); color: var(--white); }
+
+/* Bulk action bar */
+.bulk-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 16px; background: var(--blue-pale);
+  border-bottom: 1px solid var(--blue-light);
+  border-radius: 10px 10px 0 0;
+}
+.bulk-bar.show { display: flex; }
+
+/* Attendance mini bar */
+.att-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.att-fill { height: 100%; border-radius: 2px; }
+
+/* Toast */
+.toast-stack { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast { background:#1F2937; color:#fff; padding:10px 16px; border-radius:9px; font-size:.84rem; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,.25); animation:toast-in .25s ease both; transition:opacity .3s; }
+@keyframes toast-in { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:none;} }
+
+@media(max-width:900px){ .stu-stats{grid-template-columns:repeat(3,1fr);} .slr-fee,.slr-att{display:none;} }
+@media(max-width:600px){ .student-grid{grid-template-columns:repeat(2,1fr);} .stu-stats{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">&#x1F9D1;&#x200D;&#x1F393; People</div>
+        <div class="page-title">Student List</div>
+        <div class="page-sub">Manage all 1,248 enrolled students for Session 2024&#x2013;25.</div>
+      </div>
+      <div class="page-actions">
+        <a href="admin-student-import.html" class="btn btn-outline">&#x1F4E5; Bulk Import</a>
+        <a href="admin-student-admission.html" class="btn btn-primary">+ Admit Student</a>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stu-stats anim-1">
+      <div class="ss-b"><div class="ss-n">1,248</div><div class="ss-l">Total Enrolled</div></div>
+      <div class="ss-b"><div class="ss-n" style="color:var(--green)">1,190</div><div class="ss-l">Active</div></div>
+      <div class="ss-b"><div class="ss-n" style="color:var(--amber)">42</div><div class="ss-l">Fee Defaulters</div></div>
+      <div class="ss-b"><div class="ss-n" style="color:var(--red)">16</div><div class="ss-l">Low Attendance</div></div>
+      <div class="ss-b"><div class="ss-n">58</div><div class="ss-l">New This Month</div></div>
+    </div>
+
+    <!-- Filter toolbar -->
+    <div class="filter-toolbar anim-2">
+      <div class="search-bar" style="flex:1;max-width:280px;">
+        <span class="sb-search-icon">&#x1F50D;</span>
+        <input type="text" placeholder="Name, Roll, Student ID&middot;" oninput="filterStudents(this.value)" id="searchInput">
+      </div>
+      <select class="form-select" style="width:120px;padding:8px 10px;" onchange="applyFilters()">
+        <option>All Classes</option>
+        <option>Class I</option><option>Class II</option><option>Class V</option>
+        <option>Class IX</option><option>Class X</option><option>Class XI</option><option>Class XII</option>
+      </select>
+      <select class="form-select" style="width:110px;padding:8px 10px;" onchange="applyFilters()">
+        <option>All Sections</option>
+        <option>Section A</option><option>Section B</option><option>Section C</option>
+      </select>
+      <select class="form-select" style="width:120px;padding:8px 10px;" id="statusFilter" onchange="applyFilters()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="defaulter">Fee Defaulter</option>
+        <option value="low-att">Low Attendance</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <div class="view-toggle">
+        <button class="vt-btn" id="btnGrid" onclick="setView('grid')" title="Grid view">&#x229E;</button>
+        <button class="vt-btn on" id="btnList" onclick="setView('list')" title="List view">&#x2630;</button>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="openModal('exportModal')">Export</button>
+    </div>
+
+    <!-- Main card -->
+    <div class="card anim-2">
+
+      <!-- Bulk action bar -->
+      <div class="bulk-bar" id="bulkBar">
+        <span id="bulkCount" style="font-size:.84rem;font-weight:700;color:var(--blue-dark);">0 selected</span>
+        <button class="btn btn-sm btn-outline">&#x2709;&#xFE0F; Send Message</button>
+        <button class="btn btn-sm btn-outline">&#x1F4CA; Export Selected</button>
+        <button class="btn btn-sm btn-outline">&#x1F504; Change Class</button>
+        <button class="btn btn-sm btn-danger" style="margin-left:auto;">&#x274C; Withdraw</button>
+      </div>
+
+      <!-- List view (default) -->
+      <div id="listView">
+        <!-- Header row -->
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg);border-bottom:2px solid var(--border);">
+          <div style="width:36px;flex-shrink:0;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)" style="accent-color:var(--blue);width:15px;height:15px;cursor:pointer;"></div>
+          <div style="flex:1;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Student</div>
+          <div class="slr-class" style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Class</div>
+          <div class="slr-fee" style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Fee Status</div>
+          <div class="slr-att" style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Attendance</div>
+          <div style="width:90px;flex-shrink:0;"></div>
+        </div>
+
+        <div id="studentListBody">
+          <!-- Student rows generated by JS -->
+        </div>
+      </div>
+
+      <!-- Grid view -->
+      <div id="gridView" style="display:none;padding:18px;">
+        <div class="student-grid" id="studentGridBody"></div>
+      </div>
+
+      <div class="card-footer">
+        <span class="text-sm text-muted" id="countLabel">Showing 1&middot;20 of 1,248 students</span>
+        <div class="pagination" id="pagination">
+          <button class="pg-btn">&middot;</button>
+          <button class="pg-btn on">1</button>
+          <button class="pg-btn" onclick="showToast('Page 2')">2</button>
+          <button class="pg-btn" onclick="showToast('Page 3')">3</button>
+          <span style="padding:0 4px;color:var(--muted);">&middot;</span>
+          <button class="pg-btn" onclick="showToast('Page 63')">63</button>
+          <button class="pg-btn">&middot;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div><div class="modal-title">Export Student List</div><div class="modal-sub">Download filtered student data.</div></div>
+      <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-4">
+        <label class="form-label">Include Fields</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.83rem;">
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" checked style="accent-color:var(--blue);"> Name &amp; ID</label>
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" checked style="accent-color:var(--blue);"> Class &amp; Section</label>
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" checked style="accent-color:var(--blue);"> Contact Info</label>
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" style="accent-color:var(--blue);"> Fee Status</label>
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" style="accent-color:var(--blue);"> Attendance %</label>
+          <label style="display:flex;align-items:center;gap:7px;"><input type="checkbox" style="accent-color:var(--blue);"> Last Result GPA</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Format</label>
+        <div style="display:flex;gap:12px;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;"><input type="radio" name="ef" checked style="accent-color:var(--blue);"> Excel (.xlsx)</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;"><input type="radio" name="ef" style="accent-color:var(--blue);"> CSV</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;"><input type="radio" name="ef" style="accent-color:var(--blue);"> PDF</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('exportModal');showToast('Preparing export&middot;','&#x2705;');setTimeout(()=>showToast('Download ready!','&#x2705;'),1400)">Export</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+const AVATARS = ['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46','#9D174D','#1D4ED8'];
+const CLASSES = ['Class I&middot;A','Class II&middot;B','Class V&middot;A','Class VI&middot;C','Class IX&middot;A','Class IX&middot;B','Class X&middot;A','Class XI&middot;B','Class XII&middot;A'];
+const FEE_STATUS = [
+  {label:'Paid',    cls:'badge-green'},
+  {label:'Paid',    cls:'badge-green'},
+  {label:'Paid',    cls:'badge-green'},
+  {label:'Pending', cls:'badge-amber'},
+  {label:'Overdue', cls:'badge-red'},
+];
+const BN_FIRST = ['','','','','','','&#x1F9D1;&#x200D;&#x1F393;','','','','',''];
+const EN_FIRST = ['Rahela','Farhan','Mahmud','Tasnim','Saif','Nafisa','Imran','Sumaiya','Tahsin','Nilufar','Riyaz','Sanjida'];
+const EN_LAST  = ['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+
+function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function rndInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+// Generate 20 demo students
+const students = Array.from({length:20},(_, i)=>{
+  const fi = i % EN_FIRST.length;
+  const li = (i*3) % EN_LAST.length;
+  const name = EN_FIRST[fi]+' '+EN_LAST[li];
+  const initials = EN_FIRST[fi][0]+EN_LAST[li][0];
+  const color = AVATARS[i % AVATARS.length];
+  const cls = CLASSES[i % CLASSES.length];
+  const fee = FEE_STATUS[i % FEE_STATUS.length];
+  const att = rndInt(72,99);
+  const gpa = (rndInt(30,50)/10).toFixed(2);
+  const id = 'STU-2024-'+String(i+1).padStart(3,'0');
+  const roll = String(rndInt(1,60)).padStart(3,'0');
+  return {name,initials,color,cls,fee,att,gpa,id,roll};
+});
+
+function buildListView(){
+  const body = document.getElementById('studentListBody');
+  body.innerHTML = students.map((s,i)=>`
+    <div class="student-list-row" data-idx="${i}" onclick="goProfile('${s.id}')">
+      <div style="width:36px;flex-shrink:0;" onclick="event.stopPropagation()">
+        <input type="checkbox" class="row-cb" onchange="updateBulk()" style="accent-color:var(--blue);width:15px;height:15px;cursor:pointer;">
+      </div>
+      <div class="slr-avatar" style="background:${s.color};">${s.initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="slr-name">${s.name}</div>
+        <div class="slr-meta">${s.id} &middot; Roll ${s.roll}</div>
+      </div>
+      <div class="slr-class">
+        <span class="badge badge-blue" style="font-size:.7rem;">${s.cls}</span>
+      </div>
+      <div class="slr-fee">
+        <span class="badge ${s.fee.cls}" style="font-size:.7rem;">${s.fee.label}</span>
+      </div>
+      <div class="slr-att">
+        <div style="font-size:.8rem;font-weight:700;color:${s.att>=85?'var(--green)':s.att>=75?'var(--amber)':'var(--red)'};">${s.att}%</div>
+        <div class="att-bar"><div class="att-fill" style="width:${s.att}%;background:${s.att>=85?'var(--green)':s.att>=75?'var(--amber)':'var(--red)'};"></div></div>
+      </div>
+      <div class="slr-acts" onclick="event.stopPropagation()">
+        <a href="admin-student-profile.html" class="btn btn-sm btn-outline" title="View Profile"></a>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-ghost btn-icon" onclick="toggleDropdown(this)">&hellip;</button>
+          <div class="dropdown-menu">
+            <a href="admin-student-profile.html" class="dd-item">&#x1F464; View Profile</a>
+            <button class="dd-item" onclick="showToast('Editing ${s.name}','&#x2705;')">&#x270F;&#xFE0F; Edit</button>
+            <button class="dd-item">&#x1F5A8;&#xFE0F; Print ID Card</button>
+            <button class="dd-item">&#x1F4B0; Fee History</button>
+            <div class="dd-divider"></div>
+            <button class="dd-item danger">&#x274C; Withdraw</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function buildGridView(){
+  const body = document.getElementById('studentGridBody');
+  body.innerHTML = students.map((s,i)=>`
+    <div class="student-card" onclick="goProfile('${s.id}')">
+      <div class="sc-select" onclick="event.stopPropagation()">
+        <input type="checkbox" class="row-cb" onchange="updateBulk()" style="accent-color:var(--blue);width:15px;height:15px;cursor:pointer;">
+      </div>
+      <div class="sc-avatar" style="background:${s.color};">${s.initials}</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-id">${s.id}</div>
+      <div class="sc-badges">
+        <span class="badge badge-blue" style="font-size:.68rem;">${s.cls}</span>
+        <span class="badge ${s.fee.cls}" style="font-size:.68rem;">${s.fee.label}</span>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat-block"><div class="sc-stat-num">${s.att}%</div><div class="sc-stat-lbl">Attendance</div></div>
+        <div class="sc-stat-block"><div class="sc-stat-num">${s.gpa}</div><div class="sc-stat-lbl">GPA</div></div>
+      </div>
+      <div class="sc-actions" onclick="event.stopPropagation()">
+        <a href="admin-student-profile.html" class="btn btn-sm btn-outline">Profile</a>
+        <button class="btn btn-sm btn-ghost" onclick="showToast('ID Card for ${s.name}','&#x2705;')">ID Card</button>
+      </div>
+    </div>`).join('');
+}
+
+function setView(v){
+  document.getElementById('listView').style.display = v==='list' &middot; '' : 'none';
+  document.getElementById('gridView').style.display = v==='grid' &middot; '' : 'none';
+  document.getElementById('btnList').classList.toggle('on', v==='list');
+  document.getElementById('btnGrid').classList.toggle('on', v==='grid');
+}
+
+function filterStudents(q){
+  const lq = q.toLowerCase();
+  document.querySelectorAll('.student-list-row').forEach(r=>{
+    r.style.display = (!lq || r.textContent.toLowerCase().includes(lq)) &middot; '' : 'none';
+  });
+  document.querySelectorAll('.student-card').forEach(c=>{
+    c.style.display = (!lq || c.textContent.toLowerCase().includes(lq)) &middot; '' : 'none';
+  });
+}
+function applyFilters(){ showToast('Filter applied','&#x2705;'); }
+
+function toggleAll(cb){
+  document.querySelectorAll('.row-cb').forEach(c=>c.checked=cb.checked);
+  updateBulk();
+}
+function updateBulk(){
+  const sel = document.querySelectorAll('.row-cb:checked').length;
+  document.getElementById('bulkBar').classList.toggle('show', sel>0);
+  document.getElementById('bulkCount').textContent = sel+' selected';
+}
+
+function toggleDropdown(btn){
+  const m = btn.nextElementSibling;
+  document.querySelectorAll('.dropdown-menu.open').forEach(x=>{ if(x!==m)x.classList.remove('open'); });
+  m.classList.toggle('open');
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.dropdown'))document.querySelectorAll('.dropdown-menu.open').forEach(m=>m.classList.remove('open')); });
+
+function goProfile(id){ window.location.href = 'admin-student-profile.html'; }
+
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o)o.classList.remove('open'); }));
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+
+buildListView();
+buildGridView();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

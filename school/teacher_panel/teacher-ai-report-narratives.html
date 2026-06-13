@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Report Narratives — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+.ai-hero-strip{background:linear-gradient(135deg,#0D3528 0%,#0F766E 60%,#134E4A 100%);border-radius:16px;padding:24px 28px;color:#fff;margin-bottom:24px;display:flex;align-items:center;gap:20px;}
+.ai-hero-strip-icon{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.ai-hero-strip-title{font-size:1.2rem;font-weight:800;margin-bottom:3px;}
+.ai-hero-strip-sub{font-size:.84rem;opacity:.7;}
+.ai-hero-strip-stats{margin-left:auto;display:flex;gap:28px;flex-shrink:0;}
+.ai-hero-strip-stat-num{font-size:1.4rem;font-weight:800;text-align:right;}
+.ai-hero-strip-stat-lbl{font-size:.65rem;opacity:.5;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+
+.tone-btn{padding:7px 16px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink-3);}
+.tone-btn.on{border-color:var(--teacher);background:var(--teacher-pale);color:var(--teacher-dark);}
+
+.student-row{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+.student-row:hover{background:var(--bg);}
+.student-row:last-child{border:none;}
+.student-av{width:40px;height:40px;border-radius:50%;background:var(--teacher-pale);color:var(--teacher-dark);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0;}
+.student-name{font-size:.875rem;font-weight:700;color:var(--ink-2);}
+.student-meta{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.narrative-box{flex:1;min-width:0;}
+.narrative-text{font-size:.82rem;color:var(--ink-3);line-height:1.65;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-top:8px;font-style:italic;}
+.narrative-text.generated{border-color:var(--teacher);background:var(--teacher-pale);}
+.narrative-placeholder{font-size:.82rem;color:var(--muted);line-height:1.65;background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:10px 13px;margin-top:8px;font-style:italic;}
+.narrative-actions{display:flex;gap:6px;margin-top:8px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+
+/* spinning AI animation */
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--teacher);animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* progress bar */
+.gen-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0;}
+.gen-progress-fill{height:100%;background:var(--teacher);border-radius:4px;transition:width .3s;}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">AI Tools</div>
+        <div class="page-title">📝 AI Report Narratives</div>
+        <div class="page-sub">Auto-generate personalised progress comments for every student's report card.</div>
+      </div>
+    </div>
+
+    <!-- Hero strip -->
+    <div class="ai-hero-strip">
+      <div class="ai-hero-strip-icon">📝</div>
+      <div>
+        <div class="ai-hero-strip-title">Powered by EduOS AI</div>
+        <div class="ai-hero-strip-sub">Unique, curriculum-aligned narrative for each student — in seconds. Supports Bangla & English.</div>
+      </div>
+      <div class="ai-hero-strip-stats">
+        <div>
+          <div class="ai-hero-strip-stat-num">42</div>
+          <div class="ai-hero-strip-stat-lbl">Students</div>
+        </div>
+        <div>
+          <div class="ai-hero-strip-stat-num" id="generatedCount">0</div>
+          <div class="ai-hero-strip-stat-lbl">Generated</div>
+        </div>
+        <div>
+          <div class="ai-hero-strip-stat-num" id="approvedCount">0</div>
+          <div class="ai-hero-strip-stat-lbl">Approved</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;">
+
+      <!-- Settings Panel -->
+      <div class="card" style="position:sticky;top:20px;">
+        <div class="card-header"><div class="card-title">⚙️ Settings</div></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Class</label>
+            <select class="form-select" id="selClass">
+              <option>Class 7-A</option>
+              <option>Class 8-A</option>
+              <option selected>Class 9-A</option>
+              <option>Class 9-B</option>
+              <option>Class 10-C</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Term</label>
+            <select class="form-select" id="selTerm">
+              <option>Term 1 (Jan–Apr)</option>
+              <option selected>Term 2 (May–Aug)</option>
+              <option>Term 3 (Sep–Dec)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button class="tone-btn on" data-lang="bangla" onclick="setLang(this)">বাংলা</button>
+              <button class="tone-btn" data-lang="english" onclick="setLang(this)">English</button>
+              <button class="tone-btn" data-lang="both" onclick="setLang(this)">Both</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tone</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+              <button class="tone-btn on" data-tone="encouraging" onclick="setTone(this)">Encouraging</button>
+              <button class="tone-btn" data-tone="formal" onclick="setTone(this)">Formal</button>
+              <button class="tone-btn" data-tone="constructive" onclick="setTone(this)">Constructive</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Length</label>
+            <select class="form-select" id="selLength">
+              <option>Short (1–2 sentences)</option>
+              <option selected>Medium (3–4 sentences)</option>
+              <option>Detailed (5–6 sentences)</option>
+            </select>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+            <button class="btn btn-primary w-full" style="background:var(--teacher);border-color:var(--teacher);margin-bottom:8px;" onclick="generateAll()">
+              ✨ Generate for All 42 Students
+            </button>
+            <button class="btn btn-secondary w-full" onclick="approveAll()">
+              ✅ Approve All Generated
+            </button>
+          </div>
+
+          <div id="genProgressWrap" style="display:none;margin-top:12px;">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;" id="genProgressLabel">Generating 0 / 42…</div>
+            <div class="gen-progress"><div class="gen-progress-fill" id="genProgressBar" style="width:0%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧑‍🎓 Students — Class 9-A · Term 2</div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" class="form-input" placeholder="Search student…" style="width:180px;" oninput="filterStudents(this.value)">
+            <button class="btn btn-xs btn-secondary" onclick="exportAll()">📄 Export All</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;" id="studentListBody">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script src="teacher-shell.js"></script>
+<script>
+/* ─── STUDENT DATA ─────────────────────────────────── */
+var STUDENTS = [
+  {id:1, name:'Rahim Ahmed',       avg:82, att:91, behaviour:'Attentive, participates actively', sub_strengths:'Mathematics, Science', sub_weak:'English'},
+  {id:2, name:'Fatema Khanam',     avg:91, att:98, behaviour:'Excellent discipline and focus', sub_strengths:'All subjects', sub_weak:''},
+  {id:3, name:'Karim Uddin',       avg:67, att:78, behaviour:'Easily distracted, needs guidance', sub_strengths:'Art, Bangla', sub_weak:'Math, Physics'},
+  {id:4, name:'Sharmin Akter',     avg:88, att:95, behaviour:'Hardworking and consistent', sub_strengths:'English, Science', sub_weak:''},
+  {id:5, name:'Rony Islam',        avg:54, att:65, behaviour:'Frequent absences affecting progress', sub_strengths:'Social Studies', sub_weak:'Math, Science, English'},
+  {id:6, name:'Nasrin Begum',      avg:79, att:88, behaviour:'Steady improvement throughout term', sub_strengths:'Bangla, Social Studies', sub_weak:'Math'},
+  {id:7, name:'Tawhid Hassan',     avg:93, att:97, behaviour:'Class leader, highly motivated', sub_strengths:'Physics, Math, Chemistry', sub_weak:''},
+  {id:8, name:'Mitu Rani Das',     avg:74, att:85, behaviour:'Shows effort but needs practice', sub_strengths:'English, Art', sub_weak:'Physics'},
+  {id:9, name:'Imran Hossain',     avg:61, att:72, behaviour:'Struggles with concentration', sub_strengths:'Social Studies', sub_weak:'Math, English'},
+  {id:10,name:'Anika Sultana',     avg:86, att:93, behaviour:'Curious learner, asks great questions', sub_strengths:'Science, Math', sub_weak:''},
+  {id:11,name:'Rakib Mia',         avg:71, att:80, behaviour:'Making gradual progress', sub_strengths:'Bangla', sub_weak:'Science, Physics'},
+  {id:12,name:'Sonia Parvin',      avg:89, att:96, behaviour:'Reliable, always prepared', sub_strengths:'English, Chemistry', sub_weak:''},
+  {id:13,name:'Jahid Hasan',       avg:58, att:69, behaviour:'Requires additional support', sub_strengths:'Art', sub_weak:'Most subjects'},
+  {id:14,name:'Monika Chakraborty',avg:84, att:90, behaviour:'Creative thinker, strong writer', sub_strengths:'English, Bangla', sub_weak:'Math'},
+  {id:15,name:'Sabbir Rahman',     avg:76, att:87, behaviour:'Active in group activities', sub_strengths:'Social Studies, Science', sub_weak:''},
+];
+
+/* ─── NARRATIVE TEMPLATES ──────────────────────────── */
+var TEMPLATES = {
+  bangla: {
+    encouraging: {
+      excellent: [
+        "{name} এই টার্মে অত্যন্ত চমৎকার পারফরম্যান্স দেখিয়েছে। {strengths}-এ তার ফলাফল প্রশংসনীয় এবং নিয়মিত উপস্থিতি তার একাগ্রতার প্রমাণ। শিক্ষকরা তার শিক্ষার প্রতি উৎসাহে অত্যন্ত সন্তুষ্ট।",
+        "{name} এই টার্মে শ্রেণিতে উজ্জ্বল ফলাফল অর্জন করেছে। {strengths}-এ বিশেষ দক্ষতা দেখিয়েছে এবং সকল শিক্ষকের প্রশংসা অর্জন করেছে। আগামী টার্মেও এই অগ্রগতি অব্যাহত থাকবে বলে আমরা আশাবাদী।"
+      ],
+      good: [
+        "{name} এই টার্মে ভালো ফলাফল করেছে এবং {strengths}-এ উল্লেখযোগ্য উন্নতি দেখিয়েছে। নিয়মিত উপস্থিতি এবং পরিশ্রম তার শিক্ষার ভিত্তিকে মজবুত করছে। আগামী টার্মে আরও উন্নতির সুযোগ রয়েছে।",
+        "{name} পরিশ্রমী এবং মনোযোগী শিক্ষার্থী হিসেবে এই টার্মে ভালো করেছে। {strengths}-এ তার দক্ষতা প্রশংসনীয়। ধারাবাহিক প্রচেষ্টা তাকে সফলতার দিকে নিয়ে যাবে।"
+      ],
+      average: [
+        "{name} এই টার্মে গড় ফলাফল অর্জন করেছে। {strengths}-এ ভালো করলেও {weak}-এ আরও মনোযোগ দেওয়া প্রয়োজন। শিক্ষকরা বিশ্বাস করেন যে অতিরিক্ত অনুশীলন ও মনোযোগের মাধ্যমে আগামী টার্মে সে আরও ভালো করতে পারবে।",
+        "{name} সম্ভাবনাময় শিক্ষার্থী। {strengths}-এ দক্ষতা থাকলেও {weak}-এ নিয়মিত অনুশীলন বাড়ানো দরকার। আমরা আশা করি আগামী টার্মে সে তার সম্পূর্ণ সম্ভাবনা প্রকাশ করতে পারবে।"
+      ],
+      low: [
+        "{name}-এর এই টার্মের ফলাফল প্রত্যাশার চেয়ে কম হলেও তার মধ্যে উন্নতির সম্ভাবনা রয়েছে। {weak}-এ অতিরিক্ত সহায়তা প্রয়োজন এবং নিয়মিত উপস্থিতি নিশ্চিত করা জরুরি। শিক্ষকরা তার সাফল্য কামনা করেন।",
+        "{name} এই টার্মে কিছু চ্যালেঞ্জের মুখোমুখি হয়েছে। {weak}-এ অতিরিক্ত মনোযোগ এবং পরিবারের সহযোগিতা তাকে সামনে এগিয়ে যেতে সাহায্য করবে। আমরা তার সম্পর্কে আশাবাদী।"
+      ]
+    },
+    formal: {
+      excellent: ["{name} এই মূল্যায়ন মেয়াদে অত্যুৎকৃষ্ট একাডেমিক পারফরম্যান্স প্রদর্শন করেছে। {strengths}-এ কৃতিত্বপূর্ণ ফলাফল এবং {att}% উপস্থিতি তার শিক্ষার প্রতি প্রতিশ্রুতির প্রতিফলন ঘটায়।"],
+      good: ["{name} এই মূল্যায়ন মেয়াদে সন্তোষজনক একাডেমিক ফলাফল অর্জন করেছে। {strengths}-এ উল্লেখযোগ্য দক্ষতা পরিলক্ষিত হয়েছে। ভবিষ্যৎ উন্নয়নের লক্ষ্যে ধারাবাহিক প্রচেষ্টা অব্যাহত রাখা বাঞ্ছনীয়।"],
+      average: ["{name} এই মূল্যায়ন মেয়াদে গড় ফলাফল প্রদর্শন করেছে। {weak}-এ উন্নয়নের সুযোগ রয়েছে এবং অতিরিক্ত পর্যালোচনা সেশনে অংশগ্রহণ করা সুপারিশ করা হচ্ছে।"],
+      low: ["{name} এই মূল্যায়ন মেয়াদে প্রত্যাশিত মানদণ্ড অর্জনে কিছু সীমাবদ্ধতা প্রদর্শন করেছে। {weak}-এ উল্লেখযোগ্য উন্নয়নের প্রয়োজন রয়েছে। অভিভাবক ও শিক্ষকের সমন্বিত প্রচেষ্টা সমস্যা নিরসনে সহায়ক হবে।"]
+    },
+    constructive: {
+      excellent: ["{name} এই টার্মে চমৎকার ফলাফল করেছে। {strengths}-এ তার দক্ষতা উল্লেখযোগ্য। পরবর্তী টার্মে আরও কঠিন বিষয়গুলোতে চ্যালেঞ্জ নেওয়া তার বিকাশে সহায়ক হবে।"],
+      good: ["{name} এই টার্মে ভালো করেছে এবং {strengths}-এ শক্তিশালী ভিত্তি তৈরি করেছে। আগামী টার্মে {weak}-এ নিয়মিত অনুশীলন করলে সে আরও উন্নতি করতে পারবে।"],
+      average: ["{name} এর উন্নতির সম্ভাবনা রয়েছে। {weak}-এ প্রতিদিন ৩০ মিনিট অতিরিক্ত অনুশীলন এবং শিক্ষকের সাথে নিয়মিত পরামর্শ তাকে দ্রুত উন্নতি করতে সাহায্য করবে।"],
+      low: ["{name}-এর জন্য {weak}-এ অতিরিক্ত সহায়তার ব্যবস্থা করা হবে। পারিবারিক সহযোগিতা এবং নিয়মিত উপস্থিতি তার একাডেমিক পারফরম্যান্স উন্নয়নের চাবিকাঠি।"]
+    }
+  },
+  english: {
+    encouraging: {
+      excellent: [
+        "{name} has had an outstanding term, demonstrating excellent academic performance across all subjects. Their dedication is particularly evident in {strengths}, and their {att}% attendance reflects a strong commitment to learning.",
+        "{name} is a truly inspiring student who has excelled this term. Their performance in {strengths} is commendable and sets a great example for classmates. We look forward to continued excellence next term."
+      ],
+      good: [
+        "{name} has performed well this term, showing pleasing improvement in {strengths}. Their consistent effort and enthusiasm are building a strong foundation for future success. We encourage continued dedication.",
+        "{name} has demonstrated steady progress this term. Strengths in {strengths} are clearly developing well. With continued hard work, even greater achievements are well within reach."
+      ],
+      average: [
+        "{name} has achieved a satisfactory result this term. While {strengths} shows good progress, additional focus on {weak} is encouraged to reach full potential. We believe with extra practice, significant improvement is possible next term.",
+        "{name} shows real potential and has made efforts this term. Strengthening skills in {weak} through regular revision will help achieve better results. Their teacher looks forward to supporting this growth."
+      ],
+      low: [
+        "{name} has faced some challenges this term. With targeted support in {weak} and improved attendance (currently {att}%), we are confident improvement is achievable. We encourage a collaborative effort between home and school.",
+        "{name}'s results this term have not fully reflected their potential. Extra support in {weak} and consistent school attendance will make a meaningful difference. Their teacher remains supportive and optimistic."
+      ]
+    },
+    formal: {
+      excellent: ["{name} has demonstrated exemplary academic achievement during this assessment period, with particular distinction in {strengths}. An attendance rate of {att}% reflects commendable commitment to their studies."],
+      good: ["{name} has produced satisfactory academic results during this term. Competency in {strengths} has been clearly demonstrated. Continued engagement with studies is recommended to ensure ongoing progress."],
+      average: ["{name} has achieved average results this term. Improvement in {weak} is recommended, and the student is encouraged to make use of available academic support resources."],
+      low: ["{name} has not met the expected academic standard this term. Significant improvement is required in {weak}. Parental engagement and a structured study plan are strongly advised."]
+    },
+    constructive: {
+      excellent: ["{name} has had an excellent term. To continue growing, exploring advanced topics in {strengths} and taking on leadership roles in group activities would be beneficial next term."],
+      good: ["{name} has made good progress in {strengths} this term. Setting a target to improve {weak} by dedicating 20–30 minutes of focused revision daily will lead to even stronger results next term."],
+      average: ["{name} has the potential to do much better. A practical improvement plan: attend extra support sessions for {weak}, form a study group, and aim for 90%+ attendance next term."],
+      low: ["{name} would benefit from a structured weekly study schedule, focusing on {weak}. Regular teacher check-ins and parental support in establishing a home study routine are highly recommended."]
+    }
+  }
+};
+
+/* ─── STATE ─────────────────────────────────────────── */
+var currentLang = 'bangla';
+var currentTone = 'encouraging';
+var narrativeState = {}; // {id: {text, approved}}
+var ALL_STUDENTS = STUDENTS.slice();
+
+function setLang(btn){
+  document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  currentLang = btn.dataset.lang;
+}
+function setTone(btn){
+  document.querySelectorAll('[data-tone]').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  currentTone = btn.dataset.tone;
+}
+
+function levelKey(avg){
+  if(avg >= 85) return 'excellent';
+  if(avg >= 72) return 'good';
+  if(avg >= 60) return 'average';
+  return 'low';
+}
+
+function pickTemplate(lang, tone, level){
+  var pool = TEMPLATES[lang] && TEMPLATES[lang][tone] && TEMPLATES[lang][tone][level];
+  if(!pool || pool.length === 0) pool = TEMPLATES['bangla']['encouraging']['good'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function buildNarrative(student, lang, tone){
+  var level = levelKey(student.avg);
+  var tpl   = pickTemplate(lang, tone, level);
+  var weak  = student.sub_weak || 'কিছু বিষয়';
+  var str   = student.sub_strengths || 'বিভিন্ন বিষয়';
+  if(lang === 'english' || lang === 'both'){
+    weak = student.sub_weak || 'some subjects';
+    str  = student.sub_strengths || 'several subjects';
+  }
+  var text = tpl
+    .replace(/{name}/g, student.name)
+    .replace(/{strengths}/g, str)
+    .replace(/{weak}/g, weak)
+    .replace(/{att}/g, student.avg)
+    .replace(/{avg}/g, student.avg);
+
+  if(lang === 'both'){
+    var bn = buildNarrative(student, 'bangla', tone);
+    var en = buildNarrative(student, 'english', tone);
+    return bn + ' ' + en;
+  }
+  return text;
+}
+
+function initials(name){
+  var parts = name.trim().split(' ');
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+function renderStudentRow(s){
+  var state = narrativeState[s.id];
+  var dotColor = state ? (state.approved ? '#22C55E' : 'var(--teacher)') : 'var(--border)';
+  var rowId = 'srow-' + s.id;
+
+  var narrativeHtml = '';
+  if(state){
+    var boxClass = state.approved ? '' : 'generated';
+    narrativeHtml = '<div class="narrative-text ' + boxClass + '" id="ntxt-' + s.id + '" contenteditable="true">' + state.text + '</div>'
+      + '<div class="narrative-actions">'
+      + (state.approved
+          ? '<span style="font-size:.72rem;font-weight:700;color:#16A34A;">✅ Approved</span>'
+          : '<button class="btn btn-xs" style="background:var(--teacher);color:#fff;border-color:var(--teacher);" onclick="approveOne(' + s.id + ')">✅ Approve</button>'
+        )
+      + '<button class="btn btn-xs btn-secondary" onclick="regenerateOne(' + s.id + ')">🔄 Regenerate</button>'
+      + '<button class="btn btn-xs btn-secondary" onclick="copyNarrative(' + s.id + ')">📋 Copy</button>'
+      + '</div>';
+  } else {
+    narrativeHtml = '<div class="narrative-placeholder" id="ntxt-' + s.id + '">Click ✨ Generate to create narrative…</div>'
+      + '<div class="narrative-actions">'
+      + '<button class="btn btn-xs" style="background:var(--teacher);color:#fff;border-color:var(--teacher);" onclick="generateOne(' + s.id + ')">✨ Generate</button>'
+      + '</div>';
+  }
+
+  return '<div class="student-row" id="' + rowId + '">'
+    + '<div class="status-dot" style="background:' + dotColor + ';margin-top:10px;"></div>'
+    + '<div class="student-av">' + initials(s.name) + '</div>'
+    + '<div class="narrative-box"><div class="student-name">' + s.name + '</div>'
+    + '<div class="student-meta">Avg: ' + s.avg + '% &nbsp;·&nbsp; Attendance: ' + s.att + '% &nbsp;·&nbsp; ' + s.behaviour + '</div>'
+    + narrativeHtml + '</div></div>';
+}
+
+function renderStudentList(list){
+  var body = document.getElementById('studentListBody');
+  if(!list || list.length === 0){
+    body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);">No students found.</div>';
+    return;
+  }
+  body.innerHTML = list.map(renderStudentRow).join('');
+}
+
+function updateCounters(){
+  var gen = Object.keys(narrativeState).length;
+  var app = Object.values(narrativeState).filter(function(s){ return s.approved; }).length;
+  document.getElementById('generatedCount').textContent = gen;
+  document.getElementById('approvedCount').textContent  = app;
+}
+
+function generateOne(id){
+  var s = ALL_STUDENTS.find(function(s){ return s.id === id; });
+  if(!s) return;
+  narrativeState[id] = {text: buildNarrative(s, currentLang, currentTone), approved: false};
+  updateCounters();
+  renderStudentList(ALL_STUDENTS);
+}
+
+function regenerateOne(id){
+  var s = ALL_STUDENTS.find(function(s){ return s.id === id; });
+  if(!s) return;
+  narrativeState[id] = {text: buildNarrative(s, currentLang, currentTone), approved: false};
+  updateCounters();
+  renderStudentList(ALL_STUDENTS);
+}
+
+function approveOne(id){
+  if(narrativeState[id]){
+    /* capture any manual edits from contenteditable */
+    var el = document.getElementById('ntxt-' + id);
+    if(el) narrativeState[id].text = el.innerText || el.textContent;
+    narrativeState[id].approved = true;
+    updateCounters();
+    renderStudentList(ALL_STUDENTS);
+  }
+}
+
+function approveAll(){
+  ALL_STUDENTS.forEach(function(s){
+    if(narrativeState[s.id]){
+      var el = document.getElementById('ntxt-' + s.id);
+      if(el) narrativeState[s.id].text = el.innerText || el.textContent;
+      narrativeState[s.id].approved = true;
+    }
+  });
+  updateCounters();
+  renderStudentList(ALL_STUDENTS);
+}
+
+function copyNarrative(id){
+  var el = document.getElementById('ntxt-' + id);
+  if(el && navigator.clipboard){
+    navigator.clipboard.writeText(el.innerText || el.textContent);
+  }
+}
+
+function generateAll(){
+  var wrap  = document.getElementById('genProgressWrap');
+  var bar   = document.getElementById('genProgressBar');
+  var label = document.getElementById('genProgressLabel');
+  wrap.style.display = 'block';
+
+  var i = 0;
+  var total = ALL_STUDENTS.length;
+  function step(){
+    if(i >= total){ bar.style.width='100%'; label.textContent='Done! ' + total + ' narratives generated.'; renderStudentList(ALL_STUDENTS); updateCounters(); return; }
+    var s = ALL_STUDENTS[i];
+    if(!narrativeState[s.id] || !narrativeState[s.id].approved){
+      narrativeState[s.id] = {text: buildNarrative(s, currentLang, currentTone), approved: false};
+    }
+    i++;
+    bar.style.width = Math.round((i/total)*100) + '%';
+    label.textContent = 'Generating ' + i + ' / ' + total + '…';
+    setTimeout(step, 60);
+  }
+  step();
+}
+
+function filterStudents(q){
+  var filtered = ALL_STUDENTS.filter(function(s){ return s.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+  renderStudentList(filtered);
+}
+
+function exportAll(){
+  var lines = ALL_STUDENTS.filter(function(s){ return narrativeState[s.id]; }).map(function(s){
+    return s.name + ':\n' + narrativeState[s.id].text;
+  });
+  if(lines.length === 0){ alert('No narratives generated yet.'); return; }
+  var blob = new Blob([lines.join('\n\n---\n\n')], {type:'text/plain'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'report-narratives.txt';
+  a.click();
+}
+
+/* Init */
+renderStudentList(ALL_STUDENTS);
+</script>
+</body>
+</html>

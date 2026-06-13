@@ -1,0 +1,443 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription & Billing &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Plan card */
+.plan-card {
+  border-radius:16px; padding:28px 30px; position:relative; overflow:hidden;
+  color:#fff; margin-bottom:24px;
+  background:linear-gradient(135deg,#1E3A5F 0%,#2E4F7A 50%,#1E3A5F 100%);
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+}
+.plan-card::before {
+  content:''; position:absolute; top:-60px; right:-60px;
+  width:220px; height:220px; border-radius:50%;
+  background:rgba(255,255,255,.05);
+}
+.plan-card::after {
+  content:''; position:absolute; bottom:-40px; left:40%;
+  width:160px; height:160px; border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.plan-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; background:rgba(255,255,255,.15); font-size:.72rem; font-weight:800; color:#fff; letter-spacing:.06em; text-transform:uppercase; margin-bottom:16px; }
+.plan-name  { font-size:1.6rem; font-weight:800; margin-bottom:4px; }
+.plan-price { font-size:2.4rem; font-weight:800; line-height:1; margin-bottom:4px; }
+.plan-price span { font-size:.9rem; font-weight:500; opacity:.65; }
+.plan-desc  { font-size:.82rem; opacity:.65; margin-bottom:22px; }
+.plan-meta-row { display:flex; gap:32px; flex-wrap:wrap; margin-bottom:22px; }
+.pm-item { }
+.pm-label { font-size:.7rem; opacity:.55; font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:3px; }
+.pm-value { font-size:.95rem; font-weight:700; }
+.plan-actions { display:flex; gap:10px; position:relative; z-index:1; }
+.plan-btn-white { background:#fff; color:var(--ink); font-weight:700; padding:9px 20px; border-radius:9px; border:none; cursor:pointer; font-family:inherit; font-size:.85rem; transition:opacity .15s; }
+.plan-btn-white:hover { opacity:.9; }
+.plan-btn-ghost { background:rgba(255,255,255,.15); color:#fff; font-weight:600; padding:9px 20px; border-radius:9px; border:1.5px solid rgba(255,255,255,.3); cursor:pointer; font-family:inherit; font-size:.85rem; transition:background .15s; }
+.plan-btn-ghost:hover { background:rgba(255,255,255,.22); }
+
+/* Renewal strip */
+.renewal-strip { background:linear-gradient(90deg,var(--amber-pale),#FFF7E0); border:1px solid #FDE68A; border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+.rs-icon { font-size:1.3rem; flex-shrink:0; }
+.rs-text { flex:1; font-size:.85rem; color:#78350F; line-height:1.5; }
+.rs-text strong { font-weight:800; }
+
+/* Usage meters */
+.usage-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.usage-card { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px 18px; box-shadow:var(--shadow-sm); }
+.uc-label { font-size:.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+.uc-used  { font-size:1.5rem; font-weight:800; color:var(--ink); }
+.uc-limit { font-size:.8rem; color:var(--muted); margin-bottom:10px; }
+.uc-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin-bottom:6px; }
+.uc-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+.uc-pct { font-size:.72rem; font-weight:700; }
+
+/* Plan comparison */
+.plan-compare { border-radius:14px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--shadow-sm); margin-bottom:24px; }
+.pc-header { display:grid; grid-template-columns:1.5fr repeat(3,1fr); background:var(--bg); border-bottom:2px solid var(--border); }
+.pc-col { padding:16px 14px; text-align:center; }
+.pc-col.feature-col { text-align:left; }
+.pc-plan-name { font-size:.85rem; font-weight:800; color:var(--ink); margin-bottom:2px; }
+.pc-plan-price { font-size:.78rem; color:var(--muted); }
+.pc-current { background:var(--indigo); border-radius:10px 10px 0 0; }
+.pc-current .pc-plan-name, .pc-current .pc-plan-price { color:#fff; }
+.pc-row { display:grid; grid-template-columns:1.5fr repeat(3,1fr); border-bottom:1px solid var(--border); }
+.pc-row:last-child { border:none; }
+.pc-cell { padding:12px 14px; text-align:center; font-size:.82rem; color:var(--ink-3); display:flex; align-items:center; justify-content:center; }
+.pc-cell.feature-cell { text-align:left; justify-content:flex-start; font-weight:600; color:var(--ink-2); }
+.pc-cell.highlight { background:rgba(79,70,229,.04); }
+.check-yes { color:var(--green); font-size:1rem; }
+.check-no  { color:var(--muted-2); font-size:1rem; }
+
+/* Payment history table */
+.payment-status-paid    { color:var(--green); font-weight:700; }
+.payment-status-pending { color:var(--amber); font-weight:700; }
+.payment-status-failed  { color:var(--red); font-weight:700; }
+
+/* Billing layout */
+.billing-layout { display:grid; grid-template-columns:1fr 300px; gap:24px; }
+
+/* Invoice download row */
+.invoice-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.invoice-row:last-child { border:none; }
+.inv-icon { width:34px; height:34px; border-radius:9px; background:var(--indigo-pale); display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+.inv-name { font-size:.84rem; font-weight:700; color:var(--ink-2); }
+.inv-meta { font-size:.72rem; color:var(--muted); margin-top:2px; }
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:1100px){.billing-layout{grid-template-columns:1fr;}}
+@media(max-width:800px){.usage-grid{grid-template-columns:1fr 1fr;} .pc-header,.pc-row{grid-template-columns:1.5fr 1fr 1fr;} .pc-col:nth-child(4),.pc-cell:nth-child(4){display:none;}}
+@media(max-width:540px){.usage-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Account</div>
+        <div class="page-title">Subscription &amp; Billing</div>
+        <div class="page-sub">Manage your EduOS plan, track usage, and view payment history.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="openModal('upgradeModal')">Upgrade Plan</button>
+        <button class="btn btn-primary" onclick="openModal('payModal')">+ Add Credits</button>
+      </div>
+    </div>
+
+    <!-- Renewal alert -->
+    <div class="renewal-strip anim-1">
+      <span class="rs-icon"></span>
+      <div class="rs-text">Your <strong>EduOS Standard Plan</strong> renews on <strong>31 March 2025</strong> &middot; that's in 35 days. Annual renewal: <strong>৳36,000</strong>. Auto-renewal is ON.</div>
+      <button class="btn btn-sm btn-outline" onclick="openModal('renewModal')">Manage Renewal</button>
+    </div>
+
+    <div class="billing-layout">
+      <div>
+
+        <!-- Active plan card -->
+        <div class="plan-card anim-1">
+          <div class="plan-badge">Standard Plan &middot; Active</div>
+          <div class="plan-name">EduOS Standard</div>
+          <div class="plan-price">৳36,000 <span>/ year</span></div>
+          <div class="plan-desc">Billed annually &middot; Renews 31 March 2025 &middot; Auto-renewal enabled</div>
+          <div class="plan-meta-row">
+            <div class="pm-item"><div class="pm-label">School</div><div class="pm-value">Dhaka High School</div></div>
+            <div class="pm-item"><div class="pm-label">EIIN</div><div class="pm-value mono" style="font-family:'DM Mono',monospace;font-size:.9rem;">108765</div></div>
+            <div class="pm-item"><div class="pm-label">Tenant ID</div><div class="pm-value mono" style="font-family:'DM Mono',monospace;font-size:.9rem;">T-00892</div></div>
+            <div class="pm-item"><div class="pm-label">Active Since</div><div class="pm-value">1 Jan 2024</div></div>
+          </div>
+          <div class="plan-actions">
+            <button class="plan-btn-white" onclick="openModal('upgradeModal')">Upgrade to Pro</button>
+            <button class="plan-btn-ghost" onclick="openModal('renewModal')">Manage Renewal</button>
+            <button class="plan-btn-ghost" onclick="openModal('cancelModal')">Cancel Plan</button>
+          </div>
+        </div>
+
+        <!-- Usage meters -->
+        <div class="usage-grid anim-2">
+          <div class="usage-card">
+            <div class="uc-label"> Students</div>
+            <div class="uc-used">1,248</div>
+            <div class="uc-limit">of 1,500 included</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:83%;background:var(--amber);"></div></div>
+            <div class="uc-pct" style="color:var(--amber);">83% used &middot; 252 remaining</div>
+          </div>
+          <div class="usage-card">
+            <div class="uc-label"> Staff Accounts</div>
+            <div class="uc-used">82</div>
+            <div class="uc-limit">of 100 included</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:82%;background:var(--indigo);"></div></div>
+            <div class="uc-pct" style="color:var(--indigo);">82% used &middot; 18 remaining</div>
+          </div>
+          <div class="usage-card">
+            <div class="uc-label"> Storage</div>
+            <div class="uc-used">3.2 GB</div>
+            <div class="uc-limit">of 10 GB included</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:32%;background:var(--green);"></div></div>
+            <div class="uc-pct" style="color:var(--green);">32% used &middot; 6.8 GB free</div>
+          </div>
+          <div class="usage-card">
+            <div class="uc-label"> SMS Credits</div>
+            <div class="uc-used">৳2,840</div>
+            <div class="uc-limit">of ৳5,000 topped up</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:57%;background:var(--blue);"></div></div>
+            <div class="uc-pct" style="color:var(--blue);">৳2,160 used &middot; &middot;5,350 SMS left</div>
+          </div>
+          <div class="usage-card">
+            <div class="uc-label"> Email Sends</div>
+            <div class="uc-used">1,240</div>
+            <div class="uc-limit">of 5,000/month</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:25%;background:var(--teal);"></div></div>
+            <div class="uc-pct" style="color:var(--teal);">25% used this month</div>
+          </div>
+          <div class="usage-card">
+            <div class="uc-label"> API Calls</div>
+            <div class="uc-used">42,810</div>
+            <div class="uc-limit">of 100,000/month</div>
+            <div class="uc-bar"><div class="uc-fill" style="width:43%;background:var(--violet);"></div></div>
+            <div class="uc-pct" style="color:var(--violet);">43% used this month</div>
+          </div>
+        </div>
+
+        <!-- Plan comparison -->
+        <div class="card anim-3 mb-6">
+          <div class="card-header">
+            <div><div class="card-title"> Plan Comparison</div><div class="card-sub">You're on Standard. See what you'd unlock with Pro or Enterprise.</div></div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('upgradeModal')">Upgrade</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="plan-compare">
+              <div class="pc-header">
+                <div class="pc-col feature-col"><span class="text-sm text-muted fw-bold">Feature</span></div>
+                <div class="pc-col"><div class="pc-plan-name">Basic</div><div class="pc-plan-price">৳18,000/yr</div></div>
+                <div class="pc-col pc-current"><div class="pc-plan-name">Standard</div><div class="pc-plan-price">৳36,000/yr</div></div>
+                <div class="pc-col"><div class="pc-plan-name">Pro</div><div class="pc-plan-price">৳72,000/yr</div></div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Students</div>
+                <div class="pc-cell">500</div>
+                <div class="pc-cell highlight fw-bold">1,500</div>
+                <div class="pc-cell">Unlimited</div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Staff Accounts</div>
+                <div class="pc-cell">30</div>
+                <div class="pc-cell highlight fw-bold">100</div>
+                <div class="pc-cell">Unlimited</div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Storage</div>
+                <div class="pc-cell">2 GB</div>
+                <div class="pc-cell highlight fw-bold">10 GB</div>
+                <div class="pc-cell">100 GB</div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">SMS Credits/yr</div>
+                <div class="pc-cell">&#x09F3;1,000</div>
+                <div class="pc-cell highlight fw-bold">৳5,000</div>
+                <div class="pc-cell">৳15,000</div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Custom Domain</div>
+                <div class="pc-cell"><span class="check-no">&times;</span></div>
+                <div class="pc-cell highlight"><span class="check-yes">&#x2713;</span></div>
+                <div class="pc-cell"><span class="check-yes">&#x2713;</span></div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Advanced Analytics</div>
+                <div class="pc-cell"><span class="check-no">&times;</span></div>
+                <div class="pc-cell highlight"><span class="check-no">&times;</span></div>
+                <div class="pc-cell"><span class="check-yes">&#x2713;</span></div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Priority Support</div>
+                <div class="pc-cell"><span class="check-no">&times;</span></div>
+                <div class="pc-cell highlight"><span class="check-no">&times;</span></div>
+                <div class="pc-cell"><span class="check-yes">&#x2713;</span></div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">Dedicated Onboarding</div>
+                <div class="pc-cell"><span class="check-no">&times;</span></div>
+                <div class="pc-cell highlight"><span class="check-no">&times;</span></div>
+                <div class="pc-cell"><span class="check-yes">&#x2713;</span></div>
+              </div>
+              <div class="pc-row">
+                <div class="pc-cell feature-cell">SLA Guarantee</div>
+                <div class="pc-cell"><span class="check-no">&times;</span></div>
+                <div class="pc-cell highlight"><span class="check-no">&times;</span></div>
+                <div class="pc-cell"><span class="check-yes">99.9%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment history -->
+        <div class="card anim-4">
+          <div class="card-header">
+            <div><div class="card-title"> Payment History</div></div>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Exporting statement&middot;','&#x2705;')">Export CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Invoice</th><th>Date</th><th>Description</th><th>Amount</th><th>Method</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono">INV-2025-003</td>
+                  <td>1 Jan 2025</td>
+                  <td>Standard Plan Annual Renewal</td>
+                  <td class="fw-bold">৳36,000</td>
+                  <td>bKash</td>
+                  <td><span class="payment-status-paid">&#x2713; Paid</span></td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="showToast('Downloading invoice&middot;','&#x2705;')"> PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">INV-2025-002</td>
+                  <td>15 Feb 2025</td>
+                  <td>SMS Credit Top-up &middot; ৳5,000</td>
+                  <td class="fw-bold">৳5,000</td>
+                  <td>Bank Transfer</td>
+                  <td><span class="payment-status-paid">&#x2713; Paid</span></td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="showToast('Downloading invoice&middot;','&#x2705;')"> PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">INV-2025-001</td>
+                  <td>10 Jan 2025</td>
+                  <td>Extra Storage Add-on &middot; 5 GB</td>
+                  <td class="fw-bold">৳3,600</td>
+                  <td>Nagad</td>
+                  <td><span class="payment-status-paid">&#x2713; Paid</span></td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="showToast('Downloading invoice&middot;','&#x2705;')"> PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">INV-2024-012</td>
+                  <td>1 Jan 2024</td>
+                  <td>Standard Plan Annual (2024)</td>
+                  <td class="fw-bold">৳30,000</td>
+                  <td>bKash</td>
+                  <td><span class="payment-status-paid">&#x2713; Paid</span></td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="showToast('Downloading invoice&middot;','&#x2705;')"> PDF</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">INV-2024-005</td>
+                  <td>5 Apr 2024</td>
+                  <td>SMS Credit Top-up &middot; ৳3,000</td>
+                  <td class="fw-bold">৳3,000</td>
+                  <td>Bank Transfer</td>
+                  <td><span class="payment-status-failed">Failed</span></td>
+                  <td><button class="btn btn-sm btn-outline" onclick="showToast('Retrying payment&middot;','&#x2705;')">Retry</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer"><span class="text-sm text-muted">Total paid in 2024&#x2013;25: <strong>&#x09F3;47,600</strong></span><div class="pagination"><button class="pg-btn on">1</button><button class="pg-btn">2</button></div></div>
+        </div>
+
+      </div><!-- /main -->
+
+      <!-- SIDEBAR -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Next billing -->
+        <div class="card" style="padding:20px;">
+          <div class="card-title mb-4"> Next Billing</div>
+          <div style="text-align:center;padding:16px 0;">
+            <div style="font-size:2rem;font-weight:800;color:var(--ink);">35</div>
+            <div style="font-size:.78rem;color:var(--muted);font-weight:600;">days remaining</div>
+            <div style="font-size:.82rem;color:var(--ink-3);margin-top:8px;">Renews 31 March 2025</div>
+            <div style="font-size:1.2rem;font-weight:800;color:var(--indigo);margin-top:6px;">৳36,000</div>
+            <div class="progress-bar" style="margin:12px 0;">
+              <div class="progress-fill" style="width:90%;background:linear-gradient(90deg,var(--indigo),#818CF8);"></div>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);">330 of 365 days elapsed</div>
+          </div>
+          <button class="btn btn-primary w-full mt-4" style="justify-content:center;" onclick="openModal('payModal')">Pay Now &amp; Renew Early</button>
+        </div>
+
+        <!-- Payment methods -->
+        <div class="card" style="padding:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div class="card-title"> Payment Methods</div><button class="btn btn-sm btn-outline" onclick="openModal('payMethodModal')">+ Add</button></div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:1.2rem;"></span>
+            <div style="flex:1;"><div style="font-size:.85rem;font-weight:700;color:var(--ink-2);">bKash</div><div style="font-size:.72rem;color:var(--muted);">+880 1XX XXX 4521 &middot; Default</div></div>
+            <span class="badge badge-green">Default</span>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.2rem;"></span>
+            <div style="flex:1;"><div style="font-size:.85rem;font-weight:700;color:var(--ink-2);">Bank Transfer</div><div style="font-size:.72rem;color:var(--muted);">Dhaka Bank &middot; A/C &middot;&middot;&middot;6734</div></div>
+            <button class="btn btn-sm btn-ghost">Set Default</button>
+          </div>
+        </div>
+
+        <!-- Billing contact -->
+        <div class="card" style="padding:20px;">
+          <div class="card-title mb-4"> Billing Contact</div>
+          <div class="form-group mb-3"><label class="form-label">Name</label><input type="text" class="form-input" value="Abdur Rahman"></div>
+          <div class="form-group mb-3"><label class="form-label">Email</label><input type="email" class="form-input" value="principal@dhakahigh.edu.bd"></div>
+          <div class="form-group mb-4"><label class="form-label">Phone</label><input type="tel" class="form-input" value="+880 1700 000000"></div>
+          <button class="btn btn-secondary w-full" style="justify-content:center;" onclick="showToast('Billing contact updated!','&#x2705;')">Save Changes</button>
+        </div>
+
+        <!-- Danger zone -->
+        <div style="background:var(--red-pale);border:1.5px solid #FECACA;border-radius:14px;padding:18px;">
+          <div style="font-size:.88rem;font-weight:800;color:#991B1B;margin-bottom:6px;">Danger Zone</div>
+          <div style="font-size:.78rem;color:#7F1D1D;line-height:1.55;margin-bottom:14px;">Cancelling will downgrade to the free plan at the end of your billing period. All school data is retained for 90 days.</div>
+          <button class="btn btn-danger btn-sm w-full" style="justify-content:center;" onclick="openModal('cancelModal')">Cancel Subscription</button>
+        </div>
+
+      </div>
+    </div><!-- /billing-layout -->
+  </div><!-- /page-body -->
+</main>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal-overlay" id="upgradeModal">
+  <div class="modal modal-lg">
+    <div class="modal-head"><div><div class="modal-title">Upgrade to Pro Plan</div><div class="modal-sub">Unlock unlimited students, advanced analytics, and priority support.</div></div><button class="modal-close" onclick="closeModal('upgradeModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert alert-indigo mb-4"><span class="alert-icon">!</span><div><div class="alert-title">Pro Plan &middot; ৳72,000/year</div>Unlimited students, staff, 100 GB storage, advanced analytics, priority support with 4-hour SLA, dedicated onboarding manager.</div></div>
+      <div class="form-group mb-4"><label class="form-label">Upgrade Date</label><div style="display:flex;gap:8px;"><button class="priority-btn low on" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">Immediately</button><button class="priority-btn low" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">At renewal (31 Mar)</button></div></div>
+      <div class="form-group"><label class="form-label">Payment Method</label><select class="form-select"><option>bKash &middot; +880 1XX XXX 4521 (Default)</option><option>Bank Transfer &middot; Dhaka Bank &middot;&middot;&middot;6734</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('upgradeModal')">Cancel</button><button class="btn btn-primary" onclick="showToast('Upgrade requested! Our team will contact you.','&#x2705;');closeModal('upgradeModal')">Confirm Upgrade &middot; ৳72,000</button></div>
+  </div>
+</div>
+
+<!-- Pay / Top-up Modal -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><div><div class="modal-title">Add Credits / Top-up</div></div><button class="modal-close" onclick="closeModal('payModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group mb-4"><label class="form-label">Credit Type</label><select class="form-select"><option>SMS Credits</option><option>Extra Storage</option><option>Extra Student Seats</option></select></div>
+      <div class="form-group mb-4"><label class="form-label">Amount</label><input type="number" class="form-input" value="2000" placeholder="e.g. 2000"></div>
+      <div class="form-group"><label class="form-label">Payment Method</label><select class="form-select"><option>bKash (Default)</option><option>Bank Transfer</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('payModal')">Cancel</button><button class="btn btn-primary" onclick="showToast('Payment submitted!','&#x2705;');closeModal('payModal')">Pay Now</button></div>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal modal-sm">
+    <div class="modal-body" style="padding:32px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:14px;">&#x26A0;&#xFE0F;</div>
+      <div class="modal-title mb-2">Cancel Subscription?</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">Your plan remains active until <strong>31 March 2025</strong>. After that, you'll be downgraded to the free tier. All data is retained for 90 days.</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Keep Plan</button>
+        <button class="btn btn-danger" onclick="showToast('Cancellation requested. We\'ll email you.','&#x2705;');closeModal('cancelModal')">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

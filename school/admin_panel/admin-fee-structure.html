@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fee Structure Setup &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Fee type row */
+.fee-type-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);transition:background .1s;}
+.fee-type-row:hover{background:var(--bg);}
+.fee-type-row:last-child{border-bottom:none;}
+.ftr-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ftr-name{flex:1;min-width:0;}
+.ftr-label{font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.ftr-meta{font-size:.74rem;color:var(--muted);}
+.ftr-amount{font-family:'DM Mono',monospace;font-size:.96rem;font-weight:800;color:var(--ink);flex-shrink:0;min-width:90px;text-align:right;}
+.ftr-freq{font-size:.7rem;color:var(--muted);flex-shrink:0;min-width:60px;text-align:center;}
+
+/* Class matrix */
+.matrix-table{border-collapse:collapse;width:100%;font-size:.81rem;}
+.matrix-table th{padding:8px 10px;background:var(--bg);font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:center;border-bottom:2px solid var(--border);white-space:nowrap;}
+.matrix-table th:first-child{text-align:left;}
+.matrix-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.matrix-table td:first-child{text-align:left;font-weight:700;color:var(--ink-2);}
+.matrix-table tr:hover td{background:var(--blue-pale);}
+.amt-cell{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--ink);}
+.edit-amt{width:70px;height:28px;text-align:center;border:1.5px solid transparent;border-radius:6px;font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--ink);background:transparent;transition:all .12s;-moz-appearance:textfield;}
+.edit-amt:hover{border-color:var(--border);background:var(--white);}
+.edit-amt:focus{outline:none;border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(14,165,233,.1);}
+.edit-amt::-webkit-inner-spin-button{-webkit-appearance:none;}
+
+/* Summary card */
+.fee-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.fsg-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;}
+.fsg-num{font-size:1.4rem;font-weight:800;}
+.fsg-lbl{font-size:.74rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Scholarship row */
+.schol-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.schol-row:last-child{border-bottom:none;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:24px;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.fee-summary-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Fee Management</div>
+        <div class="page-title">Fee Structure Setup</div>
+        <div class="page-sub">Define fee types, amounts per class, payment frequencies, and scholarship rules for Session 2024&#x2013;25.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Copying from 2024&#x2013;25&middot;','&#x2705;')">&#x1F4CB; Copy From Last Year</button>
+        <button class="btn btn-primary" onclick="openModal('addFeeModal')">+ Add Fee Type</button>
+      </div>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="fee-summary-grid anim-1">
+      <div class="fsg-card"><div class="fsg-num" style="color:var(--green);">1,248</div><div class="fsg-lbl">Avg Monthly per Student</div></div>
+      <div class="fsg-card"><div class="fsg-num" style="color:var(--blue);">18.6M</div><div class="fsg-lbl">Annual Revenue Target</div></div>
+      <div class="fsg-card"><div class="fsg-num" style="color:var(--ink);">8</div><div class="fsg-lbl">Fee Types Active</div></div>
+      <div class="fsg-card"><div class="fsg-num" style="color:var(--amber);">156</div><div class="fsg-lbl">Scholarship Recipients</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;">
+
+      <!-- Main: Fee types + matrix -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Fee types list -->
+        <div class="card anim-1">
+          <div class="card-header">
+            <div><div class="card-title">&#x1F4B0; Fee Types</div><div class="card-sub">Defined for Session 2024&#x2013;25</div></div>
+            <button class="btn btn-sm btn-primary" onclick="openModal('addFeeModal')">+ Add</button>
+          </div>
+          <div id="feeTypesList"></div>
+        </div>
+
+        <!-- Class matrix -->
+        <div class="card anim-2">
+          <div class="card-header">
+            <div><div class="card-title"> Monthly Tuition &middot; Class-wise Rates</div><div class="card-sub">Click any cell to edit the amount. Changes are saved automatically.</div></div>
+            <div class="page-actions">
+              <button class="btn btn-sm btn-ghost" onclick="showToast('Filling uniform rates&middot;','&#x2705;')">Fill Uniform Rate</button>
+              <button class="btn btn-sm btn-primary" onclick="saveMatrix()"> Save All</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="matrix-table">
+              <thead><tr id="matrixHead"></tr></thead>
+              <tbody id="matrixBody"></tbody>
+            </table>
+          </div>
+          <div class="card-footer"><span class="text-sm text-muted">12 classes &middot; 2 sections &middot; Auto-saves on blur</span></div>
+        </div>
+
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Session selector -->
+        <div class="card anim-1" style="padding:16px 18px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">Active Session</div>
+          <select class="form-select" style="width:100%;margin-bottom:12px;" onchange="showToast('Session changed','&#x2705;')">
+            <option selected>2024&#x2013;25 (Current)</option>
+            <option>2025&#x2013;26 (Next &middot; Draft)</option>
+            <option>2023&#x2013;24 (Archived)</option>
+          </select>
+          <div class="alert alert-blue" style="padding:10px 12px;margin:0;font-size:.78rem;">
+            <span></span> Changes apply to all future invoices. Past receipts are not affected.
+          </div>
+        </div>
+
+        <!-- Payment modes -->
+        <div class="card anim-1">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;"> Payment Modes</div></div>
+          <div class="card-body" style="padding:12px 16px;">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.83rem;">Cash</span></label>
+              <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.83rem;">bKash</span></label>
+              <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.83rem;">Nagad</span></label>
+              <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.83rem;">Bank Transfer</span></label>
+              <label class="toggle-wrap"><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label><span style="font-size:.83rem;">Cheque</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Due date rules -->
+        <div class="card anim-2">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;"> Due Date Rules</div></div>
+          <div class="card-body" style="padding:12px 16px;">
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label" style="font-size:.74rem;">Monthly fee due by</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="number" class="form-input" style="width:60px;text-align:center;" value="10"> <span style="font-size:.84rem;color:var(--muted);">th of each month</span>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label" style="font-size:.74rem;">Late fine (per day after due)</label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:.84rem;color:var(--muted);"></span><input type="number" class="form-input" style="width:70px;" value="10">
+              </div>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              <span style="font-size:.82rem;">Auto-SMS reminder on due date</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scholarship -->
+        <div class="card anim-2">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;"> Scholarship Waiver Types</div></div>
+          <div id="scholList"></div>
+          <div class="card-footer">
+            <button class="btn btn-sm btn-outline" onclick="openModal('addFeeModal')">+ Add Waiver</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Add Fee Type Modal -->
+<div class="modal-overlay" id="addFeeModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title">+ Add Fee Type</div>
+      <button class="modal-close" onclick="closeModal('addFeeModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Fee Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. Science Lab Fee">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fee Category</label>
+          <select class="form-select">
+            <option>Tuition</option><option>One-time</option><option>Annual</option><option>Exam</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frequency</label>
+          <select class="form-select">
+            <option>Monthly</option><option>Quarterly</option><option>Half-Yearly</option><option>Annual</option><option>One-time</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Amount (?)</label>
+          <input type="number" class="form-input" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apply to</label>
+          <select class="form-select">
+            <option>All Classes</option><option>Class I&middot;V</option><option>Class VI&middot;X</option><option>Class XI&middot;XII</option><option>Custom</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Icon / Emoji</label>
+          <input type="text" class="form-input" placeholder="" maxlength="4">
+        </div>
+        <div class="form-group span-2">
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            <span style="font-size:.84rem;">Include in auto-invoice generation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('addFeeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addFeeModal');showToast('Fee type added!','&#x2705;')">Save Fee Type</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const feeTypes=[
+  {icon:'&#x270F;&#xFE0F;',name:'Monthly Tuition',freq:'Monthly',amount:'৳600&middot;1,200',applies:'All Classes',bg:'#EFF6FF',color:'var(--blue)'},
+  {icon:'&#x270F;&#xFE0F;',name:'Admission Fee',freq:'One-time',amount:'৳2,000',applies:'New Students',bg:'#ECFDF5',color:'var(--green)'},
+  {icon:'&#x270F;&#xFE0F;',name:'Session Fee',freq:'Annual',amount:'৳1,200',applies:'All Classes',bg:'#F5F3FF',color:'var(--purple)'},
+  {icon:'&#x270F;&#xFE0F;',name:'Exam Fee',freq:'Per Exam',amount:'৳300',applies:'All Classes',bg:'#FFFBEB',color:'var(--amber)'},
+  {icon:'&#x270F;&#xFE0F;',name:'Science Lab Fee',freq:'Monthly',amount:'৳150',applies:'Class VI&middot;XII',bg:'#FFF7ED',color:'#C2410C'},
+  {icon:'&#x270F;&#xFE0F;',name:'Computer Lab Fee',freq:'Monthly',amount:'৳100',applies:'Class VI&middot;XII',bg:'#F0FDF4',color:'#166534'},
+  {icon:'&#x270F;&#xFE0F;',name:'Library Fee',freq:'Annual',amount:'৳400',applies:'All Classes',bg:'#FFF5F5',color:'var(--red)'},
+  {icon:'&#x270F;&#xFE0F;',name:'Transport Fee',freq:'Monthly',amount:'৳400&middot;800',applies:'Opt-in',bg:'#EFF6FF',color:'var(--blue)'},
+];
+
+document.getElementById('feeTypesList').innerHTML=feeTypes.map((f,i)=>`
+  <div class="fee-type-row">
+    <div class="ftr-icon" style="background:${f.bg};color:${f.color};">${f.icon}</div>
+    <div class="ftr-name">
+      <div class="ftr-label">${f.name}</div>
+      <div class="ftr-meta">Applies to: ${f.applies}</div>
+    </div>
+    <div class="ftr-freq"><span class="badge" style="background:${f.bg};color:${f.color};border:1px solid ${f.bg};font-size:.65rem;">${f.freq}</span></div>
+    <div class="ftr-amount">${f.amount}</div>
+    <button class="btn btn-sm btn-ghost" onclick="showToast('Editing ${f.name}','&#x2705;')" style="font-size:.72rem;">&times;</button>
+    <button class="btn btn-sm btn-ghost" style="font-size:.72rem;color:var(--red);" onclick="showToast('${f.name} deleted','&#x2705;')"></button>
+  </div>`).join('');
+
+// Fee matrix
+const classes=['I&middot;A','I&middot;B','II&middot;A','III&middot;A','IV&middot;A','V&middot;A','VI&middot;A','VII&middot;A','VIII&middot;A','IX&middot;A','X&middot;A','XI&middot;A','XII&middot;A'];
+const baseRates=[400,400,450,450,500,500,600,700,750,800,900,1000,1200];
+const matrixAmounts={};
+classes.forEach((c,i)=>{matrixAmounts[c]={tuition:baseRates[i],lab:i>=5?150:0,computer:i>=5?100:0};});
+
+document.getElementById('matrixHead').innerHTML=`<th>Class</th><th>Tuition</th><th>Lab</th><th>Computer</th><th>Total/Mo</th>`;
+document.getElementById('matrixBody').innerHTML=classes.map((c,i)=>{
+  const d=matrixAmounts[c];
+  const total=d.tuition+(d.lab||0)+(d.computer||0);
+  return`<tr>
+    <td>Class ${c}</td>
+    <td><input type="number" class="edit-amt" value="${d.tuition}" onchange="updateTotal('${c}',this)" data-field="tuition"></td>
+    <td>${d.lab?`<input type="number" class="edit-amt" value="${d.lab}" onchange="updateTotal('${c}',this)" data-field="lab">`:'<span style="color:var(--muted);font-size:.76rem;">N/A</span>'}</td>
+    <td>${d.computer?`<input type="number" class="edit-amt" value="${d.computer}" onchange="updateTotal('${c}',this)" data-field="computer">`:'<span style="color:var(--muted);font-size:.76rem;">N/A</span>'}</td>
+    <td id="total-${c.replace(/[&middot;]/g,'-')}"><strong class="amt-cell">${total}</strong></td>
+  </tr>`;
+}).join('');
+
+function updateTotal(cls,inp){
+  const field=inp.dataset.field;
+  matrixAmounts[cls][field]=parseInt(inp.value)||0;
+  const d=matrixAmounts[cls];
+  const total=d.tuition+(d.lab||0)+(d.computer||0);
+  const id='total-'+cls.replace(/[&middot;]/g,'-');
+  document.getElementById(id).innerHTML=`<strong class="amt-cell">${total}</strong>`;
+  showToast(`Class ${cls} updated &middot; &#x09F3;${total}/mo`,'&#x2705;');
+}
+
+function saveMatrix(){showToast('All fee rates saved for Session 2024&#x2013;25','&#x2705;');}
+
+// Scholarships
+const schols=[
+  {name:'Merit Scholarship',pct:25,count:48,color:'var(--blue)'},
+  {name:'50% Merit Waiver',pct:50,count:32,color:'var(--purple)'},
+  {name:'Full Scholarship',pct:100,count:12,color:'var(--green)'},
+  {name:'Staff Ward (Free)',pct:100,count:22,color:'var(--amber)'},
+  {name:'Sibling Discount',pct:10,count:42,color:'var(--muted)'},
+];
+document.getElementById('scholList').innerHTML=schols.map(s=>`
+  <div class="schol-row">
+    <div style="flex:1;"><div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">${s.name}</div><div style="font-size:.72rem;color:var(--muted);">${s.count} recipients</div></div>
+    <span class="badge" style="background:var(--bg);color:${s.color};border:1px solid var(--border);font-size:.72rem;font-weight:800;">${s.pct}% waiver</span>
+    <button class="btn btn-sm btn-ghost" style="font-size:.68rem;" onclick="showToast('Editing waiver','&#x2705;')">&times;</button>
+  </div>`).join('');
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

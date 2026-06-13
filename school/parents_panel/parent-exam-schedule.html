@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Schedule — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Child tab */
+.child-bar{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.cb-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:12px;border:2px solid var(--border);background:var(--white);cursor:pointer;transition:.15s;font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.cb-btn.on{border-color:var(--par);background:var(--par-pale);color:var(--par-dark);}
+.cb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;color:#fff;}
+
+/* Exam type tabs */
+.exam-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:22px;overflow-x:auto;}
+.exam-tab{padding:10px 20px;font-size:.83rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.12s;white-space:nowrap;}
+.exam-tab:hover{color:var(--ink);}
+.exam-tab.on{color:var(--par);border-bottom-color:var(--par);}
+
+/* Countdown banner */
+.exam-countdown{background:linear-gradient(135deg,#1C0A00,#3B1A02);border-radius:14px;padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.ec-icon{font-size:2rem;}
+.ec-title{font-size:.92rem;font-weight:800;color:#FDE68A;margin-bottom:2px;}
+.ec-sub{font-size:.78rem;color:rgba(255,255,255,.5);}
+.ec-days{margin-left:auto;text-align:center;}
+.ec-num{font-size:2.2rem;font-weight:900;font-family:'DM Mono',monospace;color:#FCD34D;line-height:1;}
+.ec-lbl{font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;}
+
+/* Schedule table */
+.schedule-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:22px;}
+.schedule-wrap-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.schedule-title{font-size:.88rem;font-weight:800;color:var(--ink);}
+.sched-table{width:100%;border-collapse:collapse;}
+.sched-table th{padding:10px 16px;text-align:left;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--bg);border-bottom:1px solid var(--border);}
+.sched-table td{padding:14px 16px;font-size:.84rem;color:var(--ink-2);border-bottom:1px solid var(--border);vertical-align:middle;}
+.sched-table tr:last-child td{border-bottom:none;}
+.sched-table tr:hover td{background:var(--par-pale);}
+.subject-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;flex-shrink:0;}
+.sched-date-block{text-align:center;width:56px;}
+.sched-day{font-size:.65rem;font-weight:700;color:var(--par);text-transform:uppercase;}
+.sched-d{font-size:1.1rem;font-weight:900;color:var(--ink);line-height:1;}
+.sched-mon{font-size:.68rem;color:var(--muted);}
+.sched-badge{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.sched-badge.today{background:var(--par-light);color:var(--par-dark);}
+.sched-badge.upcoming{background:#EFF6FF;color:#1D4ED8;}
+.sched-badge.done{background:#F1F5F9;color:#64748B;}
+
+/* Syllabus card */
+.syllabus-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;}
+.sc-subject{font-size:.9rem;font-weight:800;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.sc-chapters{display:flex;flex-wrap:wrap;gap:6px;}
+.sc-ch{padding:4px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:.76rem;color:var(--ink-2);font-weight:600;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📅 Academics</div>
+        <div class="page-title">Exam Schedule</div>
+        <div class="page-sub">Upcoming exams, dates, syllabus, and timings. Session 2026–27.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Downloading exam routine PDF…','📄')">📄 Download PDF</button>
+      </div>
+    </div>
+
+    <!-- Child Switcher -->
+    <div class="child-bar">
+      <div class="cb-btn on" id="cb-farhan" onclick="switchChild('farhan',this)">
+        <div class="cb-av" style="background:#7C3AED;">FI</div>Farhan Islam · IX–A
+      </div>
+      <div class="cb-btn" id="cb-tasnim" onclick="switchChild('tasnim',this)">
+        <div class="cb-av" style="background:#0891B2;">TI</div>Tasnim Islam · VI–A
+      </div>
+    </div>
+
+    <!-- Exam Type Tabs -->
+    <div class="exam-tabs">
+      <div class="exam-tab on" id="tab-halfyearly" onclick="switchExam('halfyearly',this)">📚 Half-Yearly 2026</div>
+      <div class="exam-tab" id="tab-annual" onclick="switchExam('annual',this)">🎓 Annual 2026</div>
+      <div class="exam-tab" id="tab-classtest" onclick="switchExam('classtest',this)">📝 Class Tests</div>
+    </div>
+
+    <!-- ── FARHAN ── -->
+    <div id="child-farhan">
+      <div id="exam-halfyearly">
+        <!-- Countdown -->
+        <div class="exam-countdown">
+          <div class="ec-icon">📚</div>
+          <div>
+            <div class="ec-title">Half-Yearly Exam 2026 — Farhan Islam (IX–A)</div>
+            <div class="ec-sub">July 15 – July 26, 2026 &nbsp;·&nbsp; Hall A &amp; B &nbsp;·&nbsp; 10:00 AM – 1:00 PM</div>
+          </div>
+          <div class="ec-days">
+            <div class="ec-num" id="daysLeft">14</div>
+            <div class="ec-lbl">Days Left</div>
+          </div>
+        </div>
+
+        <div class="schedule-wrap">
+          <div class="schedule-wrap-head">
+            <div class="schedule-title">Exam Timetable — Class IX–A</div>
+            <span class="sched-badge upcoming">10:00 AM – 1:00 PM Daily</span>
+          </div>
+          <table class="sched-table">
+            <thead>
+              <tr><th>Date</th><th>Subject</th><th>Full Marks</th><th>Duration</th><th>Hall</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Tue</div><div class="sched-d">15</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#6366F1;"></span><b>Bangla 1st Paper</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall A</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Wed</div><div class="sched-d">16</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#6366F1;"></span><b>Bangla 2nd Paper</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall A</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Fri</div><div class="sched-d">18</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#0891B2;"></span><b>English 1st Paper</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall B</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Sat</div><div class="sched-d">19</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#0891B2;"></span><b>English 2nd Paper</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall B</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Mon</div><div class="sched-d">21</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#D97706;"></span><b>Mathematics</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall A</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Tue</div><div class="sched-d">22</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#059669;"></span><b>General Science</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall B</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Wed</div><div class="sched-d">23</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#7C3AED;"></span><b>Bangladesh &amp; World Civilization</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall A</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Thu</div><div class="sched-d">24</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#DC2626;"></span><b>Religion &amp; Moral Education</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall B</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+              <tr>
+                <td><div class="sched-date-block"><div class="sched-day">Sat</div><div class="sched-d">26</div><div class="sched-mon">Jul</div></div></td>
+                <td><span class="subject-dot" style="background:#0D9488;"></span><b>ICT &amp; Digital Technology</b></td>
+                <td>100</td><td>3 hrs</td><td>Hall A</td>
+                <td><span class="sched-badge upcoming">Upcoming</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Syllabus -->
+        <div class="page-title" style="font-size:1rem;margin-bottom:14px;">📖 Syllabus — Half-Yearly 2026</div>
+        <div class="syllabus-card">
+          <div class="sc-subject"><span class="subject-dot" style="background:#6366F1;"></span>Bangla</div>
+          <div class="sc-chapters">
+            <span class="sc-ch">গল্প: বই পড়া, অপরিচিতা, নেকলেস</span>
+            <span class="sc-ch">কবিতা: সেই অস্ত্র, বিভীষণের প্রতি মেঘনাদ</span>
+            <span class="sc-ch">ব্যাকরণ: ক্রিয়া, বাচ্য, সমাস</span>
+          </div>
+        </div>
+        <div class="syllabus-card">
+          <div class="sc-subject"><span class="subject-dot" style="background:#0891B2;"></span>English</div>
+          <div class="sc-chapters">
+            <span class="sc-ch">Unit 1–5 (Textbook)</span>
+            <span class="sc-ch">Grammar: Tense, Voice, Narration</span>
+            <span class="sc-ch">Writing: Letter, Paragraph, Story</span>
+          </div>
+        </div>
+        <div class="syllabus-card">
+          <div class="sc-subject"><span class="subject-dot" style="background:#D97706;"></span>Mathematics</div>
+          <div class="sc-chapters">
+            <span class="sc-ch">Chapter 1: Real Numbers</span>
+            <span class="sc-ch">Chapter 2: Algebraic Expressions</span>
+            <span class="sc-ch">Chapter 3: Geometry</span>
+            <span class="sc-ch">Chapter 5: Statistics</span>
+            <span class="sc-ch">Chapter 7: Quadratic Equations</span>
+          </div>
+        </div>
+        <div class="syllabus-card">
+          <div class="sc-subject"><span class="subject-dot" style="background:#059669;"></span>General Science</div>
+          <div class="sc-chapters">
+            <span class="sc-ch">Chapter 1: Cell Biology</span>
+            <span class="sc-ch">Chapter 2: Respiration</span>
+            <span class="sc-ch">Chapter 3: Acids &amp; Bases</span>
+            <span class="sc-ch">Chapter 4: Electricity</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="exam-annual" style="display:none;">
+        <div class="exam-countdown">
+          <div class="ec-icon">🎓</div>
+          <div>
+            <div class="ec-title">Annual Exam 2026 — Farhan Islam (IX–A)</div>
+            <div class="ec-sub">November 10 – November 25, 2026 &nbsp;·&nbsp; Schedule will be published in September</div>
+          </div>
+          <div class="ec-days">
+            <div class="ec-num">~163</div>
+            <div class="ec-lbl">Days Away</div>
+          </div>
+        </div>
+        <div style="background:var(--white);border:1.5px dashed var(--border);border-radius:14px;padding:36px;text-align:center;color:var(--muted);">
+          <div style="font-size:2rem;margin-bottom:8px;">📅</div>
+          <div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">Annual Exam Routine Not Yet Published</div>
+          <div style="font-size:.8rem;margin-top:6px;">The school will publish the Annual Exam routine in September 2026. You will receive a notification.</div>
+        </div>
+      </div>
+
+      <div id="exam-classtest" style="display:none;">
+        <div class="schedule-wrap">
+          <div class="schedule-wrap-head"><div class="schedule-title">Class Test Schedule — July 2026 (IX–A)</div></div>
+          <table class="sched-table">
+            <thead><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Marks</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Jul 2</td><td>Mathematics</td><td>Trigonometry — Basic Ratios</td><td>20</td><td><span class="sched-badge done">Done</span></td></tr>
+              <tr><td>Jul 5</td><td>Physics</td><td>Motion and Force</td><td>20</td><td><span class="sched-badge done">Done</span></td></tr>
+              <tr><td>Jul 9</td><td>Chemistry</td><td>Atomic Structure</td><td>20</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td>Jul 12</td><td>Biology</td><td>Cell Division</td><td>20</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td>Jul 14</td><td>English</td><td>Comprehension + Grammar</td><td>20</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASNIM ── -->
+    <div id="child-tasnim" style="display:none;">
+      <div id="exam-halfyearly-t">
+        <div class="exam-countdown">
+          <div class="ec-icon">📚</div>
+          <div>
+            <div class="ec-title">Half-Yearly Exam 2026 — Tasnim Islam (VI–A)</div>
+            <div class="ec-sub">July 15 – July 24, 2026 &nbsp;·&nbsp; Hall C &nbsp;·&nbsp; 10:00 AM – 12:30 PM</div>
+          </div>
+          <div class="ec-days">
+            <div class="ec-num">14</div>
+            <div class="ec-lbl">Days Left</div>
+          </div>
+        </div>
+        <div class="schedule-wrap">
+          <div class="schedule-wrap-head">
+            <div class="schedule-title">Exam Timetable — Class VI–A</div>
+            <span class="sched-badge upcoming">10:00 AM – 12:30 PM Daily</span>
+          </div>
+          <table class="sched-table">
+            <thead><tr><th>Date</th><th>Subject</th><th>Full Marks</th><th>Duration</th><th>Hall</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Tue</div><div class="sched-d">15</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#6366F1;"></span><b>Bangla</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Wed</div><div class="sched-d">16</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#0891B2;"></span><b>English</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Fri</div><div class="sched-d">18</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#D97706;"></span><b>Mathematics</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Sat</div><div class="sched-d">19</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#059669;"></span><b>Science</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Mon</div><div class="sched-d">21</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#7C3AED;"></span><b>Bangladesh &amp; Global Studies</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Tue</div><div class="sched-d">22</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#DC2626;"></span><b>Religion &amp; Moral Education</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+              <tr><td><div class="sched-date-block"><div class="sched-day">Thu</div><div class="sched-d">24</div><div class="sched-mon">Jul</div></div></td><td><span class="subject-dot" style="background:#0D9488;"></span><b>ICT</b></td><td>100</td><td>2.5 hrs</td><td>Hall C</td><td><span class="sched-badge upcoming">Upcoming</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let activeChild = 'farhan', activeExam = 'halfyearly';
+
+function switchChild(id, el) {
+  document.querySelectorAll('.cb-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  activeChild = id;
+  document.getElementById('child-farhan').style.display = id === 'farhan' ? '' : 'none';
+  document.getElementById('child-tasnim').style.display = id === 'tasnim' ? '' : 'none';
+}
+
+function switchExam(tab, el) {
+  document.querySelectorAll('.exam-tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  activeExam = tab;
+  // Farhan panels
+  ['halfyearly','annual','classtest'].forEach(t => {
+    const el2 = document.getElementById('exam-' + t);
+    if (el2) el2.style.display = t === tab ? '' : 'none';
+  });
+  // Tasnim panel (only half-yearly for now)
+  const te = document.getElementById('exam-halfyearly-t');
+  if (te) te.style.display = tab === 'halfyearly' ? '' : 'none';
+}
+
+// Days left counter
+const examDate = new Date('2026-07-15');
+const today = new Date('2026-06-01');
+const diff = Math.ceil((examDate - today) / (1000*60*60*24));
+const dlEl = document.getElementById('daysLeft');
+if (dlEl) dlEl.textContent = diff;
+
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(), 300); }, 3000);
+}
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enter Marks &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Marks entry table */
+.marks-table{border-collapse:collapse;width:100%;font-size:.84rem;}
+.marks-table th{padding:9px 10px;background:var(--bg);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:center;border-bottom:2px solid var(--border);white-space:nowrap;}
+.marks-table th:first-child,.marks-table th:nth-child(2){text-align:left;}
+.marks-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:center;}
+.marks-table td:first-child,.marks-table td:nth-child(2){text-align:left;}
+.marks-table tr:hover td{background:var(--blue-pale);}
+
+/* Mark input */
+.mark-inp{width:54px;height:32px;text-align:center;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Mono',monospace;font-size:.84rem;font-weight:700;color:var(--ink);background:var(--white);transition:all .12s;-moz-appearance:textfield;}
+.mark-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
+.mark-inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(14,165,233,.12);}
+.mark-inp.error{border-color:var(--red);background:#FFF5F5;color:var(--red);}
+.mark-inp.good{border-color:var(--green);}
+
+/* Grade badge */
+.grade-badge{display:inline-flex;align-items:center;justify-content:center;width:38px;height:28px;border-radius:6px;font-size:.74rem;font-weight:800;}
+.g-aplus{background:#ECFDF5;color:#065F46;}
+.g-a{background:#EFF6FF;color:#1D4ED8;}
+.g-b{background:#F5F3FF;color:#5B21B6;}
+.g-c{background:#FFFBEB;color:#92400E;}
+.g-d{background:#FFF7ED;color:#9A3412;}
+.g-f{background:#FFF5F5;color:#991B1B;}
+
+/* Subject selector tabs */
+.subj-tab-strip{display:flex;gap:0;overflow-x:auto;border-bottom:1.5px solid var(--border);padding:0 18px;}
+.subj-tab{padding:10px 14px;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s;flex-shrink:0;}
+.subj-tab:hover{color:var(--ink);}
+.subj-tab.on{color:var(--blue);border-bottom-color:var(--blue);}
+.subj-tab.done{color:var(--green);}
+.subj-tab.done::after{content:'&#x2705;';font-size:.6rem;margin-left:4px;vertical-align:middle;}
+
+/* Total cell highlight */
+.total-cell{font-family:'DM Mono',monospace;font-weight:800;font-size:.86rem;}
+
+/* Row avatar */
+.mk-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#fff;flex-shrink:0;margin-right:6px;}
+
+/* Progress pill */
+.entry-progress{display:flex;align-items:center;gap:10px;}
+.ep-bar{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.ep-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s ease;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Marks Entry</div>
+        <div class="page-title">Enter Results / Marks</div>
+        <div class="page-sub">Subject-wise marks entry for Half-Yearly Examination 2025. Auto-calculates grade and GPA.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Importing from Excel&middot;','&#x2705;')"> Import Excel</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveMarks()"> Save Marks</button>
+      </div>
+    </div>
+
+    <!-- Selector bar -->
+    <div class="card" style="padding:16px 18px;margin-bottom:20px;" class="anim-1">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" style="margin-bottom:4px;">Exam</label>
+          <select class="form-select" style="width:220px;" onchange="showToast('Exam changed','&#x2705;')">
+            <option selected>Half-Yearly Examination 2025</option>
+            <option>Annual Examination 2024</option>
+            <option>Unit Test &middot; March 2025</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" style="margin-bottom:4px;">Class</label>
+          <select class="form-select" style="width:120px;" onchange="showToast('Class changed','&#x2705;')">
+            <option>Class IX&middot;A</option>
+            <option>Class IX&middot;B</option>
+            <option>Class X&middot;A</option>
+          </select>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="text-align:right;">
+          <div style="font-size:.76rem;color:var(--muted);font-weight:600;">Entry progress</div>
+          <div class="entry-progress" style="margin-top:4px;">
+            <div class="ep-bar" style="width:160px;"><div class="ep-fill" id="progressFill" style="width:44%;"></div></div>
+            <span style="font-size:.82rem;font-weight:800;color:var(--ink-2);" id="progressText">4 of 9 subjects done</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject tabs + marks table -->
+    <div class="card anim-2">
+      <!-- Subject tabs -->
+      <div class="subj-tab-strip" id="subjTabs"></div>
+
+      <!-- Active subject header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:.92rem;font-weight:800;color:var(--ink);" id="activeSubjTitle">Mathematics</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">Class IX&middot;A &middot; Feb 24, 2025 &middot; Written: 70 + MCQ: 30 = Total: 100</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-sm btn-outline" onclick="fillRandom()"> Fill Demo Data</button>
+          <button class="btn btn-sm btn-outline" onclick="markAllAbsent()"> Mark All Absent</button>
+          <div class="search-bar" style="width:180px;">
+            <span class="sb-search-icon">&#x1F50D;</span>
+            <input type="text" placeholder="Search student&middot;" oninput="searchMarks(this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Marks table -->
+      <div style="overflow-x:auto;">
+        <table class="marks-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th style="min-width:180px;">Student</th>
+              <th>Written<br><span style="font-size:.62rem;font-weight:500;color:var(--muted);">Max 70</span></th>
+              <th>MCQ<br><span style="font-size:.62rem;font-weight:500;color:var(--muted);">Max 30</span></th>
+              <th>Total<br><span style="font-size:.62rem;font-weight:500;color:var(--muted);">/ 100</span></th>
+              <th>Grade</th>
+              <th>GP</th>
+              <th>Absent</th>
+            </tr>
+          </thead>
+          <tbody id="marksBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Table footer summary -->
+      <div style="padding:12px 18px;background:var(--bg);border-top:2px solid var(--border);display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+        <div style="font-size:.8rem;"><span style="color:var(--muted);font-weight:600;">Class Avg:</span> <strong id="classAvg" style="color:var(--ink);">&middot;</strong></div>
+        <div style="font-size:.8rem;"><span style="color:var(--muted);font-weight:600;">Highest:</span> <strong id="classHigh" style="color:var(--green);">&middot;</strong></div>
+        <div style="font-size:.8rem;"><span style="color:var(--muted);font-weight:600;">Lowest:</span> <strong id="classLow" style="color:var(--amber);">&middot;</strong></div>
+        <div style="font-size:.8rem;"><span style="color:var(--muted);font-weight:600;">Failed:</span> <strong id="classFail" style="color:var(--red);">&middot;</strong></div>
+        <div style="font-size:.8rem;"><span style="color:var(--muted);font-weight:600;">Absent:</span> <strong id="classAbsent" style="color:var(--muted);">&middot;</strong></div>
+        <div style="margin-left:auto;"><button class="btn btn-primary" onclick="saveMarks()"> Save &amp; Next Subject &middot;</button></div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card anim-2" style="margin-top:16px;padding:14px 18px;">
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">Grade Scale</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="grade-badge g-aplus">A+</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">80&middot;100 &middot; GP 5.0</span>
+        <span class="grade-badge g-a">A</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">70&middot;79 &middot; GP 4.0</span>
+        <span class="grade-badge g-b">A-</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">60&middot;69 &middot; GP 3.5</span>
+        <span class="grade-badge g-c">B</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">50&middot;59 &middot; GP 3.0</span>
+        <span class="grade-badge g-d">C</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">40&middot;49 &middot; GP 2.0</span>
+        <span class="grade-badge g-d">D</span><span style="font-size:.76rem;color:var(--muted);margin-right:8px;">33&middot;39 &middot; GP 1.0</span>
+        <span class="grade-badge g-f">F</span><span style="font-size:.76rem;color:var(--muted);">Below 33 &middot; GP 0.0</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46','#9D174D'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Tahsin','Mahmud','Sumaiya','Nafisa','Tanvir','Roksana','Sabbir'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+
+const subjects=[
+  {name:'Bangla 1st',written:70,mcq:30,done:true},
+  {name:'Bangla 2nd',written:70,mcq:30,done:true},
+  {name:'English 1st',written:70,mcq:30,done:true},
+  {name:'English 2nd',written:70,mcq:30,done:true},
+  {name:'Mathematics',written:70,mcq:30,done:false,active:true},
+  {name:'Physics',written:70,mcq:30,done:false},
+  {name:'Chemistry',written:70,mcq:30,done:false},
+  {name:'Biology',written:70,mcq:30,done:false},
+  {name:'ICT',written:50,mcq:50,done:false},
+];
+let activeSubj=4;
+
+const students=Array.from({length:20},(_,i)=>{
+  const fn=FIRST[i%FIRST.length],ln=LAST[Math.floor(i*1.7)%LAST.length];
+  return{roll:String(i+1).padStart(3,'0'),name:`${fn} ${ln}`,id:`STU-24-${String(i+1).padStart(3,'0')}`,color:COLORS[i%COLORS.length],initials:`${fn[0]}${ln[0]}`};
+});
+const marksData={};
+
+function getGrade(t){
+  if(t===null)return{g:'',cls:'',gp:''};
+  if(t>=80)return{g:'A+',cls:'g-aplus',gp:'5.00'};
+  if(t>=70)return{g:'A',cls:'g-a',gp:'4.00'};
+  if(t>=60)return{g:'A-',cls:'g-b',gp:'3.50'};
+  if(t>=50)return{g:'B',cls:'g-c',gp:'3.00'};
+  if(t>=40)return{g:'C',cls:'g-c',gp:'2.00'};
+  if(t>=33)return{g:'D',cls:'g-d',gp:'1.00'};
+  return{g:'F',cls:'g-f',gp:'0.00'};
+}
+
+function buildTabs(){
+  document.getElementById('subjTabs').innerHTML=subjects.map((s,i)=>`
+    <div class="subj-tab ${s.done?'done':''} ${i===activeSubj?'on':''}" onclick="switchSubj(${i})">${s.name}</div>`).join('');
+}
+
+function switchSubj(i){
+  activeSubj=i;
+  document.querySelectorAll('.subj-tab').forEach((t,j)=>t.className=`subj-tab ${subjects[j].done?'done':''} ${j===i?'on':''}`);
+  document.getElementById('activeSubjTitle').textContent=subjects[i].name;
+  buildMarksTable();
+}
+
+function buildMarksTable(){
+  const key=activeSubj;
+  if(!marksData[key]) marksData[key]={};
+  const s=subjects[key];
+  document.getElementById('marksBody').innerHTML=students.map((st,i)=>{
+    const d=marksData[key][st.roll]||{w:'',m:'',absent:false};
+    const total=(d.w!==''&&d.m!==''&&!d.absent)?Math.min(s.written,parseInt(d.w)||0)+Math.min(s.mcq,parseInt(d.m)||0):null;
+    const {g,cls,gp}=getGrade(total);
+    return`<tr id="mrow-${st.roll}" data-name="${st.name.toLowerCase()}">
+      <td style="font-family:'DM Mono',monospace;font-size:.74rem;color:var(--muted);">${st.roll}</td>
+      <td><div style="display:flex;align-items:center;"><div class="mk-avatar" style="background:${st.color};">${st.initials}</div><div><div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">${st.name}</div><div style="font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;">${st.id}</div></div></div></td>
+      <td><input type="number" class="mark-inp ${d.absent?'':''}${d.w!==''&&parseInt(d.w)>s.written?'error':d.w!==''?'good':''}" max="${s.written}" min="0" value="${d.w}" id="w-${st.roll}" oninput="onMarkInput('${st.roll}','w',this)" ${d.absent?'disabled':''} placeholder="&middot;"></td>
+      <td><input type="number" class="mark-inp ${d.m!==''&&parseInt(d.m)>s.mcq?'error':d.m!==''?'good':''}" max="${s.mcq}" min="0" value="${d.m}" id="m-${st.roll}" oninput="onMarkInput('${st.roll}','m',this)" ${d.absent?'disabled':''} placeholder="&middot;"></td>
+      <td><span class="total-cell" id="tot-${st.roll}" style="color:${total!==null?(total>=33?'var(--ink)':'var(--red)'):'var(--muted)'};">${total!==null?total:'&middot;'}</span></td>
+      <td><span class="grade-badge ${cls}" id="grade-${st.roll}">${g}</span></td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:700;" id="gp-${st.roll}">${gp}</span></td>
+      <td><label class="toggle" style="scale:.8;"><input type="checkbox" id="abs-${st.roll}" ${d.absent?'checked':''} onchange="onAbsent('${st.roll}',this.checked)"><span class="toggle-slider"></span></label></td>
+    </tr>`;
+  }).join('');
+  updateSummary();
+}
+
+function onMarkInput(roll,field,el){
+  const key=activeSubj;
+  if(!marksData[key])marksData[key]={};
+  if(!marksData[key][roll])marksData[key][roll]={w:'',m:'',absent:false};
+  const s=subjects[key];
+  const val=el.value;
+  marksData[key][roll][field]=val;
+  const max=field==='w'?s.written:s.mcq;
+  el.className='mark-inp '+(val!==''&&parseInt(val)>max?'error':val!==''?'good':'');
+  recalcRow(roll);
+  updateSummary();
+}
+
+function onAbsent(roll,absent){
+  const key=activeSubj;
+  if(!marksData[key])marksData[key]={};
+  if(!marksData[key][roll])marksData[key][roll]={w:'',m:'',absent:false};
+  marksData[key][roll].absent=absent;
+  const row=document.getElementById('mrow-'+roll);
+  ['w','m'].forEach(f=>{const inp=document.getElementById(f+'-'+roll);if(inp){inp.disabled=absent;if(absent)inp.value='';}});
+  if(absent){marksData[key][roll].w='';marksData[key][roll].m='';}
+  recalcRow(roll);updateSummary();
+}
+
+function recalcRow(roll){
+  const key=activeSubj,s=subjects[key];
+  const d=marksData[key]?.[roll]||{};
+  const total=(d.w!==''&&d.m!==''&&!d.absent)?Math.min(s.written,parseInt(d.w)||0)+Math.min(s.mcq,parseInt(d.m)||0):null;
+  const {g,cls,gp}=getGrade(total);
+  const tc=document.getElementById('tot-'+roll);
+  const gc=document.getElementById('grade-'+roll);
+  const gpc=document.getElementById('gp-'+roll);
+  if(tc){tc.textContent=total!==null?total:'&middot;';tc.style.color=total!==null?(total>=33?'var(--ink)':'var(--red)'):'var(--muted)';}
+  if(gc){gc.className=`grade-badge ${cls}`;gc.textContent=g;}
+  if(gpc)gpc.textContent=gp;
+}
+
+function updateSummary(){
+  const key=activeSubj,s=subjects[key];
+  const totals=students.map(st=>{
+    const d=marksData[key]?.[st.roll]||{};
+    if(d.absent||d.w===''||d.m==='')return null;
+    return Math.min(s.written,parseInt(d.w)||0)+Math.min(s.mcq,parseInt(d.m)||0);
+  }).filter(v=>v!==null);
+  const absents=students.filter(st=>marksData[key]?.[st.roll]?.absent).length;
+  document.getElementById('classAvg').textContent=totals.length?Math.round(totals.reduce((a,b)=>a+b,0)/totals.length*10)/10+'%':'&middot;';
+  document.getElementById('classHigh').textContent=totals.length?Math.max(...totals):'&middot;';
+  document.getElementById('classLow').textContent=totals.length?Math.min(...totals):'&middot;';
+  document.getElementById('classFail').textContent=totals.filter(v=>v<33).length;
+  document.getElementById('classAbsent').textContent=absents;
+}
+
+function fillRandom(){
+  const key=activeSubj,s=subjects[key];
+  if(!marksData[key])marksData[key]={};
+  students.forEach(st=>{
+    const w=Math.floor(30+Math.random()*(s.written-30));
+    const m=Math.floor(10+Math.random()*(s.mcq-10));
+    marksData[key][st.roll]={w:String(w),m:String(m),absent:Math.random()<.05};
+  });
+  buildMarksTable();showToast('Demo marks filled','&#x2705;');
+}
+
+function markAllAbsent(){
+  const key=activeSubj;
+  if(!marksData[key])marksData[key]={};
+  students.forEach(st=>{marksData[key][st.roll]={w:'',m:'',absent:true};});
+  buildMarksTable();showToast('All marked absent','&#x2705;');
+}
+
+function searchMarks(q){
+  document.querySelectorAll('#marksBody tr').forEach(r=>{r.style.display=(!q||r.dataset.name?.includes(q.toLowerCase()))?'':'none';});
+}
+
+function saveMarks(){
+  subjects[activeSubj].done=true;
+  buildTabs();
+  const done=subjects.filter(s=>s.done).length;
+  document.getElementById('progressFill').style.width=(done/subjects.length*100)+'%';
+  document.getElementById('progressText').textContent=`${done} of ${subjects.length} subjects done`;
+  showToast(`${subjects[activeSubj].name} marks saved!`,'&#x2705;');
+  // Auto advance
+  const next=subjects.findIndex((s,i)=>i>activeSubj&&!s.done);
+  if(next>-1)setTimeout(()=>switchSubj(next),500);
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildTabs();buildMarksTable();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

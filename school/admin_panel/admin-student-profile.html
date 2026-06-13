@@ -1,0 +1,625 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Profile &middot; Farhan Islam &middot; Dhaka High School</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- Profile hero -- */
+.profile-hero {
+  background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%);
+  border-radius: 16px; padding: 28px 32px;
+  display: flex; align-items: flex-start; gap: 24px;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.profile-hero::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(14,165,233,.1);
+}
+.hero-avatar {
+  width: 84px; height: 84px; border-radius: 50%;
+  border: 3.5px solid rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg,#2563EB,#3B82F6);
+  flex-shrink: 0; position: relative;
+}
+.hero-online { position: absolute; bottom: 3px; right: 3px; width: 14px; height: 14px; background: var(--green); border-radius: 50%; border: 2.5px solid #0F172A; }
+.hero-info { flex: 1; min-width: 0; }
+.hero-name { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 3px; }
+.hero-meta { font-size: .84rem; color: rgba(255,255,255,.55); margin-bottom: 10px; }
+.hero-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.hero-badge { padding: 3px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.8); background: rgba(255,255,255,.08); }
+.hero-stats { display: flex; gap: 0; flex-shrink: 0; }
+.hs-block {
+  padding: 12px 20px; text-align: center;
+  border-left: 1px solid rgba(255,255,255,.1);
+}
+.hs-num  { font-size: 1.3rem; font-weight: 800; color: #fff; }
+.hs-lbl  { font-size: .68rem; color: rgba(255,255,255,.45); margin-top: 2px; font-weight: 600; }
+.hero-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
+/* -- Info grid -- */
+.info-row { display: flex; align-items: flex-start; gap: 6px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border: none; }
+.info-key  { font-size: .75rem; font-weight: 700; color: var(--muted); min-width: 130px; flex-shrink: 0; padding-top: 1px; }
+.info-val  { font-size: .86rem; color: var(--ink-3); font-weight: 500; }
+
+/* -- Result table -- */
+.result-sub-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.result-sub-row:last-child { border: none; }
+.rsub-name  { flex: 1; font-size: .86rem; font-weight: 600; color: var(--ink-3); }
+.rsub-marks { width: 55px; text-align: center; font-size: .85rem; font-weight: 700; color: var(--ink-2); }
+.rsub-grade { width: 36px; text-align: center; }
+.rsub-bar   { width: 80px; }
+
+/* -- Attendance heatmap -- */
+.month-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 8px; }
+.day-cell {
+  aspect-ratio: 1; border-radius: 3px; cursor: pointer;
+  transition: transform .1s;
+}
+.day-cell:hover { transform: scale(1.2); }
+.day-cell.present  { background: var(--green); }
+.day-cell.absent   { background: var(--red-light); border: 1px solid #FECACA; }
+.day-cell.holiday  { background: var(--blue-light); }
+.day-cell.empty    { background: transparent; }
+.day-label { font-size: .64rem; color: var(--muted); font-weight: 700; text-align: center; }
+
+/* -- Fee history -- */
+.fee-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.fee-row:last-child { border: none; }
+.fee-month { font-size: .85rem; font-weight: 700; color: var(--ink-2); flex: 1; }
+.fee-amount { font-size: .88rem; font-weight: 700; color: var(--ink-2); width: 80px; text-align: right; }
+
+/* -- Timeline -- */
+.timeline-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.timeline-item:last-child { border: none; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.tl-body { flex: 1; }
+.tl-main { font-size: .84rem; color: var(--ink-3); }
+.tl-time { font-size: .73rem; color: var(--muted); margin-top: 2px; }
+
+/* -- Radial GPA display -- */
+.gpa-ring { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+.gpa-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gpa-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gpa-num  { font-size: 1.4rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.gpa-lbl  { font-size: .65rem; color: var(--muted); font-weight: 700; }
+
+/* Toast */
+.toast-stack { position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+.toast { background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s; }
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:900px){.profile-hero{flex-wrap:wrap;}.hero-stats{display:none;}.stu-cols{grid-template-columns:1fr!important;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="profile-hero anim-1">
+      <div class="hero-avatar">
+        FI
+        <div class="hero-online"></div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-name">Farhan Islam</div>
+        <div class="hero-meta">STU-2024-043 &middot; Roll 043 &middot; Class IX&middot;A (Science) &middot; Admitted Jan 2020</div>
+        <div class="hero-badges">
+          <span class="hero-badge"> Class IX&middot;A</span>
+          <span class="hero-badge">&#x1F3EB; Session 2024&#x2013;25</span>
+          <span class="hero-badge" style="color:var(--green);border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.1);">Active</span>
+          <span class="hero-badge"> B+</span>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hs-block"><div class="hs-num">4.83</div><div class="hs-lbl">Last GPA</div></div>
+        <div class="hs-block"><div class="hs-num" style="color:var(--green);">94%</div><div class="hs-lbl">Attendance</div></div>
+        <div class="hs-block"><div class="hs-num" style="color:var(--amber);">&#x09F3;600</div><div class="hs-lbl">Fee Due</div></div>
+        <div class="hs-block"><div class="hs-num">2nd</div><div class="hs-lbl">Class Rank</div></div>
+      </div>
+      <div class="hero-actions">
+        <a href="admin-student-id-card.html" class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);"> ID Card</a>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);" onclick="openModal('editModal')">&#x270F;&#xFE0F; Edit</button>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-icon" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);" onclick="toggleDropdown(this)">&hellip;</button>
+          <div class="dropdown-menu">
+            <button class="dd-item">&#x2709;&#xFE0F; Send Message</button>
+            <button class="dd-item">&#x1F504; Change Class</button>
+            <button class="dd-item"> Print Profile</button>
+            <button class="dd-item"> Create Invoice</button>
+            <div class="dd-divider"></div>
+            <button class="dd-item danger" onclick="openModal('withdrawModal')"> Withdraw Student</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar anim-2" id="tabBar">
+      <button class="tab-btn on" onclick="switchTab(this,'overview')">Overview</button>
+      <button class="tab-btn" onclick="switchTab(this,'academics')"> Academics &amp; Results</button>
+      <button class="tab-btn" onclick="switchTab(this,'attendance')">&#x1F4CA; Attendance</button>
+      <button class="tab-btn" onclick="switchTab(this,'fees')">&#x1F4B0; Fees</button>
+      <button class="tab-btn" onclick="switchTab(this,'documents')">&#x1F4C4; Documents</button>
+      <button class="tab-btn" onclick="switchTab(this,'activity')">&#x1F4CB; Activity Log</button>
+    </div>
+
+    <!-- --- OVERVIEW TAB --- -->
+    <div class="tab-content" id="tab-overview">
+      <div class="grid-2 stu-cols" style="grid-template-columns:1fr 1fr;gap:18px;">
+
+        <!-- Personal info -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F464; Personal Information</div><button class="btn btn-ghost btn-sm" onclick="openModal('editModal')">Edit</button></div>
+          <div class="card-body">
+            <div class="info-row"><div class="info-key">Full Name</div><div class="info-val">Farhan Islam</div></div>
+            <div class="info-row"><div class="info-key">Date of Birth</div><div class="info-val">15 May 2009 (Age 15)</div></div>
+            <div class="info-row"><div class="info-key">Gender</div><div class="info-val">Male</div></div>
+            <div class="info-row"><div class="info-key">Blood Group</div><div class="info-val"><span class="badge badge-red">B+</span></div></div>
+            <div class="info-row"><div class="info-key">Religion</div><div class="info-val">Islam</div></div>
+            <div class="info-row"><div class="info-key">Nationality</div><div class="info-val">Bangladeshi</div></div>
+            <div class="info-row"><div class="info-key">Present Address</div><div class="info-val">House 14, Road 5, Kafrul, Dhaka-1216</div></div>
+            <div class="info-row"><div class="info-key">Mobile</div><div class="info-val">01711-000123</div></div>
+          </div>
+        </div>
+
+        <!-- Guardian info -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F46A; Guardian Details</div><button class="btn btn-ghost btn-sm" onclick="openModal('editModal')">Edit</button></div>
+          <div class="card-body">
+            <div class="info-row"><div class="info-key">Father</div><div class="info-val">Md. Karim Islam</div></div>
+            <div class="info-row"><div class="info-key">Father Mobile</div><div class="info-val"><a href="tel:01711000111" style="color:var(--blue);">01711-000111</a></div></div>
+            <div class="info-row"><div class="info-key">Father NID</div><div class="info-val" style="font-family:'DM Mono',monospace;font-size:.8rem;">1988XXXXXXXXXX</div></div>
+            <div class="info-row"><div class="info-key">Occupation</div><div class="info-val">Business</div></div>
+            <div class="info-row"><div class="info-key">Mother</div><div class="info-val">Sumaiya Islam</div></div>
+            <div class="info-row"><div class="info-key">Mother Mobile</div><div class="info-val"><a href="tel:01911000222" style="color:var(--blue);">01911-000222</a></div></div>
+            <div class="info-row"><div class="info-key">Emergency Contact</div><div class="info-val">Father (Primary)</div></div>
+            <div class="info-row"><div class="info-key">Parent Portal</div><div class="info-val"><span class="badge badge-green">Active</span></div></div>
+          </div>
+        </div>
+
+        <!-- Academic placement -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F4DA; Academic Placement</div></div>
+          <div class="card-body">
+            <div class="info-row"><div class="info-key">Current Class</div><div class="info-val"><span class="badge badge-blue">Class IX&middot;A (Science)</span></div></div>
+            <div class="info-row"><div class="info-key">Roll Number</div><div class="info-val" style="font-family:'DM Mono',monospace;">043</div></div>
+            <div class="info-row"><div class="info-key">Registration ID</div><div class="info-val" style="font-family:'DM Mono',monospace;">REG-2024-00043</div></div>
+            <div class="info-row"><div class="info-key">Board</div><div class="info-val">Dhaka Education Board</div></div>
+            <div class="info-row"><div class="info-key">Class Teacher</div><div class="info-val">Dr. Karim Hossain</div></div>
+            <div class="info-row"><div class="info-key">Admitted</div><div class="info-val">January 15, 2020 (Class I)</div></div>
+            <div class="info-row"><div class="info-key">Previous School</div><div class="info-val">&middot;</div></div>
+          </div>
+        </div>
+
+        <!-- Quick stats + notes -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F4DD; Notes &amp; Flags</div><button class="btn btn-ghost btn-sm" onclick="openModal('noteModal')">+ Add Note</button></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="background:var(--amber-light);border:1px solid #FDE68A;border-radius:9px;padding:10px 12px;">
+                <div style="font-size:.78rem;font-weight:700;color:#92400E;margin-bottom:2px;">Fee Reminder</div>
+                <div style="font-size:.8rem;color:#78350F;">February 2025 tuition is pending. Due date: Feb 10.</div>
+                <div style="font-size:.7rem;color:#92400E;margin-top:4px;">Added by Admin &middot; Feb 1, 2025</div>
+              </div>
+              <div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:9px;padding:10px 12px;">
+                <div style="font-size:.78rem;font-weight:700;color:var(--blue-dark);margin-bottom:2px;">Merit Note</div>
+                <div style="font-size:.8rem;color:var(--ink-3);">Won 2nd place in District Math Olympiad 2024.</div>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px;">Added by Principal &middot; Dec 5, 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- --- ACADEMICS TAB --- -->
+    <div class="tab-content" id="tab-academics" style="display:none;">
+      <div class="grid-2 stu-cols" style="grid-template-columns:2fr 1fr;gap:18px;">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title"> Annual Exam 2024 &middot; Class IX&middot;A</div><div class="card-sub">Board Registration: REG-2024-00043</div></div>
+            <span class="badge badge-green">A+ &middot; GPA 4.83</span>
+          </div>
+          <div class="card-body">
+            <div class="result-sub-row" style="background:var(--bg);padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">
+              <span style="flex:1;">Subject</span>
+              <span class="rsub-marks">Written</span>
+              <span class="rsub-marks">MCQ</span>
+              <span class="rsub-marks">Total</span>
+              <span class="rsub-grade">Grade</span>
+              <span class="rsub-bar">Progress</span>
+            </div>
+            <div id="resultBody"></div>
+            <div style="display:flex;justify-content:flex-end;gap:20px;padding-top:12px;border-top:2px solid var(--border);margin-top:8px;">
+              <div style="text-align:center;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;">TOTAL</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--ink);">542/600</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;">GPA</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--green);">4.83</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;">GRADE</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--green);">A+</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;">POSITION</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--blue);">2nd</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="text-sm text-muted">Published Dec 28, 2024</span>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Printing result card&middot;','&#x2705;')"> Print Result</button>
+          </div>
+        </div>
+
+        <!-- GPA trend -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F4CA; GPA History</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="gpa-ring">
+                <svg viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="2.5"/>
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--green)" stroke-width="2.5"
+                    stroke-dasharray="96.5 100" stroke-linecap="round"/>
+                </svg>
+                <div class="gpa-ring-center">
+                  <div class="gpa-num">4.83</div>
+                  <div class="gpa-lbl">GPA</div>
+                </div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:.84rem;font-weight:700;color:var(--green);margin-bottom:4px;">A+ Grade</div>
+                <div style="font-size:.78rem;color:var(--muted);">Class Position: <strong>2nd of 42</strong></div>
+                <div style="font-size:.78rem;color:var(--muted);">School Position: <strong>8th of 120</strong></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;" id="gpaHistory"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- ATTENDANCE TAB --- -->
+    <div class="tab-content" id="tab-attendance" style="display:none;">
+      <div class="grid-2 stu-cols" style="grid-template-columns:2fr 1fr;gap:18px;">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title"> Attendance &middot; February 2025</div><div class="card-sub">Jan 2025: 94% &middot; Dec 2024: 91%</div></div>
+            <select class="form-select" style="width:130px;padding:6px 10px;font-size:.82rem;">
+              <option>February 2025</option>
+              <option>January 2025</option>
+              <option>December 2024</option>
+            </select>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:2px;margin-bottom:6px;">
+              <div class="day-label" style="flex:1;">Sun</div>
+              <div class="day-label" style="flex:1;">Mon</div>
+              <div class="day-label" style="flex:1;">Tue</div>
+              <div class="day-label" style="flex:1;">Wed</div>
+              <div class="day-label" style="flex:1;">Thu</div>
+              <div class="day-label" style="flex:1;">Fri</div>
+              <div class="day-label" style="flex:1;">Sat</div>
+            </div>
+            <div class="month-grid" id="calGrid"></div>
+            <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;"><div style="width:12px;height:12px;background:var(--green);border-radius:2px;"></div>Present (18)</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;"><div style="width:12px;height:12px;background:var(--red-light);border-radius:2px;border:1px solid #FECACA;"></div>Absent (2)</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;"><div style="width:12px;height:12px;background:var(--blue-light);border-radius:2px;"></div>Holiday (4)</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F4CA; Attendance Summary</div></div>
+          <div class="card-body">
+            <div style="text-align:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px;">
+              <div style="font-size:2.8rem;font-weight:800;color:var(--green);">94%</div>
+              <div style="font-size:.8rem;color:var(--muted);">Overall Attendance 2024&#x2013;25</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;font-size:.84rem;">
+                <span style="color:var(--muted);">Total School Days</span><strong>148</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.84rem;">
+                <span style="color:var(--muted);">Present</span><strong style="color:var(--green);">139</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.84rem;">
+                <span style="color:var(--muted);">Absent</span><strong style="color:var(--red);">9</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.84rem;">
+                <span style="color:var(--muted);">Late Arrivals</span><strong style="color:var(--amber);">4</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.84rem;">
+                <span style="color:var(--muted);">Streak (current)</span><strong>12 days</strong>
+              </div>
+            </div>
+            <div class="progress-bar" style="margin-top:14px;">
+              <div class="progress-fill" style="width:94%;background:var(--green);"></div>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;">139 / 148 days present</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- FEES TAB --- -->
+    <div class="tab-content" id="tab-fees" style="display:none;">
+      <div class="grid-2 stu-cols" style="grid-template-columns:2fr 1fr;gap:18px;">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">&#x1F4B0; Fee Payment History</div><div class="card-sub">Session 2024&#x2013;25</div></div>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Creating invoice&middot;','&#x2705;')">+ Create Invoice</button>
+          </div>
+          <div class="card-body">
+            <div id="feeHistory"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#x1F4B0; Fee Summary</div></div>
+          <div class="card-body">
+            <div style="text-align:center;padding:12px 0;margin-bottom:14px;border-bottom:1px solid var(--border);">
+              <div style="font-size:2rem;font-weight:800;color:var(--amber);">600</div>
+              <div style="font-size:.78rem;color:var(--muted);">Outstanding Balance</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:.84rem;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Total Billed (2024&#x2013;25)</span><strong>&#x09F3;12,000</strong></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Total Paid</span><strong style="color:var(--green);">11,400</strong></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Outstanding</span><strong style="color:var(--amber);">600</strong></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Scholarship</span><strong>None</strong></div>
+            </div>
+            <button class="btn btn-outline btn-sm w-full mt-4" style="justify-content:center;" onclick="showToast('Sending fee reminder SMS&middot;','&#x2705;')">&#x1F4F1; Send SMS Reminder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- DOCUMENTS TAB --- -->
+    <div class="tab-content" id="tab-documents" style="display:none;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">&#x1F4C4; Uploaded Documents</div><button class="btn btn-sm btn-outline" onclick="showToast('Upload dialog&middot;','&#x2705;')">+ Upload</button></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+            <div style="border:1.5px solid var(--green);background:var(--green-light);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:2rem;margin-bottom:6px;">&#x1F4C4;</div>
+              <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">Previous Marksheet</div>
+              <div style="font-size:.72rem;color:var(--green);margin-top:2px;">Verified &middot;</div>
+              <button class="btn btn-sm btn-ghost" style="margin-top:8px;" onclick="showToast('Opening marksheet&middot;','&#x2705;')">View</button>
+            </div>
+            <div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;" onclick="showToast('Upload birth certificate','&#x2705;')">
+              <div style="font-size:2rem;margin-bottom:6px;opacity:.4;">&#x1F4CE;</div>
+              <div style="font-size:.84rem;font-weight:700;color:var(--muted);">Birth Certificate</div>
+              <div style="font-size:.72rem;color:var(--amber);margin-top:2px;">Missing</div>
+              <button class="btn btn-sm btn-outline" style="margin-top:8px;">Upload</button>
+            </div>
+            <div style="border:1.5px solid var(--green);background:var(--green-light);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:2rem;margin-bottom:6px;">&#x1F4C4;</div>
+              <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">Student Photo</div>
+              <div style="font-size:.72rem;color:var(--green);margin-top:2px;">Verified &middot;</div>
+              <button class="btn btn-sm btn-ghost" style="margin-top:8px;">View</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- ACTIVITY TAB --- -->
+    <div class="tab-content" id="tab-activity" style="display:none;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">&#x1F4CB; Activity &amp; Change Log</div><div class="card-sub">All actions taken on this student record</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:0;" id="activityLog"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- page-body -->
+</main>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title">&#x270F;&#xFE0F; Edit Student &middot; Farhan Islam</div><div class="modal-sub">Update student details.</div></div>
+      <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" value="Farhan"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" value="Islam"></div>
+        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-input" value="2009-05-15"></div>
+        <div class="form-group"><label class="form-label">Blood Group</label><select class="form-select"><option>B+</option><option>A+</option><option>O+</option></select></div>
+        <div class="form-group"><label class="form-label">Father Mobile</label><input type="tel" class="form-input" value="01711-000111"></div>
+        <div class="form-group"><label class="form-label">Class</label><select class="form-select"><option selected>Class IX&middot;A (Science)</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('editModal');showToast('Student record updated!','&#x2705;')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div><div class="modal-title">&#x1F4DD; Add Note</div></div>
+      <button class="modal-close" onclick="closeModal('noteModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-4">
+        <label class="form-label">Note Type</label>
+        <select class="form-select"><option>General</option><option>Fee Reminder</option><option>Academic</option><option>Behavioral</option><option>Medical</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note</label>
+        <textarea class="form-textarea" rows="3" placeholder="Write your note here&middot;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('noteModal');showToast('Note added!','&#x2705;')">Add Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal modal-sm">
+    <div class="modal-body" style="padding:32px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:14px;">&#x26A0;&#xFE0F;</div>
+      <div class="modal-title" style="margin-bottom:8px;">Withdraw Farhan Islam?</div>
+      <div style="font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:16px;">The student will be marked as withdrawn. All records are retained. A Transfer Certificate can be generated.</div>
+      <div class="form-group" style="text-align:left;margin-bottom:16px;">
+        <label class="form-label">Reason for Withdrawal</label>
+        <select class="form-select"><option>Transfer to another school</option><option>Family relocation</option><option>Fee default</option><option>Personal reasons</option></select>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-secondary" onclick="closeModal('withdrawModal')">Cancel</button>
+        <button class="btn btn-danger" onclick="closeModal('withdrawModal');showToast('Student withdrawn','&#x2705;')">Confirm Withdrawal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// -- Tab switching --
+function switchTab(btn, id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+  document.getElementById('tab-'+id).style.display='';
+}
+
+// -- Dropdown --
+function toggleDropdown(btn){
+  const m=btn.nextElementSibling;
+  document.querySelectorAll('.dropdown-menu.open').forEach(x=>{ if(x!==m)x.classList.remove('open'); });
+  m.classList.toggle('open');
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.dropdown'))document.querySelectorAll('.dropdown-menu.open').forEach(m=>m.classList.remove('open')); });
+
+// -- Modals --
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o)o.classList.remove('open'); }));
+
+// -- Toast --
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+
+// -- Build result table --
+const subjects = [
+  {name:'Bangla (1st Paper)',   writ:72, mcq:20, grade:'A+',  color:'#10B981'},
+  {name:'Bangla (2nd Paper)',   writ:70, mcq:20, grade:'A+',  color:'#10B981'},
+  {name:'English (1st Paper)',  writ:68, mcq:20, grade:'A',   color:'#0EA5E9'},
+  {name:'English (2nd Paper)',  writ:65, mcq:18, grade:'A',   color:'#0EA5E9'},
+  {name:'Mathematics',          writ:84, mcq:20, grade:'A+',  color:'#10B981'},
+  {name:'Physics',              writ:70, mcq:20, grade:'A+',  color:'#10B981'},
+  {name:'Chemistry',            writ:66, mcq:18, grade:'A',   color:'#0EA5E9'},
+  {name:'Biology',              writ:63, mcq:18, grade:'A',   color:'#0EA5E9'},
+];
+document.getElementById('resultBody').innerHTML = subjects.map(s=>{
+  const total = s.writ + s.mcq;
+  const pct = Math.round(total/100*100);
+  return `<div class="result-sub-row">
+    <span class="rsub-name">${s.name}</span>
+    <span class="rsub-marks">${s.writ}</span>
+    <span class="rsub-marks">${s.mcq}</span>
+    <span class="rsub-marks" style="color:var(--ink);font-weight:800;">${total}</span>
+    <span class="rsub-grade"><span class="badge" style="background:${s.color}22;color:${s.color};font-size:.7rem;">${s.grade}</span></span>
+    <span class="rsub-bar"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${s.color};"></div></div></span>
+  </div>`;
+}).join('');
+
+// -- GPA history --
+const gpaData = [{exam:'Half-Yearly 2024',gpa:4.75,grade:'A+'},{exam:'Annual 2023',gpa:4.83,grade:'A+'},{exam:'Half-Yearly 2023',gpa:4.67,grade:'A+'},{exam:'Annual 2022',gpa:4.50,grade:'A+'}];
+document.getElementById('gpaHistory').innerHTML = gpaData.map(g=>`
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:7px;font-size:.82rem;">
+    <span style="color:var(--muted);">${g.exam}</span>
+    <span style="font-weight:800;color:var(--ink);">${g.gpa} <span style="color:var(--green);font-size:.75rem;">${g.grade}</span></span>
+  </div>`).join('');
+
+// -- Attendance calendar --
+(function(){
+  const grid = document.getElementById('calGrid');
+  // Feb 2025 starts on Saturday (index 6)
+  const startDay = 6; // Sat
+  const days = 28;
+  const status = {3:'absent',10:'absent',14:'holiday',15:'holiday',19:'holiday',21:'holiday'};
+  let html = '';
+  for(let i=0;i<startDay;i++) html += '<div class="day-cell empty" title=""></div>';
+  for(let d=1;d<=days;d++){
+    let cls = d <= 24 &middot; (status[d]||'present') : 'empty';
+    if(d > 24) cls = 'empty';
+    html += `<div class="day-cell ${cls}" title="${d} Feb 2025${cls==='absent'?' &middot; Absent':cls==='holiday'?' &middot; Holiday':''}" style="${d>24?'':''}"></div>`;
+  }
+  grid.innerHTML = html;
+})();
+
+// -- Fee history --
+const fees = [
+  {month:'February 2025', type:'Monthly Tuition', amount:'৳600', status:'Pending', badge:'badge-amber'},
+  {month:'January 2025',  type:'Monthly Tuition', amount:'৳600', status:'Paid',    badge:'badge-green', date:'Jan 5, 2025'},
+  {month:'December 2024', type:'Monthly Tuition', amount:'৳600', status:'Paid',    badge:'badge-green', date:'Dec 4, 2024'},
+  {month:'November 2024', type:'Monthly Tuition', amount:'৳600', status:'Paid',    badge:'badge-green', date:'Nov 3, 2024'},
+  {month:'Session Fee',   type:'Annual Session',  amount:'৳1,200',status:'Paid',    badge:'badge-green', date:'Jan 5, 2025'},
+];
+document.getElementById('feeHistory').innerHTML = fees.map(f=>`
+  <div class="fee-row">
+    <div style="font-size:.85rem;font-weight:700;color:var(--ink-2);flex:1;">${f.month}</div>
+    <div style="font-size:.78rem;color:var(--muted);width:130px;">${f.type}</div>
+    <div class="fee-amount">${f.amount}</div>
+    <span class="badge ${f.badge}" style="font-size:.7rem;">${f.status}</span>
+    <div style="font-size:.73rem;color:var(--muted);width:100px;text-align:right;">${f.date||'&middot;'}</div>
+    ${f.status==='Paid'?'<button class="btn btn-sm btn-ghost" onclick="showToast(\'Receipt downloaded\',\'\')"></button>':'<button class="btn btn-sm btn-outline" onclick="showToast(\'Invoice created\',\'\')">Pay</button>'}
+  </div>`).join('');
+
+// -- Activity log --
+const activities = [
+  {icon:'&#x270F;&#xFE0F;',color:'#0EA5E9',text:'Student record updated &middot; blood group added',user:'Abdur Rahman',time:'Today, 9:18 AM'},
+  {icon:'&#x270F;&#xFE0F;',color:'#10B981',text:'January 2025 tuition marked as paid &middot; ৳600',user:'Abdur Rahman',time:'Jan 5, 2025'},
+  {icon:'&#x270F;&#xFE0F;',color:'#10B981',text:'Annual Exam 2024 result published &middot; GPA 4.83',user:'Nasrin Khatun',time:'Dec 28, 2024'},
+  {icon:'&#x270F;&#xFE0F;',color:'#F59E0B',text:'Note added: Won 2nd place in Math Olympiad',user:'Abdur Rahman',time:'Dec 5, 2024'},
+  {icon:'&#x270F;&#xFE0F;',color:'#8B5CF6',text:'Promoted from Class VIII&middot;A to Class IX&middot;A',user:'System',time:'Jan 10, 2024'},
+];
+document.getElementById('activityLog').innerHTML = activities.map(a=>`
+  <div class="timeline-item">
+    <div class="tl-dot" style="background:${a.color};margin-top:4px;"></div>
+    <div class="tl-body">
+      <div class="tl-main">${a.icon} ${a.text}</div>
+      <div class="tl-time">By <strong>${a.user}</strong> &middot; ${a.time}</div>
+    </div>
+  </div>`).join('');
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

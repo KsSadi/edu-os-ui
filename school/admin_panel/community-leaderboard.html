@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;--gold:#F59E0B;--silver:#94A3B8;--bronze:#B45309;}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Hero */
+.lb-hero{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#7C3AED 100%);border-radius:18px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden;text-align:center;}
+.lb-hero::before{content:'';position:absolute;left:50%;top:-60px;transform:translateX(-50%);width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.04);}
+
+/* Podium */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:24px 0 0;}
+.podium-slot{text-align:center;position:relative;}
+.pod-av{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#fff;margin:0 auto 6px;border:3px solid rgba(255,255,255,.4);}
+.pod-name{font-size:.78rem;font-weight:800;color:#fff;margin-bottom:4px;}
+.pod-pts{font-size:.7rem;color:rgba(255,255,255,.65);margin-bottom:6px;}
+.pod-crown{font-size:1.2rem;margin-bottom:4px;}
+.pod-block{border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:rgba(255,255,255,.7);}
+
+/* Tabs */
+.lb-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:22px;}
+.lb-btn{padding:9px 20px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.lb-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+
+/* Rank table */
+.rank-table{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;}
+.rt-header{display:grid;grid-template-columns:48px 1fr 80px 80px 80px;gap:0;padding:10px 16px;background:var(--bg);border-bottom:1.5px solid var(--border);}
+.rt-th{font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.rt-th:not(:first-child){text-align:center;}
+.rank-row{display:grid;grid-template-columns:48px 1fr 80px 80px 80px;gap:0;padding:11px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background .1s;cursor:pointer;}
+.rank-row:last-child{border-bottom:none;}
+.rank-row:hover{background:var(--cmn-pale);}
+.rank-row.me{background:var(--cmn-pale);}
+.rr-rank{font-size:.9rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--muted);}
+.rr-rank.gold{color:var(--gold);}
+.rr-rank.silver{color:var(--silver);}
+.rr-rank.bronze{color:var(--bronze);}
+.rr-user{display:flex;align-items:center;gap:10px;}
+.rr-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#fff;flex-shrink:0;}
+.rr-name{font-size:.86rem;font-weight:700;color:var(--ink-2);}
+.rr-title{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.rr-val{font-size:.86rem;font-weight:800;font-family:'DM Mono',monospace;color:var(--ink-2);text-align:center;}
+.rr-badge{display:flex;justify-content:center;}
+
+/* Badge */
+.lb-badge{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:8px;}
+
+/* Widget */
+.widget{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;}
+.widget-head{padding:11px 15px;border-bottom:1px solid var(--border);font-size:.76rem;font-weight:800;color:var(--ink-2);}
+
+/* XP Bar */
+.xp-bar-wrap{background:var(--border);border-radius:20px;height:8px;overflow:hidden;margin-top:6px;}
+.xp-bar{height:100%;background:linear-gradient(90deg,var(--cmn),#A5B4FC);border-radius:20px;transition:width .5s;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero & Podium -->
+    <div class="lb-hero anim-1">
+      <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:4px;"> Community Leaderboard</div>
+      <div style="font-size:.84rem;color:rgba(255,255,255,.65);">Earn XP by posting, helping, attending events, and acing exams</div>
+      <div class="podium" id="podium"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+      <!-- Main table -->
+      <div>
+        <!-- Tabs -->
+        <div class="lb-tabs">
+          <button class="lb-btn on" onclick="switchTab('overall',this)"> Overall</button>
+          <button class="lb-btn" onclick="switchTab('weekly',this)"> This Week</button>
+          <button class="lb-btn" onclick="switchTab('class',this)"> Class IX-A</button>
+          <button class="lb-btn" onclick="switchTab('academic',this)">&#x1F4DA; Academic</button>
+        </div>
+
+        <!-- My rank banner -->
+        <div style="background:var(--cmn-pale);border:1.5px solid var(--cmn-light);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+          <div style="font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);min-width:44px;">#4</div>
+          <div class="rr-av" style="background:#6366F1;width:40px;height:40px;font-size:.68rem;">FI</div>
+          <div style="flex:1;">
+            <div style="font-size:.9rem;font-weight:800;color:var(--cmn-dark);">Farhan Islam &middot; Your Ranking</div>
+            <div style="font-size:.74rem;color:var(--muted);">Class IX-A &middot; 1,842 XP &nbsp;&middot;&nbsp; 23 posts &middot; 47 helpful answers</div>
+            <div class="xp-bar-wrap"><div class="xp-bar" style="width:68%;"></div></div>
+            <div style="font-size:.66rem;color:var(--muted);margin-top:3px;">158 XP needed to reach #3</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:1rem;font-weight:900;color:var(--gold);">15</div>
+            <div style="font-size:.66rem;color:var(--muted);">Badges</div>
+          </div>
+        </div>
+
+        <!-- Rank table -->
+        <div class="rank-table">
+          <div class="rt-header">
+            <div class="rt-th">Rank</div>
+            <div class="rt-th" style="text-align:left;">Student</div>
+            <div class="rt-th">XP</div>
+            <div class="rt-th">Posts</div>
+            <div class="rt-th">Badge</div>
+          </div>
+          <div id="rankRows"></div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div>
+        <!-- My stats -->
+        <div class="widget">
+          <div class="widget-head">My Badges</div>
+          <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px;" id="myBadges"></div>
+        </div>
+
+        <!-- How to earn XP -->
+        <div class="widget">
+          <div class="widget-head"> How to Earn XP</div>
+          <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;" id="xpGuide"></div>
+        </div>
+
+        <!-- Top contributors -->
+        <div class="widget">
+          <div class="widget-head"> Streaks</div>
+          <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;" id="streakList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const LEADERS=[
+  {rank:1,init:'RK',name:'Rahela Khatun',title:'Class IX-A',col:'#E11D48',xp:3240,posts:87,answers:124,badge:{label:' Top Poster',bg:'#FEF9C3',col:'#92400E'},streak:21},
+  {rank:2,init:'TJ',name:'Tanvir Ahmed',title:'Class IX-A',col:'#0891B2',xp:2980,posts:64,answers:98,badge:{label:' Tech Star',bg:'#F3E8FF',col:'#5B21B6'},streak:14},
+  {rank:3,init:'AH',name:'Arif Hossain',title:'Class IX-A',col:'#7C3AED',xp:2010,posts:52,answers:76,badge:{label:' Helper',bg:'#F0FDF4',col:'#166534'},streak:9},
+  {rank:4,init:'FI',name:'Farhan Islam',title:'Class IX-A &middot; You',col:'#6366F1',xp:1842,posts:23,answers:47,badge:{label:'Rising Star',bg:'#EEF2FF',col:'#4338CA'},streak:7,me:true},
+  {rank:5,init:'NR',name:'Nadia Rahman',title:'Class IX-C',col:'#059669',xp:1740,posts:38,answers:55,badge:{label:' Studious',bg:'#F0FDF4',col:'#166534'},streak:5},
+  {rank:6,init:'SB',name:'Sumaiya Begum',title:'Class IX-B',col:'#D97706',xp:1620,posts:41,answers:32,badge:{label:' Creative',bg:'#FEF3C7',col:'#92400E'},streak:3},
+  {rank:7,init:'MK',name:'Mizan Khan',title:'Class IX-B',col:'#BE123C',xp:1380,posts:29,answers:41,badge:{label:' Scientist',bg:'#EFF6FF',col:'#1D4ED8'},streak:2},
+  {rank:8,init:'PR',name:'Parvez Rana',title:'Class IX-C',col:'#0F766E',xp:1240,posts:22,answers:28,badge:{label:' Writer',bg:'#FFF1F2',col:'#BE123C'},streak:1},
+  {rank:9,init:'JD',name:'Jubaida Diya',title:'Class IX-A',col:'#9333EA',xp:1180,posts:35,answers:18,badge:{label:' Communicator',bg:'#EEF2FF',col:'#4338CA'},streak:4},
+  {rank:10,init:'SA',name:'Shakil Ahmed',title:'Class IX-C',col:'#1E40AF',xp:1040,posts:18,answers:22,badge:{label:' Newcomer',bg:'#F0F9FF',col:'#0369A1'},streak:0},
+];
+
+function renderPodium(){
+  const top3=LEADERS.slice(0,3);
+  const order=[top3[1],top3[0],top3[2]];// 2nd, 1st, 3rd
+  const heights=['80px','110px','60px'];
+  const crowns=['','',''];
+  const blockColors=['#94A3B8','#F59E0B','#B45309'];
+  document.getElementById('podium').innerHTML=order.map((p,i)=>`
+    <div class="podium-slot">
+      <div class="pod-crown">${crowns[i]}</div>
+      <div class="pod-av" style="background:${p.col};width:${i===1?'64px':'52px'};height:${i===1?'64px':'52px'};">${p.init}</div>
+      <div class="pod-name" style="font-size:${i===1?'.84rem':'.74rem'};">${p.name.split(' ')[0]}</div>
+      <div class="pod-pts">${p.xp.toLocaleString()} XP</div>
+      <div class="pod-block" style="background:${blockColors[i]};width:${i===1?'90px':'76px'};height:${heights[i]};">#${order[i].rank}</div>
+    </div>`).join('');
+}
+function renderTable(){
+  const rankClass={1:'gold',2:'silver',3:'bronze'};
+  document.getElementById('rankRows').innerHTML=LEADERS.map(l=>`
+    <div class="rank-row ${l.me?'me':''}" onclick="showToast('Viewing ${l.name}\'s profile','&#x2705;')">
+      <div class="rr-rank ${rankClass[l.rank]||''}">${l.rank<=3?['','',''][l.rank-1]:l.rank}</div>
+      <div class="rr-user">
+        <div class="rr-av" style="background:${l.col};">${l.init}</div>
+        <div><div class="rr-name">${l.name}${l.me?' (You)':''}</div><div class="rr-title">${l.title}${l.streak>0?` &middot;  ${l.streak}d`:''}</div></div>
+      </div>
+      <div class="rr-val">${l.xp.toLocaleString()}</div>
+      <div class="rr-val">${l.posts}</div>
+      <div class="rr-badge"><span class="lb-badge" style="background:${l.badge.bg};color:${l.badge.col};">${l.badge.label}</span></div>
+    </div>`).join('');
+}
+function renderMyBadges(){
+  const badges=[{e:'&#x2705;',n:'Rising Star'},{e:'',n:'25 Posts'},{e:'',n:'Helpful'},{e:'',n:'7-Day Streak'},{e:'',n:'Top 5'},{e:'',n:'On Fire'}];
+  document.getElementById('myBadges').innerHTML=badges.map(b=>`<div style="text-align:center;cursor:pointer;" onclick="showToast('${b.n} badge earned!','&#x2705;')"><div style="font-size:1.4rem;">${b.e}</div><div style="font-size:.62rem;color:var(--muted);font-weight:700;">${b.n}</div></div>`).join('');
+}
+function renderXPGuide(){
+  const guide=[{icon:'&#x270F;&#xFE0F;',action:'Post in a group',xp:'+5 XP'},{icon:'&#x270F;&#xFE0F;',action:'Comment or reply',xp:'+2 XP'},{icon:'&#x270F;&#xFE0F;',action:'Get a like',xp:'+1 XP'},{icon:'&#x2705;',action:'Marked as helpful',xp:'+10 XP'},{icon:'&#x270F;&#xFE0F;',action:'Attend an event',xp:'+20 XP'},{icon:'&#x270F;&#xFE0F;',action:'Daily login streak',xp:'+3 XP'},{icon:'&#x270F;&#xFE0F;',action:'Share a resource',xp:'+8 XP'}];
+  document.getElementById('xpGuide').innerHTML=guide.map(g=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;"><span style="color:var(--ink-2);">${g.icon} ${g.action}</span><span style="font-weight:800;color:var(--cmn);background:var(--cmn-pale);border-radius:8px;padding:1px 8px;">${g.xp}</span></div>`).join('');
+}
+function renderStreaks(){
+  document.getElementById('streakList').innerHTML=LEADERS.filter(l=>l.streak>0).slice(0,5).map(l=>`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:${l.col};display:flex;align-items:center;justify-content:center;font-size:.54rem;font-weight:900;color:#fff;">${l.init}</div>
+      <span style="font-size:.78rem;font-weight:700;color:var(--ink-2);flex:1;">${l.name.split(' ')[0]}</span>
+      <span style="font-size:.8rem;"> ${l.streak} days</span>
+    </div>`).join('');
+}
+function switchTab(t,el){document.querySelectorAll('.lb-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');showToast(`Viewing: ${t} leaderboard`,'&#x2705;');}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+renderPodium();renderTable();renderMyBadges();renderXPGuide();renderStreaks();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Prathomik EduOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+:root{
+  --blue:#1647D4;--blue-dark:#0F35A8;--blue-light:#EEF3FF;
+  --ink:#0A0F1E;--ink-2:#1E2842;--ink-3:#374163;
+  --muted:#6B7A99;--border:#E2E8F4;--bg:#F7F9FE;
+  --green:#059669;--red:#DC2626;
+}
+
+/* Layout */
+.wrap{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh;}
+
+/* ── LEFT DARK PANEL ── */
+.lp{
+  background:#0A0F1E;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px 52px;
+}
+.dots{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,0.055) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;animation:drift 14s ease-in-out infinite;}
+.o1{width:440px;height:440px;background:radial-gradient(circle,rgba(22,71,212,.5) 0%,transparent 70%);top:-120px;right:-60px;}
+.o2{width:300px;height:300px;background:radial-gradient(circle,rgba(8,145,178,.32) 0%,transparent 70%);bottom:60px;left:-40px;animation-delay:-5s;}
+.o3{width:180px;height:180px;background:radial-gradient(circle,rgba(139,92,246,.28) 0%,transparent 70%);top:46%;left:36%;animation-delay:-9s;}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-16px) scale(1.04);}66%{transform:translate(-14px,20px) scale(.97);}}
+
+.lp-top{position:relative;z-index:2;}
+.logo-a{display:inline-flex;align-items:center;gap:10px;font-family:'Sora',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}
+.logo-sq{background:var(--blue);color:#fff;padding:5px 10px;border-radius:8px;font-size:.82rem;}
+
+.lp-mid{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0;}
+.lp-h1{font-family:'Sora',sans-serif;font-size:clamp(1.7rem,2.6vw,2.3rem);font-weight:800;color:#fff;line-height:1.22;margin-bottom:14px;}
+.lp-p{font-size:.93rem;color:rgba(255,255,255,.55);line-height:1.75;max-width:330px;margin-bottom:36px;}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rc{
+  display:flex;align-items:flex-start;gap:11px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;padding:13px 14px;transition:background .2s,border-color .2s;
+}
+.rc:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);}
+.rc-icon{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.rc-name{font-family:'Sora',sans-serif;font-size:.81rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.rc-desc{font-size:.68rem;color:rgba(255,255,255,.4);line-height:1.35;}
+
+.lp-bot{position:relative;z-index:2;}
+.stats-row{display:flex;gap:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.07);}
+.sn{font-family:'Sora',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;}
+.sl{font-size:.68rem;color:rgba(255,255,255,.38);margin-top:2px;}
+
+/* ── RIGHT WHITE PANEL ── */
+.rp{background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 52px;position:relative;}
+.rp::before{content:'';position:absolute;top:0;left:0;bottom:0;width:1px;background:var(--border);}
+
+.fb{width:100%;max-width:390px;animation:up .45s cubic-bezier(.22,.61,.36,1) both;}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* Domain badge */
+.dom-badge{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:7px 12px;margin-bottom:22px;
+}
+.live{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pd 2s infinite;}
+@keyframes pd{0%,100%{opacity:1;}50%{opacity:.3;}}
+.dom-txt{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--muted);}
+.dom-txt strong{color:var(--ink-2);}
+
+.eyebrow{font-size:.71rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:7px;}
+.f-title{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;color:var(--ink);margin-bottom:5px;line-height:1.18;}
+.f-sub{font-size:.87rem;color:var(--muted);margin-bottom:26px;}
+
+/* Role tabs */
+.rt{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;background:var(--bg);border-radius:11px;
+  padding:4px;border:1px solid var(--border);margin-bottom:22px;
+}
+.rtb{
+  padding:8px 4px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.74rem;
+  font-weight:600;color:var(--muted);
+  transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.rtb span{font-size:.9rem;}
+.rtb:hover{color:var(--blue);}
+.rtb.on{background:#fff;color:var(--blue);box-shadow:0 1px 8px rgba(22,71,212,.1);}
+
+/* Inputs */
+.fg{margin-bottom:15px;}
+.fl{display:block;font-size:.8rem;font-weight:600;color:var(--ink-2);margin-bottom:5px;}
+.iw{position:relative;}
+.ii{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--muted);pointer-events:none;transition:color .2s;}
+.fi{
+  width:100%;padding:11px 14px 11px 40px;
+  border-radius:10px;border:1.5px solid var(--border);
+  background:var(--bg);font-family:'DM Sans',sans-serif;
+  font-size:.92rem;color:var(--ink);
+  transition:border-color .2s,box-shadow .2s,background .2s;outline:none;
+}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(22,71,212,.09);background:#fff;}
+.iw:focus-within .ii{color:var(--blue);}
+.eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:.82rem;padding:2px;transition:color .2s;}
+.eye:hover{color:var(--blue);}
+
+.rem-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.cl{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--ink-3);cursor:pointer;}
+.cl input{accent-color:var(--blue);}
+.fa{font-size:.82rem;color:var(--blue);font-weight:600;text-decoration:none;}
+.fa:hover{text-decoration:underline;}
+
+.sbtn{
+  width:100%;padding:12px;
+  background:var(--blue);color:#fff;border:none;
+  border-radius:10px;font-family:'DM Sans',sans-serif;
+  font-size:.94rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(22,71,212,.26);
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.sbtn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 6px 22px rgba(22,71,212,.34);}
+.sbtn:active{transform:translateY(0);}
+.spin{display:none;width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .65s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:.77rem;}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.abtn{
+  padding:9px 8px;border-radius:9px;border:1.5px solid var(--border);background:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:600;color:var(--ink-3);
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.abtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+
+.bl{text-align:center;margin-top:18px;font-size:.84rem;color:var(--muted);}
+.bl a{color:var(--blue);font-weight:600;text-decoration:none;}
+.bl a:hover{text-decoration:underline;}
+
+.sr{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap;}
+.si{font-size:.71rem;color:var(--muted);display:flex;align-items:center;gap:3px;}
+
+/* Demo credential box */
+.demo-sect{margin-bottom:18px;}
+.demo-sect-lbl{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+.demo-cred-card{
+  width:100%;border:1.5px solid var(--border);border-radius:12px;
+  background:var(--bg);padding:12px 14px;
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-family:'DM Sans',sans-serif;
+}
+.demo-cred-card:hover{border-color:var(--blue);background:var(--blue-light);transform:translateY(-1px);}
+.demo-cred-left{display:flex;align-items:center;gap:10px;}
+.demo-av{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.76rem;font-weight:800;color:#fff;
+}
+.demo-name{font-size:.8rem;font-weight:700;color:var(--ink-2);line-height:1.2;text-align:left;}
+.demo-hint{font-size:.64rem;color:var(--muted);}
+.demo-cred-right{display:flex;flex-direction:column;gap:3px;text-align:right;}
+.demo-cred-row{display:flex;align-items:center;gap:5px;justify-content:flex-end;}
+.demo-cred-lbl{font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--border);border-radius:3px;padding:1px 5px;}
+.demo-cred-val{font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--ink-3);font-weight:500;}
+
+.em{
+  display:none;align-items:center;gap:7px;
+  background:#FEF2F2;border:1px solid #FECACA;
+  color:var(--red);border-radius:9px;
+  padding:9px 12px;font-size:.81rem;margin-bottom:13px;
+}
+.em.show{display:flex;}
+
+/* Loading overlay */
+.loverlay{
+  position:fixed;inset:0;background:rgba(10,15,30,.7);
+  backdrop-filter:blur(6px);display:none;
+  align-items:center;justify-content:center;
+  z-index:999;flex-direction:column;gap:16px;
+}
+.loverlay.show{display:flex;}
+.lring{width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;animation:spin .7s linear infinite;}
+.ltxt{font-family:'Sora',sans-serif;font-size:.93rem;font-weight:600;color:#fff;}
+
+@media(max-width:840px){
+  .wrap{grid-template-columns:1fr;}
+  .lp{display:none;}
+  .rp{padding:40px 28px;background:var(--bg);}
+}
+</style>
+</head>
+<body>
+
+<div class="loverlay" id="loverlay">
+  <div class="lring"></div>
+  <div class="ltxt">Signing you in…</div>
+</div>
+
+<div class="wrap">
+  <!-- LEFT PANEL -->
+  <div class="lp">
+    <div class="dots"></div>
+    <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+    <div class="lp-top"></div>
+    <div class="lp-mid">
+      <!-- School crest & name -->
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;margin-bottom:28px;">
+        <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.3);box-shadow:0 0 0 6px rgba(255,255,255,.07);flex-shrink:0;background:#fff;">
+          <img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;">
+        </div>
+        <div>
+          <div style="font-family:'Sora',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;line-height:1.2;">Dhaka High School</div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.5);margin-top:5px;">EIIN: 108765 · Est. 1962</div>
+        </div>
+      </div>
+      <!-- Info rows -->
+      <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:28px;">
+        <div class="rc"><div class="rc-icon">📍</div><div><div class="rc-name">Motijheel, Dhaka</div><div class="rc-desc">Dhaka Division, Bangladesh</div></div></div>
+        <div class="rc"><div class="rc-icon">🎓</div><div><div class="rc-name">Classes VI – XII</div><div class="rc-desc">SSC · HSC · Junior Section</div></div></div>
+        <div class="rc"><div class="rc-icon">👨‍🎓</div><div><div class="rc-name">2,400+ Students</div><div class="rc-desc">240 teachers · 4 shifts</div></div></div>
+        <div class="rc"><div class="rc-icon">🏆</div><div><div class="rc-name">SSC Pass Rate 98.4%</div><div class="rc-desc">GPA-5: 312 students (2025)</div></div></div>
+      </div>
+    </div>
+    <div class="lp-bot">
+      <div class="stats-row">
+        <div><div class="sn">64yr</div><div class="sl">Legacy</div></div>
+        <div><div class="sn">98.4%</div><div class="sl">Pass Rate</div></div>
+        <div><div class="sn">256-bit</div><div class="sl">Secure</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rp">
+    <div class="fb">
+      <div class="dom-badge">
+        <div class="live"></div>
+        <div class="dom-txt"><strong>dhaka-high.edu.bd</strong> — Dhaka High School</div>
+      </div>
+      <div class="eyebrow">Welcome back</div>
+      <h1 class="f-title">Sign in to your portal</h1>
+      <p class="f-sub">Select your role, then enter your credentials.</p>
+
+      <div class="rt">
+        <button class="rtb on" onclick="switchRole(this,'admin')"><span>🏫</span>Admin</button>
+        <button class="rtb" onclick="switchRole(this,'teacher')"><span>👩‍🏫</span>Teacher</button>
+        <button class="rtb" onclick="switchRole(this,'student')"><span>🧑‍🎓</span>Student</button>
+        <button class="rtb" onclick="switchRole(this,'parent')"><span>👨‍👩‍👧</span>Parent</button>
+      </div>
+
+      <div class="em" id="errMsg">❌ Incorrect credentials. Please try again.</div>
+
+      <!-- DEMO CREDENTIAL BOX -->
+      <div class="demo-sect" id="demoBox">
+        <div class="demo-sect-lbl">⚡ Demo credential</div>
+        <button type="button" class="demo-cred-card" id="demoCred" onclick="autofillDemo(currentRole)">
+          <div class="demo-cred-left">
+            <div class="demo-av" id="demoAv">SA</div>
+            <div>
+              <div class="demo-name" id="demoRoleName">School Admin</div>
+              <div class="demo-hint">click to auto-fill &amp; sign in</div>
+            </div>
+          </div>
+          <div class="demo-cred-right">
+            <div class="demo-cred-row"><span class="demo-cred-lbl">ID</span><span class="demo-cred-val" id="demoCredId">admin@dhakahigh.edu.bd</span></div>
+            <div class="demo-cred-row"><span class="demo-cred-lbl">PW</span><span class="demo-cred-val" id="demoCredPw">Admin@1234</span></div>
+          </div>
+        </button>
+      </div>
+
+      <form onsubmit="doLogin(event)">
+        <div class="fg">
+          <label class="fl" id="emailLabel">Email Address</label>
+          <div class="iw">
+            <span class="ii">✉</span>
+            <input type="text" class="fi" id="emailInput" placeholder="principal@dhakahigh.edu.bd" autocomplete="username">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Password</label>
+          <div class="iw">
+            <span class="ii">🔒</span>
+            <input type="password" class="fi" id="passInput" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="eye" id="eyeBtn" onclick="togglePw()">👁</button>
+          </div>
+        </div>
+        <div class="rem-row">
+          <label class="cl"><input type="checkbox" checked> Keep me signed in</label>
+          <a href="forgot-password.html" class="fa">Forgot password?</a>
+        </div>
+        <button type="submit" class="sbtn" id="sbtn">
+          <span id="btnTxt">Sign In →</span>
+          <div class="spin" id="btnSpin"></div>
+        </button>
+      </form>
+
+
+      <div class="sr">
+        <span class="si">🔒 SSL Encrypted</span>
+        <span class="si">🛡 2FA Available</span>
+        <span class="si">🇧🇩 BD Data Residency</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Role colours & meta ─────────────────────────────────────
+const ROLE_META = {
+  admin:   { av:'SA', grad:'linear-gradient(135deg,#1647D4,#2563EB)', label:'School Admin' },
+  teacher: { av:'TR', grad:'linear-gradient(135deg,#059669,#10B981)', label:'Teacher'       },
+  student: { av:'ST', grad:'linear-gradient(135deg,#7C3AED,#8B5CF6)', label:'Student'       },
+  parent:  { av:'PR', grad:'linear-gradient(135deg,#D97706,#F59E0B)', label:'Parent'        },
+};
+
+function updateDemoBox(role) {
+  const d = DEMO[role], m = ROLE_META[role];
+  const av = document.getElementById('demoAv');
+  av.textContent = m.av;
+  av.style.background = m.grad;
+  document.getElementById('demoRoleName').textContent = m.label;
+  document.getElementById('demoCredId').textContent   = d.cred;
+  document.getElementById('demoCredPw').textContent   = d.pw;
+}
+
+// ── Demo users ──────────────────────────────────────────────
+const DEMO = {
+  admin:   { cred:'admin@dhakahigh.edu.bd',   pw:'Admin@1234',   name:'Principal Rahman', role:'admin',   dash:'../admin_panel/admin-dashboard.html' },
+  teacher: { cred:'teacher@dhakahigh.edu.bd', pw:'Teacher@1234', name:'Ms. Fatima Begum', role:'teacher', dash:'../teacher_panel/teacher-dashboard.html' },
+  student: { cred:'2025-001-0042',            pw:'Student@1234', name:'Rahim Ahmed',       role:'student', dash:'../student_panel/student-dashboard.html' },
+  parent:  { cred:'parent@dhakahigh.edu.bd',  pw:'Parent@1234',  name:'Mr. Karim Hossain', role:'parent',  dash:'../parents_panel/parent-dashboard.html' },
+};
+
+const roleMap = {
+  admin:   { label:'Email Address',          ph:'admin@dhakahigh.edu.bd',   dash:DEMO.admin.dash },
+  teacher: { label:'Email Address',          ph:'teacher@dhakahigh.edu.bd', dash:DEMO.teacher.dash },
+  student: { label:'Student ID or Email',    ph:'2025-001-0042',            dash:DEMO.student.dash },
+  parent:  { label:'Email / Mobile Number',  ph:'parent@dhakahigh.edu.bd',  dash:DEMO.parent.dash },
+};
+
+let currentRole = 'admin';
+
+function switchRole(btn, role) {
+  currentRole = role;
+  document.querySelectorAll('.rtb').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('emailLabel').textContent = roleMap[role].label;
+  document.getElementById('emailInput').placeholder  = roleMap[role].ph;
+  document.getElementById('emailInput').type = (role === 'student') ? 'text' : 'email';
+  document.getElementById('errMsg').classList.remove('show');
+  updateDemoBox(role);
+}
+
+function autofillDemo(role) {
+  // Switch role tab
+  const tabs = document.querySelectorAll('.rtb');
+  const roleOrder = ['admin','teacher','student','parent'];
+  const idx = roleOrder.indexOf(role);
+  if (idx !== -1) switchRole(tabs[idx], role);
+
+  // Fill credentials
+  document.getElementById('emailInput').value = DEMO[role].cred;
+  document.getElementById('passInput').value  = DEMO[role].pw;
+  document.getElementById('errMsg').classList.remove('show');
+
+  // Auto submit after short delay for UX
+  setTimeout(() => document.querySelector('.sbtn').click(), 300);
+}
+
+function togglePw() {
+  const i = document.getElementById('passInput'), b = document.getElementById('eyeBtn');
+  if (i.type === 'password') { i.type = 'text';     b.textContent = '🙈'; }
+  else                       { i.type = 'password'; b.textContent = '👁'; }
+}
+
+function doLogin(e) {
+  e.preventDefault();
+  const cred = document.getElementById('emailInput').value.trim();
+  const pw   = document.getElementById('passInput').value;
+  const err  = document.getElementById('errMsg');
+
+  if (!cred || !pw) {
+    err.textContent = '❌ Please enter your credentials and password.';
+    err.classList.add('show'); return;
+  }
+
+  // Validate against demo users for current role
+  const user = DEMO[currentRole];
+  const credMatch = cred.toLowerCase() === user.cred.toLowerCase();
+  const pwMatch   = pw === user.pw;
+
+  if (!credMatch || !pwMatch) {
+    err.textContent = '❌ Incorrect credentials. Please try again.';
+    err.classList.add('show');
+    document.getElementById('passInput').value = '';
+    return;
+  }
+
+  // Save session
+  localStorage.setItem('school_session', JSON.stringify({
+    role: user.role,
+    name: user.name,
+    email: user.cred,
+    school: 'Dhaka High School',
+    loginAt: Date.now()
+  }));
+
+  // Show loading
+  document.getElementById('btnTxt').style.display  = 'none';
+  document.getElementById('btnSpin').style.display = 'block';
+  document.getElementById('sbtn').disabled = true;
+  err.classList.remove('show');
+
+  setTimeout(() => {
+    document.getElementById('loverlay').classList.add('show');
+    setTimeout(() => { window.location.href = user.dash; }, 1400);
+  }, 700);
+}
+
+// Init demo box on load
+updateDemoBox('admin');
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

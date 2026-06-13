@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Progress AI — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+
+.page-header{align-items:flex-end;gap:14px;}
+.hero-shell{display:grid;grid-template-columns:1.45fr .85fr;gap:16px;margin-bottom:18px;}
+.hero-card{background:linear-gradient(135deg,#1E0A3C,#2D1B69 60%,#4C1D95);border:1.5px solid rgba(124,58,237,.3);border-radius:18px;padding:24px;color:#fff;box-shadow:0 20px 40px rgba(30,10,60,.16);position:relative;overflow:hidden;}
+.hero-card:after{content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),rgba(255,255,255,0) 68%);pointer-events:none;}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:999px;color:#DDD6FE;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+.hero-title{font-size:1.7rem;font-weight:900;line-height:1.15;margin-bottom:10px;max-width:650px;}
+.hero-sub{font-size:.9rem;line-height:1.65;color:rgba(255,255,255,.73);max-width:700px;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;position:relative;z-index:1;}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);font-size:.75rem;font-weight:800;color:#fff;}
+.hero-side{display:flex;flex-direction:column;gap:16px;}
+.panel-card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:20px;}
+.panel-title{font-size:.76rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;}
+.focus-list{display:flex;flex-direction:column;gap:12px;}
+.focus-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--border);border-radius:13px;background:var(--bg);}
+.focus-item strong{display:block;font-size:.86rem;color:var(--ink);}
+.focus-item span{font-size:.74rem;color:var(--muted);}
+.focus-badge{font-size:.68rem;font-weight:800;padding:4px 8px;border-radius:999px;background:var(--stu-pale);color:var(--stu-dark);white-space:nowrap;}
+.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px;}
+.summary-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px;}
+.summary-card .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.05em;margin-bottom:8px;}
+.summary-card .v{font-size:1.45rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;line-height:1;}
+.summary-card .s{font-size:.74rem;color:var(--muted);margin-top:5px;}
+.dashboard-grid{display:grid;grid-template-columns:1.35fr .95fr;gap:16px;margin-bottom:20px;align-items:start;}
+.mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.mini-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px;}
+.mini-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.mini-title{font-size:.9rem;font-weight:900;color:var(--ink);}
+.mini-sub{font-size:.75rem;color:var(--muted);}
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin-bottom:18px;}
+.subject-scale{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;}
+.subject-row{display:grid;grid-template-columns:90px 1fr 52px;gap:10px;align-items:center;}
+.subject-name{font-size:.82rem;font-weight:800;color:var(--ink);}
+.subject-track{height:10px;background:var(--border);border-radius:999px;overflow:hidden;}
+.subject-fill{height:100%;border-radius:999px;}
+.subject-score{font-size:.78rem;font-weight:800;font-family:'DM Mono',monospace;text-align:right;}
+.focus-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1.5px solid transparent;font-size:.76rem;font-weight:800;}
+.focus-chip.red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.18);color:#B91C1C;}
+.focus-chip.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.18);color:#B45309;}
+.focus-chip.green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.18);color:#047857;}
+.timeline{display:flex;flex-direction:column;gap:10px;}
+.timeline-item{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--bg);}
+.timeline-day{display:inline-flex;align-items:center;justify-content:center;height:32px;border-radius:10px;background:var(--stu-pale);color:var(--stu-dark);font-size:.72rem;font-weight:900;}
+.timeline-title{font-size:.84rem;font-weight:800;color:var(--ink);margin-bottom:3px;}
+.timeline-meta{font-size:.74rem;color:var(--muted);line-height:1.45;}
+.timeline-score{font-size:.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu-dark);}
+
+@media (max-width: 1100px){
+  .hero-shell,.dashboard-grid{grid-template-columns:1fr;}
+  .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+
+@media (max-width: 720px){
+  .summary-grid,.mini-grid{grid-template-columns:1fr;}
+  .subject-row{grid-template-columns:1fr;}
+  .timeline-item{grid-template-columns:1fr;}
+}
+
+/* AI rec banner */
+.ai-rec{background:linear-gradient(135deg,#1E0A3C,#2D1B69,#4C1D95);border:1.5px solid rgba(124,58,237,.35);border-radius:14px;padding:22px 24px;margin-bottom:22px;}
+.ai-rec-label{font-size:.7rem;font-weight:800;color:#A78BFA;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ai-rec-text{font-size:.9rem;color:rgba(255,255,255,.75);line-height:1.65;}
+.badge-ai{background:rgba(99,102,241,.3);color:#A5B4FC;font-size:.68rem;font-weight:800;padding:2px 9px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;}
+
+/* Strength bar */
+.strength-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.strength-label{font-size:.8rem;font-weight:700;color:var(--ink);width:90px;flex-shrink:0;}
+.strength-track{flex:1;height:10px;background:var(--border);border-radius:6px;overflow:hidden;}
+.strength-fill{height:100%;border-radius:6px;transition:width .6s ease;}
+.strength-pct{font-size:.78rem;font-weight:800;font-family:'DM Mono',monospace;width:36px;text-align:right;flex-shrink:0;}
+
+/* Radar / spider chart (CSS art) */
+.radar-wrap{position:relative;width:180px;height:180px;margin:0 auto;}
+.radar-label{position:absolute;font-size:.65rem;font-weight:700;color:var(--muted);white-space:nowrap;}
+
+/* Trend bars */
+.trend-bar-wrap{display:flex;align-items:flex-end;gap:5px;height:70px;}
+.trend-bar{flex:1;border-radius:4px 4px 0 0;min-width:18px;transition:height .4s;}
+
+/* Milestone badges */
+.badge-mile{display:inline-flex;align-items:center;gap:6px;background:var(--stu-pale);border:1.5px solid var(--stu-light);border-radius:10px;padding:6px 12px;font-size:.76rem;font-weight:700;color:var(--stu);}
+.badge-mile.grey{background:#F1F5F9;border-color:#E2E8F0;color:#64748B;}
+
+/* Comparison ring */
+.ring-outer{width:100px;height:100px;border-radius:50%;background:conic-gradient(var(--stu) 0% 72%, var(--border) 72% 100%);display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;}
+.ring-inner{width:72px;height:72px;border-radius:50%;background:var(--white);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📊 AI Tools</div>
+        <div class="page-title">My Progress AI</div>
+        <div class="page-sub">AI tells you exactly where to focus next — based on your scores, trends, and class comparison.</div>
+      </div>
+      <div>
+        <select class="form-input" style="width:auto;" id="termSelect" onchange="renderAll()">
+          <option value="half">Half-Yearly 2026</option>
+          <option value="annual" selected>Annual 2026</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hero-shell">
+      <div class="hero-card">
+        <div class="hero-kicker">Weekly Learning Snapshot</div>
+        <div class="hero-title">A clearer view of what is improving, what is slipping, and what to study next.</div>
+        <div class="hero-sub">This dashboard turns marks, trends, and subject strengths into a small study plan. The goal is simple: spend less time guessing and more time improving the right chapter.</div>
+        <div class="hero-pills">
+          <span class="hero-pill">🎯 Adaptive focus</span>
+          <span class="hero-pill">📚 Chapter-level insights</span>
+          <span class="hero-pill">📈 Trend visibility</span>
+          <span class="hero-pill">🏅 Milestones</span>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="panel-card">
+          <div class="panel-title">This week’s priority</div>
+          <div class="focus-list">
+            <div class="focus-item"><div><strong>Mathematics</strong><span>Algebra and fractions are still the weakest chapters</span></div><span class="focus-badge">45 min</span></div>
+            <div class="focus-item"><div><strong>English</strong><span>Grammar needs short, repeated revision sets</span></div><span class="focus-badge">20 min</span></div>
+            <div class="focus-item"><div><strong>Science</strong><span>Review chemical equations with 10-question drills</span></div><span class="focus-badge">30 min</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card"><div class="k">Overall Score</div><div class="v" id="overallSummary">72%</div><div class="s">Annual exam performance across all subjects</div></div>
+      <div class="summary-card"><div class="k">Rank</div><div class="v" id="rankSummary">1st</div><div class="s">Class comparison for the selected term</div></div>
+      <div class="summary-card"><div class="k">Weak Areas</div><div class="v" id="weakSummary">4</div><div class="s">Topics currently flagged for practice</div></div>
+      <div class="summary-card"><div class="k">Improvement</div><div class="v" id="improveSummary">+14%</div><div class="s">Progress over the last six months</div></div>
+    </div>
+
+    <!-- AI Recommendation -->
+    <div class="ai-rec">
+      <div class="ai-rec-label">🤖 AI Recommendation This Week <span class="badge-ai">Personalised</span></div>
+      <div class="ai-rec-text" id="aiRecText">"তোমার Mathematics এর Algebra ও Fractions chapter এ মনোযোগ দাও। গত ৩টি quiz-এ এই অংশে তুমি সবচেয়ে কম নম্বর পেয়েছ। সপ্তাহে ৪৫ মিনিট practice quiz দিলে ২ সপ্তাহের মধ্যে উন্নতি দেখা যাবে।"</div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="dashboard-grid">
+
+      <!-- Subject strength -->
+      <div class="card">
+        <div class="mini-head">
+          <div>
+            <div class="mini-title">📚 Subject Performance</div>
+            <div class="mini-sub">Subject-wise strength bands and weak chapter callouts.</div>
+          </div>
+          <span class="badge-ai">Auto-ranked</span>
+        </div>
+        <div class="subject-scale" id="strengthBars"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;" id="aiChapters"></div>
+      </div>
+
+      <!-- Overall + comparison -->
+      <div class="mini-grid">
+        <div class="mini-card" style="text-align:center;">
+          <div class="mini-head" style="margin-bottom:18px;">
+            <div>
+              <div class="mini-title">Overall Score</div>
+              <div class="mini-sub">Current term and GPA snapshot.</div>
+            </div>
+          </div>
+          <div class="ring-outer">
+            <div class="ring-inner">
+              <div style="font-size:1.2rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;" id="overallPct">72%</div>
+              <div style="font-size:.6rem;color:var(--muted);">GPA 5.00</div>
+            </div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:14px;" id="classComp">You scored <strong style="color:var(--stu);">+8%</strong> above class average</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-head">
+            <div>
+              <div class="mini-title">Class Rank</div>
+              <div class="mini-sub">Relative position in the current term.</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center;">
+            <div><div style="font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu);" id="rankVal">1st</div><div style="font-size:.7rem;color:var(--muted);">Your Rank</div></div>
+            <div><div style="font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;" id="totalStudents">38</div><div style="font-size:.7rem;color:var(--muted);">Total Students</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trend + Milestones -->
+    <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;">
+
+      <!-- Trend -->
+      <div class="card">
+        <div class="mini-head">
+          <div>
+            <div class="mini-title">📈 Score Trend — Last 6 Months</div>
+            <div class="mini-sub">The slope is more useful than one test score.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:80px;" id="trendBars"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;" id="trendLabels"></div>
+        <div style="font-size:.75rem;color:#059669;margin-top:8px;font-weight:700;" id="trendNote">↑ Improving +14% since January 2026</div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="card">
+        <div class="mini-head">
+          <div>
+            <div class="mini-title">🏅 Milestones & Badges</div>
+            <div class="mini-sub">Small achievements that show consistent work.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="milestones"></div>
+      </div>
+    </div>
+
+    <!-- AI chapter plan -->
+    <div class="card">
+      <div class="mini-head">
+        <div>
+          <div class="mini-title">🎯 AI Recommended Study Plan — This Week</div>
+          <div class="mini-sub">A realistic weekly plan built from your current gaps.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="weekPlan"></div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+const DATA = {
+  annual: {
+    subjects: [
+      { name: 'Mathematics',   pct: 52, color: '#EF4444', colorName: '#FCA5A5', weak: true,  chapters: ['Algebra','Fractions'] },
+      { name: 'English',       pct: 68, color: '#F59E0B', colorName: '#FCD34D', weak: true,  chapters: ['Grammar'] },
+      { name: 'Bangla',        pct: 82, color: '#10B981', colorName: '#6EE7B7', weak: false, chapters: [] },
+      { name: 'Science',       pct: 78, color: '#10B981', colorName: '#6EE7B7', weak: false, chapters: [] },
+      { name: 'Biology',       pct: 88, color: '#10B981', colorName: '#6EE7B7', weak: false, chapters: [] },
+      { name: 'Social Studies',pct: 75, color: '#F59E0B', colorName: '#FCD34D', weak: true,  chapters: ['Map Work'] },
+    ],
+    overall: 72, rank: '1st', classAvgDiff: '+8%', trend: [48,54,58,64,67,72],
+    months: ['Jan','Feb','Mar','Apr','May','Jun'],
+    rec: '"তোমার Mathematics এর Algebra ও Fractions chapter এ মনোযোগ দাও। গত ৩টি quiz-এ এই অংশে তুমি সবচেয়ে কম নম্বর পেয়েছ। সপ্তাহে ৪৫ মিনিট practice quiz দিলে ২ সপ্তাহের মধ্যে উন্নতি দেখা যাবে।"',
+    trendNote: '↑ Improving +14% since January 2026',
+  },
+  half: {
+    subjects: [
+      { name: 'Mathematics',   pct: 48, color: '#EF4444', colorName: '#FCA5A5', weak: true,  chapters: ['Algebra','Quadratic Equations'] },
+      { name: 'English',       pct: 62, color: '#F59E0B', colorName: '#FCD34D', weak: true,  chapters: ['Writing','Vocabulary'] },
+      { name: 'Bangla',        pct: 79, color: '#10B981', colorName: '#6EE7B7', weak: false, chapters: [] },
+      { name: 'Science',       pct: 72, color: '#F59E0B', colorName: '#FCD34D', weak: true,  chapters: ['Chemical Equations'] },
+      { name: 'Biology',       pct: 85, color: '#10B981', colorName: '#6EE7B7', weak: false, chapters: [] },
+      { name: 'Social Studies',pct: 68, color: '#F59E0B', colorName: '#FCD34D', weak: true,  chapters: ['Map Work','History'] },
+    ],
+    overall: 65, rank: '3rd', classAvgDiff: '+4%', trend: [38,44,50,55,60,65],
+    months: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+    rec: '"Half-yearly exam এ Mathematics এ Algebra chapter দুর্বল ছিল। English Writing section এও মনোযোগ দাও। Daily 30 minutes practice করলে annual exam এ অনেক ভালো করতে পারবে।"',
+    trendNote: '↑ Improving +17% since October 2025',
+  }
+};
+
+const MILESTONES = [
+  { label: 'Top of the Class 🥇',       earned: true },
+  { label: 'Perfect Attendance ✅',      earned: true },
+  { label: 'GPA 5.00 Holder 🌟',        earned: true },
+  { label: '10 Quizzes Completed 🎯',   earned: true },
+  { label: 'Science Ace 🔬',            earned: false },
+  { label: 'Math Champion 📐',          earned: false },
+];
+
+const WEEK_PLAN = [
+  { day: 'Mon', topic: 'Math — Algebra (Ch. 4)', icon: '📐', done: true },
+  { day: 'Tue', topic: 'Math — Practice Quiz',   icon: '🎯', done: true },
+  { day: 'Wed', topic: 'English — Grammar',       icon: '✍️', today: true },
+  { day: 'Thu', topic: 'Science — Ch. Equations', icon: '⚗️', done: false },
+  { day: 'Fri', topic: 'Bangla — Poems + Essay',  icon: '📖', done: false },
+  { day: 'Sat', topic: 'Full Revision + Test',    icon: '📝', done: false },
+];
+
+function renderAll() {
+  const term = document.getElementById('termSelect').value;
+  const d = DATA[term];
+
+  // AI rec
+  document.getElementById('aiRecText').textContent = d.rec;
+  document.getElementById('trendNote').textContent = d.trendNote;
+  document.getElementById('overallSummary').textContent = d.overall + '%';
+  document.getElementById('rankSummary').textContent = d.rank;
+  document.getElementById('weakSummary').textContent = d.subjects.filter(s => s.weak).length;
+  document.getElementById('improveSummary').textContent = d.trendNote.replace(/^↑\s*/, '').replace(/ since.*$/, '');
+
+  // Overall ring
+  document.getElementById('overallPct').textContent = d.overall + '%';
+  document.querySelector('.ring-outer').style.background = `conic-gradient(var(--stu) 0% ${d.overall}%, var(--border) ${d.overall}% 100%)`;
+  document.getElementById('classComp').innerHTML = `You scored <strong style="color:var(--stu);">${d.classAvgDiff}</strong> above class average`;
+  document.getElementById('rankVal').textContent = d.rank;
+
+  // Subject bars
+  const barsEl = document.getElementById('strengthBars');
+  barsEl.innerHTML = '';
+  d.subjects.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'subject-row';
+    div.innerHTML = `
+      <div class="subject-name">${s.name}</div>
+      <div class="subject-track"><div class="subject-fill" style="width:${s.pct}%;background:${s.color};"></div></div>
+      <div class="subject-score" style="color:${s.colorName};">${s.pct}%</div>`;
+    barsEl.appendChild(div);
+  });
+
+  // Weak chapter chips
+  const chapEl = document.getElementById('aiChapters');
+  chapEl.innerHTML = '';
+  d.subjects.forEach(s => {
+    if (s.weak) s.chapters.forEach(c => {
+      const span = document.createElement('span');
+      span.className = 'focus-chip ' + (s.pct < 60 ? 'red' : 'amber');
+      span.textContent = `⚠ ${s.name}: ${c}`;
+      chapEl.appendChild(span);
+    });
+  });
+  if (!chapEl.children.length) chapEl.innerHTML = '<span style="font-size:.8rem;color:#059669;font-weight:700;">✅ No critical weak areas — great work!</span>';
+
+  // Trend
+  const maxT = Math.max(...d.trend);
+  const trendEl = document.getElementById('trendBars');
+  const lblEl = document.getElementById('trendLabels');
+  trendEl.innerHTML = ''; lblEl.innerHTML = '';
+  const colors = ['rgba(124,58,237,.35)','rgba(124,58,237,.45)','rgba(124,58,237,.5)','rgba(124,58,237,.6)','rgba(124,58,237,.7)','rgba(124,58,237,.95)'];
+  d.trend.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'trend-bar';
+    bar.style.cssText = `height:${Math.round((v/maxT)*100)}%;background:${colors[i]};flex:1;border-radius:4px 4px 0 0;`;
+    bar.title = `${d.months[i]}: ${v}%`;
+    trendEl.appendChild(bar);
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'flex:1;text-align:center;font-size:.62rem;color:var(--muted);';
+    lbl.textContent = d.months[i];
+    lblEl.appendChild(lbl);
+  });
+
+  // Milestones
+  const mEl = document.getElementById('milestones');
+  mEl.innerHTML = '';
+  MILESTONES.forEach(m => {
+    const span = document.createElement('span');
+    span.className = 'badge-mile' + (m.earned ? '' : ' grey');
+    span.textContent = m.earned ? m.label : '🔒 ' + m.label.split(' ')[0] + ' ' + m.label.split(' ').slice(1).join(' ');
+    mEl.appendChild(span);
+  });
+
+  // Week plan
+  const wpEl = document.getElementById('weekPlan');
+  wpEl.innerHTML = '';
+  WEEK_PLAN.forEach(p => {
+    const div = document.createElement('div');
+    let badge = p.done ? '<span style="font-size:.65rem;background:#DCFCE7;color:#166534;padding:1px 7px;border-radius:6px;font-weight:700;">Done ✓</span>' :
+                p.today ? '<span style="font-size:.65rem;background:var(--stu-pale);color:var(--stu);padding:1px 7px;border-radius:6px;font-weight:700;">Today</span>' : '';
+    div.className = 'timeline-item';
+    div.innerHTML = `<div class="timeline-day">${p.day}</div>
+      <div><div class="timeline-title">${p.icon} ${p.topic}</div><div class="timeline-meta">Short, focused sessions keep progress moving without overload.</div></div>
+      <div class="timeline-score">${badge}</div>`;
+    wpEl.appendChild(div);
+  });
+}
+
+renderAll();
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

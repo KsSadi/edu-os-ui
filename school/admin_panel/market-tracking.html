@@ -1,0 +1,372 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Tracking &middot; EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* Order selector tabs */
+.order-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:22px;}
+.ot-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;transition:all .15s;flex-shrink:0;min-width:180px;background:var(--white);}
+.ot-card:hover,.ot-card.on{border-color:var(--mkt);background:var(--mkt-pale);}
+.ot-id{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:800;color:var(--ink);}
+.ot-date{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.ot-status{font-size:.72rem;font-weight:800;padding:3px 8px;border-radius:8px;margin-top:6px;display:inline-block;}
+
+/* Progress tracker &middot; horizontal stepper */
+.progress-track{display:flex;align-items:flex-start;gap:0;padding:24px 28px;position:relative;}
+.pt-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;}
+.pt-step::before{content:'';position:absolute;top:17px;left:50%;right:-50%;height:3px;background:var(--border);z-index:0;}
+.pt-step:last-child::before{display:none;}
+.pt-step.done::before{background:var(--mkt);}
+.pt-icon-wrap{width:36px;height:36px;border-radius:50%;border:3px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:.9rem;z-index:1;position:relative;transition:all .2s;}
+.pt-step.done .pt-icon-wrap{border-color:var(--mkt);background:var(--mkt);color:#fff;}
+.pt-step.active .pt-icon-wrap{border-color:var(--mkt);background:var(--white);box-shadow:0 0 0 4px var(--mkt-light);}
+.pt-step.pending .pt-icon-wrap{border-color:var(--border);background:var(--bg);}
+.pt-step-label{font-size:.72rem;font-weight:700;margin-top:8px;text-align:center;color:var(--muted);transition:color .2s;}
+.pt-step.done .pt-step-label,.pt-step.active .pt-step-label{color:var(--ink-2);}
+.pt-step-time{font-size:.64rem;color:var(--muted);margin-top:2px;text-align:center;font-family:'DM Mono',monospace;}
+
+/* Map visual placeholder */
+.map-visual{background:linear-gradient(135deg,#F0FDF4 0%,#D1FAE5 100%);border-radius:12px;height:180px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border:1.5px solid #A7F3D0;}
+.map-road{position:absolute;background:rgba(5,150,105,.15);height:3px;width:80%;left:10%;border-radius:2px;}
+.map-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--mkt);box-shadow:0 0 0 4px var(--mkt-light);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--mkt-light);}50%{box-shadow:0 0 0 8px rgba(5,150,105,.15);}}
+
+/* Order items list */
+.tr-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);}
+.tr-item:last-child{border-bottom:none;}
+.tr-emoji{width:40px;height:40px;border-radius:9px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.tr-name{flex:1;font-size:.86rem;font-weight:700;color:var(--ink-2);}
+.tr-qty{font-size:.76rem;color:var(--muted);}
+.tr-price{font-family:'DM Mono',monospace;font-weight:800;font-size:.84rem;color:var(--ink);}
+.tr-status-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;flex-shrink:0;}
+
+/* Activity log */
+.log-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.log-item:last-child{border-bottom:none;}
+.log-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.log-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.log-meta{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.log-time{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;min-width:80px;text-align:right;flex-shrink:0;}
+
+/* Rating stars */
+.star-row{display:flex;gap:4px;}
+.star{font-size:1.4rem;cursor:pointer;transition:transform .1s;opacity:.3;}
+.star:hover,.star.on{opacity:1;transform:scale(1.15);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Delivery Status</div>
+        <div class="page-title">Order Tracking</div>
+        <div class="page-sub">Track your active and past orders. All orders delivered to Dhaka High School or your address.</div>
+      </div>
+      <div class="page-actions">
+        <a href="market-catalogue.html" class="btn btn-outline"> Browse More Products</a>
+        <a href="market-order.html" class="btn btn-primary" style="background:var(--mkt);border-color:var(--mkt);"> New Order</a>
+      </div>
+    </div>
+
+    <!-- Order tabs -->
+    <div class="order-tabs anim-1" id="orderTabs"></div>
+
+    <!-- Track panel -->
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;" id="trackPanel"></div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const orders=[
+  {
+    id:'MKT-2025-4291',date:'Feb 24, 2025',placed:'Today, 10:42 AM',
+    statusKey:'in-transit',statusLabel:'Out for Delivery',
+    statusColor:'var(--par)',
+    method:'Home Delivery',address:'House 12, Road 5, Dhanmondi, Dhaka',
+    payment:'bKash',total:2325,deliveryCharge:60,
+    eta:'Today, 4:00 PM &middot; 6:00 PM',
+    courier:'Sundarban Courier',courierPhone:'01700-111222',trackingNo:'SC-2025-8812',
+    items:[
+      {name:'Higher Mathematics Textbook',emoji:'',qty:1,price:220,status:'packed'},
+      {name:'Camlin Geometry Box Set',emoji:'',qty:2,price:95,status:'packed'},
+      {name:'A4 Notebook (5-pack)',emoji:'',qty:1,price:180,status:'packed'},
+      {name:'Scientific Calculator FX-991EX',emoji:'',qty:1,price:1450,status:'packed'},
+      {name:'Biology Dissection Kit',emoji:'',qty:1,price:380,status:'packed'},
+    ],
+    steps:[
+      {icon:'&#x2705;',label:'Order Placed',time:'Feb 24, 10:42',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Payment Confirmed',time:'Feb 24, 10:45',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Packed',time:'Feb 24, 2:00 PM',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Out for Delivery',time:'Feb 24, 3:30 PM',state:'active'},
+      {icon:'&#x270F;&#xFE0F;',label:'Delivered',time:'Est. 4&middot;6 PM',state:'pending'},
+    ],
+    log:[
+      {dot:'var(--mkt)',title:'Out for delivery',meta:'Sundarban Courier &middot; Dhanmondi Hub','time':'3:30 PM'},
+      {dot:'var(--blue)',title:'Package packed and dispatched from warehouse',meta:'Keraniganj Fulfilment Centre','time':'2:00 PM'},
+      {dot:'var(--blue)',title:'Payment confirmed via bKash',meta:'Txn: 8N2024XY44','time':'10:45 AM'},
+      {dot:'var(--mkt)',title:'Order placed successfully',meta:'Order ID: MKT-2025-4291','time':'10:42 AM'},
+    ],
+    delivered:false,
+  },
+  {
+    id:'MKT-2025-4188',date:'Feb 18, 2025',placed:'Feb 18, 9:15 AM',
+    statusKey:'delivered',statusLabel:'Delivered',
+    statusColor:'var(--green)',
+    method:'School Pickup',address:'Dhaka High School Office',
+    payment:'Nagad',total:890,deliveryCharge:0,
+    eta:'Delivered Feb 20',
+    courier:'School Office',courierPhone:'',trackingNo:'',
+    items:[
+      {name:'English Grammar & Composition',emoji:'',qty:1,price:165,status:'delivered'},
+      {name:'Ballpoint Pen Box (20-pack)',emoji:'',qty:2,price:140,status:'delivered'},
+      {name:'Highlighter Set (6 colours)',emoji:'',qty:1,price:85,status:'delivered'},
+      {name:'Bangla 1st Paper &middot; Class IX',emoji:'',qty:1,price:180,status:'delivered'},
+    ],
+    steps:[
+      {icon:'&#x2705;',label:'Order Placed',time:'Feb 18, 9:15',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Payment Confirmed',time:'Feb 18, 9:18',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Packed',time:'Feb 19, 11:00',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Ready at School',time:'Feb 20, 8:30',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Collected',time:'Feb 20, 2:10',state:'done'},
+    ],
+    log:[
+      {dot:'var(--mkt)',title:'Order collected from school office','meta':'Farhan Islam confirmed receipt','time':'Feb 20, 2:10'},
+      {dot:'var(--blue)',title:'Package ready at school office','meta':'Ask at reception with order ID','time':'Feb 20, 8:30'},
+      {dot:'var(--blue)',title:'Order packed and dispatched','meta':'Keraniganj Warehouse','time':'Feb 19, 11:00'},
+      {dot:'var(--mkt)',title:'Payment confirmed via Nagad','meta':'৳890 received','time':'Feb 18, 9:18'},
+      {dot:'var(--mkt)',title:'Order placed','meta':'MKT-2025-4188','time':'Feb 18, 9:15'},
+    ],
+    delivered:true,
+    rating:5,
+  },
+  {
+    id:'MKT-2025-3901',date:'Feb 5, 2025',placed:'Feb 5, 3:22 PM',
+    statusKey:'delivered',statusLabel:'Delivered',
+    statusColor:'var(--green)',
+    method:'Home Delivery',address:'House 12, Road 5, Dhanmondi',
+    payment:'Cash on Delivery',total:1430,deliveryCharge:60,
+    eta:'Delivered Feb 7',
+    courier:'Sundarban Courier',courierPhone:'',trackingNo:'SC-2025-7741',
+    items:[
+      {name:'School Blazer &middot; Navy Blue',emoji:'',qty:1,price:950,status:'delivered'},
+      {name:'School Shirt &middot; White (Boys)',emoji:'',qty:1,price:350,status:'delivered'},
+      {name:'Safety Goggles (Pair)',emoji:'',qty:1,price:120,status:'delivered'},
+    ],
+    steps:[
+      {icon:'&#x2705;',label:'Order Placed',time:'Feb 5, 3:22',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Confirmed (COD)',time:'Feb 5, 3:22',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Packed',time:'Feb 6, 10:00',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Out for Delivery',time:'Feb 7, 9:00',state:'done'},
+      {icon:'&#x270F;&#xFE0F;',label:'Delivered',time:'Feb 7, 2:45',state:'done'},
+    ],
+    log:[
+      {dot:'var(--mkt)',title:'Delivered and paid','meta':'Cash collected: ৳1,430','time':'Feb 7, 2:45'},
+      {dot:'var(--blue)',title:'Out for delivery','meta':'Sundarban Courier','time':'Feb 7, 9:00'},
+      {dot:'var(--blue)',title:'Packed and ready','meta':'Keraniganj Warehouse','time':'Feb 6, 10:00'},
+      {dot:'var(--mkt)',title:'Order placed (Cash on Delivery)','meta':'MKT-2025-3901','time':'Feb 5, 3:22'},
+    ],
+    delivered:true,
+    rating:4,
+  },
+];
+
+let activeOrder=0;
+
+function buildTabs(){
+  const statusStyles={
+    'in-transit':'background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;',
+    'delivered':'background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;',
+    'pending':'background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;',
+  };
+  document.getElementById('orderTabs').innerHTML=orders.map((o,i)=>`
+    <div class="ot-card ${i===activeOrder?'on':''}" onclick="selectOrder(${i})">
+      <div class="ot-id">${o.id}</div>
+      <div class="ot-date">${o.date} &middot; ${o.items.length} items</div>
+      <div class="ot-status" style="${statusStyles[o.statusKey]||''}">${o.statusLabel}</div>
+    </div>`).join('');
+}
+
+function selectOrder(i){activeOrder=i;buildTabs();renderTrack();}
+
+function renderTrack(){
+  const o=orders[activeOrder];
+  const allDone=o.steps.every(s=>s.state==='done');
+
+  document.getElementById('trackPanel').innerHTML=`
+    <!-- Left -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Progress stepper -->
+      <div class="card anim-1" style="overflow:hidden;">
+        <div style="background:${allDone?'linear-gradient(135deg,#064E3B,#059669)':'linear-gradient(135deg,#064E3B,#0891B2)'};padding:16px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:.72rem;opacity:.65;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Order ${o.id}</div>
+            <div style="font-size:1rem;font-weight:800;">${o.statusLabel}</div>
+            <div style="font-size:.78rem;opacity:.75;margin-top:2px;">${allDone?'Delivered':'ETA: '+o.eta}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;">${o.total.toLocaleString()}</div>
+            <div style="font-size:.68rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Total</div>
+          </div>
+        </div>
+        <div class="progress-track" id="progressTrack">
+          ${o.steps.map((s,si)=>`
+          <div class="pt-step ${s.state}" ${si<o.steps.length-1?'style="flex:1;"':''}>
+            <div class="pt-icon-wrap">${s.state==='done'?'&#x2713;':s.icon}</div>
+            <div class="pt-step-label">${s.label}</div>
+            <div class="pt-step-time">${s.time}</div>
+          </div>
+          ${si<o.steps.length-1?'':''}`).join('')}
+        </div>
+      </div>
+
+      <!-- Courier info (if home delivery) -->
+      ${o.trackingNo?`
+      <div class="card anim-1" style="padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:2rem;"></div>
+        <div style="flex:1;">
+          <div style="font-size:.88rem;font-weight:800;color:var(--ink);">${o.courier}</div>
+          <div style="font-size:.76rem;color:var(--muted);">Tracking No: <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--mkt);">${o.trackingNo}</span></div>
+        </div>
+        ${o.courierPhone?`<button class="btn btn-sm btn-outline" style="font-size:.76rem;" onclick="showToast('Calling ${o.courier}&middot;','&#x2705;')"> Call Courier</button>`:''}
+      </div>`:
+      `<div class="card anim-1" style="padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:2rem;"></div>
+        <div><div style="font-size:.88rem;font-weight:800;color:var(--ink);">School Pickup</div><div style="font-size:.76rem;color:var(--muted);">Collect from school reception &middot; Show Order ID</div></div>
+      </div>`}
+
+      <!-- Map visual -->
+      ${!allDone?`
+      <div class="card anim-2" style="padding:14px 18px;">
+        <div style="font-size:.8rem;font-weight:700;color:var(--ink-2);margin-bottom:10px;"> Delivery Route</div>
+        <div class="map-visual">
+          <div class="map-road" style="top:50%;"></div>
+          <div class="map-road" style="top:35%;transform:rotate(-15deg);"></div>
+          <div style="position:absolute;left:12%;top:44%;font-size:1.2rem;"></div>
+          <div style="position:absolute;left:12%;top:62%;font-size:.65rem;font-weight:700;color:var(--mkt-dark);">Warehouse</div>
+          <div class="map-dot" style="left:58%;top:40%;"></div>
+          <div style="position:absolute;left:60%;top:58%;font-size:.65rem;font-weight:700;color:var(--mkt-dark);">Your Package</div>
+          <div style="position:absolute;right:10%;top:40%;font-size:1.2rem;"></div>
+          <div style="position:absolute;right:8%;top:58%;font-size:.65rem;font-weight:700;color:var(--mkt-dark);">Destination</div>
+          <div style="position:absolute;top:8px;left:10px;font-size:.68rem;font-weight:700;color:var(--mkt-dark);background:var(--mkt-light);border-radius:6px;padding:3px 8px;">Live Tracking</div>
+        </div>
+      </div>`:''}
+
+      <!-- Activity log -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">&#x1F4CB; Activity Log</div><div class="card-sub">${o.id}</div></div>
+        <div style="padding:10px 18px;">
+          ${o.log.map(l=>`
+          <div class="log-item">
+            <div class="log-dot" style="background:${l.dot};"></div>
+            <div style="flex:1;"><div class="log-title">${l.title}</div><div class="log-meta">${l.meta}</div></div>
+            <div class="log-time">${l.time}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Rating (if delivered) -->
+      ${o.delivered?`
+      <div class="card anim-2" style="padding:18px;text-align:center;">
+        <div style="font-size:.84rem;font-weight:800;color:var(--ink);margin-bottom:4px;">How was this order?</div>
+        <div style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">Rate your experience</div>
+        <div class="star-row" style="justify-content:center;" id="stars-${o.id}">
+          ${[1,2,3,4,5].map(s=>`<div class="star ${(o.rating||0)>=s?'on':''}" onclick="rateOrder('${o.id}',${s})">&#x2605;</div>`).join('')}
+        </div>
+        ${o.rating?`<div style="font-size:.78rem;color:var(--mkt);font-weight:700;margin-top:8px;">${o.rating === 5?'Excellent!':o.rating>=4?'Great!':o.rating>=3?'Good':'Could be better'}</div>`:''}
+      </div>`:''}
+    </div>
+
+    <!-- Right: items + summary -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card anim-1">
+        <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">Order Items</div><div class="card-sub" style="font-size:.72rem;">${o.items.length} items &middot; &#x09F3; ${o.total.toLocaleString()}</div></div>
+        <div>
+          ${o.items.map(item=>`
+          <div class="tr-item">
+            <div class="tr-emoji">${item.emoji}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="tr-name">${item.name}</div>
+              <div class="tr-qty">&middot;${item.qty}</div>
+            </div>
+            <div class="tr-price">${(item.price*item.qty).toLocaleString()}</div>
+            <div class="tr-status-icon" style="background:${o.delivered?'var(--mkt)':'#FEF3C7'};color:${o.delivered?'#fff':'#92400E'};">${o.delivered?'&#x2713;':''}</div>
+          </div>`).join('')}
+        </div>
+        <div style="padding:12px 18px;border-top:1px solid var(--border);background:var(--bg);">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px;"><span style="color:var(--muted);">Subtotal</span><span style="font-family:'DM Mono',monospace;">${(o.total-o.deliveryCharge).toLocaleString()}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:6px;"><span style="color:var(--muted);">Delivery</span><span style="font-family:'DM Mono',monospace;color:${o.deliveryCharge?'var(--ink)':'var(--mkt)'};">${o.deliveryCharge?'&#x09F3; '+o.deliveryCharge:'Free'}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.9rem;font-weight:900;border-top:1px solid var(--border);padding-top:6px;"><span>Total Paid</span><span style="font-family:'DM Mono',monospace;color:var(--mkt);">${o.total.toLocaleString()}</span></div>
+        </div>
+      </div>
+
+      <div class="card anim-2" style="padding:14px 16px;">
+        <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Order Details</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:.8rem;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Payment</span><span style="font-weight:700;">${o.payment}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Method</span><span style="font-weight:700;">${o.method}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Placed</span><span style="font-weight:700;font-family:'DM Mono',monospace;">${o.placed}</span></div>
+          ${o.trackingNo?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Tracking</span><span style="font-weight:700;font-family:'DM Mono',monospace;color:var(--mkt);">${o.trackingNo}</span></div>`:''}
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-outline btn-sm" style="justify-content:center;font-size:.8rem;" onclick="showToast('Downloading invoice PDF&middot;','&#x2705;')"> Download Invoice</button>
+        ${o.delivered?`<button class="btn btn-outline btn-sm" style="justify-content:center;font-size:.8rem;" onclick="showToast('Reorder added to cart','&#x2705;')"> Reorder Same Items</button>`:''}
+        <button class="btn btn-outline btn-sm" style="justify-content:center;font-size:.8rem;border-color:var(--red);color:var(--red);" onclick="showToast('Support request submitted','&#x2705;')">Report an Issue</button>
+      </div>
+    </div>`;
+}
+
+function rateOrder(id,rating){
+  const o=orders.find(x=>x.id===id);
+  if(o)o.rating=rating;
+  renderTrack();
+  showToast(`Thank you for rating! ${rating} star${rating>1?'s':''}`,'&#x2705;');
+}
+
+function searchOrder(q){
+  if(!q)return;
+  const idx=orders.findIndex(o=>o.id.toLowerCase().includes(q.toLowerCase()));
+  if(idx>=0){selectOrder(idx);showToast(`Found: ${orders[idx].id}`,'&#x2705;');}
+  else showToast('Order not found','&#x2705;');
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildTabs();renderTrack();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

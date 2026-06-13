@@ -1,0 +1,447 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Practice Test Generator — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* ── Hero ── */
+.pt-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0E2A4A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.pt-hero::before{content:'📝';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.pth-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.pth-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.pth-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* ── Layout ── */
+.pt-layout{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;}
+
+/* ── Config panel ── */
+.config-panel{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;}
+.cp-head{background:linear-gradient(135deg,#050314,#1A1040);padding:14px 18px;color:#fff;}
+.cp-title{font-size:.86rem;font-weight:800;}
+.cp-sub{font-size:.7rem;opacity:.6;margin-top:2px;}
+.cp-body{padding:16px 18px;}
+.cp-section{margin-bottom:16px;}
+.cp-label{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+.fg label{font-size:.78rem;font-weight:700;color:var(--ink-2);display:block;margin-bottom:5px;}
+.fg select, .fg input{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:.84rem;font-family:inherit;background:var(--bg);outline:none;color:var(--ink);transition:border-color .12s;box-sizing:border-box;}
+.fg select:focus,.fg input:focus{border-color:var(--ai);}
+
+/* Type selector */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.type-btn{border:1.5px solid var(--border);border-radius:10px;padding:9px 10px;cursor:pointer;text-align:center;background:var(--white);transition:all .12s;}
+.type-btn:hover{border-color:var(--ai);}
+.type-btn.on{border-color:var(--ai);background:var(--ai-pale);}
+.tb-icon{font-size:1.3rem;margin-bottom:3px;}
+.tb-label{font-size:.72rem;font-weight:700;color:var(--muted);}
+.type-btn.on .tb-label{color:var(--ai-dark);}
+
+/* Difficulty pills */
+.diff-pills{display:flex;gap:6px;}
+.diff-pill{flex:1;padding:7px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .12s;}
+.diff-pill.easy.on{background:#ECFDF5;border-color:#059669;color:#065F46;}
+.diff-pill.medium.on{background:#FEF3C7;border-color:#D97706;color:#92400E;}
+.diff-pill.hard.on{background:#FEF2F2;border-color:#DC2626;color:#B91C1C;}
+.diff-pill:not(.on):hover{border-color:var(--ai);}
+
+/* Generate btn */
+.gen-btn{width:100%;padding:12px;border-radius:11px;background:var(--ai-soft);border:none;color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .12s;box-shadow:var(--ai-glow);}
+.gen-btn:hover{opacity:.88;}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── Test area ── */
+.test-area{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;}
+.ta-head{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.ta-info{font-size:.84rem;font-weight:800;color:var(--ink);}
+.ta-timer{font-size:.9rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ai);display:flex;align-items:center;gap:6px;}
+.ta-actions{display:flex;gap:6px;}
+.ta-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-size:.76rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.ta-btn:hover{border-color:var(--ai);color:var(--ai);}
+.ta-btn.primary{background:var(--ai-soft);border-color:transparent;color:#fff;}
+.ta-body{padding:20px;}
+
+/* Loading state */
+.loading-state{text-align:center;padding:60px 20px;}
+.ls-icon{font-size:3rem;margin-bottom:12px;animation:spin 2s linear infinite;}
+@keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+.ls-text{font-size:.96rem;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.ls-sub{font-size:.8rem;color:var(--muted);}
+.ls-progress{margin-top:16px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;max-width:280px;margin-left:auto;margin-right:auto;}
+.ls-fill{height:100%;background:var(--ai-soft);border-radius:4px;transition:width .4s ease;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;}
+.es-icon{font-size:3.5rem;margin-bottom:12px;opacity:.5;}
+.es-text{font-size:.96rem;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.es-sub{font-size:.8rem;color:var(--muted);}
+
+/* ── Question card ── */
+.q-card{border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px;transition:border-color .15s;}
+.q-card.answered-correct{border-color:#059669;background:#F0FDF4;}
+.q-card.answered-wrong{border-color:#DC2626;background:#FEF2F2;}
+.q-num{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;}
+.q-text{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:14px;line-height:1.6;}
+/* MCQ options */
+.mcq-options{display:flex;flex-direction:column;gap:8px;}
+.mcq-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:9px;border:1.5px solid var(--border);cursor:pointer;transition:all .12s;font-size:.84rem;color:var(--ink-2);}
+.mcq-opt:hover:not(.disabled){border-color:var(--ai);background:var(--ai-pale);}
+.mcq-opt.selected{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+.mcq-opt.correct{border-color:#059669;background:#ECFDF5;color:#065F46;}
+.mcq-opt.wrong{border-color:#DC2626;background:#FEF2F2;color:#B91C1C;}
+.mcq-opt.disabled{cursor:default;}
+.opt-letter{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;}
+/* Written answer */
+.written-answer{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;outline:none;resize:vertical;min-height:80px;transition:border-color .12s;box-sizing:border-box;}
+.written-answer:focus{border-color:var(--ai);}
+/* Feedback */
+.q-feedback{margin-top:10px;padding:10px 13px;border-radius:9px;font-size:.8rem;line-height:1.6;}
+.q-feedback.correct{background:#ECFDF5;color:#065F46;}
+.q-feedback.wrong{background:#FEF2F2;color:#B91C1C;}
+.q-feedback.info{background:var(--ai-pale);color:var(--ai-dark);}
+
+/* Results panel */
+.results-panel{background:linear-gradient(135deg,#050314,#1A1040);border-radius:14px;padding:20px;color:#fff;text-align:center;margin-bottom:16px;}
+.rp-score{font-size:3rem;font-weight:900;font-family:'DM Mono',monospace;color:#67E8F9;}
+.rp-label{font-size:.8rem;opacity:.65;margin-top:4px;}
+.rp-bars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+.rpb{background:rgba(255,255,255,.08);border-radius:9px;padding:10px;}
+.rpb-num{font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;}
+.rpb-lbl{font-size:.62rem;opacity:.55;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.pt-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="pt-hero anim-1">
+      <div class="pth-badge">🤖 AI Powered · Real-time Generation</div>
+      <div class="pth-title">AI Practice Test Generator</div>
+      <div class="pth-sub">Generate custom practice tests on any topic, for any subject, at any difficulty level. Instantly. The AI creates unique questions every time — not from a bank.</div>
+    </div>
+
+    <div class="pt-layout">
+      <!-- Config -->
+      <div class="config-panel anim-1">
+        <div class="cp-head">
+          <div class="cp-title">⚙️ Configure Your Test</div>
+          <div class="cp-sub">Set your preferences, then generate</div>
+        </div>
+        <div class="cp-body">
+          <div class="cp-section">
+            <div class="cp-label">Subject</div>
+            <div class="fg"><select id="cfgSubject" onchange="updateTopicHints()">
+              <option value="Mathematics">📐 Mathematics</option>
+              <option value="Physics">⚡ Physics</option>
+              <option value="Chemistry">🧪 Chemistry</option>
+              <option value="Biology">🌱 Biology</option>
+              <option value="English">📖 English</option>
+              <option value="ICT">💻 ICT</option>
+            </select></div>
+          </div>
+          <div class="cp-section">
+            <div class="cp-label">Topic / Chapter</div>
+            <div class="fg"><input type="text" id="cfgTopic" placeholder="e.g. Quadratic Equations" value="Quadratic Equations"></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:4px;" id="topicHint">💡 e.g. Algebra, Trigonometry, Statistics, Calculus</div>
+          </div>
+          <div class="cp-section">
+            <div class="cp-label">Question Type</div>
+            <div class="type-grid">
+              <div class="type-btn on" id="type-mcq" onclick="setType('mcq',this)"><div class="tb-icon">🔘</div><div class="tb-label">Multiple Choice</div></div>
+              <div class="type-btn" id="type-written" onclick="setType('written',this)"><div class="tb-icon">✏️</div><div class="tb-label">Written / Short Answer</div></div>
+              <div class="type-btn" id="type-truefalse" onclick="setType('truefalse',this)"><div class="tb-icon">✅</div><div class="tb-label">True / False</div></div>
+              <div class="type-btn" id="type-mixed" onclick="setType('mixed',this)"><div class="tb-icon">🎲</div><div class="tb-label">Mixed Types</div></div>
+            </div>
+          </div>
+          <div class="cp-section">
+            <div class="cp-label">Difficulty</div>
+            <div class="diff-pills">
+              <button class="diff-pill easy" id="diff-easy" onclick="setDiff('easy',this)">🟢 Easy</button>
+              <button class="diff-pill medium on" id="diff-medium" onclick="setDiff('medium',this)">🟡 Medium</button>
+              <button class="diff-pill hard" id="diff-hard" onclick="setDiff('hard',this)">🔴 Hard</button>
+            </div>
+          </div>
+          <div class="cp-section">
+            <div class="cp-label">Number of Questions</div>
+            <div class="fg"><select id="cfgCount">
+              <option value="3">3 questions (quick)</option>
+              <option value="5" selected>5 questions</option>
+              <option value="8">8 questions</option>
+              <option value="10">10 questions (full test)</option>
+            </select></div>
+          </div>
+          <div class="cp-section">
+            <div class="cp-label">Class Level</div>
+            <div class="fg"><select id="cfgLevel">
+              <option>Class VI–VIII</option>
+              <option selected>Class IX–X (SSC)</option>
+              <option>Class XI–XII (HSC)</option>
+            </select></div>
+          </div>
+          <button class="gen-btn" id="genBtn" onclick="generateTest()">🤖 Generate Test with AI</button>
+          <div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:6px;">Takes 5–15 seconds · Unique every time</div>
+        </div>
+      </div>
+
+      <!-- Test area -->
+      <div class="test-area anim-1">
+        <div class="ta-head">
+          <div class="ta-info" id="testInfo">Configure and generate a test to begin</div>
+          <div class="ta-timer" id="timerDisplay" style="display:none;">⏱ <span id="timerVal">00:00</span></div>
+          <div class="ta-actions" id="testActions" style="display:none;">
+            <button class="ta-btn" onclick="showToast('Test printed!','🖨️')">🖨️ Print</button>
+            <button class="ta-btn" onclick="resetTest()">🔄 New Test</button>
+            <button class="ta-btn primary" id="submitBtn" onclick="submitTest()">✅ Submit</button>
+          </div>
+        </div>
+        <div class="ta-body" id="testBody">
+          <div class="empty-state">
+            <div class="es-icon">📝</div>
+            <div class="es-text">No test generated yet</div>
+            <div class="es-sub">Configure your test on the left and click "Generate Test with AI" to create a custom practice test on any topic.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let questionType = 'mcq', difficulty = 'medium';
+let currentQuestions = [], timerInterval = null, startTime = null;
+let submitted = false;
+
+const TOPIC_HINTS = {
+  Mathematics:'💡 e.g. Algebra, Trigonometry, Calculus, Statistics, Geometry',
+  Physics:'💡 e.g. Newton\'s Laws, Optics, Electricity, Waves, Thermodynamics',
+  Chemistry:'💡 e.g. Acids & Bases, Organic Chemistry, Periodic Table, Bonding',
+  Biology:'💡 e.g. Photosynthesis, Cell Biology, Genetics, Human Systems',
+  English:'💡 e.g. Grammar, Essay Writing, Poetry Analysis, Comprehension',
+  ICT:'💡 e.g. Algorithms, Databases, Networking, Programming Basics',
+};
+
+function updateTopicHints(){const s=document.getElementById('cfgSubject').value;document.getElementById('topicHint').textContent=TOPIC_HINTS[s]||'';}
+function setType(t,el){questionType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
+function setDiff(d,el){difficulty=d;document.querySelectorAll('.diff-pill').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
+
+async function generateTest(){
+  const subject=document.getElementById('cfgSubject').value;
+  const topic=document.getElementById('cfgTopic').value||'General';
+  const count=document.getElementById('cfgCount').value;
+  const level=document.getElementById('cfgLevel').value;
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true; btn.textContent='🤖 Generating…';
+  submitted=false;
+  if(timerInterval)clearInterval(timerInterval);
+
+  document.getElementById('testBody').innerHTML=`<div class="loading-state">
+    <div class="ls-icon">⚙️</div>
+    <div class="ls-text">AI is generating your test…</div>
+    <div class="ls-sub">Creating ${count} unique ${subject} questions on "${topic}"</div>
+    <div class="ls-progress"><div class="ls-fill" id="loadFill" style="width:5%;"></div></div>
+  </div>`;
+  document.getElementById('testActions').style.display='none';
+  document.getElementById('timerDisplay').style.display='none';
+
+  let prog=5;
+  const progInt=setInterval(()=>{prog=Math.min(prog+8,90);const f=document.getElementById('loadFill');if(f)f.style.width=prog+'%';},800);
+
+  const qTypeInstructions={
+    mcq:`Generate ${count} multiple-choice questions. Each question must have exactly 4 options labeled A, B, C, D. Clearly mark the correct answer.`,
+    written:`Generate ${count} short-answer questions that require a 2-4 sentence written response. Provide model answers.`,
+    truefalse:`Generate ${count} true/false questions. State whether each is True or False with a brief explanation.`,
+    mixed:`Generate ${count} questions mixing MCQ, short answer, and true/false formats.`,
+  };
+
+  const prompt=`You are a Bangladesh school exam question generator. Generate a practice test for the following:
+- Subject: ${subject}
+- Topic: ${topic}
+- Level: ${level}
+- Difficulty: ${difficulty}
+- Question type: ${qTypeInstructions[questionType]}
+
+Return ONLY a valid JSON array (no markdown, no extra text) with this exact structure:
+[
+  {
+    "num": 1,
+    "question": "Question text here",
+    "type": "mcq",
+    "options": ["A. option1", "B. option2", "C. option3", "D. option4"],
+    "answer": "A",
+    "explanation": "Brief explanation of why this is correct"
+  }
+]
+For written/truefalse types, use type "written" or "truefalse", set options to [], and put the model answer in "answer".
+Make questions progressively harder. Ensure they match ${level} Bangladesh curriculum standard.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    let raw=data.content?.[0]?.text||'[]';
+    raw=raw.replace(/```json|```/g,'').trim();
+    clearInterval(progInt);
+    const f=document.getElementById('loadFill');if(f)f.style.width='100%';
+    setTimeout(()=>{
+      try{
+        currentQuestions=JSON.parse(raw);
+        renderTest(subject,topic,count,level);
+      }catch(e){
+        document.getElementById('testBody').innerHTML=`<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-text">Parsing error</div><div class="es-sub">The AI returned an unexpected format. Please try again.</div></div>`;
+      }
+      btn.disabled=false;btn.textContent='🤖 Generate Test with AI';
+    },400);
+  }catch(e){
+    clearInterval(progInt);
+    // Demo fallback
+    currentQuestions=getDemoQuestions(subject,topic,count);
+    renderTest(subject,topic,count,level);
+    btn.disabled=false;btn.textContent='🤖 Generate Test with AI';
+  }
+}
+
+function getDemoQuestions(subj,topic,n){
+  const demos=[
+    {num:1,question:`Which of the following is the standard form of a quadratic equation?`,type:'mcq',options:['A. ax + b = 0','B. ax² + bx + c = 0','C. ax³ + bx² + c = 0','D. a/x + b = 0'],answer:'B',explanation:'A quadratic equation is defined as a polynomial equation of degree 2, written as ax² + bx + c = 0 where a ≠ 0.'},
+    {num:2,question:`If x² - 5x + 6 = 0, what are the values of x?`,type:'mcq',options:['A. x = 1, x = 6','B. x = 2, x = 4','C. x = 2, x = 3','D. x = -2, x = -3'],answer:'C',explanation:'Factoring: (x-2)(x-3) = 0, so x = 2 or x = 3. You can verify: 4-10+6=0 ✓ and 9-15+6=0 ✓'},
+    {num:3,question:`The discriminant of ax² + bx + c = 0 is given by:`,type:'mcq',options:['A. b² + 4ac','B. b² - 4ac','C. 2b - 4ac','D. b - 4c'],answer:'B',explanation:'The discriminant Δ = b² - 4ac determines the nature of roots. If Δ > 0: two real roots. If Δ = 0: one real root. If Δ < 0: no real roots.'},
+    {num:4,question:`Solve using the quadratic formula: x² + 4x - 5 = 0`,type:'written',options:[],answer:'x = 1 or x = -5. Using the formula: x = (-4 ± √(16+20))/2 = (-4 ± 6)/2. So x = 1 or x = -5.',explanation:'Apply formula x = (-b ± √(b²-4ac))/2a with a=1, b=4, c=-5'},
+    {num:5,question:`A quadratic equation always has exactly two distinct real roots.`,type:'truefalse',options:[],answer:'False',explanation:'A quadratic equation can have two distinct real roots (Δ>0), one repeated real root (Δ=0), or two complex roots (Δ<0).'},
+  ];
+  return demos.slice(0,Math.min(n,demos.length));
+}
+
+function renderTest(subj,topic,count,level){
+  document.getElementById('testInfo').textContent=`${subj} · ${topic} · ${currentQuestions.length} questions · ${level}`;
+  document.getElementById('testActions').style.display='flex';
+  document.getElementById('timerDisplay').style.display='flex';
+  startTime=Date.now();
+  timerInterval=setInterval(updateTimer,1000);
+
+  document.getElementById('testBody').innerHTML=currentQuestions.map((q,i)=>`
+    <div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${q.num || i+1} of ${currentQuestions.length}</div>
+      <div class="q-text">${q.question}</div>
+      ${q.type==='mcq'?`<div class="mcq-options">${(q.options||[]).map((opt,j)=>`
+        <div class="mcq-opt" id="opt-${i}-${j}" onclick="selectMCQ(${i},${j},'${(q.answer||'').charAt(0)}')">
+          <div class="opt-letter">${String.fromCharCode(65+j)}</div>
+          <span>${opt.replace(/^[A-D]\.\s*/,'')}</span>
+        </div>`).join('')}</div>`
+      :q.type==='truefalse'?`<div class="mcq-options">
+        <div class="mcq-opt" id="opt-${i}-0" onclick="selectTF(${i},0,'${q.answer}')"><div class="opt-letter">T</div><span>True</span></div>
+        <div class="mcq-opt" id="opt-${i}-1" onclick="selectTF(${i},1,'${q.answer}')"><div class="opt-letter">F</div><span>False</span></div>
+      </div>`
+      :`<textarea class="written-answer" id="written-${i}" placeholder="Write your answer here…" rows="3"></textarea>`}
+      <div class="q-feedback" id="feedback-${i}" style="display:none;"></div>
+    </div>`).join('');
+}
+
+function selectMCQ(qi,oi,correct){
+  if(submitted)return;
+  const opts=document.querySelectorAll(`[id^="opt-${qi}-"]`);
+  opts.forEach(o=>{o.classList.remove('selected');o.classList.add('disabled');});
+  const sel=document.getElementById(`opt-${qi}-${oi}`);
+  const correctLetter=correct.toUpperCase();
+  const selectedLetter=String.fromCharCode(65+oi);
+  const isCorrect=selectedLetter===correctLetter;
+  sel.classList.add(isCorrect?'correct':'wrong');
+  // Highlight correct if wrong
+  if(!isCorrect){
+    const correctIdx=correctLetter.charCodeAt(0)-65;
+    const correctEl=document.getElementById(`opt-${qi}-${correctIdx}`);
+    if(correctEl)correctEl.classList.add('correct');
+  }
+  const fb=document.getElementById(`feedback-${qi}`);
+  fb.style.display='block';
+  fb.className=`q-feedback ${isCorrect?'correct':'wrong'}`;
+  fb.innerHTML=`${isCorrect?'✅ Correct!':'❌ Incorrect.'} ${currentQuestions[qi].explanation||''}`;
+  document.getElementById(`qcard-${qi}`).className=`q-card ${isCorrect?'answered-correct':'answered-wrong'}`;
+}
+
+function selectTF(qi,oi,correct){
+  if(submitted)return;
+  const opts=document.querySelectorAll(`[id^="opt-${qi}-"]`);
+  opts.forEach(o=>{o.classList.remove('selected');o.classList.add('disabled');});
+  const sel=document.getElementById(`opt-${qi}-${oi}`);
+  const selectedVal=oi===0?'True':'False';
+  const isCorrect=selectedVal.toLowerCase()===correct.toLowerCase();
+  sel.classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){const otherEl=document.getElementById(`opt-${qi}-${1-oi}`);if(otherEl)otherEl.classList.add('correct');}
+  const fb=document.getElementById(`feedback-${qi}`);
+  fb.style.display='block';fb.className=`q-feedback ${isCorrect?'correct':'wrong'}`;
+  fb.innerHTML=`${isCorrect?'✅ Correct!':'❌ Incorrect.'} Answer: <strong>${correct}</strong>. ${currentQuestions[qi].explanation||''}`;
+  document.getElementById(`qcard-${qi}`).className=`q-card ${isCorrect?'answered-correct':'answered-wrong'}`;
+}
+
+function submitTest(){
+  if(submitted)return;
+  submitted=true;
+  clearInterval(timerInterval);
+  // Reveal all answers
+  currentQuestions.forEach((q,i)=>{
+    if(q.type==='written'){
+      const ta=document.getElementById(`written-${i}`);
+      const fb=document.getElementById(`feedback-${i}`);
+      fb.style.display='block';fb.className='q-feedback info';
+      fb.innerHTML=`<strong>Model Answer:</strong> ${q.answer}`;
+    }
+  });
+  // Count score
+  const correct=document.querySelectorAll('.q-card.answered-correct').length;
+  const total=currentQuestions.length;
+  const elapsed=Math.floor((Date.now()-startTime)/1000);
+  const mins=Math.floor(elapsed/60).toString().padStart(2,'0');
+  const secs=(elapsed%60).toString().padStart(2,'0');
+  const tb=document.getElementById('testBody');
+  const resultHTML=`<div class="results-panel">
+    <div style="font-size:.72rem;font-weight:800;opacity:.6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🎯 Test Complete</div>
+    <div class="rp-score">${correct}/${total}</div>
+    <div class="rp-label">${Math.round(correct/total*100)}% score · Time: ${mins}:${secs}</div>
+    <div class="rp-bars">
+      <div class="rpb"><div class="rpb-num" style="color:#67E8F9;">${correct}</div><div class="rpb-lbl">Correct</div></div>
+      <div class="rpb"><div class="rpb-num" style="color:#FCA5A5;">${total-correct}</div><div class="rpb-lbl">Incorrect</div></div>
+      <div class="rpb"><div class="rpb-num" style="color:#F9A8D4;">${mins}:${secs}</div><div class="rpb-lbl">Time</div></div>
+    </div>
+  </div>`;
+  tb.insertAdjacentHTML('afterbegin',resultHTML);
+  tb.scrollTop=0;
+  document.getElementById('submitBtn').textContent='✅ Submitted';
+  document.getElementById('submitBtn').disabled=true;
+  showToast(`Score: ${correct}/${total} — ${Math.round(correct/total*100)}%`,'🎯');
+}
+
+function resetTest(){submitted=false;clearInterval(timerInterval);document.getElementById('timerDisplay').style.display='none';document.getElementById('testActions').style.display='none';document.getElementById('testInfo').textContent='Configure and generate a test to begin';document.getElementById('testBody').innerHTML=`<div class="empty-state"><div class="es-icon">📝</div><div class="es-text">Ready for a new test</div><div class="es-sub">Configure and click Generate to start.</div></div>`;currentQuestions=[];}
+function updateTimer(){const e=Math.floor((Date.now()-startTime)/1000);const m=Math.floor(e/60).toString().padStart(2,'0');const s=(e%60).toString().padStart(2,'0');document.getElementById('timerVal').textContent=`${m}:${s}`;}
+function showToast(msg,icon='✅'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

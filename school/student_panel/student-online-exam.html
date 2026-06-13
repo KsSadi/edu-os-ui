@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Exams — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+.exam-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .15s;}
+.exam-card:hover{box-shadow:var(--shadow);}
+.ec-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;}
+.ec-icon{width:44px;height:44px;border-radius:12px;background:var(--stu-pale);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.ec-title{font-size:.92rem;font-weight:800;color:var(--ink);}
+.ec-meta{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.ec-foot{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--bg);}
+.badge-live{background:#DCFCE7;color:#166534;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:12px;}
+.badge-soon{background:#FEF3C7;color:#92400E;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:12px;}
+.badge-done{background:#F1F5F9;color:#64748B;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:12px;}
+
+/* Modal */
+.exam-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;}
+.exam-modal.show{display:flex;}
+.em-box{background:#fff;border-radius:16px;width:500px;max-width:95%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.em-head{background:linear-gradient(135deg,#1E0A3C,#7C3AED);padding:22px 24px;color:#fff;}
+.em-title{font-size:1.1rem;font-weight:800;}
+.em-sub{font-size:.78rem;opacity:.65;margin-top:3px;}
+.em-body{padding:22px 24px;}
+.em-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:.84rem;}
+.em-info-row:last-child{border-bottom:none;}
+.em-label{color:var(--muted);font-weight:600;}
+.em-value{font-weight:700;color:var(--ink);}
+.em-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">🖥️ Academics</div>
+        <div class="page-title">Online Exams</div>
+        <div class="page-sub">Practice tests, chapter quizzes, and scheduled online exams for Farhan Islam · Class IX–A.</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;">
+      <div class="card" style="padding:16px 18px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Tests Completed</div>
+        <div style="font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;">12</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">This session</div>
+      </div>
+      <div class="card" style="padding:16px 18px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Average Score</div>
+        <div style="font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu);">87%</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Across all tests</div>
+      </div>
+      <div class="card" style="padding:16px 18px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Available Now</div>
+        <div style="font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;color:#059669;">3</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">Practice tests</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+      <!-- Available now -->
+      <div>
+        <div class="card-title" style="margin-bottom:12px;">🟢 Available Now</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">📐</div>
+              <div><div class="ec-title">Mathematics — Trigonometry Quiz</div><div class="ec-meta">30 questions · 45 min · 40 marks</div></div>
+            </div>
+            <div class="ec-foot">
+              <span class="badge-live">🟢 Available</span>
+              <span style="font-size:.75rem;color:var(--muted);">Expires Jul 14</span>
+              <button class="btn btn-sm" style="margin-left:auto;background:var(--stu);color:#fff;border-color:var(--stu);" onclick="startExam('Mathematics — Trigonometry Quiz','30','45','40')">Start →</button>
+            </div>
+          </div>
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">⚗️</div>
+              <div><div class="ec-title">Chemistry — Acids & Bases Quiz</div><div class="ec-meta">25 questions · 40 min · 35 marks</div></div>
+            </div>
+            <div class="ec-foot">
+              <span class="badge-live">🟢 Available</span>
+              <span style="font-size:.75rem;color:var(--muted);">Expires Jul 14</span>
+              <button class="btn btn-sm" style="margin-left:auto;background:var(--stu);color:#fff;border-color:var(--stu);" onclick="startExam('Chemistry — Acids & Bases Quiz','25','40','35')">Start →</button>
+            </div>
+          </div>
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">✍️</div>
+              <div><div class="ec-title">English — Reading Comprehension</div><div class="ec-meta">20 questions · 30 min · 30 marks</div></div>
+            </div>
+            <div class="ec-foot">
+              <span class="badge-live">🟢 Available</span>
+              <span style="font-size:.75rem;color:var(--muted);">Expires Jul 14</span>
+              <button class="btn btn-sm" style="margin-left:auto;background:var(--stu);color:#fff;border-color:var(--stu);" onclick="startExam('English — Reading Comprehension','20','30','30')">Start →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Past results -->
+      <div>
+        <div class="card-title" style="margin-bottom:12px;">✅ Completed Tests</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">⚡</div>
+              <div><div class="ec-title">Physics — Electricity Quiz</div><div class="ec-meta">Completed Jul 5, 2026 · Score: 36/40</div></div>
+            </div>
+            <div class="ec-foot"><span class="badge-done">Done · 90%</span><button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="showToast('Loading result report…','📊')">View Report</button></div>
+          </div>
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">📐</div>
+              <div><div class="ec-title">Math — Quadratic Equations Quiz</div><div class="ec-meta">Completed Jul 2, 2026 · Score: 38/40</div></div>
+            </div>
+            <div class="ec-foot"><span class="badge-done">Done · 95%</span><button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="showToast('Loading result report…','📊')">View Report</button></div>
+          </div>
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">🔬</div>
+              <div><div class="ec-title">Biology — Cell Structure Quiz</div><div class="ec-meta">Completed Jun 28, 2026 · Score: 29/35</div></div>
+            </div>
+            <div class="ec-foot"><span class="badge-done">Done · 83%</span><button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="showToast('Loading result report…','📊')">View Report</button></div>
+          </div>
+          <div class="exam-card">
+            <div class="ec-head">
+              <div class="ec-icon">✍️</div>
+              <div><div class="ec-title">English Grammar Practice Test</div><div class="ec-meta">Completed Jun 25, 2026 · Score: 26/30</div></div>
+            </div>
+            <div class="ec-foot"><span class="badge-done">Done · 87%</span><button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="showToast('Loading result report…','📊')">View Report</button></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Start exam modal -->
+<div class="exam-modal" id="examModal" onclick="if(event.target===this)closeExam()">
+  <div class="em-box">
+    <div class="em-head">
+      <div class="em-title" id="em-title"></div>
+      <div class="em-sub">Farhan Islam · Class IX–A · Session 2026–27</div>
+    </div>
+    <div class="em-body">
+      <div class="em-info-row"><span class="em-label">Questions</span><span class="em-value" id="em-q"></span></div>
+      <div class="em-info-row"><span class="em-label">Duration</span><span class="em-value" id="em-t"></span></div>
+      <div class="em-info-row"><span class="em-label">Total Marks</span><span class="em-value" id="em-m"></span></div>
+      <div class="em-info-row"><span class="em-label">Instructions</span><span class="em-value">No back navigation after submission.</span></div>
+      <div style="background:#FFF7ED;border:1.5px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-top:14px;font-size:.82rem;color:#92400E;">
+        ⚠️ Once started, the timer cannot be paused. Ensure you have a stable internet connection.
+      </div>
+    </div>
+    <div class="em-foot">
+      <button class="btn btn-outline" onclick="closeExam()">Cancel</button>
+      <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);" onclick="showToast('Starting exam… Good luck! 🍀','🖥️');closeExam()">Start Exam →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function startExam(title, q, t, m) {
+  document.getElementById('em-title').textContent = title;
+  document.getElementById('em-q').textContent = q + ' questions';
+  document.getElementById('em-t').textContent = t + ' minutes';
+  document.getElementById('em-m').textContent = m + ' marks';
+  document.getElementById('examModal').classList.add('show');
+}
+function closeExam() { document.getElementById('examModal').classList.remove('show'); }
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(),300); }, 3000);
+}
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

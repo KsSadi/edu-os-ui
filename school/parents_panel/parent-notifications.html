@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Notification card */
+.notif-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);margin-bottom:12px;overflow:hidden;transition:box-shadow .15s;}
+.notif-card:hover{box-shadow:var(--shadow);}
+.notif-card.unread{border-left:4px solid var(--par);}
+.notif-card.unread-urgent{border-left:4px solid var(--red);}
+.notif-card.unread-info{border-left:4px solid var(--blue);}
+.notif-card.unread-success{border-left:4px solid var(--green);}
+.nc-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;}
+.nc-icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.nc-title{font-size:.9rem;font-weight:800;color:var(--ink);line-height:1.3;}
+.nc-meta{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.nc-body{padding:0 16px 12px 68px;font-size:.83rem;color:var(--ink-2);line-height:1.65;}
+.nc-foot{display:flex;align-items:center;gap:8px;padding:8px 16px 12px 68px;flex-wrap:wrap;}
+.nc-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--par);flex-shrink:0;}
+.nc-time{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border);overflow-x:auto;}
+.ft-tab{padding:10px 16px;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0;}
+.ft-tab:hover{color:var(--ink);}
+.ft-tab.on{color:var(--par);border-bottom-color:var(--par);}
+
+/* Preference toggles */
+.pref-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.pref-row:last-child{border-bottom:none;}
+.pref-icon{font-size:1rem;flex-shrink:0;}
+.pref-label{flex:1;}
+.pref-name{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.pref-sub{font-size:.72rem;color:var(--muted);margin-top:1px;}
+
+/* Channel row */
+.channel-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.channel-row:last-child{border-bottom:none;}
+
+/* Stats strip */
+.notif-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:22px;}
+.ns-block{background:var(--white);padding:14px 16px;}
+.ns-num{font-size:1.3rem;font-weight:800;}
+.ns-lbl{font-size:.7rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">🔔 Alerts & Updates</div>
+        <div class="page-title">Notifications</div>
+        <div class="page-sub">Absence alerts, fee reminders, exam updates, and school notices. Session 2026–27.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="markAllRead()">✓ Mark All Read</button>
+        <button class="btn btn-outline" onclick="showToast('Notification preferences saved','⚙')">⚙ Preferences</button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="notif-stats anim-1">
+      <div class="ns-block"><div class="ns-num" style="color:var(--red);" id="unreadCount">4</div><div class="ns-lbl">Unread</div></div>
+      <div class="ns-block"><div class="ns-num" style="color:var(--par);">18</div><div class="ns-lbl">This Month</div></div>
+      <div class="ns-block"><div class="ns-num" style="color:var(--green);">📱 SMS</div><div class="ns-lbl">Primary Channel</div></div>
+      <div class="ns-block"><div class="ns-num" style="color:var(--blue);">2</div><div class="ns-lbl">Children Tracked</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+
+      <!-- Notifications list -->
+      <div>
+        <!-- Filter tabs -->
+        <div class="card anim-1" style="overflow:hidden;margin-bottom:0;border-radius:14px 14px 0 0;border-bottom:none;">
+          <div class="filter-tabs">
+            <div class="ft-tab on" onclick="switchTab(this,'all')">All (18)</div>
+            <div class="ft-tab" onclick="switchTab(this,'absence')">🔴 Absence (2)</div>
+            <div class="ft-tab" onclick="switchTab(this,'fee')">💳 Fee (4)</div>
+            <div class="ft-tab" onclick="switchTab(this,'exam')">📝 Exam (6)</div>
+            <div class="ft-tab" onclick="switchTab(this,'notice')">📢 Notices (6)</div>
+          </div>
+        </div>
+
+        <div class="card anim-1" style="border-radius:0 0 14px 14px;padding:16px;" id="notifList"></div>
+
+        <div style="text-align:center;padding:14px;">
+          <button class="btn btn-outline" onclick="showToast('Loading older notifications…','📥')">Load older notifications</button>
+        </div>
+      </div>
+
+      <!-- Right sidebar: preferences -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Alert types -->
+        <div class="card anim-1">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">⚙ Alert Preferences</div><div class="card-sub" style="font-size:.72rem;">Choose what to be notified about</div></div>
+          <div style="padding:10px 16px;">
+            <div id="prefList"></div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-sm btn-primary" style="background:var(--par);border-color:var(--par);" onclick="showToast('Preferences saved!','✅')">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- Delivery channels -->
+        <div class="card anim-2">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">📡 Delivery Channels</div></div>
+          <div style="padding:10px 16px;">
+            <div id="channelList"></div>
+          </div>
+        </div>
+
+        <!-- Contact info -->
+        <div class="card anim-2" style="padding:14px 16px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📞 My Contact Info</div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--ink-2);">Mohammad Islam</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:2px;">📱 01711-234567</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-top:2px;">📧 m.islam@email.com</div>
+          <button class="btn btn-sm btn-outline" style="margin-top:10px;font-size:.74rem;" onclick="showToast('Opening contact editor…','📝')">✏ Update Contact</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let activeTab='all';
+
+const notifications=[
+  // URGENT / UNREAD
+  {id:1,type:'absence',child:'Farhan',unread:true,urgent:true,
+   icon:'🚨',iconBg:'#FFF5F5',iconCol:'var(--red)',
+   title:'Farhan was absent today — Feb 7',
+   meta:'Class IX–A · Absence auto-detected · 8:15 AM',
+   body:'Farhan Islam (Roll 001, Class IX–A) was marked absent for all periods today, Feb 7, 2025. If this was due to illness or an approved leave, please inform the school office.',
+   time:'7 days ago',
+   actions:[{label:'📞 Call School',fn:'showToast("Calling school…","📞")'},  {label:'Reply',fn:'showToast("Opening reply…","💬")'}]},
+  {id:2,type:'fee',child:'Farhan',unread:true,urgent:true,
+   icon:'⚠️',iconBg:'#FFF5F5',iconCol:'var(--red)',
+   title:'Fee overdue — February tuition (14 days)',
+   meta:'Finance · ৳ 940 due including late fine · Today',
+   body:'February tuition of ৳ 800 was due on Feb 10. A daily late fine of ৳ 10 is being charged. Current total: ৳ 940 (14 days overdue). Please pay immediately to avoid further charges.',
+   time:'Today · 9:00 AM',
+   actions:[{label:'💳 Pay Now',fn:'window.location="../student_panel/student-fee.html"'},{label:'🧾 View Ledger',fn:'window.location="../student_panel/student-fee.html"'}]},
+  {id:3,type:'exam',child:'Farhan',unread:true,urgent:false,
+   icon:'📝',iconBg:'#EFF6FF',iconCol:'#1D4ED8',
+   title:'Mathematics Exam — today at 10:00 AM',
+   meta:'Half-Yearly 2025 · Class IX–A · Hall A · Today',
+   body:'Reminder: Farhan has the Mathematics exam today (Feb 24) at 10:00 AM in Hall A. Duration: 3 hours. Written: 70 marks + MCQ: 30 marks. Admit card required.',
+   time:'Today · 7:00 AM',
+   actions:[{label:'📅 View Schedule',fn:'window.location="../admin_panel/admin-exam-schedule.html"'}]},
+  {id:4,type:'notice',child:'Both',unread:true,urgent:false,
+   icon:'📢',iconBg:'var(--par-light)',iconCol:'var(--par-dark)',
+   title:'Parent-Teacher Meeting — March 15, 9 AM',
+   meta:'School Notice · All parents · Feb 20',
+   body:'The school will host a Parent-Teacher Meeting on Saturday, March 15, 2025 from 9:00 AM to 1:00 PM. Please bring your child\'s report card. Your presence is strongly encouraged.',
+   time:'Feb 20',
+   actions:[{label:'✓ Confirm Attendance',fn:'showToast("Attendance confirmed!","✅")'}]},
+  // READ
+  {id:5,type:'exam',child:'Farhan',unread:false,urgent:false,
+   icon:'📊',iconBg:'#ECFDF5',iconCol:'#065F46',
+   title:'Annual 2024 results published — GPA 5.00, A+',
+   meta:'Results · Class IX–A · Rank 1 of 42 · Feb 18',
+   body:'Farhan\'s Annual Examination 2024 results have been published. He achieved GPA 5.00 (A+) and ranked 1st in Class IX–A. Congratulations!',
+   time:'Feb 18',
+   actions:[{label:'📊 View Results',fn:'window.location="../student_panel/student-results.html"'},{label:'🖨 Download Marksheet',fn:'window.location="../admin_panel/admin-exam-marksheet.html"'}]},
+  {id:6,type:'fee',child:'Farhan',unread:false,urgent:false,
+   icon:'✅',iconBg:'#ECFDF5',iconCol:'#065F46',
+   title:'January fee payment confirmed — ৳ 950',
+   meta:'Finance · bKash · Receipt RCT-2025-1847 · Jan 8',
+   body:'Payment of ৳ 950 (tuition ৳ 800 + lab fee ৳ 150) for January 2025 has been confirmed via bKash. Receipt No: RCT-2025-1847.',
+   time:'Jan 8',
+   actions:[{label:'🧾 View Receipt',fn:'window.location="../admin_panel/admin-fee-receipt.html"'}]},
+  {id:7,type:'absence',child:'Tasnim',unread:false,urgent:false,
+   icon:'⏰',iconBg:'#FFFBEB',iconCol:'#92400E',
+   title:'Tasnim arrived late — 8:42 AM (Feb 12)',
+   meta:'Class VI–A · Late arrival recorded · Feb 12',
+   body:'Tasnim Islam arrived 42 minutes late to school on Feb 12, 2025. Please ensure timely arrival. If this was due to an emergency, kindly inform the class teacher.',
+   time:'Feb 12',
+   actions:[]},
+  {id:8,type:'notice',child:'Both',unread:false,urgent:false,
+   icon:'🏃',iconBg:'#F5F3FF',iconCol:'#5B21B6',
+   title:'Annual Sports Day — March 20 · Volunteer help needed',
+   meta:'School Notice · Feb 18',
+   body:'The Annual Sports Day will be held on March 20, 2025. All students are encouraged to participate. Parents who wish to volunteer for event management, please register at the school office.',
+   time:'Feb 18',
+   actions:[{label:'Register to Volunteer',fn:'showToast("Registration form sent","✅")'}]},
+  {id:9,type:'exam',child:'Farhan',unread:false,urgent:false,
+   icon:'🖥️',iconBg:'#EFF6FF',iconCol:'#1D4ED8',
+   title:'Math MCQ exam result — 27/30',
+   meta:'Online Exam · Class IX–A · Feb 10',
+   body:'Farhan scored 27/30 on the Mathematics MCQ online exam on Feb 10. This was an internal assessment and will contribute to the Half-Yearly result.',
+   time:'Feb 10',
+   actions:[{label:'View Details',fn:'window.location="../admin_panel/admin-exam-online.html"'}]},
+  {id:10,type:'fee',child:'Tasnim',unread:false,urgent:false,
+   icon:'✅',iconBg:'#ECFDF5',iconCol:'#065F46',
+   title:'February fee paid for Tasnim — ৳ 700',
+   meta:'Finance · Cash · Receipt RCT-2025-1892 · Feb 5',
+   body:'February 2025 tuition of ৳ 700 for Tasnim Islam (Class VI–A) has been received. Receipt No: RCT-2025-1892. All fees for Tasnim are now clear.',
+   time:'Feb 5',
+   actions:[{label:'🧾 View Receipt',fn:'window.location="../admin_panel/admin-fee-receipt.html"'}]},
+];
+
+const typeMap={all:'all',absence:'absence',fee:'fee',exam:'exam',notice:'notice'};
+
+function buildList(){
+  const filtered=activeTab==='all'?notifications:notifications.filter(n=>n.type===activeTab);
+  document.getElementById('notifList').innerHTML=filtered.map(n=>{
+    const urgentCls=n.unread?(n.urgent?'unread-urgent':n.type==='fee'?'unread':n.type==='exam'?'unread-info':'unread'):'';
+    return`<div class="notif-card ${urgentCls}" id="nc-${n.id}" onclick="markRead(${n.id})">
+      <div class="nc-head">
+        <div class="nc-icon-wrap" style="background:${n.iconBg};color:${n.iconCol};">${n.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <div class="nc-title">${n.unread?`<span class="nc-unread-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${n.urgent?'var(--red)':'var(--par)'};margin-right:6px;flex-shrink:0;"></span>`:''}${n.title}</div>
+            <div class="nc-time">${n.time}</div>
+          </div>
+          <div class="nc-meta">${n.child!=='Both'?`👦 ${n.child} · `:'👨‍👩‍👧 Both · '}${n.meta}</div>
+        </div>
+      </div>
+      <div class="nc-body">${n.body}</div>
+      ${n.actions.length?`<div class="nc-foot">${n.actions.map(a=>`<button class="btn btn-sm btn-outline" style="font-size:.74rem;" onclick="event.stopPropagation();${a.fn}">${a.label}</button>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function switchTab(el,tab){
+  activeTab=tab;
+  document.querySelectorAll('.ft-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  buildList();
+}
+
+function markRead(id){
+  const n=notifications.find(x=>x.id===id);
+  if(n&&n.unread){n.unread=false;buildList();updateUnreadCount();}
+}
+
+function markAllRead(){
+  notifications.forEach(n=>n.unread=false);
+  buildList();updateUnreadCount();
+  showToast('All notifications marked as read','✓');
+}
+
+function updateUnreadCount(){
+  const c=notifications.filter(n=>n.unread).length;
+  document.getElementById('unreadCount').textContent=c;
+  document.querySelector('.sb-badge[style*="var(--red)"]').textContent=c||'';
+}
+
+// Preferences
+const prefs=[
+  {icon:'🚨',name:'Absence Alerts',sub:'Instant alert when child is absent',checked:true},
+  {icon:'⏰',name:'Late Arrival',sub:'Alert when child arrives late',checked:true},
+  {icon:'💳',name:'Fee Reminders',sub:'Due date and overdue alerts',checked:true},
+  {icon:'📊',name:'Exam Results',sub:'When results are published',checked:true},
+  {icon:'📝',name:'Exam Reminders',sub:'Day-before exam reminders',checked:true},
+  {icon:'📢',name:'School Notices',sub:'General announcements',checked:false},
+  {icon:'📁',name:'New Study Materials',sub:'When teacher uploads new files',checked:false},
+];
+document.getElementById('prefList').innerHTML=prefs.map((p,i)=>`
+  <div class="pref-row">
+    <div class="pref-icon">${p.icon}</div>
+    <div class="pref-label"><div class="pref-name">${p.name}</div><div class="pref-sub">${p.sub}</div></div>
+    <label class="toggle"><input type="checkbox" ${p.checked?'checked':''}><span class="toggle-slider"></span></label>
+  </div>`).join('');
+
+// Channels
+const channels=[
+  {icon:'📱',name:'SMS',number:'01711-234567',on:true},
+  {icon:'📧',name:'Email',number:'m.islam@email.com',on:true},
+  {icon:'📲',name:'App Push',number:'Android App',on:false},
+  {icon:'📞',name:'Auto Voice Call',number:'Urgent only',on:true},
+];
+document.getElementById('channelList').innerHTML=channels.map(ch=>`
+  <div class="channel-row">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:1rem;">${ch.icon}</span>
+      <div><div style="font-size:.82rem;font-weight:700;color:var(--ink-2);">${ch.name}</div><div style="font-size:.7rem;color:var(--muted);">${ch.number}</div></div>
+    </div>
+    <label class="toggle"><input type="checkbox" ${ch.on?'checked':''}><span class="toggle-slider"></span></label>
+  </div>`).join('');
+
+function showToast(msg,icon='✅'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+buildList();
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

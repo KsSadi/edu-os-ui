@@ -1,0 +1,636 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Your School — EduOS</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+body { background: var(--bg); }
+.reg-layout {
+  display: grid; grid-template-columns: 1fr 1.6fr; min-height: 100vh;
+}
+
+/* LEFT PANEL */
+.reg-left {
+  background: linear-gradient(160deg, var(--blue-dark) 0%, var(--blue) 60%, #2563EB 100%);
+  padding: 48px 40px; position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
+}
+.reg-left::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 50% at 10% 90%, rgba(0,0,0,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.reg-logo { position: relative; z-index: 1; }
+.reg-logo-text {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family:'Sora',sans-serif; font-size: 1.3rem; font-weight: 800; color: #fff;
+  text-decoration: none;
+}
+.reg-logo-box {
+  background: rgba(255,255,255,0.2); color: #fff;
+  padding: 5px 10px; border-radius: 8px; font-size: .85rem;
+}
+.reg-left-body { position: relative; z-index: 1; }
+.reg-left-title { font-family:'Sora',sans-serif; font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 14px; }
+.reg-left-sub { font-size: .95rem; color: rgba(255,255,255,.75); line-height: 1.7; margin-bottom: 32px; }
+.reg-benefit { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.reg-benefit-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
+.reg-benefit-text { font-size: .88rem; color: rgba(255,255,255,.85); line-height: 1.4; }
+.reg-benefit-text strong { color: #fff; }
+.reg-left-footer { position: relative; z-index: 1; }
+.testi-mini {
+  background: rgba(255,255,255,0.10); border-radius: 12px; padding: 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.testi-mini-text { font-size: .85rem; color: rgba(255,255,255,.85); line-height: 1.6; font-style: italic; margin-bottom: 12px; }
+.testi-mini-author { display: flex; align-items: center; gap: 10px; }
+.testi-mini-avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+.testi-mini-name { font-family:'Sora',sans-serif; font-size: .82rem; font-weight: 700; color: #fff; }
+.testi-mini-school { font-size: .75rem; color: rgba(255,255,255,.6); }
+
+/* RIGHT PANEL */
+.reg-right {
+  padding: 48px 56px;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  overflow-y: auto; max-height: 100vh;
+}
+.reg-right-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 40px;
+}
+.reg-login-link { font-size: .88rem; color: var(--muted); }
+.reg-login-link a { color: var(--blue); font-weight: 600; text-decoration: none; }
+
+/* Progress bar */
+.progress-wrap { margin-bottom: 36px; }
+.progress-steps { display: flex; align-items: center; gap: 0; margin-bottom: 12px; }
+.step-dot {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  font-family:'Sora',sans-serif; font-size: .8rem; font-weight: 700; color: var(--muted);
+  flex-shrink: 0; transition: all .3s; position: relative; z-index: 1;
+}
+.step-dot.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.step-dot.done { border-color: var(--green); background: var(--green); color: #fff; }
+.step-line { flex: 1; height: 2px; background: var(--border); margin: 0 -1px; transition: background .3s; }
+.step-line.done { background: var(--green); }
+.step-labels { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; }
+.step-lbl { font-size: .72rem; color: var(--muted); font-weight: 500; text-align: center; }
+.step-lbl.active { color: var(--blue); font-weight: 700; }
+.step-lbl.done { color: var(--green); }
+
+/* Form steps */
+.form-step { display: none; }
+.form-step.active { display: block; }
+.step-heading { font-family:'Sora',sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.step-sub { font-size: .9rem; color: var(--muted); margin-bottom: 28px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-row-12 { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
+
+/* Domain preview */
+.domain-preview {
+  margin-top: 8px; padding: 10px 14px; border-radius: 8px;
+  background: var(--blue-light); border: 1.5px solid var(--blue);
+  font-family:'JetBrains Mono',monospace; font-size: .88rem; color: var(--blue); font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Plan picker */
+.plan-picker { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+.plan-pick-card {
+  border: 2px solid var(--border); border-radius: 12px; padding: 16px;
+  cursor: pointer; transition: all .15s; background: var(--bg);
+}
+.plan-pick-card:hover { border-color: var(--blue); background: var(--blue-light); }
+.plan-pick-card.selected { border-color: var(--blue); background: var(--blue-light); }
+.plan-pick-card.selected .plan-pick-name { color: var(--blue); }
+.plan-pick-name { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.plan-pick-price { font-family:'Sora',sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--blue); }
+.plan-pick-desc { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+
+/* Password strength */
+.strength-bar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 6px; overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0%; }
+
+/* Avatar upload mock */
+.logo-upload {
+  border: 2px dashed var(--border); border-radius: 12px; padding: 28px;
+  text-align: center; cursor: pointer; transition: all .2s; background: var(--bg);
+}
+.logo-upload:hover { border-color: var(--blue); background: var(--blue-light); }
+.logo-upload-icon { font-size: 2rem; margin-bottom: 8px; }
+.logo-upload-text { font-size: .85rem; color: var(--muted); }
+.logo-upload-text strong { color: var(--blue); }
+
+/* Color picker */
+.color-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.color-dot-btn {
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  border: 3px solid transparent; transition: transform .15s;
+}
+.color-dot-btn:hover { transform: scale(1.15); }
+.color-dot-btn.selected { border-color: var(--ink); }
+
+/* Summary card */
+.summary-card { background: var(--bg); border-radius: 14px; border: 1px solid var(--border); padding: 20px 24px; margin-bottom: 16px; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
+.summary-row:last-child { border: none; }
+.summary-label { color: var(--muted); }
+.summary-val { font-weight: 600; color: var(--ink); }
+
+/* Step nav */
+.step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; }
+.step-back-btn { background: transparent; color: var(--muted); border: none; cursor: pointer; font-size: .9rem; font-family:'DM Sans',sans-serif; font-weight: 600; padding: 10px 0; }
+.step-back-btn:hover { color: var(--ink); }
+
+/* Success */
+.reg-success { display: none; text-align: center; padding: 40px 20px; }
+.reg-success-icon { font-size: 4rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+.reg-success-title { font-family:'Sora',sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-bottom: 10px; }
+.reg-success-sub { font-size: .98rem; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.portal-url {
+  background: var(--blue-light); border: 1.5px solid var(--blue);
+  border-radius: 10px; padding: 12px 20px; display: inline-block;
+  font-family:'JetBrains Mono',monospace; font-size: .9rem; color: var(--blue); font-weight: 600;
+  margin-bottom: 28px;
+}
+
+@media(max-width:900px){ .reg-layout{grid-template-columns:1fr;} .reg-left{display:none;} .reg-right{max-height:none;padding:32px 24px;} }
+@media(max-width:600px){ .form-row-3{grid-template-columns:1fr;} .plan-picker{grid-template-columns:1fr;} .form-row-12{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="reg-layout">
+  <!-- LEFT PANEL -->
+  <div class="reg-left">
+    <div class="reg-logo">
+      <a href="index.html" class="reg-logo-text"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;filter:brightness(0) invert(1);"></a>
+    </div>
+    <div class="reg-left-body">
+      <div class="reg-left-title">Your school portal, ready in 5 minutes</div>
+      <div class="reg-left-sub">Join hundreds of schools already using EduOS. Your unique portal goes live the moment you finish registration.</div>
+      <div class="reg-benefit">
+        <div class="reg-benefit-icon">🔒</div>
+        <div class="reg-benefit-text"><strong>Completely isolated</strong> — your data is private. No other school can ever see it.</div>
+      </div>
+      <div class="reg-benefit">
+        <div class="reg-benefit-icon">⚡</div>
+        <div class="reg-benefit-text"><strong>Instant setup</strong> — your portal is live immediately after registration.</div>
+      </div>
+      <div class="reg-benefit">
+        <div class="reg-benefit-icon">🎁</div>
+        <div class="reg-benefit-text"><strong>30 days free</strong> — full access to all features. No credit card needed.</div>
+      </div>
+      <div class="reg-benefit">
+        <div class="reg-benefit-icon">🇧🇩</div>
+        <div class="reg-benefit-text"><strong>Bangladesh grading</strong> — built-in A+ to F scale, bKash & Nagad payments.</div>
+      </div>
+      <div class="reg-benefit">
+        <div class="reg-benefit-icon">📱</div>
+        <div class="reg-benefit-text"><strong>Parent app included</strong> — parents see results, attendance and fees on mobile.</div>
+      </div>
+    </div>
+    <div class="reg-left-footer">
+      <div class="testi-mini">
+        <div class="testi-mini-text">"Setup took 20 minutes. By afternoon, teachers were marking attendance on their phones. I couldn't believe it was that easy."</div>
+        <div class="testi-mini-author">
+          <div class="testi-mini-avatar">👨‍💼</div>
+          <div>
+            <div class="testi-mini-name">Md. Faruk Ahmed</div>
+            <div class="testi-mini-school">Principal · Rajshahi Model School</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="reg-right">
+    <div class="reg-right-top">
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-steps" id="progressSteps">
+        <div class="step-dot active" id="dot1">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-dot" id="dot2">2</div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-dot" id="dot3">3</div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-dot" id="dot4">4</div>
+      </div>
+      <div class="step-labels">
+        <div class="step-lbl active" id="lbl1">School Info</div>
+        <div class="step-lbl" id="lbl2">Admin Account</div>
+        <div class="step-lbl" id="lbl3">Setup & Plan</div>
+        <div class="step-lbl" id="lbl4">Confirm</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: School Information -->
+    <div class="form-step active" id="step1">
+      <div class="step-heading">Tell us about your school</div>
+      <div class="step-sub">We'll use this to set up your portal and domain.</div>
+
+      <div class="form-group">
+        <label class="form-label">Official School Name *</label>
+        <input type="text" class="form-input" id="schoolName" placeholder="e.g. Dhaka High School" oninput="updateDomain()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Portal URL *</label>
+        <div style="display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;">
+          <button type="button" id="tabSub" onclick="setDomainType('sub')" style="flex:1;padding:9px 14px;border:none;background:var(--blue);color:#fff;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;">🌐 eduos.net subdomain</button>
+          <button type="button" id="tabCustom" onclick="setDomainType('custom')" style="flex:1;padding:9px 14px;border:none;background:#fff;color:var(--ink-3);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;">🔗 My own domain</button>
+        </div>
+        <div id="subdomainBlock">
+          <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;">
+            <input type="text" style="flex:1;border:none;outline:none;padding:11px 14px;font-size:.92rem;color:var(--ink);font-family:inherit;" id="slugInput" placeholder="dhaka-high" oninput="updateDomain()">
+            <span style="padding:11px 14px;background:var(--bg);color:var(--muted);font-size:.85rem;font-weight:600;border-left:1.5px solid var(--border);white-space:nowrap;">.eduos.net</span>
+          </div>
+        </div>
+        <div id="customDomainBlock" style="display:none;">
+          <input type="text" class="form-input" id="customDomainInput" placeholder="e.g. portal.yourschool.edu.bd" oninput="updateDomain()">
+          <div style="margin-top:8px;padding:10px 13px;background:#FEF3C7;border-radius:8px;font-size:.75rem;color:#92400E;line-height:1.55;">
+            📋 Add a <strong>CNAME record</strong> pointing to <code style="background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;">cname.eduos.net</code> in your DNS settings. Our team will help you complete setup after registration.
+          </div>
+        </div>
+        <div class="domain-preview" id="domainPreview" style="margin-top:10px;">🌐 dhaka-high.eduos.net</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:6px;">This is the URL your teachers, students and parents will use.</div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Institution Type *</label>
+          <select class="form-select">
+            <option value="">Select type...</option>
+            <option>Primary School (Class 1–5)</option>
+            <option>Secondary School (Class 6–10)</option>
+            <option>Higher Secondary College</option>
+            <option>School + College (Dual)</option>
+            <option>Madrasa</option>
+            <option>Vocational Institute</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Approx. Number of Students *</label>
+          <select class="form-select">
+            <option value="">Select range...</option>
+            <option>Under 100</option>
+            <option>100 – 300</option>
+            <option>300 – 800</option>
+            <option>800 – 2,500</option>
+            <option>2,500+</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Division</label>
+          <select class="form-select">
+            <option value="">Division...</option>
+            <option>Dhaka</option>
+            <option>Chittagong</option>
+            <option>Rajshahi</option>
+            <option>Sylhet</option>
+            <option>Khulna</option>
+            <option>Barisal</option>
+            <option>Rangpur</option>
+            <option>Mymensingh</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">District</label>
+          <input type="text" class="form-input" placeholder="District name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Upazila</label>
+          <input type="text" class="form-input" placeholder="Upazila / Thana">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Address</label>
+        <input type="text" class="form-input" placeholder="Road, House, Area...">
+      </div>
+      <div class="step-nav">
+        <div></div>
+        <button class="btn btn-primary btn-lg" onclick="nextStep(1)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Admin Account -->
+    <div class="form-step" id="step2">
+      <div class="step-heading">Create your admin account</div>
+      <div class="step-sub">This account will have full control over your school portal.</div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input type="text" class="form-input" placeholder="Abdul">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          <input type="text" class="form-input" placeholder="Karim">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Designation</label>
+        <input type="text" class="form-input" placeholder="e.g. Principal, Head Teacher, Director">
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" class="form-input" placeholder="principal@school.edu.bd">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number *</label>
+          <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <input type="password" class="form-input" id="passInput" placeholder="Min. 8 characters" oninput="checkStrength()">
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:4px;" id="strengthText">Enter a password</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <input type="password" class="form-input" placeholder="Re-enter password">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Language for Portal</label>
+        <select class="form-select">
+          <option value="bn">বাংলা (Bangla)</option>
+          <option value="en">English</option>
+          <option value="both">Both (Bilingual)</option>
+        </select>
+      </div>
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="prevStep(2)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="nextStep(2)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Plan & Setup -->
+    <div class="form-step" id="step3">
+      <div class="step-heading">Choose your plan & personalize</div>
+      <div class="step-sub">All plans start with a 30-day free trial. No credit card required.</div>
+
+      <div class="form-label mb-2">Select a Plan</div>
+      <div class="plan-picker">
+        <div class="plan-pick-card" onclick="selectPlan(this,'Starter','৳15/student/mo')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div><div class="plan-pick-name">🌱 Starter</div><div class="plan-pick-desc">Up to 200 students</div></div>
+            <div class="plan-pick-price">৳15</div>
+          </div>
+        </div>
+        <div class="plan-pick-card selected" onclick="selectPlan(this,'Growth','৳25/student/mo')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div><div class="plan-pick-name">🚀 Growth ⭐</div><div class="plan-pick-desc">Up to 800 students</div></div>
+            <div class="plan-pick-price">৳25</div>
+          </div>
+        </div>
+        <div class="plan-pick-card" onclick="selectPlan(this,'Professional','৳20/student/mo')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div><div class="plan-pick-name">🏛️ Professional</div><div class="plan-pick-desc">Up to 2,500 students</div></div>
+            <div class="plan-pick-price">৳20</div>
+          </div>
+        </div>
+        <div class="plan-pick-card" onclick="selectPlan(this,'Enterprise','Custom pricing')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div><div class="plan-pick-name">🏢 Enterprise</div><div class="plan-pick-desc">Unlimited · Custom</div></div>
+            <div class="plan-pick-price" style="font-size:.85rem;">Custom</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <div class="form-label mb-2">Upload School Logo (optional)</div>
+        <div class="logo-upload" onclick="this.style.borderColor='var(--blue)';this.style.background='var(--blue-light)';">
+          <div class="logo-upload-icon">🏫</div>
+          <div class="logo-upload-text"><strong>Click to upload</strong> or drag and drop</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:4px;">PNG, JPG or SVG · Max 2MB</div>
+        </div>
+      </div>
+
+      <div class="form-group mt-6">
+        <div class="form-label mb-2">Portal Theme Color</div>
+        <div class="color-row">
+          <button class="color-dot-btn selected" style="background:#1647D4;" title="Blue" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#0891B2;" title="Teal" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#059669;" title="Green" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#7C3AED;" title="Purple" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#DC2626;" title="Red" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#D97706;" title="Amber" onclick="pickColor(this)"></button>
+          <button class="color-dot-btn" style="background:#0F172A;" title="Dark" onclick="pickColor(this)"></button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">How did you hear about EduOS?</label>
+        <select class="form-select">
+          <option value="">Select...</option>
+          <option>From another school / principal</option>
+          <option>Facebook / Social Media</option>
+          <option>Google Search</option>
+          <option>Education conference/event</option>
+          <option>Government recommendation</option>
+          <option>Sales team called us</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="prevStep(3)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="nextStep(3)">Review & Confirm →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Confirm -->
+    <div class="form-step" id="step4">
+      <div class="step-heading">Review and confirm</div>
+      <div class="step-sub">Check your details before we create your portal.</div>
+
+      <div class="summary-card">
+        <div class="summary-row"><span class="summary-label">School Name</span><span class="summary-val" id="summarySchool">Dhaka High School</span></div>
+        <div class="summary-row"><span class="summary-label">Portal URL</span><span class="summary-val" style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:.85rem;" id="summaryDomain">dhaka-high.eduos.net</span></div>
+        <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-val">🚀 Growth — ৳25/student/month</span></div>
+        <div class="summary-row"><span class="summary-label">Free Trial</span><span class="summary-val" style="color:var(--green);">✓ 30 days free · No card needed</span></div>
+        <div class="summary-row"><span class="summary-label">Admin</span><span class="summary-val">principal@school.edu.bd</span></div>
+      </div>
+
+      <div style="background:#D1FAE5;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:.85rem;color:#065F46;">
+        🎁 <strong>Your 30-day free trial starts now.</strong> You will only be charged after the trial ends, and you can cancel anytime before that.
+      </div>
+
+      <div class="form-group">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" style="margin-top:3px;accent-color:var(--blue);">
+          <span style="font-size:.85rem;color:var(--ink-3);">I agree to EduOS's <a href="#" style="color:var(--blue);">Terms of Service</a> and <a href="#" style="color:var(--blue);">Privacy Policy</a>. I confirm that I am authorized to register this institution.</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" checked style="margin-top:3px;accent-color:var(--blue);">
+          <span style="font-size:.85rem;color:var(--ink-3);">Send me product updates, tips, and feature announcements via email.</span>
+        </label>
+      </div>
+
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="prevStep(4)">← Back</button>
+        <button class="btn btn-primary btn-lg" style="padding:14px 36px;" onclick="submitReg()">
+          🚀 Create My School Portal
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="reg-success" id="regSuccess">
+      <div class="reg-success-icon">🎉</div>
+      <div class="reg-success-title">Your portal is ready!</div>
+      <div class="reg-success-sub">
+        Congratulations! <strong>Dhaka High School</strong> is now on EduOS.<br>
+        Your private portal is live at:
+      </div>
+      <div class="portal-url">🌐 dhaka-high.eduos.net</div>
+      <div class="reg-success-sub" style="margin-bottom:28px;">
+        We've sent your login credentials to <strong>principal@school.edu.bd</strong>.<br>
+        Your 30-day free trial has started — no payment needed until Day 31.
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="../auth/login.html" class="btn btn-primary btn-lg">Go to My Portal →</a>
+        <a href="index.html" class="btn btn-outline btn-lg">Back to Home</a>
+      </div>
+      <div style="margin-top:24px;padding:16px;background:var(--blue-light);border-radius:12px;font-size:.85rem;color:var(--blue);">
+        📞 Need help getting started? Call us: <strong>+880 1700-000000</strong> (Sun–Thu, 9AM–6PM)
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function nextStep(from) {
+  if(from < 4) {
+    document.getElementById('step'+from).classList.remove('active');
+    currentStep = from + 1;
+    document.getElementById('step'+currentStep).classList.add('active');
+    updateProgress();
+    // update summary on step 4
+    if(currentStep === 4) {
+      const sn = document.getElementById('schoolName').value || 'Your School';
+      const sl = document.getElementById('slugInput').value || 'your-school';
+      document.getElementById('summarySchool').textContent = sn;
+      const domType = document.getElementById('tabSub').style.background !== '' && document.getElementById('tabSub').style.background !== 'rgb(255, 255, 255)' ? 'sub' : 'custom';
+      const customVal = (document.getElementById('customDomainInput') || {}).value || '';
+      document.getElementById('summaryDomain').textContent = (window._domainType === 'custom' && customVal) ? customVal : sl + '.eduos.net';
+    }
+  }
+}
+
+function prevStep(current) {
+  document.getElementById('step'+current).classList.remove('active');
+  currentStep = current - 1;
+  document.getElementById('step'+currentStep).classList.add('active');
+  updateProgress();
+}
+
+function updateProgress() {
+  for(let i=1; i<=4; i++) {
+    const dot = document.getElementById('dot'+i);
+    const lbl = document.getElementById('lbl'+i);
+    dot.className = 'step-dot' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+    dot.textContent = i < currentStep ? '✓' : i;
+    lbl.className = 'step-lbl' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+  }
+  for(let i=1; i<=3; i++) {
+    const line = document.getElementById('line'+i);
+    line.className = 'step-line' + (i < currentStep ? ' done' : '');
+  }
+}
+
+function setDomainType(type) {
+  window._domainType = type;
+  const subBlock = document.getElementById('subdomainBlock');
+  const customBlock = document.getElementById('customDomainBlock');
+  const tabSub = document.getElementById('tabSub');
+  const tabCustom = document.getElementById('tabCustom');
+  if(type === 'sub') {
+    subBlock.style.display = '';
+    customBlock.style.display = 'none';
+    tabSub.style.background = 'var(--blue)'; tabSub.style.color = '#fff';
+    tabCustom.style.background = '#fff'; tabCustom.style.color = 'var(--ink-3)';
+  } else {
+    subBlock.style.display = 'none';
+    customBlock.style.display = '';
+    tabCustom.style.background = 'var(--blue)'; tabCustom.style.color = '#fff';
+    tabSub.style.background = '#fff'; tabSub.style.color = 'var(--ink-3)';
+  }
+  updateDomain();
+}
+
+window._domainType = 'sub';
+
+function updateDomain() {
+  if(window._domainType === 'custom') {
+    const cv = (document.getElementById('customDomainInput')||{}).value || '';
+    document.getElementById('domainPreview').textContent = cv ? '🔗 ' + cv : '🔗 portal.yourschool.edu.bd';
+    return;
+  }
+  const slug = document.getElementById('slugInput').value ||
+               (document.getElementById('schoolName').value || '').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'your-school';
+  if(!document.getElementById('slugInput').value && document.getElementById('schoolName').value) {
+    document.getElementById('slugInput').value = slug;
+  }
+  const s = document.getElementById('slugInput').value || slug;
+  document.getElementById('domainPreview').textContent = '🌐 ' + s + '.eduos.net';
+}
+
+function checkStrength() {
+  const p = document.getElementById('passInput').value;
+  const fill = document.getElementById('strengthFill');
+  const text = document.getElementById('strengthText');
+  let score = 0;
+  if(p.length >= 8) score++;
+  if(/[A-Z]/.test(p)) score++;
+  if(/[0-9]/.test(p)) score++;
+  if(/[^A-Za-z0-9]/.test(p)) score++;
+  const colors = ['','#DC2626','#F59E0B','#3B82F6','#059669'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+  fill.style.width = (score*25)+'%';
+  fill.style.background = colors[score]||'';
+  text.textContent = p.length ? labels[score]||'' : 'Enter a password';
+  text.style.color = colors[score]||'var(--muted)';
+}
+
+function selectPlan(el, name, price) {
+  document.querySelectorAll('.plan-pick-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function pickColor(btn) {
+  document.querySelectorAll('.color-dot-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.documentElement.style.setProperty('--blue', btn.style.background);
+}
+
+function submitReg() {
+  for(let i=1;i<=4;i++) document.getElementById('step'+i).classList.remove('active');
+  document.getElementById('regSuccess').style.display='block';
+  // update with actual slug
+  const sl = document.getElementById('slugInput').value || 'dhaka-high';
+  const cv = (document.getElementById('customDomainInput')||{}).value || '';
+  const domainDisplay = (window._domainType === 'custom' && cv) ? cv : sl + '.eduos.net';
+}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

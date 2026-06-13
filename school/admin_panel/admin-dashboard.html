@@ -1,0 +1,574 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- DASHBOARD SPECIFIC -- */
+
+/* Quick action strip */
+.quick-actions {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 10px;
+  margin-bottom: 24px;
+}
+.qa-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 14px 8px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--white); cursor: pointer; transition: all .18s;
+  text-decoration: none;
+}
+.qa-btn:hover { border-color: var(--blue); background: var(--blue-pale); transform: translateY(-2px); box-shadow: var(--shadow); }
+.qa-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.qa-label { font-size: .73rem; font-weight: 600; color: var(--ink-3); text-align: center; }
+
+/* Donut chart (CSS) */
+.donut-wrap { display: flex; align-items: center; gap: 24px; }
+.donut-svg { flex-shrink: 0; transform: rotate(-90deg); }
+.donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.donut-container { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: .82rem; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { color: var(--ink-3); flex: 1; }
+.legend-val { font-weight: 700; color: var(--ink-2); }
+.legend-pct { color: var(--muted); font-size: .72rem; }
+
+/* Activity feed */
+.activity-feed { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.activity-item:last-child { border: none; }
+.activity-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82rem; flex-shrink: 0; margin-top: 1px;
+}
+.activity-text { flex: 1; }
+.activity-main { font-size: .845rem; color: var(--ink-3); line-height: 1.5; }
+.activity-main strong { color: var(--ink-2); font-weight: 600; }
+.activity-time { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+/* Fee collection chart */
+.fee-bars { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+.fee-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fee-bar { width: 100%; border-radius: 5px 5px 0 0; min-height: 4px; transition: height .5s; }
+.fee-lbl { font-size: .65rem; color: var(--muted); }
+.fee-val { font-size: .68rem; font-weight: 700; color: var(--muted); }
+
+/* Attendance mini cards */
+.att-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.att-block { border-radius: 10px; padding: 14px 12px; text-align: center; }
+.att-num { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+.att-lbl { font-size: .7rem; font-weight: 600; }
+
+/* Pending tasks */
+.task-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.task-item:last-child { border: none; }
+.task-check { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); flex-shrink: 0; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; }
+.task-check:hover { border-color: var(--blue); }
+.task-check.done { background: var(--blue); border-color: var(--blue); color: #fff; font-size: .65rem; }
+.task-text { font-size: .845rem; color: var(--ink-3); flex: 1; }
+.task-text.done { text-decoration: line-through; color: var(--muted); }
+.task-priority { font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
+
+/* Top performers */
+.perf-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.perf-row:last-child { border: none; }
+.perf-rank { font-family: 'Sora', sans-serif; font-size: .95rem; font-weight: 800; color: var(--muted); width: 22px; flex-shrink: 0; text-align: center; }
+.perf-rank.gold   { color: var(--amber); }
+.perf-rank.silver { color: var(--muted-light); }
+.perf-rank.bronze { color: #B45309; }
+.perf-info { flex: 1; }
+.perf-name  { font-size: .845rem; font-weight: 600; color: var(--ink-2); }
+.perf-class { font-size: .72rem; color: var(--muted); }
+.perf-gpa { font-family: 'Sora', sans-serif; font-size: .92rem; font-weight: 800; color: var(--blue); }
+
+@media(max-width:1100px) { .quick-actions{grid-template-columns:repeat(3,1fr);} }
+@media(max-width:640px)  { .quick-actions{grid-template-columns:repeat(3,1fr);} .att-row{grid-template-columns:1fr 1fr 1fr;} }
+
+/* -- PROFILE DROPDOWN -- */
+.profile-dropdown-wrap { position: relative; }
+.topbar-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6366F1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 700; color: #fff;
+  cursor: pointer; flex-shrink: 0; user-select: none;
+  border: 2px solid transparent; transition: border-color .15s;
+}
+.topbar-avatar:hover { border-color: var(--blue); }
+.profile-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: 230px; background: #fff;
+  border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.13);
+  z-index: 9999; overflow: hidden;
+  opacity: 0; transform: translateY(-8px) scale(.97);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.profile-dropdown.open {
+  opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+}
+.pd-header { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg); }
+.pd-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--blue), #6366F1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .82rem; font-weight: 700; color: #fff;
+}
+.pd-info { min-width: 0; }
+.pd-name { font-size: .875rem; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-role { font-size: .73rem; color: var(--muted); margin-top: 1px; }
+.pd-divider { height: 1px; background: var(--border); }
+.pd-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: .84rem; font-weight: 500;
+  color: var(--ink); text-decoration: none; cursor: pointer;
+  background: none; border: none; width: 100%; text-align: left;
+  transition: background .13s;
+}
+.pd-item:hover { background: var(--bg); }
+.pd-logout { color: #EF4444 !important; font-weight: 600; }
+.pd-logout:hover { background: #FEF2F2 !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- -- SIDEBAR -- -->
+
+
+<!-- -- MAIN -- -->
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Good morning, Mr. Rahman &#x2600;&#xFE0F;</div>
+        <div class="page-sub">Tuesday, 25 February 2025 &middot; Session 2024&#x2013;25 &middot; Term 2</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary btn-sm">&#x1F4CA; Export Report</button>
+        <button class="btn btn-primary btn-sm">+ Quick Add</button>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div style="margin-bottom:20px;">
+      <div class="alert alert-red">
+        <span class="alert-icon">&#x1F6A8;</span>
+        <div>
+          <div class="alert-title">Fee overdue &middot; 47 students</div>
+          <div class="alert-msg">February tuition fee deadline was yesterday. 47 students have not yet paid. Last date extended to 28 Feb.</div>
+        </div>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+      </div>
+      <div class="alert alert-amber">
+        <span class="alert-icon">&#x26A0;&#xFE0F;</span>
+        <div>
+          <div class="alert-title">Low attendance &middot; Class 8-B</div>
+          <div class="alert-msg">Today's attendance for Class 8-B is 61% (17/28). Below the 75% threshold. 11 students absent.</div>
+        </div>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <a href="admin-users.html" class="qa-btn">
+        <div class="qa-icon" style="background:#E0F2FE;color:#0369A1;">&#x1F464;</div>
+        <div class="qa-label">Add User</div>
+      </a>
+      <a href="#" class="qa-btn">
+        <div class="qa-icon" style="background:#D1FAE5;color:#065F46;">&#x2705;</div>
+        <div class="qa-label">Take Attendance</div>
+      </a>
+      <a href="#" class="qa-btn">
+        <div class="qa-icon" style="background:#FEF3C7;color:#92400E;">&#x1F4B5;</div>
+        <div class="qa-label">Collect Fee</div>
+      </a>
+      <a href="#" class="qa-btn">
+        <div class="qa-icon" style="background:#EDE9FE;color:#5B21B6;">&#x1F4E2;</div>
+        <div class="qa-label">Post Notice</div>
+      </a>
+      <a href="#" class="qa-btn">
+        <div class="qa-icon" style="background:#CCFBF1;color:#0F766E;">&#x1F4CA;</div>
+        <div class="qa-label">View Results</div>
+      </a>
+      <a href="admin-settings.html" class="qa-btn">
+        <div class="qa-icon" style="background:var(--bg);color:var(--muted);">&#x2699;&#xFE0F;</div>
+        <div class="qa-label">Settings</div>
+      </a>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="grid-4 mb-6">
+      <div class="stat-card sc-blue">
+        <div class="stat-icon-box">&#x1F9D1;&#x200D;&#x1F393;</div>
+        <div class="stat-num">1,248</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-delta delta-up">&#x25B2; +12 this month</div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-icon-box">&#x1F4CA;</div>
+        <div class="stat-num">89.4%</div>
+        <div class="stat-label">Today's Attendance</div>
+        <div class="stat-delta delta-up">&#x25B2; +2.1% vs yesterday</div>
+      </div>
+      <div class="stat-card sc-amber">
+        <div class="stat-icon-box">&#x1F4B0;</div>
+        <div class="stat-num">&#x09F3;4.2L</div>
+        <div class="stat-label">Fees Collected (Feb)</div>
+        <div class="stat-delta delta-neu">68% of target</div>
+      </div>
+      <div class="stat-card sc-red">
+        <div class="stat-icon-box">&#x26A0;&#xFE0F;</div>
+        <div class="stat-num">47</div>
+        <div class="stat-label">Fee Overdue Students</div>
+        <div class="stat-delta delta-down">&#x25BC; +8 since last week</div>
+      </div>
+    </div>
+
+    <!-- SECOND ROW STATS -->
+    <div class="grid-4 mb-6">
+      <div class="stat-card sc-purple">
+        <div class="stat-icon-box">&#x1F469;&#x200D;&#x1F3EB;</div>
+        <div class="stat-num">68</div>
+        <div class="stat-label">Active Teachers</div>
+        <div class="stat-delta delta-green" style="background:var(--green-light);color:#065F46;">All present today</div>
+      </div>
+      <div class="stat-card sc-teal">
+        <div class="stat-icon-box">&#x1F3EB;</div>
+        <div class="stat-num">32</div>
+        <div class="stat-label">Active Classes</div>
+        <div class="stat-delta delta-neu">Sections A, B, C</div>
+      </div>
+      <div class="stat-card sc-blue">
+        <div class="stat-icon-box">&#x1F4DD;</div>
+        <div class="stat-num">6</div>
+        <div class="stat-label">Exams This Month</div>
+        <div class="stat-delta delta-up">Final exam: 10 Mar</div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-icon-box">&#x1F4E5;</div>
+        <div class="stat-num">3</div>
+        <div class="stat-label">New Applications</div>
+        <div class="stat-delta delta-up">&#x23F3; Pending review</div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="grid-13" style="gap:20px; align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- FEE COLLECTION CHART -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div>
+              <div class="card-title">Fee Collection &middot; 2025</div>
+              <div class="card-sub-title">Monthly tuition fee collected vs target</div>
+            </div>
+            <select class="form-select" style="width:auto;font-size:.78rem;padding:5px 10px;">
+              <option>2025</option><option>2024</option>
+            </select>
+          </div>
+          <!-- Simple bar chart -->
+          <div style="position:relative;height:140px;display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--border);margin-bottom:8px;padding-bottom:0;">
+            <div style="display:flex;align-items:flex-end;gap:6px;width:100%;height:100%;">
+              <!-- Each month pair (collected / target) -->
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--blue);border-radius:4px 4px 0 0;height:72%;" title="&#x09F3;3.8L"></div>
+                <div style="flex:1;background:var(--blue-light);border-radius:4px 4px 0 0;height:82%;" title="Target"></div>
+              </div>
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--blue);border-radius:4px 4px 0 0;height:68%;" title="&#x09F3;3.6L"></div>
+                <div style="flex:1;background:var(--blue-light);border-radius:4px 4px 0 0;height:82%;" title="Target"></div>
+              </div>
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--amber);border-radius:4px 4px 0 0;height:68%;opacity:.85;" title="&#x09F3;4.2L (partial)"></div>
+                <div style="flex:1;background:var(--amber-light);border-radius:4px 4px 0 0;height:100%;" title="Target"></div>
+              </div>
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:10%;"></div>
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:82%;"></div>
+              </div>
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:10%;"></div>
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:82%;"></div>
+              </div>
+              <div style="flex:1;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:10%;"></div>
+                <div style="flex:1;background:var(--border);border-radius:4px 4px 0 0;height:82%;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center;margin-bottom:14px;">
+            <div style="font-size:.67rem;color:var(--muted);">Jan</div>
+            <div style="font-size:.67rem;color:var(--muted);">Feb</div>
+            <div style="font-size:.67rem;color:var(--amber);font-weight:700;">Mar &#x25B2;</div>
+            <div style="font-size:.67rem;color:var(--muted);">Apr</div>
+            <div style="font-size:.67rem;color:var(--muted);">May</div>
+            <div style="font-size:.67rem;color:var(--muted);">Jun</div>
+          </div>
+          <div style="display:flex;gap:16px;font-size:.75rem;color:var(--muted);">
+            <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue);display:inline-block;"></span>Collected</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue-light);display:inline-block;"></span>Target</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--amber);display:inline-block;"></span>Partial</span>
+          </div>
+        </div>
+
+        <!-- ATTENDANCE BY CLASS -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div>
+              <div class="card-title">Today's Attendance by Class</div>
+              <div class="card-sub-title">25 February 2025</div>
+            </div>
+            <a href="#" class="btn btn-secondary btn-sm">View Full &#x2192;</a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Section</th>
+                  <th>Total</th>
+                  <th>Present</th>
+                  <th>Absent</th>
+                  <th>Rate</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-name">Class 10</td>
+                  <td><span class="badge bg-blue">A</span></td>
+                  <td>42</td><td>40</td><td>2</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <div style="width:60px;height:6px;background:var(--border);border-radius:3px;"><div style="width:95%;height:100%;background:var(--green);border-radius:3px;"></div></div>
+                      <span style="font-size:.78rem;font-weight:700;color:var(--green);">95%</span>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-green">&#x2713; Good</span></td>
+                </tr>
+                <tr>
+                  <td class="td-name">Class 9</td>
+                  <td><span class="badge bg-purple">B</span></td>
+                  <td>40</td><td>38</td><td>2</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <div style="width:60px;height:6px;background:var(--border);border-radius:3px;"><div style="width:95%;height:100%;background:var(--green);border-radius:3px;"></div></div>
+                      <span style="font-size:.78rem;font-weight:700;color:var(--green);">95%</span>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-green">&#x2713; Good</span></td>
+                </tr>
+                <tr>
+                  <td class="td-name">Class 8</td>
+                  <td><span class="badge bg-amber">B</span></td>
+                  <td>28</td><td>17</td><td>11</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <div style="width:60px;height:6px;background:var(--border);border-radius:3px;"><div style="width:61%;height:100%;background:var(--red);border-radius:3px;"></div></div>
+                      <span style="font-size:.78rem;font-weight:700;color:var(--red);">61%</span>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-red">&#x26A0; Low</span></td>
+                </tr>
+                <tr>
+                  <td class="td-name">Class 7</td>
+                  <td><span class="badge bg-teal">A</span></td>
+                  <td>35</td><td>32</td><td>3</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <div style="width:60px;height:6px;background:var(--border);border-radius:3px;"><div style="width:91%;height:100%;background:var(--green);border-radius:3px;"></div></div>
+                      <span style="font-size:.78rem;font-weight:700;color:var(--green);">91%</span>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-green">&#x2713; Good</span></td>
+                </tr>
+                <tr>
+                  <td class="td-name">Class 6</td>
+                  <td><span class="badge bg-blue">C</span></td>
+                  <td>38</td><td>31</td><td>7</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                      <div style="width:60px;height:6px;background:var(--border);border-radius:3px;"><div style="width:82%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+                      <span style="font-size:.78rem;font-weight:700;color:var(--amber);">82%</span>
+                    </div>
+                  </td>
+                  <td><span class="badge bg-amber">~ Fair</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR WIDGETS -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Attendance donut -->
+        <div class="card card-pad">
+          <div class="card-title mb-4">Today's Overview</div>
+          <div class="att-row mb-4">
+            <div class="att-block" style="background:var(--green-light);">
+              <div class="att-num" style="color:#065F46;">1,115</div>
+              <div class="att-lbl" style="color:#065F46;">Present</div>
+            </div>
+            <div class="att-block" style="background:var(--red-light);">
+              <div class="att-num" style="color:#991B1B;">133</div>
+              <div class="att-lbl" style="color:#991B1B;">Absent</div>
+            </div>
+            <div class="att-block" style="background:var(--amber-light);">
+              <div class="att-num" style="color:#92400E;">14</div>
+              <div class="att-lbl" style="color:#92400E;">Late</div>
+            </div>
+          </div>
+          <div style="text-align:center;padding:10px 0;border-top:1px solid var(--border);">
+            <div style="font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;color:var(--green);">89.4%</div>
+            <div style="font-size:.75rem;color:var(--muted);">Overall attendance today</div>
+          </div>
+        </div>
+
+        <!-- Pending tasks -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div class="card-title">Tasks</div>
+            <span class="badge bg-amber">4 pending</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="toggleTask(this)">
+            </div>
+            <div class="task-text">Review 3 new admission applications</div>
+            <span class="task-priority badge bg-red" style="font-size:.65rem;">Urgent</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="toggleTask(this)"></div>
+            <div class="task-text">Approve Feb exam schedule</div>
+            <span class="task-priority badge bg-amber" style="font-size:.65rem;">High</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check done" onclick="toggleTask(this)">&#x2713;</div>
+            <div class="task-text done">Send fee reminder SMS to parents</div>
+            <span class="task-priority badge bg-green" style="font-size:.65rem;">Done</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="toggleTask(this)"></div>
+            <div class="task-text">Update Class 8-B teacher assignment</div>
+            <span class="task-priority badge bg-blue" style="font-size:.65rem;">Normal</span>
+          </div>
+          <div class="task-item">
+            <div class="task-check" onclick="toggleTask(this)"></div>
+            <div class="task-text">Download monthly report for board meeting</div>
+            <span class="task-priority badge bg-slate" style="font-size:.65rem;">Low</span>
+          </div>
+        </div>
+
+        <!-- Top performers -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div class="card-title">Top Performers</div>
+            <span class="text-sm text-muted">Half-Yearly 2024</span>
+          </div>
+          <div class="perf-row"><div class="perf-rank gold">1</div><div class="av-32 avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706);">SA</div><div class="perf-info"><div class="perf-name">Sadia Akter</div><div class="perf-class">Class 10-A</div></div><div class="perf-gpa">5.00</div></div>
+          <div class="perf-row"><div class="perf-rank silver">2</div><div class="av-32 avatar" style="background:linear-gradient(135deg,#6366F1,#4338CA);">RI</div><div class="perf-info"><div class="perf-name">Rafiqul Islam</div><div class="perf-class">Class 9-A</div></div><div class="perf-gpa">4.92</div></div>
+          <div class="perf-row"><div class="perf-rank bronze">3</div><div class="av-32 avatar" style="background:linear-gradient(135deg,#10B981,#059669);">NK</div><div class="perf-info"><div class="perf-name">Nadia Khatun</div><div class="perf-class">Class 10-B</div></div><div class="perf-gpa">4.88</div></div>
+          <div class="perf-row"><div class="perf-rank" style="color:var(--muted);">4</div><div class="av-32 avatar" style="background:linear-gradient(135deg,#EC4899,#BE185D);">MH</div><div class="perf-info"><div class="perf-name">Mehedi Hasan</div><div class="perf-class">Class 10-C</div></div><div class="perf-gpa">4.85</div></div>
+          <div class="perf-row"><div class="perf-rank" style="color:var(--muted);">5</div><div class="av-32 avatar" style="background:linear-gradient(135deg,#14B8A6,#0F766E);">FR</div><div class="perf-info"><div class="perf-name">Fatema Rahman</div><div class="perf-class">Class 9-B</div></div><div class="perf-gpa">4.83</div></div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card card-pad">
+          <div class="card-title mb-4">Recent Activity</div>
+          <div class="activity-feed">
+            <div class="activity-item">
+              <div class="activity-icon" style="background:var(--green-light);">&#x1F4B0;</div>
+              <div class="activity-text">
+                <div class="activity-main"><strong>Sadia Akter</strong> paid February tuition &#x09F3;1,200</div>
+                <div class="activity-time">2 min ago &middot; via bKash</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:var(--blue-light);">&#x2705;</div>
+              <div class="activity-text">
+                <div class="activity-main"><strong>Ms. Nasrin</strong> marked attendance for Class 7-A (35/35)</div>
+                <div class="activity-time">18 min ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:var(--amber-light);">&#x1F4CB;</div>
+              <div class="activity-text">
+                <div class="activity-main">New admission application from <strong>Md. Farhan</strong> (Class I)</div>
+                <div class="activity-time">1 hour ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:var(--purple-light);">&#x1F4E2;</div>
+              <div class="activity-text">
+                <div class="activity-main">Notice posted: <strong>Final Exam Schedule 2025</strong></div>
+                <div class="activity-time">3 hours ago &middot; by Admin</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:var(--red-light);">&#x26A0;&#xFE0F;</div>
+              <div class="activity-text">
+                <div class="activity-main"><strong>Class 8-B</strong> attendance flagged as low (61%)</div>
+                <div class="activity-time">Today, 9:15 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /page-body -->
+</main>
+</div><!-- /app -->
+
+<!-- Toast container -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function toggleTask(el) {
+  const txt = el.nextElementSibling;
+  const done = !el.classList.contains('done');
+  el.classList.toggle('done', done);
+  el.textContent = done ? '&#x2713;' : '';
+  txt.classList.toggle('done', done);
+  showToast(done ? 'Task marked complete' : 'Task reopened');
+}
+
+function showToast(msg, icon='&#x2139;&#xFE0F;') {
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-icon">${icon}</span>${msg}`;
+  stack.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+, 900);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

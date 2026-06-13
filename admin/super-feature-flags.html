@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Flags � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+.flag-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.flag-row:last-child{border:none;}
+.flag-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.flag-name{font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.flag-desc{font-size:.75rem;color:var(--muted);margin-top:1px;}
+.flag-scope{margin-left:auto;}
+.flag-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link active"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Feature Flags</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>14 flags active</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Feature Control</div>
+        <div class="page-title">Feature Flags</div>
+        <div class="page-sub">Enable or disable platform features per plan tier or for individual tenants. Changes take effect immediately.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="showToast('New flag created','??')">+ New Flag</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:20px;">
+      <!-- Beta Features -->
+      <div class="card anim-1">
+        <div class="card-header"><div><div class="card-title">?? Beta Features</div><div class="card-sub">Only visible to opted-in tenants</div></div><span class="badge badge-amber">4 active</span></div>
+        <div class="card-body" style="padding:0 22px;">
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#EEF2FF;">??</div>
+            <div><div class="flag-name">ai-grading</div><div class="flag-desc">AI-powered automatic answer sheet grading</div></div>
+            <div class="flag-scope"><span class="badge badge-purple">Enterprise</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('ai-grading updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#ECFDF5;">??</div>
+            <div><div class="flag-name">predictive-analytics</div><div class="flag-desc">ML-based student performance prediction</div></div>
+            <div class="flag-scope"><span class="badge badge-purple">Enterprise</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('predictive-analytics updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#FFF7ED;">??</div>
+            <div><div class="flag-name">ai-chatbot</div><div class="flag-desc">Student support AI chatbot (24/7)</div></div>
+            <div class="flag-scope"><span class="badge badge-blue">Pro+</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" onchange="showToast('ai-chatbot updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#FFF5F5;">???</div>
+            <div><div class="flag-name">voice-attendance</div><div class="flag-desc">Voice-command based attendance marking</div></div>
+            <div class="flag-scope"><span class="badge badge-gray">All</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" onchange="showToast('voice-attendance updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Features -->
+      <div class="card anim-1">
+        <div class="card-header"><div><div class="card-title">? Core Features</div><div class="card-sub">Available to all tenants by plan</div></div><span class="badge badge-green">10 active</span></div>
+        <div class="card-body" style="padding:0 22px;">
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#E0F2FE;">??</div>
+            <div><div class="flag-name">sms-notifications</div><div class="flag-desc">SMS alerts for fee, attendance, results</div></div>
+            <div class="flag-scope"><span class="badge badge-green">Basic+</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('sms-notifications updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#F3E8FF;">??</div>
+            <div><div class="flag-name">online-exam</div><div class="flag-desc">MCQ & descriptive online exam module</div></div>
+            <div class="flag-scope"><span class="badge badge-blue">Pro+</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('online-exam updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#ECFDF5;">??</div>
+            <div><div class="flag-name">bkash-payment</div><div class="flag-desc">bKash fee payment gateway integration</div></div>
+            <div class="flag-scope"><span class="badge badge-green">Basic+</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('bkash-payment updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="flag-row">
+            <div class="flag-icon" style="background:#FFF7ED;">??</div>
+            <div><div class="flag-name">custom-domain</div><div class="flag-desc">Use own domain instead of .prathomik.edu.bd</div></div>
+            <div class="flag-scope"><span class="badge badge-purple">Enterprise</span></div>
+            <div class="flag-actions"><label class="toggle"><input type="checkbox" checked onchange="showToast('custom-domain updated','??')"><span class="toggle-slider"></span></label></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rollout control -->
+      <div class="card anim-2" style="grid-column:1/-1;">
+        <div class="card-header"><div class="card-title">?? Gradual Rollout Control</div><div class="card-sub">Roll out features to a % of tenants before full release</div></div>
+        <div class="card-body">
+          <div class="grid-3" style="gap:16px;">
+            <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:.82rem;font-weight:700;margin-bottom:4px;">new-report-engine</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Revamped analytics report engine</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">Rollout: <strong style="color:var(--ink);">25%</strong> tenants</div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:25%;background:var(--blue);"></div></div>
+              <button class="btn btn-outline btn-sm mt-2" style="width:100%;justify-content:center;" onclick="showToast('Rollout increased to 50%','??')">Increase to 50%</button>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:.82rem;font-weight:700;margin-bottom:4px;">parent-app-v2</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Parent portal redesign (v2)</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">Rollout: <strong style="color:var(--ink);">65%</strong> tenants</div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:65%;background:var(--green);"></div></div>
+              <button class="btn btn-outline btn-sm mt-2" style="width:100%;justify-content:center;" onclick="showToast('Full rollout initiated','??')">Full Rollout</button>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:.82rem;font-weight:700;margin-bottom:4px;">multi-campus</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;">Manage multiple branches from one account</div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">Rollout: <strong style="color:var(--ink);">10%</strong> tenants</div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:10%;background:var(--purple);"></div></div>
+              <button class="btn btn-outline btn-sm mt-2" style="width:100%;justify-content:center;" onclick="showToast('Rollout increased to 25%','??')">Increase to 25%</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

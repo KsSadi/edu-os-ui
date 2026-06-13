@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Study Assistant — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* AI layout */
+.ai-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;height:calc(100vh - 160px);min-height:500px;}
+@media(max-width:900px){.ai-layout{grid-template-columns:1fr;}}
+
+/* Left panel */
+.ai-left{display:flex;flex-direction:column;gap:12px;}
+.ai-hero{background:linear-gradient(135deg,#1E0A3C,#4C1D95,#7C3AED);border-radius:16px;padding:20px;color:#fff;text-align:center;}
+.ai-hero-icon{font-size:2.5rem;margin-bottom:8px;}
+.ai-hero-title{font-size:1rem;font-weight:800;margin-bottom:3px;}
+.ai-hero-sub{font-size:.75rem;opacity:.65;}
+.ai-status{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:.75rem;font-weight:700;}
+.ai-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* Language toggle */
+.lang-toggle{display:flex;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);}
+.lt-btn{flex:1;padding:8px;font-size:.78rem;font-weight:700;border:none;cursor:pointer;background:var(--white);color:var(--muted);transition:.15s;}
+.lt-btn.on{background:var(--stu);color:#fff;}
+
+/* Subject chips */
+.subj-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.sc-chip{padding:5px 12px;border-radius:20px;font-size:.74rem;font-weight:700;border:1.5px solid var(--border);background:var(--white);color:var(--muted);cursor:pointer;transition:.15s;}
+.sc-chip:hover,.sc-chip.on{border-color:var(--stu);background:var(--stu-pale);color:var(--stu);}
+
+/* Quick prompts */
+.quick-prompts{display:flex;flex-direction:column;gap:6px;}
+.qp-btn{text-align:left;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:600;color:var(--ink-2);cursor:pointer;transition:.15s;line-height:1.3;}
+.qp-btn:hover{border-color:var(--stu);background:var(--stu-pale);color:var(--stu);}
+
+/* Chat area */
+.ai-chat{background:var(--white);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ch-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--stu),#A855F7);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.ch-name{font-size:.92rem;font-weight:800;color:var(--ink);}
+.ch-sub{font-size:.72rem;color:var(--muted);}
+.messages-wrap{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;background:#FAFBFF;}
+.msg{display:flex;gap:10px;max-width:80%;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.msg.ai .msg-av{background:linear-gradient(135deg,var(--stu),#A855F7);color:#fff;}
+.msg.user .msg-av{background:var(--stu);color:#fff;font-size:.72rem;font-weight:800;}
+.bubble{padding:10px 14px;border-radius:12px;font-size:.84rem;line-height:1.6;}
+.msg.ai .bubble{background:var(--white);border:1px solid var(--border);border-radius:4px 12px 12px 12px;color:var(--ink-2);}
+.msg.user .bubble{background:var(--stu);color:#fff;border-radius:12px 4px 12px 12px;}
+.typing-dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--stu);margin:0 2px;animation:bounce .9s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+.chips-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip-btn{padding:5px 12px;border-radius:20px;font-size:.74rem;font-weight:700;border:1.5px solid var(--stu-light);background:var(--stu-pale);color:var(--stu);cursor:pointer;transition:.15s;}
+.chip-btn:hover{background:var(--stu);color:#fff;}
+
+/* Input bar */
+.input-bar{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;background:var(--white);}
+.ai-input{flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:.15s;resize:none;}
+.ai-input:focus{border-color:var(--stu);}
+.send-btn{width:42px;height:42px;border-radius:50%;background:var(--stu);color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.send-btn:hover{background:var(--stu-dark);transform:scale(1.07);}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body" style="padding-bottom:0;">
+
+    <div class="page-header" style="margin-bottom:16px;">
+      <div>
+        <div class="page-eyebrow">🤖 AI Tools</div>
+        <div class="page-title">AI Study Assistant</div>
+        <div class="page-sub">Ask anything about your syllabus, results, exams, or get study tips. Powered by EduOS AI.</div>
+      </div>
+    </div>
+
+    <div class="ai-layout">
+
+      <!-- Left panel -->
+      <div class="ai-left">
+        <div class="ai-hero">
+          <div class="ai-hero-icon">🤖</div>
+          <div class="ai-hero-title">EduOS AI Tutor</div>
+          <div class="ai-hero-sub">Farhan Islam · Class IX-A</div>
+          <div class="ai-status"><div class="ai-dot"></div>Online · Ready to help</div>
+        </div>
+
+        <div class="card" style="padding:14px;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Language</div>
+          <div class="lang-toggle">
+            <button class="lt-btn on" id="langEn" onclick="setLang('en')">English</button>
+            <button class="lt-btn" id="langBn" onclick="setLang('bn')">বাংলা</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:14px;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Subject</div>
+          <div class="subj-chips">
+            <div class="sc-chip on" onclick="setSub('all',this)">All</div>
+            <div class="sc-chip" onclick="setSub('math',this)">📐 Math</div>
+            <div class="sc-chip" onclick="setSub('physics',this)">⚡ Physics</div>
+            <div class="sc-chip" onclick="setSub('chem',this)">⚗️ Chem</div>
+            <div class="sc-chip" onclick="setSub('bio',this)">🔬 Biology</div>
+            <div class="sc-chip" onclick="setSub('english',this)">✍️ English</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:14px;flex:1;overflow-y:auto;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Quick Questions</div>
+          <div class="quick-prompts" id="quickPrompts"></div>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="ai-chat">
+        <div class="chat-header">
+          <div class="ch-avatar">🤖</div>
+          <div><div class="ch-name">EduOS AI Tutor</div><div class="ch-sub" id="chatSubLabel">All Subjects · Farhan Islam</div></div>
+        </div>
+        <div class="messages-wrap" id="messagesWrap"></div>
+        <div class="input-bar">
+          <input class="ai-input" id="aiInput" placeholder="Ask a question…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}">
+          <button class="send-btn" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+</div>
+<script>
+let lang = 'en';
+let currentSubject = 'all';
+
+const STU = {
+  name: 'Farhan Islam',
+  class: 'IX-A',
+  gpa: '5.00',
+  rank: '1st',
+  attendance: '94%',
+  feeStatus: 'July fee due ৳1,200 (due Jul 10)',
+  examDate: 'July 15, 2026',
+};
+
+const SUBJECTS = {
+  math:    { name:'Mathematics',  ch:'Ch 1–11 (Algebra, Geometry, Trigonometry, Statistics)' },
+  physics: { name:'Physics',      ch:'Ch 1–8 (Mechanics, Waves, Electricity, Optics)' },
+  chem:    { name:'Chemistry',    ch:'Ch 1–8 (Matter, Bonding, Reactions, Acids/Bases)' },
+  bio:     { name:'Biology',      ch:'Ch 1–7 (Cell Biology, Plants, Human Body, Ecology)' },
+  english: { name:'English',      ch:'Prose Ch 1–6, Grammar, Composition, Reading' },
+};
+
+const QUICK = {
+  en: {
+    all:     ['What is my GPA?','When is the next exam?','Show my attendance','How is my fee status?','Give me study tips','What syllabus should I focus on?'],
+    math:    ['Explain Trigonometry basics','Solve a quadratic equation','What chapters are in the exam?','Give me tips for Math'],
+    physics: ['Explain electricity basics','What is Ohm\'s Law?','Physics exam chapters?','Tips for Physics'],
+    chem:    ['What is Acid-Base theory?','Explain chemical bonding','Chemistry exam chapters?','Tips for Chemistry'],
+    bio:     ['Explain cell structure','What is photosynthesis?','Biology exam chapters?','Tips for Biology'],
+    english: ['How to write a letter?','Explain reading comprehension','English exam topics?','Tips for English'],
+  },
+  bn: {
+    all:     ['আমার GPA কত?','পরবর্তী পরীক্ষা কবে?','আমার উপস্থিতি দেখাও','ফি status কি?','পড়াশোনার tips দাও','কোন chapter গুলো important?'],
+    math:    ['Trigonometry বোঝাও','Quadratic equation কীভাবে সমাধান করে?','গণিতে কোন chapter গুলো?','গণিতের tips দাও'],
+    physics: ['বিদ্যুৎ basics বোঝাও',"Ohm's Law কি?",'পদার্থবিজ্ঞানে কোন chapter?','পদার্থবিজ্ঞান tips'],
+    chem:    ['Acid-Base কি?','রাসায়নিক bond বোঝাও','রসায়নে কোন chapter?','রসায়নের tips'],
+    bio:     ['Cell structure বোঝাও','Photosynthesis কি?','জীববিজ্ঞানে কোন chapter?','জীববিজ্ঞান tips'],
+    english: ['Letter কীভাবে লিখতে হয়?','Reading comprehension tips','ইংরেজি পরীক্ষার topics?','ইংরেজির tips'],
+  }
+};
+
+const RESPONSES = {
+  gpa:      () => lang==='en' ? `Your current GPA is **${STU.gpa}** — Outstanding! You are ranked **${STU.rank}** in Class ${STU.class}. Keep it up! 🎉` : `তোমার বর্তমান GPA হলো **${STU.gpa}** — অসাধারণ! ক্লাস ${STU.class} তে তুমি **${STU.rank}** স্থানে আছো। চালিয়ে যাও! 🎉`,
+  exam:     () => lang==='en' ? `Your next exam is the **Half-Yearly Examination** starting **${STU.examDate}**. Make sure you have your Hall Ticket ready. The first paper is Bangladesh & World Studies.` : `তোমার পরবর্তী পরীক্ষা হলো **অর্ধ-বার্ষিক পরীক্ষা**, শুরু হবে **${STU.examDate}** থেকে। প্রথম পেপার হলো বাংলাদেশ ও বিশ্বপরিচয়। Hall Ticket প্রস্তুত রেখো।`,
+  attend:   () => lang==='en' ? `Your attendance is **${STU.attendance}** this month — very good! You have been present in 94 out of 100 classes. Keep maintaining above 90%.` : `এই মাসে তোমার উপস্থিতি **${STU.attendance}** — খুবই ভালো! ১০০টি ক্লাসের মধ্যে তুমি ৯৪টিতে উপস্থিত ছিলে।`,
+  fee:      () => lang==='en' ? `Fee Status: ${STU.feeStatus}. You can pay via bKash, Nagad, Card, or Cash at the school office. Don't miss the deadline to avoid late fees!` : `ফি status: ${STU.feeStatus}। bKash, Nagad, Card বা School-এ গিয়ে নগদে পরিশোধ করতে পারো। Late fee এড়াতে সময়মতো দিও!`,
+  tips:     () => lang==='en' ? `**Study Tips for Half-Yearly Exam:**\n• Create a daily study schedule\n• Focus on Mathematics and Sciences (high marks)\n• Practice previous year question papers\n• Take short breaks every 45 minutes\n• Sleep at least 7–8 hours before exam days\n• Review syllabus topics marked by teachers` : `**অর্ধ-বার্ষিক পরীক্ষার পড়াশোনার tips:**\n• প্রতিদিনের পড়ার routine বানাও\n• গণিত ও বিজ্ঞানে বেশি মনোযোগ দাও\n• আগের বছরের প্রশ্নপত্র practice করো\n• ৪৫ মিনিট পর পর বিরতি নাও\n• পরীক্ষার রাতে ৭–৮ ঘন্টা ঘুমাও`,
+  syllabus: (subj) => {
+    const s = SUBJECTS[subj] || null;
+    if (!s) return lang==='en' ? `For Half-Yearly 2026, focus on all subjects: Math (Ch 1–11), Physics (Ch 1–8), Chemistry (Ch 1–8), Biology (Ch 1–7), English (Prose + Grammar), ICT (Ch 1–4), Bangla.` : `অর্ধ-বার্ষিক ২০২৬ এর জন্য: গণিত (অ. ১–১১), পদার্থবিজ্ঞান (অ. ১–৮), রসায়ন (অ. ১–৮), জীববিজ্ঞান (অ. ১–৭), ইংরেজি, ICT, বাংলা।`;
+    return lang==='en' ? `**${s.name} Syllabus:**\n${s.ch}\n\nTips: Focus on understanding concepts rather than memorizing. Practice problems daily.` : `**${s.name} Syllabus:**\n${s.ch}\n\nTips: শুধু মুখস্থ না করে বুঝে পড়ো। প্রতিদিন practice করো।`;
+  },
+  trig:     () => lang==='en' ? `**Trigonometry Basics:**\n• **sin θ** = opposite/hypotenuse\n• **cos θ** = adjacent/hypotenuse\n• **tan θ** = opposite/adjacent\n\nKey identities: sin²θ + cos²θ = 1\n\nCommon angles: 30°, 45°, 60°, 90°` : `**Trigonometry মূল বিষয়:**\n• **sin θ** = লম্ব/অতিভুজ\n• **cos θ** = ভূমি/অতিভুজ\n• **tan θ** = লম্ব/ভূমি\n\nপরিচয়: sin²θ + cos²θ = 1`,
+  ohm:      () => lang==='en' ? `**Ohm's Law:**\n\nV = I × R\n\nWhere V = Voltage (Volts), I = Current (Amperes), R = Resistance (Ohms)\n\nExample: If R = 10Ω and I = 2A, then V = 2 × 10 = **20V**` : `**ওহমের সূত্র:**\n\nV = I × R\n\nযেখানে V = ভোল্টেজ, I = কারেন্ট, R = রেজিস্ট্যান্স\n\nউদাহরণ: R = 10Ω, I = 2A হলে V = 2 × 10 = **20V**`,
+  cell:     () => lang==='en' ? `**Cell Structure:**\n• **Cell Membrane** — controls what enters/exits\n• **Nucleus** — controls cell activities, contains DNA\n• **Mitochondria** — powerhouse, produces ATP energy\n• **Ribosomes** — protein synthesis\n• **Plant cells** also have: Cell Wall, Chloroplast, Vacuole` : `**কোষের গঠন:**\n• **কোষ ঝিল্লি** — কী ঢুকবে/বেরোবে নিয়ন্ত্রণ করে\n• **নিউক্লিয়াস** — DNA ধারণ করে, কোষ নিয়ন্ত্রণ করে\n• **মাইটোকন্ড্রিয়া** — ATP শক্তি উৎপাদন করে\n• উদ্ভিদ কোষে আরো আছে: কোষ প্রাচীর, ক্লোরোপ্লাস্ট`,
+  letter:   () => lang==='en' ? `**How to Write a Formal Letter:**\n1. **Sender's address** (top right)\n2. **Date**\n3. **Receiver's address** (left)\n4. **Salutation**: Dear Sir/Madam,\n5. **Subject line**\n6. **Body** (3 paragraphs)\n7. **Closing**: Yours faithfully/sincerely,\n8. **Signature**` : `**Formal Letter লেখার নিয়ম:**\n1. **প্রেরকের ঠিকানা** (ডানদিকে)\n2. **তারিখ**\n3. **প্রাপকের ঠিকানা** (বামদিকে)\n4. **সম্ভাষণ**: Dear Sir/Madam,\n5. **বিষয়লাইন**\n6. **মূল বক্তব্য** (৩ paragraph)\n7. **সমাপ্তি**: Yours faithfully,\n8. **স্বাক্ষর**`,
+};
+
+function matchResponse(q) {
+  const low = q.toLowerCase();
+  if (/gpa|result|grade|marks/.test(low)) return RESPONSES.gpa();
+  if (/exam|schedule|test|পরীক্ষা/.test(low)) return RESPONSES.exam();
+  if (/attend|উপস্থিতি|present/.test(low)) return RESPONSES.attend();
+  if (/fee|pay|due|ফি|payment/.test(low)) return RESPONSES.fee();
+  if (/tip|advice|study|পরামর্শ/.test(low)) return RESPONSES.tips();
+  if (/trig|sin|cos|tan/.test(low)) return RESPONSES.trig();
+  if (/ohm|current|voltage|circuit|বিদ্যুৎ/.test(low)) return RESPONSES.ohm();
+  if (/cell|nucleus|mitoch|কোষ/.test(low)) return RESPONSES.cell();
+  if (/letter|write|লেখা/.test(low)) return RESPONSES.letter();
+  if (/syllab|chapter|topic|পাঠ/.test(low)) return RESPONSES.syllabus(currentSubject);
+  return lang==='en'
+    ? `Thanks for your question! I can help you with:\n• **Results & GPA**\n• **Exam schedules & syllabus**\n• **Attendance records**\n• **Fee status**\n• **Subject explanations** (Math, Physics, Chemistry, Biology, English)\n• **Study tips**\n\nTry asking about any of these topics!`
+    : `তোমার প্রশ্নের জন্য ধন্যবাদ! আমি সাহায্য করতে পারি:\n• **ফলাফল ও GPA**\n• **পরীক্ষার সময়সূচি ও syllabus**\n• **উপস্থিতি**\n• **ফি status**\n• **বিষয়ভিত্তিক ব্যাখ্যা** (গণিত, পদার্থ, রসায়ন, জীববিজ্ঞান, ইংরেজি)\n• **পড়াশোনার tips**`;
+}
+
+function renderMarkdown(text) {
+  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+}
+
+function addBubble(role, html, chips=[]) {
+  const wrap = document.getElementById('messagesWrap');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const av = role === 'ai' ? '🤖' : 'FI';
+  let chipHtml = chips.length ? `<div class="chips-row">${chips.map(c=>`<button class="chip-btn" onclick="askQuick(this.textContent)">${c}</button>`).join('')}</div>` : '';
+  div.innerHTML = `<div class="msg-av">${av}</div><div><div class="bubble">${html}</div>${chipHtml}</div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  const wrap = document.getElementById('messagesWrap');
+  const d = document.createElement('div'); d.className = 'msg ai'; d.id = 'typingMsg';
+  d.innerHTML = `<div class="msg-av">🤖</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  wrap.appendChild(d); wrap.scrollTop = wrap.scrollHeight;
+}
+function removeTyping() { const t = document.getElementById('typingMsg'); if(t) t.remove(); }
+
+function sendMsg() {
+  const inp = document.getElementById('aiInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  addBubble('user', q);
+  inp.value = '';
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    const resp = matchResponse(q);
+    addBubble('ai', renderMarkdown(resp));
+  }, 1200);
+}
+
+function askQuick(q) {
+  document.getElementById('aiInput').value = q;
+  sendMsg();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('langEn').classList.toggle('on', l==='en');
+  document.getElementById('langBn').classList.toggle('on', l==='bn');
+  renderQuickPrompts();
+}
+
+function setSub(sub, el) {
+  currentSubject = sub;
+  document.querySelectorAll('.sc-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  const s = SUBJECTS[sub];
+  document.getElementById('chatSubLabel').textContent = (s ? s.name : 'All Subjects') + ' · Farhan Islam';
+  renderQuickPrompts();
+}
+
+function renderQuickPrompts() {
+  const prompts = QUICK[lang][currentSubject] || QUICK[lang]['all'];
+  document.getElementById('quickPrompts').innerHTML = prompts.map(p =>
+    `<button class="qp-btn" onclick="askQuick(this.textContent)">${p}</button>`
+  ).join('');
+}
+
+// Init
+renderQuickPrompts();
+setTimeout(() => {
+  const greet = lang==='en'
+    ? `Hi **Farhan**! 👋 I'm your AI Study Assistant. I can help you with your subjects, exam schedule, results, attendance, and fees.\n\nYou have an exam starting **July 15, 2026** — ${Math.max(0,Math.floor((new Date('2026-07-15')-new Date())/86400000))} days away. How can I help you today?`
+    : `হ্যালো **Farhan**! 👋 আমি তোমার AI Study Assistant। পরীক্ষা, পড়াশোনা, ফলাফল, উপস্থিতি — সবকিছুতে সাহায্য করতে পারব।\n\nতোমার পরীক্ষা শুরু হচ্ছে **১৫ জুলাই, ২০২৬** থেকে। আজকে কী জানতে চাও?`;
+  addBubble('ai', renderMarkdown(greet), lang==='en'
+    ? ['My GPA?','Exam schedule?','Study tips']
+    : ['আমার GPA?','পরীক্ষার সময়সূচি?','পড়ার tips']);
+}, 400);
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

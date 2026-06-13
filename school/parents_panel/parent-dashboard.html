@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent Dashboard — Prathomik EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;
+  --par-grad:linear-gradient(135deg,#78350F 0%,#B45309 50%,#D97706 100%);
+}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Hero */
+.par-hero{background:var(--par-grad);border-radius:18px;padding:26px 28px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px;}
+.par-hero::before{content:'';position:absolute;right:-30px;top:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.06);}
+.par-hero::after{content:'';position:absolute;left:45%;bottom:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04);}
+.ph-eyebrow{font-size:.7rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.ph-title{font-size:1.4rem;font-weight:800;margin-bottom:3px;}
+.ph-sub{font-size:.8rem;opacity:.72;margin-bottom:18px;}
+.ph-children{display:flex;gap:10px;flex-wrap:wrap;}
+.child-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 14px;cursor:pointer;transition:all .15s;}
+.child-chip:hover,.child-chip.on{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5);}
+.cc-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff;flex-shrink:0;}
+.cc-name{font-size:.82rem;font-weight:700;}
+.cc-class{font-size:.68rem;opacity:.75;}
+
+/* Status cards row */
+.status-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.st-card{border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--white);position:relative;overflow:hidden;}
+.st-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.st-card.green::before{background:var(--green);}
+.st-card.amber::before{background:var(--amber);}
+.st-card.red::before{background:var(--red);}
+.st-card.blue::before{background:var(--blue);}
+.st-num{font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;margin-bottom:2px;}
+.st-lbl{font-size:.72rem;color:var(--muted);font-weight:600;}
+.st-delta{font-size:.7rem;font-weight:700;margin-top:4px;}
+
+/* Today timeline */
+.today-item{display:flex;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);align-items:flex-start;}
+.today-item:last-child{border-bottom:none;}
+.ti-time{font-size:.75rem;font-family:'DM Mono',monospace;font-weight:700;color:var(--muted);min-width:54px;flex-shrink:0;padding-top:2px;}
+.ti-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.ti-text{flex:1;}
+.ti-title{font-size:.85rem;font-weight:700;color:var(--ink-2);}
+.ti-meta{font-size:.72rem;color:var(--muted);margin-top:1px;}
+.ti-badge{font-size:.64rem;font-weight:800;padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;}
+
+/* Attendance weekly heatmap */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.wg-header{font-size:.64rem;font-weight:700;color:var(--muted);text-align:center;padding-bottom:4px;}
+.wg-cell{aspect-ratio:1;border-radius:5px;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;color:#fff;}
+.wg-cell:hover{opacity:.75;}
+.wg-present{background:var(--green);}
+.wg-absent{background:var(--red);}
+.wg-late{background:var(--amber);}
+.wg-holiday{background:var(--bg);border:1px solid var(--border);}
+.wg-future{background:var(--bg);border:1px dashed var(--border);}
+
+/* Notice row parent */
+.par-notice{display:flex;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);}
+.par-notice:last-child{border-bottom:none;}
+.pn-icon{font-size:1.1rem;flex-shrink:0;}
+.pn-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.pn-meta{font-size:.71rem;color:var(--muted);margin-top:2px;}
+.pn-new{font-size:.6rem;font-weight:900;padding:1px 6px;border-radius:4px;background:var(--par);color:#fff;vertical-align:middle;margin-left:4px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.status-row{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero -->
+    <div class="par-hero anim-1">
+      <div class="ph-eyebrow" id="greetLabel"></div>
+      <div class="ph-title">Mohammad Islam</div>
+      <div class="ph-sub">Welcome to your parent dashboard. Monday, Feb 24, 2025 · Dhaka High School</div>
+      <div style="font-size:.76rem;opacity:.75;margin-bottom:10px;font-weight:600;">YOUR CHILDREN</div>
+      <div class="ph-children">
+        <div class="child-chip on" id="chip-farhan" onclick="switchChild('farhan',this)">
+          <div class="cc-av" style="background:#7C3AED;">FI</div>
+          <div><div class="cc-name">Farhan Islam</div><div class="cc-class">Class IX–A · Roll 001</div></div>
+        </div>
+        <div class="child-chip" id="chip-tasnim" onclick="switchChild('tasnim',this)">
+          <div class="cc-av" style="background:#0891B2;">TI</div>
+          <div><div class="cc-name">Tasnim Islam</div><div class="cc-class">Class VI–A · Roll 007</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status cards -->
+    <div class="status-row anim-1" id="statusRow"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Today's activity -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📅 Today's Activity</div><div class="card-sub" id="todaySubLabel">Farhan Islam · Feb 24, 2025</div></div>
+          <span class="badge" style="background:var(--par-light);color:var(--par-dark);border:1px solid #FDE68A;font-size:.7rem;" id="todayBadge">4 periods</span>
+        </div>
+        <div id="todayTimeline"></div>
+      </div>
+
+      <!-- Attendance this month -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📋 Attendance — Feb 2025</div><div class="card-sub" id="attSubLabel">Farhan Islam · Class IX–A</div></div>
+          <span id="attPctBadge" class="badge badge-green" style="font-size:.7rem;">94%</span>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="display:flex;gap:14px;margin-bottom:14px;" id="attSummaryRow"></div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">February Calendar</div>
+          <div style="display:flex;gap:4px;margin-bottom:6px;">
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >S</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >M</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >T</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >W</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >T</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >F</span>
+            <span style="font-size:.62rem;font-weight:700;color:var(--muted);min-width:24px;text-align:center;" >S</span>
+          </div>
+          <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+          <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--green);"></div><span style="font-size:.7rem;color:var(--muted);">Present</span></div>
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--red);"></div><span style="font-size:.7rem;color:var(--muted);">Absent</span></div>
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--amber);"></div><span style="font-size:.7rem;color:var(--muted);">Late</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;">
+
+      <!-- Notices -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📢 School Notices</div><div class="card-sub">Important updates from Dhaka High School</div></div>
+          <span class="sb-badge" style="background:var(--red);color:#fff;font-size:.7rem;">4 new</span>
+        </div>
+        <div id="noticeList"></div>
+        <div class="card-footer"><a href="parent-notifications.html" style="font-size:.8rem;color:var(--par);font-weight:700;text-decoration:none;">All notifications →</a></div>
+      </div>
+
+      <!-- Quick actions + fee status -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="card anim-2" style="border-color:#FECACA;background:#FFF5F5;padding:16px 18px;">
+          <div style="font-size:.82rem;font-weight:800;color:var(--red);margin-bottom:4px;">💳 Fee Due — Farhan</div>
+          <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--red);margin-bottom:4px;">৳ 940</div>
+          <div style="font-size:.74rem;color:#991B1B;margin-bottom:12px;">Feb tuition ৳800 + late fine ৳140 (14 days overdue)</div>
+          <a href="parent-fee.html" class="btn btn-sm" style="width:100%;justify-content:center;background:var(--red);color:#fff;border:none;font-size:.8rem;">Pay Now →</a>
+        </div>
+
+        <div class="card anim-2" style="padding:16px 18px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">⚡ Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <a href="parent-progress.html" class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;font-size:.8rem;">📈 View Progress Report</a>
+            <button class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;font-size:.8rem;" onclick="showToast('Opening message to teacher…','💬')">💬 Message Teacher</button>
+            <a href="parent-exam-schedule.html" class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;font-size:.8rem;">📅 Exam Schedule</a>
+            <a href="parent-fee-receipt.html" class="btn btn-outline btn-sm" style="justify-content:flex-start;gap:8px;font-size:.8rem;">🧾 Download Receipts</a>
+          </div>
+        </div>
+
+        <div class="card anim-2" style="padding:14px 16px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">🏫 Upcoming Events</div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;gap:10px;"><div style="width:36px;text-align:center;flex-shrink:0;"><div style="font-size:.65rem;font-weight:700;color:var(--par);text-transform:uppercase;">Mar</div><div style="font-size:1rem;font-weight:900;color:var(--ink);line-height:1.1;">1</div></div><div><div style="font-size:.81rem;font-weight:700;color:var(--ink-2);">Half-Yearly Physics Exam</div><div style="font-size:.7rem;color:var(--muted);">10:00 AM · Hall C</div></div></div>
+            <div style="display:flex;gap:10px;"><div style="width:36px;text-align:center;flex-shrink:0;"><div style="font-size:.65rem;font-weight:700;color:var(--par);text-transform:uppercase;">Mar</div><div style="font-size:1rem;font-weight:900;color:var(--ink);line-height:1.1;">15</div></div><div><div style="font-size:.81rem;font-weight:700;color:var(--ink-2);">Parent-Teacher Meeting</div><div style="font-size:.7rem;color:var(--muted);">9:00 AM – 1:00 PM</div></div></div>
+            <div style="display:flex;gap:10px;"><div style="width:36px;text-align:center;flex-shrink:0;"><div style="font-size:.65rem;font-weight:700;color:var(--par);text-transform:uppercase;">Mar</div><div style="font-size:1rem;font-weight:900;color:var(--ink);line-height:1.1;">20</div></div><div><div style="font-size:.81rem;font-weight:700;color:var(--ink-2);">Annual Sports Day</div><div style="font-size:.7rem;color:var(--muted);">All day event</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const children={
+  farhan:{
+    name:'Farhan Islam',cls:'IX–A',roll:'001',color:'#7C3AED',
+    stats:[
+      {num:'94%',lbl:'Attendance',delta:'▲ vs class avg 88%',deltaCol:'var(--green)',accent:'green'},
+      {num:'5.00',lbl:'Latest GPA',delta:'A+ · Annual 2024',deltaCol:'var(--green)',accent:'green'},
+      {num:'1st',lbl:'Class Rank',delta:'of 42 students',deltaCol:'var(--muted)',accent:'blue'},
+      {num:'৳940',lbl:'Fee Due',delta:'14 days overdue',deltaCol:'var(--red)',accent:'red'},
+    ],
+    today:[
+      {time:'8:00',dot:'var(--green)',title:'Arrived at school',meta:'Marked Present · Main Gate',badge:'Present',badgeBg:'#ECFDF5',badgeCol:'#065F46'},
+      {time:'8:00',dot:'var(--blue)',title:'Mathematics Exam',meta:'Period 1 · Hall A · Dr. Karim Hossain',badge:'Exam Day',badgeBg:'var(--stu-pale)',badgeCol:'var(--stu)'},
+      {time:'10:30',dot:'var(--par)',title:'Physics Class',meta:'Period 3 · Room 204 · Ms. Nasrin',badge:'Upcoming',badgeBg:'#FFFBEB',badgeCol:'#92400E'},
+      {time:'12:00',dot:'var(--muted)',title:'Chemistry Class',meta:'Period 5 · Room 108 · Mr. Shahed',badge:'Upcoming',badgeBg:'var(--bg)',badgeCol:'var(--muted)'},
+    ],
+    att:{present:16,absent:1,late:0,pct:94,
+      days:Array.from({length:28},(_,i)=>{
+        const d=i+1;
+        if(d===7)return{d,s:'A'};
+        if([1,2,8,9,15,16,22,23].includes(d))return{d,s:'H'};
+        if(d>24)return{d,s:'F'};
+        return{d,s:'P'};
+      })
+    },
+  },
+  tasnim:{
+    name:'Tasnim Islam',cls:'VI–A',roll:'007',color:'#0891B2',
+    stats:[
+      {num:'98%',lbl:'Attendance',delta:'▲ Excellent',deltaCol:'var(--green)',accent:'green'},
+      {num:'4.50',lbl:'Latest GPA',delta:'A · Annual 2024',deltaCol:'var(--green)',accent:'green'},
+      {num:'5th',lbl:'Class Rank',delta:'of 45 students',deltaCol:'var(--muted)',accent:'blue'},
+      {num:'৳0',lbl:'Fee Status',delta:'All paid ✓',deltaCol:'var(--green)',accent:'green'},
+    ],
+    today:[
+      {time:'8:00',dot:'var(--green)',title:'Arrived at school',meta:'Marked Present · Main Gate',badge:'Present',badgeBg:'#ECFDF5',badgeCol:'#065F46'},
+      {time:'8:00',dot:'var(--blue)',title:'Bangla Class',meta:'Period 1 · Room 102 · Ms. Fatema',badge:'Done',badgeBg:'#EFF6FF',badgeCol:'#1D4ED8'},
+      {time:'9:00',dot:'var(--par)',title:'Mathematics Class',meta:'Period 2 · Room 102',badge:'Done',badgeBg:'#FFFBEB',badgeCol:'#92400E'},
+      {time:'10:30',dot:'var(--muted)',title:'English Class',meta:'Period 3 · Room 102',badge:'Upcoming',badgeBg:'var(--bg)',badgeCol:'var(--muted)'},
+    ],
+    att:{present:22,absent:0,late:1,pct:98,
+      days:Array.from({length:28},(_,i)=>{
+        const d=i+1;
+        if(d===12)return{d,s:'L'};
+        if([1,2,8,9,15,16,22,23].includes(d))return{d,s:'H'};
+        if(d>24)return{d,s:'F'};
+        return{d,s:'P'};
+      })
+    },
+  },
+};
+let active='farhan';
+
+function switchChild(id,el){
+  active=id;
+  document.querySelectorAll('.child-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function render(){
+  const c=children[active];
+  // Status cards
+  document.getElementById('statusRow').innerHTML=c.stats.map(s=>`
+    <div class="st-card ${s.accent}">
+      <div class="st-num" style="color:${s.accent==='red'?'var(--red)':s.accent==='green'?'var(--green)':s.accent==='amber'?'var(--amber)':'var(--ink)'}">${s.num}</div>
+      <div class="st-lbl">${s.lbl}</div>
+      <div class="st-delta" style="color:${s.deltaCol};">${s.delta}</div>
+    </div>`).join('');
+
+  // Today
+  document.getElementById('todaySubLabel').textContent=`${c.name} · Feb 24, 2025`;
+  document.getElementById('todayTimeline').innerHTML=c.today.map(t=>`
+    <div class="today-item">
+      <div class="ti-time">${t.time}</div>
+      <div class="ti-dot" style="background:${t.dot};"></div>
+      <div class="ti-text">
+        <div class="ti-title">${t.title}</div>
+        <div class="ti-meta">${t.meta}</div>
+        <span class="ti-badge" style="background:${t.badgeBg};color:${t.badgeCol};">${t.badge}</span>
+      </div>
+    </div>`).join('');
+
+  // Attendance
+  const att=c.att;
+  document.getElementById('attSubLabel').textContent=`${c.name} · Class ${c.cls}`;
+  document.getElementById('attPctBadge').textContent=att.pct+'%';
+  document.getElementById('attPctBadge').className='badge '+(att.pct>=90?'badge-green':att.pct>=80?'badge-amber':'');
+  document.getElementById('attSummaryRow').innerHTML=`
+    <div style="flex:1;text-align:center;"><div style="font-size:1.2rem;font-weight:900;color:var(--green);">${att.present}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Present</div></div>
+    <div style="flex:1;text-align:center;"><div style="font-size:1.2rem;font-weight:900;color:var(--red);">${att.absent}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Absent</div></div>
+    <div style="flex:1;text-align:center;"><div style="font-size:1.2rem;font-weight:900;color:var(--amber);">${att.late}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Late</div></div>`;
+
+  // Calendar grid — Feb 2025 starts on Saturday (idx=6)
+  const startDay=6;// Saturday
+  const cells=[];
+  for(let i=0;i<startDay;i++)cells.push('<div></div>');
+  att.days.forEach(day=>{
+    const {d,s}=day;
+    const bg=s==='P'?'var(--green)':s==='A'?'var(--red)':s==='L'?'var(--amber)':s==='H'?'var(--bg)':'var(--bg)';
+    const textCol=s==='P'||s==='A'||s==='L'?'#fff':'var(--border)';
+    const title=s==='P'?'Present':s==='A'?'Absent':s==='L'?'Late':s==='H'?'Holiday':'Future';
+    cells.push(`<div style="aspect-ratio:1;border-radius:5px;background:${bg};border:${s==='H'?'1px solid var(--border)':s==='F'?'1px dashed var(--border)':'none'};display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:${textCol};cursor:pointer;" title="Feb ${d}: ${title}" onclick="showToast('Feb ${d}: ${title}','${s==='P'?'✅':s==='A'?'🔴':'📅'}')">${d}</div>`);
+  });
+  document.getElementById('calGrid').innerHTML=cells.join('');
+}
+
+const notices=[
+  {icon:'⚠️',title:'Farhan was absent on Feb 7',meta:'Illness · Auto-alert sent · Feb 7',new:true,urgent:true},
+  {icon:'💳',title:'February fee overdue — ৳ 940 pending',meta:'Due Feb 10 · Late fine accruing · Feb 24',new:true,urgent:true},
+  {icon:'📊',title:'Half-Yearly results to be published Mar 15',meta:'Academic update · Feb 23',new:true,urgent:false},
+  {icon:'📅',title:'Parent-Teacher Meeting: March 15, 9 AM',meta:'Please confirm attendance · Feb 20',new:true,urgent:false},
+  {icon:'📚',title:'Annual Sports Day: March 20 · Child participation',meta:'Registration open · Feb 18',new:false,urgent:false},
+];
+document.getElementById('noticeList').innerHTML=notices.map(n=>`
+  <div class="par-notice">
+    <div class="pn-icon">${n.icon}</div>
+    <div><div class="pn-title">${n.title}${n.new?'<span class="pn-new">NEW</span>':''}</div><div class="pn-meta">${n.meta}</div></div>
+  </div>`).join('');
+
+function tick(){
+  const now=new Date();
+  const h=now.getHours(),m=now.getMinutes();
+  const greet=h<12?'Good Morning 🌤':h<17?'Good Afternoon ☀️':'Good Evening 🌙';
+  const clkEl=document.getElementById('liveClk');
+  const grEl=document.getElementById('greetLabel');
+  if(clkEl)clkEl.textContent=`${String(h%12||12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`;
+  if(grEl)grEl.textContent=greet+' ·';
+}
+tick();setInterval(tick,30000);
+
+function showToast(msg,icon='✅'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+render();
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

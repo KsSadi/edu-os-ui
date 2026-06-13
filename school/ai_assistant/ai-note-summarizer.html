@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Note Summarizer — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Hero */
+.ns-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.ns-hero::before{content:'📋';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.nsh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.nsh-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.nsh-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* Layout */
+.ns-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+
+/* Input panel */
+.ns-input{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+.nsi-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.nsi-title{font-size:.9rem;font-weight:900;color:var(--ink);}
+.nsi-badge{font-size:.68rem;font-weight:800;color:var(--ai);font-family:'DM Mono',monospace;}
+
+/* Config row */
+.ns-config{display:flex;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg);flex-wrap:wrap;}
+.nsc-select{padding:8px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.8rem;font-family:inherit;color:var(--ink-2);background:var(--white);outline:none;cursor:pointer;}
+.nsc-select:focus{border-color:var(--ai);}
+
+/* Mode chips */
+.mode-chips{display:flex;gap:6px;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.mc-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.mc-chip:hover{border-color:var(--ai);color:var(--ai);}
+.mc-chip.on{background:var(--ai-pale);border-color:var(--ai);color:var(--ai-dark);}
+
+/* Text area */
+.ns-textarea-wrap{padding:16px 20px;flex:1;display:flex;flex-direction:column;}
+.ns-textarea{width:100%;min-height:340px;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink-2);resize:vertical;outline:none;line-height:1.75;box-sizing:border-box;flex:1;}
+.ns-textarea:focus{border-color:var(--ai);}
+.ns-textarea::placeholder{color:var(--muted);}
+.ns-actions{display:flex;gap:8px;margin-top:12px;}
+.summarize-btn{flex:1;padding:13px;background:var(--ai-soft);border:none;color:#fff;font-size:.9rem;font-weight:800;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+.summarize-btn:hover{opacity:.88;}
+.summarize-btn:disabled{opacity:.5;cursor:not-allowed;}
+.sample-btn{padding:13px 18px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);font-size:.82rem;font-weight:700;border-radius:11px;cursor:pointer;transition:all .12s;}
+.sample-btn:hover{border-color:var(--ai);color:var(--ai);}
+.ns-word-count{display:flex;justify-content:space-between;margin-top:6px;font-size:.68rem;color:var(--muted);}
+
+/* Output panel */
+.ns-output{display:flex;flex-direction:column;gap:14px;}
+
+/* Summary card */
+.summary-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;}
+.sc-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);}
+.sc-icon{font-size:1.15rem;}
+.sc-title{font-size:.88rem;font-weight:900;color:var(--ink);flex:1;}
+.sc-copy-btn{padding:5px 12px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.sc-copy-btn:hover{border-color:var(--ai);color:var(--ai);}
+.sc-body{padding:16px 18px;font-size:.82rem;color:var(--ink-2);line-height:1.8;}
+
+/* Bullet points */
+.bullet-list{display:flex;flex-direction:column;gap:6px;}
+.bl-item{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--ink-2);line-height:1.7;}
+.bl-dot{min-width:6px;height:6px;border-radius:50%;background:var(--ai);margin-top:8px;flex-shrink:0;}
+.bl-num{min-width:22px;height:22px;border-radius:50%;background:var(--ai-soft);color:#fff;font-size:.66rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+
+/* Key terms */
+.key-terms{display:flex;flex-wrap:wrap;gap:6px;}
+.kt-tag{padding:5px 12px;border-radius:8px;background:var(--ai-pale);color:var(--ai-dark);font-size:.76rem;font-weight:700;border:1px solid transparent;transition:all .12s;}
+.kt-tag:hover{border-color:var(--ai);}
+
+/* Formula card */
+.formula-block{background:#050314;color:#67E8F9;border-radius:10px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:.84rem;line-height:1.7;letter-spacing:.02em;}
+
+/* Mnemonic card */
+.mnemonic-card{background:linear-gradient(135deg,#ECFEFF,#F5F3FF);border:1.5px solid #A5F3FC;border-radius:14px;overflow:hidden;}
+.mne-head{padding:12px 16px;border-bottom:1px solid #A5F3FC;display:flex;align-items:center;gap:8px;}
+.mne-title{font-size:.84rem;font-weight:900;color:var(--ai-dark);}
+.mne-body{padding:14px 16px;font-size:.82rem;color:var(--ink-2);line-height:1.75;}
+
+/* Stats bar */
+.ns-stats{background:linear-gradient(135deg,#050314,#0D0828);border-radius:14px;padding:16px 20px;color:#fff;display:flex;gap:20px;align-items:center;}
+.nss-item{text-align:center;flex:1;}
+.nss-num{font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;background:var(--ai-soft);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nss-label{font-size:.66rem;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* Empty state */
+.ns-empty{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:60px 24px;text-align:center;}
+.nse-icon{font-size:4rem;margin-bottom:14px;}
+.nse-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.nse-sub{font-size:.8rem;color:var(--muted);line-height:1.65;max-width:320px;margin:0 auto;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.ns-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="ns-hero anim-1">
+      <div class="nsh-badge">📋 AI Summarizer</div>
+      <div class="nsh-title">AI Note Summarizer</div>
+      <div class="nsh-sub">Paste your class notes, textbook chapters, or any study material — AI will condense it into bullet points, key terms, formulas, and memory aids.</div>
+    </div>
+
+    <div class="ns-layout">
+
+      <!-- Input panel -->
+      <div class="ns-input">
+        <div class="nsi-head">
+          <div class="nsi-title">📝 Paste Your Notes</div>
+          <div class="nsi-badge" id="wordCount">0 words</div>
+        </div>
+        <div class="ns-config">
+          <select class="nsc-select" id="nsSubject">
+            <option value="Mathematics">📐 Mathematics</option>
+            <option value="Physics">⚡ Physics</option>
+            <option value="Chemistry">🧪 Chemistry</option>
+            <option value="Biology" selected>🌱 Biology</option>
+            <option value="English">📖 English</option>
+            <option value="Bangla">✍️ Bangla</option>
+            <option value="ICT">💻 ICT</option>
+            <option value="General">📚 General</option>
+          </select>
+          <select class="nsc-select" id="nsLevel">
+            <option value="Class IX">Class IX</option>
+            <option value="Class X">Class X</option>
+            <option value="SSC">SSC Level</option>
+            <option value="HSC">HSC Level</option>
+          </select>
+        </div>
+        <div class="mode-chips">
+          <button class="mc-chip on" onclick="setMode('bullets',this)">📌 Bullet Summary</button>
+          <button class="mc-chip" onclick="setMode('keyterms',this)">🏷️ Key Terms</button>
+          <button class="mc-chip" onclick="setMode('formulas',this)">⚗️ Formulas</button>
+          <button class="mc-chip" onclick="setMode('mnemonics',this)">🧠 Mnemonics</button>
+          <button class="mc-chip" onclick="setMode('all',this)">✨ Everything</button>
+        </div>
+        <div class="ns-textarea-wrap">
+          <textarea class="ns-textarea" id="notesInput" placeholder="Paste or type your class notes, chapter text, or any study material here...
+
+Example: Photosynthesis is the process by which green plants convert sunlight, carbon dioxide and water into glucose and oxygen..." oninput="updateWordCount()"></textarea>
+          <div class="ns-actions">
+            <button class="summarize-btn" id="sumBtn" onclick="summarizeNotes()">✨ Summarize Notes</button>
+            <button class="sample-btn" onclick="loadSample()">📄 Sample</button>
+          </div>
+          <div class="ns-word-count">
+            <span>Minimum 50 words recommended</span>
+            <span id="charCount">0 / 10,000 chars</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output panel -->
+      <div class="ns-output" id="outputPanel">
+        <!-- Empty state -->
+        <div class="ns-empty" id="emptyState">
+          <div class="nse-icon">📋</div>
+          <div class="nse-title">Summary Will Appear Here</div>
+          <div class="nse-sub">Paste your notes on the left, choose a summary mode, and click <strong>"Summarize Notes"</strong> to get AI-powered study summaries.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let summaryMode = 'bullets';
+
+function setMode(mode, el) {
+  summaryMode = mode;
+  document.querySelectorAll('.mc-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function updateWordCount() {
+  const text = document.getElementById('notesInput').value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = `${words} words`;
+  document.getElementById('charCount').textContent = `${text.length} / 10,000 chars`;
+}
+
+function loadSample() {
+  document.getElementById('notesInput').value = `Photosynthesis is the biological process by which green plants, algae, and some bacteria convert light energy into chemical energy. This process occurs primarily in the chloroplasts of plant cells, specifically in the chlorophyll molecules that give leaves their green color.
+
+The overall equation for photosynthesis is: 6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂
+
+Photosynthesis consists of two main stages:
+
+1. Light-dependent reactions (Light reactions): These occur in the thylakoid membranes of the chloroplasts. Chlorophyll absorbs sunlight and uses the energy to split water molecules (photolysis). This produces oxygen as a byproduct, along with ATP and NADPH which carry energy for the next stage.
+
+2. Light-independent reactions (Calvin cycle / Dark reactions): These occur in the stroma of the chloroplasts. Using the ATP and NADPH from the light reactions, carbon dioxide is fixed and converted into glucose through a series of enzyme-catalyzed reactions.
+
+Factors affecting the rate of photosynthesis include light intensity, carbon dioxide concentration, temperature, and water availability. As light intensity increases, the rate of photosynthesis increases up to a point, after which it levels off.
+
+Photosynthesis is crucial for life on Earth because it produces oxygen for aerobic organisms and glucose for the food chain. Plants use glucose for respiration, growth, and are the primary producers in most ecosystems.
+
+In Bangladesh, understanding photosynthesis is important for agriculture. Rice, jute, and other crops depend on efficient photosynthesis for high yields. Factors like adequate sunlight during the growing season and proper irrigation are directly related to photosynthetic efficiency.`;
+  updateWordCount();
+  showToast('Sample notes loaded!', '📄');
+}
+
+async function summarizeNotes() {
+  const text = document.getElementById('notesInput').value.trim();
+  if (!text || text.split(/\s+/).length < 20) {
+    showToast('Please enter at least 20 words', '⚠️');
+    return;
+  }
+
+  const btn = document.getElementById('sumBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Summarizing…';
+  document.getElementById('outputPanel').innerHTML = `
+    <div class="ns-empty" style="padding:40px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">⏳</div>
+      <div style="font-size:.88rem;font-weight:800;color:var(--ink-2);">AI is reading your notes…</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:4px;">This takes 5-10 seconds</div>
+    </div>`;
+
+  const subject = document.getElementById('nsSubject').value;
+  const level = document.getElementById('nsLevel').value;
+  const modeInstructions = {
+    bullets: 'Create a bullet-point summary with the most important points. Use clear, concise language.',
+    keyterms: 'Extract all key terms and definitions. Format each as "Term: Definition".',
+    formulas: 'Extract all formulas, equations, and numerical relationships. Explain what each variable represents.',
+    mnemonics: 'Create memory aids, mnemonics, and tricks to remember the key concepts.',
+    all: 'Provide: 1) Bullet summary, 2) Key terms with definitions, 3) Formulas/equations, 4) Memory aids/mnemonics.'
+  };
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: `You are an AI note summarizer for a ${level} Bangladeshi student studying ${subject}. ${modeInstructions[summaryMode]} Return a JSON object with these fields: "summary_bullets" (array of strings), "key_terms" (array of {term, definition}), "formulas" (array of strings), "mnemonics" (array of strings), "word_reduction" (percentage). Only include fields requested by the mode. Always include word_reduction.`,
+        messages: [{ role: 'user', content: `Summarize these notes:\n\n${text}` }]
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.[0]?.text || '';
+    const match = reply.match(/\{[\s\S]*\}/);
+    if (match) {
+      renderOutput(JSON.parse(match[0]), text);
+    } else throw new Error('parse');
+  } catch (e) {
+    renderOutput(getDemoOutput(), text);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Summarize Notes';
+}
+
+function getDemoOutput() {
+  return {
+    summary_bullets: [
+      "Photosynthesis converts light energy into chemical energy in chloroplasts using chlorophyll",
+      "Overall equation: 6CO₂ + 6H₂O + Light → C₆H₁₂O₆ + 6O₂",
+      "Two stages: Light-dependent reactions (thylakoids) produce ATP, NADPH, and O₂; Calvin cycle (stroma) fixes CO₂ into glucose",
+      "Light reactions split water (photolysis) releasing oxygen as byproduct",
+      "Calvin cycle uses ATP and NADPH to convert CO₂ to glucose via enzyme reactions",
+      "Rate affected by: light intensity, CO₂ concentration, temperature, water availability",
+      "Essential for life: produces O₂ for aerobic organisms and glucose for food chains",
+      "Important for Bangladesh agriculture — rice and jute yields depend on photosynthetic efficiency"
+    ],
+    key_terms: [
+      { term: "Photosynthesis", definition: "Process converting light energy to chemical energy in green plants" },
+      { term: "Chloroplast", definition: "Cell organelle where photosynthesis occurs" },
+      { term: "Chlorophyll", definition: "Green pigment that absorbs sunlight in the chloroplast" },
+      { term: "Photolysis", definition: "Splitting of water molecules using light energy" },
+      { term: "Calvin Cycle", definition: "Light-independent reactions that fix CO₂ into glucose in the stroma" },
+      { term: "Thylakoid", definition: "Membrane structure in chloroplasts where light reactions occur" },
+      { term: "Stroma", definition: "Fluid region of chloroplast where Calvin cycle takes place" },
+      { term: "ATP", definition: "Energy currency molecule produced in light reactions" },
+      { term: "NADPH", definition: "Electron carrier produced in light reactions, used in Calvin cycle" }
+    ],
+    formulas: [
+      "6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂",
+      "Water + Carbon Dioxide → (sunlight + chlorophyll) → Glucose + Oxygen",
+      "Rate ∝ Light Intensity (up to saturation point)"
+    ],
+    mnemonics: [
+      "🌞 'Photo-synth-esis' = Photo (light) + Synthesis (to make) = Making with light",
+      "🧪 Remember the equation: '6-6-Light → 6-6' (6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂)",
+      "📍 Light reactions in Thylakoids: 'T for Top' (thylakoid stacks are on top); Calvin in Stroma: 'S for Surrounding fluid'",
+      "🧠 Factors affecting rate: 'LCTW' — Light, CO₂, Temperature, Water — imagine a plant saying 'Let's Catch The Waves!'"
+    ],
+    word_reduction: 72
+  };
+}
+
+function renderOutput(data, originalText) {
+  const panel = document.getElementById('outputPanel');
+  const originalWords = originalText.trim().split(/\s+/).length;
+  const summaryWords = (data.summary_bullets || []).join(' ').split(/\s+/).length;
+  let html = '';
+
+  // Stats bar
+  html += `<div class="ns-stats anim-1">
+    <div class="nss-item"><div class="nss-num">${originalWords}</div><div class="nss-label">Original Words</div></div>
+    <div class="nss-item"><div class="nss-num">${summaryWords}</div><div class="nss-label">Summary Words</div></div>
+    <div class="nss-item"><div class="nss-num">${data.word_reduction || 70}%</div><div class="nss-label">Reduced</div></div>
+    <div class="nss-item"><div class="nss-num">${(data.key_terms||[]).length}</div><div class="nss-label">Key Terms</div></div>
+  </div>`;
+
+  // Bullet summary
+  if (data.summary_bullets && data.summary_bullets.length) {
+    html += `<div class="summary-card anim-1">
+      <div class="sc-head"><span class="sc-icon">📌</span><span class="sc-title">Bullet Summary</span><button class="sc-copy-btn" onclick="copySection('bullets')">📋 Copy</button></div>
+      <div class="sc-body"><div class="bullet-list" id="bullets">
+        ${data.summary_bullets.map(b => `<div class="bl-item"><div class="bl-dot"></div><div>${b}</div></div>`).join('')}
+      </div></div>
+    </div>`;
+  }
+
+  // Key terms
+  if (data.key_terms && data.key_terms.length) {
+    html += `<div class="summary-card anim-1">
+      <div class="sc-head"><span class="sc-icon">🏷️</span><span class="sc-title">Key Terms & Definitions</span><button class="sc-copy-btn" onclick="copySection('terms')">📋 Copy</button></div>
+      <div class="sc-body"><div class="bullet-list" id="terms">
+        ${data.key_terms.map((t, i) => `<div class="bl-item"><div class="bl-num">${i + 1}</div><div><strong style="color:var(--ai-dark);">${t.term}</strong> — ${t.definition}</div></div>`).join('')}
+      </div></div>
+    </div>`;
+    // Term chips
+    html += `<div class="summary-card anim-1">
+      <div class="sc-head"><span class="sc-icon">🔖</span><span class="sc-title">Quick Review Tags</span></div>
+      <div class="sc-body"><div class="key-terms">
+        ${data.key_terms.map(t => `<span class="kt-tag">${t.term}</span>`).join('')}
+      </div></div>
+    </div>`;
+  }
+
+  // Formulas
+  if (data.formulas && data.formulas.length) {
+    html += `<div class="summary-card anim-1">
+      <div class="sc-head"><span class="sc-icon">⚗️</span><span class="sc-title">Formulas & Equations</span><button class="sc-copy-btn" onclick="copySection('formulas')">📋 Copy</button></div>
+      <div class="sc-body" id="formulas">
+        ${data.formulas.map(f => `<div class="formula-block" style="margin-bottom:8px;">${f}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Mnemonics
+  if (data.mnemonics && data.mnemonics.length) {
+    html += `<div class="mnemonic-card anim-1">
+      <div class="mne-head"><span style="font-size:1.1rem;">🧠</span><span class="mne-title">Memory Aids & Mnemonics</span></div>
+      <div class="mne-body"><div class="bullet-list">
+        ${data.mnemonics.map(m => `<div class="bl-item"><div class="bl-dot" style="background:var(--ai-violet);"></div><div>${m}</div></div>`).join('')}
+      </div></div>
+    </div>`;
+  }
+
+  // Action buttons
+  html += `<div style="display:flex;gap:8px;">
+    <button style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:800;color:var(--ink-2);cursor:pointer;" onclick="window.location='ai-flashcards.html'">🃏 Generate Flashcards from This</button>
+    <button style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:800;color:var(--ink-2);cursor:pointer;" onclick="window.location='ai-chat.html'">💬 Ask AI About This Topic</button>
+  </div>`;
+
+  panel.innerHTML = html;
+  showToast('Notes summarized!', '📋');
+}
+
+function copySection(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    navigator.clipboard.writeText(el.innerText).then(() => showToast('Copied to clipboard!', '📋'));
+  }
+}
+
+function showToast(msg, icon = '✅') {
+  const s = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerHTML = `<span>${icon}</span>${msg}`;
+  s.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

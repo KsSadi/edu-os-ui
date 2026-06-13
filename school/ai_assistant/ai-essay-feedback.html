@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Essay Feedback — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* ── Hero ── */
+.ef-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.ef-hero::before{content:'✍️';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.efh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.efh-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.efh-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* ── Layout ── */
+.ef-layout{display:grid;grid-template-columns:1fr 400px;gap:20px;align-items:start;}
+
+/* Input panel */
+.input-panel{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;}
+.ip-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ip-title{font-size:.9rem;font-weight:900;color:var(--ink);margin-bottom:2px;}
+.ip-sub{font-size:.72rem;color:var(--muted);}
+.ip-config{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ip-config select{padding:8px 10px;border:1.5px solid var(--border);border-radius:9px;font-size:.8rem;font-family:inherit;color:var(--ink-2);background:var(--white);outline:none;cursor:pointer;}
+.ip-config select:focus{border-color:var(--ai);}
+.essay-wrap{padding:16px 20px;}
+.essay-label{font-size:.74rem;font-weight:800;color:var(--ink-2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.essay-count{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);}
+.essay-ta{width:100%;min-height:280px;border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink-2);resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;}
+.essay-ta:focus{border-color:var(--ai);}
+.essay-ta::placeholder{color:var(--muted);}
+.analyze-btn{width:100%;padding:13px;background:var(--ai-soft);border:none;color:#fff;font-size:.9rem;font-weight:800;border-radius:11px;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+.analyze-btn:hover{opacity:.88;}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;}
+.sample-btn{width:100%;padding:9px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);font-size:.78rem;font-weight:700;border-radius:9px;cursor:pointer;margin-top:8px;transition:all .12s;}
+.sample-btn:hover{border-color:var(--ai);color:var(--ai);}
+
+/* Feedback panel */
+.feedback-panel{display:flex;flex-direction:column;gap:14px;}
+.fp-score-card{background:linear-gradient(135deg,#050314,#0D0828);border-radius:16px;padding:20px;color:#fff;text-align:center;}
+.fp-score-num{font-size:3.5rem;font-weight:900;font-family:'DM Mono',monospace;background:var(--ai-soft);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.fp-score-label{font-size:.72rem;font-weight:800;opacity:.6;text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+.fp-grade-pill{display:inline-block;padding:5px 16px;border-radius:20px;font-size:.8rem;font-weight:900;margin-top:10px;}
+.fp-bars{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+.fp-bar-row{display:flex;align-items:center;gap:10px;}
+.fp-bar-label{font-size:.68rem;font-weight:700;opacity:.7;min-width:90px;text-align:right;}
+.fp-bar-track{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;}
+.fp-bar-fill{height:100%;border-radius:3px;background:var(--ai-soft);}
+.fp-bar-val{font-size:.68rem;font-family:'DM Mono',monospace;opacity:.8;min-width:28px;text-align:right;}
+
+/* Section cards */
+.fb-section{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.fbs-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);}
+.fbs-icon{font-size:1.1rem;}
+.fbs-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.fbs-score{margin-left:auto;font-family:'DM Mono',monospace;font-size:.82rem;font-weight:800;color:var(--ai);}
+.fbs-body{padding:12px 16px;}
+.fbs-point{display:flex;gap:8px;font-size:.78rem;color:var(--ink-2);line-height:1.6;padding:4px 0;}
+.fbs-point-icon{font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.fbs-highlight{background:var(--ai-pale);border-left:3px solid var(--ai);border-radius:6px;padding:8px 12px;font-size:.76rem;color:var(--ai-dark);font-weight:600;line-height:1.6;margin-top:8px;}
+
+/* Empty/loading state */
+.empty-fp{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:48px 24px;text-align:center;}
+.efp-icon{font-size:3.5rem;margin-bottom:14px;}
+.efp-title{font-size:.96rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.efp-sub{font-size:.78rem;color:var(--muted);line-height:1.65;}
+.loading-fp{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:40px 24px;text-align:center;}
+
+/* Anim */
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.ef-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="ef-hero anim-1">
+      <div class="efh-badge">✍️ AI Essay Grader · Instant Feedback</div>
+      <div class="efh-title">AI Essay Feedback</div>
+      <div class="efh-sub">Paste your essay and get detailed AI-powered feedback on grammar, structure, vocabulary, and argument strength — in seconds.</div>
+    </div>
+
+    <!-- Layout -->
+    <div class="ef-layout anim-1">
+
+      <!-- Essay input -->
+      <div class="input-panel">
+        <div class="ip-head">
+          <div class="ip-title">📝 Your Essay</div>
+          <div class="ip-sub">Paste or type your essay below. Min 50 words recommended.</div>
+        </div>
+        <div class="ip-config">
+          <select id="essaySubject">
+            <option>English</option>
+            <option>Bangla</option>
+            <option>Social Studies</option>
+            <option>Science</option>
+            <option>General</option>
+          </select>
+          <select id="essayType">
+            <option>Argumentative</option>
+            <option>Narrative</option>
+            <option>Descriptive</option>
+            <option>Expository</option>
+            <option>Persuasive</option>
+          </select>
+          <select id="essayLevel">
+            <option>Class VI–VIII</option>
+            <option selected>Class IX–X (SSC)</option>
+            <option>Class XI–XII (HSC)</option>
+          </select>
+        </div>
+        <div class="essay-wrap">
+          <div class="essay-label">
+            <span>Essay Text</span>
+            <span class="essay-count" id="wordCount">0 words</span>
+          </div>
+          <textarea class="essay-ta" id="essayInput" placeholder="Paste or type your essay here…&#10;&#10;Example:&#10;Climate change is one of the most pressing issues facing humanity today. Rising temperatures, melting ice caps, and extreme weather events are all signs that our planet is under stress…" oninput="countWords(this)"></textarea>
+          <button class="analyze-btn" id="analyzeBtn" onclick="analyzeEssay()">🤖 Analyze Essay with AI</button>
+          <button class="sample-btn" onclick="loadSample()">📄 Load Sample Essay</button>
+        </div>
+      </div>
+
+      <!-- Feedback panel -->
+      <div class="feedback-panel" id="feedbackPanel">
+        <div class="empty-fp">
+          <div class="efp-icon">✍️</div>
+          <div class="efp-title">No essay analyzed yet</div>
+          <div class="efp-sub">Paste your essay on the left, configure the settings, and click <strong>"Analyze Essay with AI"</strong> to get instant feedback on grammar, structure, vocabulary, and arguments.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+const SAMPLE_ESSAY = `Climate change is one of the most serious challenges facing our world today. Over the past century, human activities such as burning fossil fuels and deforestation have released enormous amounts of carbon dioxide into the atmosphere. This has caused global temperatures to rise, leading to melting ice caps, rising sea levels, and more frequent extreme weather events.
+
+Some people argue that economic development must come before environmental protection. However, this view is short-sighted. The long-term costs of climate change — including damage to infrastructure, loss of agriculture, and displacement of populations — far outweigh the short-term benefits of unrestricted industrial growth.
+
+Bangladesh is particularly vulnerable to the effects of climate change. As a low-lying delta nation, rising sea levels threaten to submerge large areas of our country. The 2007 floods caused billions of taka in damage and displaced millions of people. We cannot afford to ignore this crisis.
+
+Therefore, governments, businesses, and individuals must all take immediate action. We need to invest in renewable energy, plant more trees, and reduce our dependence on fossil fuels. The future of our planet depends on the choices we make today.`;
+
+function countWords(ta){
+  const words = ta.value.trim().split(/\s+/).filter(w=>w.length>0);
+  document.getElementById('wordCount').textContent = `${words.length} words`;
+}
+
+function loadSample(){
+  document.getElementById('essayInput').value = SAMPLE_ESSAY;
+  countWords(document.getElementById('essayInput'));
+  showToast('Sample essay loaded','📄');
+}
+
+async function analyzeEssay(){
+  const essay = document.getElementById('essayInput').value.trim();
+  if(!essay || essay.split(/\s+/).length < 20){
+    showToast('Please write at least 20 words','⚠️'); return;
+  }
+  const subject = document.getElementById('essaySubject').value;
+  const type = document.getElementById('essayType').value;
+  const level = document.getElementById('essayLevel').value;
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true; btn.textContent = '🤖 Analyzing…';
+
+  document.getElementById('feedbackPanel').innerHTML = `<div class="loading-fp">
+    <div style="font-size:2.5rem;margin-bottom:12px;">⚙️</div>
+    <div style="font-size:.9rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;">AI is reading your essay…</div>
+    <div style="font-size:.75rem;color:var(--muted);">Checking grammar, structure, vocabulary & arguments</div>
+    <div style="background:var(--border);border-radius:4px;height:5px;margin-top:18px;overflow:hidden;"><div id="loadFill" style="height:100%;width:5%;background:linear-gradient(135deg,#06B6D4,#8B5CF6);border-radius:4px;transition:width .5s;"></div></div>
+  </div>`;
+
+  let prog = 5;
+  const pi = setInterval(()=>{prog=Math.min(prog+10,90);const f=document.getElementById('loadFill');if(f)f.style.width=prog+'%';},600);
+
+  const prompt = `You are an expert essay grader for Bangladeshi students at ${level} level. Analyze the following ${type} essay written for ${subject}:
+
+"""
+${essay}
+"""
+
+Return ONLY a valid JSON object (no markdown, no extra text) with this exact structure:
+{
+  "overall_score": 78,
+  "grade": "B+",
+  "grade_color": "#22C55E",
+  "summary": "One sentence overall assessment",
+  "sections": [
+    {
+      "title": "Grammar & Mechanics",
+      "icon": "📖",
+      "score": 80,
+      "points": ["Positive point 1", "Area for improvement 1", "Specific suggestion 1"],
+      "highlight": "Key takeaway or best example from their essay"
+    },
+    {
+      "title": "Structure & Organization",
+      "icon": "🏗️",
+      "score": 75,
+      "points": ["Point 1", "Point 2", "Point 3"],
+      "highlight": "Key takeaway"
+    },
+    {
+      "title": "Vocabulary & Style",
+      "icon": "💬",
+      "score": 82,
+      "points": ["Point 1", "Point 2", "Point 3"],
+      "highlight": "Key takeaway"
+    },
+    {
+      "title": "Argument & Ideas",
+      "icon": "💡",
+      "score": 70,
+      "points": ["Point 1", "Point 2", "Point 3"],
+      "highlight": "Key takeaway"
+    }
+  ],
+  "top_strength": "The biggest strength of this essay",
+  "top_improvement": "The single most important thing to improve"
+}`;
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await resp.json();
+    let raw = data.content?.[0]?.text || '{}';
+    raw = raw.replace(/```json|```/g,'').trim();
+    clearInterval(pi);
+    try{ renderFeedback(JSON.parse(raw)); }
+    catch(e){ renderDemoFeedback(); }
+  }catch(e){
+    clearInterval(pi);
+    renderDemoFeedback();
+  }
+  btn.disabled=false; btn.textContent='🤖 Analyze Essay with AI';
+}
+
+function renderDemoFeedback(){
+  renderFeedback({
+    overall_score:76, grade:'B+', grade_color:'#22C55E',
+    summary:'A well-structured essay with clear arguments; vocabulary and transitions could be stronger.',
+    sections:[
+      {title:'Grammar & Mechanics',icon:'📖',score:82,points:['Good use of complex sentences throughout','Some comma splices detected — watch for run-on sentences','Subject-verb agreement is mostly correct'],highlight:'Your sentence variety is a strong point — you mix short punchy sentences with longer analytical ones effectively.'},
+      {title:'Structure & Organization',icon:'🏗️',score:78,points:['Clear introduction with a thesis statement','Body paragraphs could transition more smoothly','The conclusion effectively restates the main argument'],highlight:'Your thesis in the first paragraph sets up the essay well. Adding a "roadmap" sentence would make it even stronger.'},
+      {title:'Vocabulary & Style',icon:'💬',score:72,points:['Good use of subject-specific vocabulary','Some words are repeated too frequently (e.g. "change", "important")','Try using synonyms and more varied academic vocabulary'],highlight:'Words like "pressing" and "short-sighted" show good vocabulary range. Aim to use 2-3 more advanced words per paragraph.'},
+      {title:'Argument & Ideas',icon:'💡',score:74,points:['Strong central argument is clearly stated','Evidence is used but could be more specific (add statistics, expert quotes)','Counter-argument is acknowledged — good critical thinking'],highlight:'Your point about Bangladesh\'s vulnerability is the most powerful paragraph. The local context makes the argument compelling.'},
+    ],
+    top_strength:'Your essay has a clear, well-organized structure with a strong opening thesis and relevant local examples.',
+    top_improvement:'Strengthen your evidence — add specific statistics, dates, or expert opinions to make your arguments more convincing.',
+  });
+}
+
+function renderFeedback(d){
+  const gradeColors = {A:'#22C55E','A+':'#16A34A','A-':'#4ADE80',B:'#3B82F6','B+':'#2563EB','B-':'#60A5FA',C:'#F59E0B','C+':'#D97706',D:'#EF4444'};
+  const gc = d.grade_color || gradeColors[d.grade] || '#06B6D4';
+  let html = `
+    <div class="fp-score-card">
+      <div class="fp-score-num">${d.overall_score}</div>
+      <div class="fp-score-label">Overall Score / 100</div>
+      <div class="fp-grade-pill" style="background:${gc}22;color:${gc};border:1px solid ${gc}44;">${d.grade}</div>
+      <div style="font-size:.76rem;opacity:.6;margin-top:10px;line-height:1.5;">${d.summary||''}</div>
+      <div class="fp-bars">
+        ${(d.sections||[]).map(s=>`<div class="fp-bar-row"><span class="fp-bar-label">${s.title.split(' ')[0]}</span><div class="fp-bar-track"><div class="fp-bar-fill" style="width:${s.score}%;"></div></div><span class="fp-bar-val">${s.score}</span></div>`).join('')}
+      </div>
+    </div>`;
+
+  (d.sections||[]).forEach(s=>{
+    html += `<div class="fb-section">
+      <div class="fbs-head"><span class="fbs-icon">${s.icon}</span><span class="fbs-title">${s.title}</span><span class="fbs-score">${s.score}/100</span></div>
+      <div class="fbs-body">
+        ${(s.points||[]).map((p,i)=>`<div class="fbs-point"><span class="fbs-point-icon">${i===0?'✅':'💡'}</span><span>${p}</span></div>`).join('')}
+        ${s.highlight?`<div class="fbs-highlight">💬 ${s.highlight}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  if(d.top_strength || d.top_improvement){
+    html += `<div class="fb-section">
+      <div class="fbs-head"><span class="fbs-icon">🎯</span><span class="fbs-title">Key Takeaways</span></div>
+      <div class="fbs-body">
+        ${d.top_strength?`<div class="fbs-point"><span class="fbs-point-icon">💪</span><span><strong>Strength:</strong> ${d.top_strength}</span></div>`:''}
+        ${d.top_improvement?`<div class="fbs-point"><span class="fbs-point-icon">📈</span><span><strong>Improve:</strong> ${d.top_improvement}</span></div>`:''}
+      </div>
+    </div>`;
+  }
+  document.getElementById('feedbackPanel').innerHTML = html;
+  showToast('Essay analyzed!','✍️');
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

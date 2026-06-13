@@ -1,0 +1,474 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;
+  --cmn-grad:linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#4338CA 100%);
+}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Page layout */
+.notif-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;}
+
+/* Filter strip */
+.filter-strip{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:0;}
+.fs-btn{padding:9px 18px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.fs-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+.fs-btn:hover{color:var(--cmn-dark);}
+.fs-count{font-size:.64rem;font-weight:900;background:var(--cmn);color:#fff;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center;}
+
+/* Notification group header */
+.notif-group-head{padding:10px 0 6px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:6px;}
+.ngh-line{flex:1;height:1px;background:var(--border);}
+
+/* Notification row */
+.notif-row{display:flex;gap:12px;padding:12px 14px;border-radius:12px;transition:background .12s;position:relative;cursor:pointer;margin-bottom:2px;}
+.notif-row:hover{background:var(--bg);}
+.notif-row.unread{background:var(--cmn-pale);}
+.notif-row.unread:hover{background:#E0E7FF;}
+.unread-dot{position:absolute;left:4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--cmn);}
+
+/* Avatar stack */
+.notif-av{position:relative;flex-shrink:0;width:42px;height:42px;}
+.nav-main{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:900;color:#fff;}
+.nav-type-badge{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--white);display:flex;align-items:center;justify-content:center;font-size:.58rem;}
+/* Multi-avatar for grouped notifs */
+.av-group{display:flex;position:relative;width:48px;height:42px;flex-shrink:0;}
+.av-group .nav-main{position:absolute;}
+.av-group .nav-main:nth-child(1){left:0;top:0;z-index:2;width:32px;height:32px;font-size:.56rem;}
+.av-group .nav-main:nth-child(2){right:0;bottom:0;z-index:1;width:28px;height:28px;font-size:.52rem;border:2px solid var(--white);}
+.av-group .nav-main:nth-child(3){left:14px;top:0;z-index:0;width:24px;height:24px;font-size:.48rem;border:2px solid var(--white);}
+
+/* Notif content */
+.notif-content{flex:1;min-width:0;}
+.nc-text{font-size:.84rem;color:var(--ink-2);line-height:1.5;}
+.nc-text strong{font-weight:800;color:var(--ink);}
+.nc-text .nc-post{font-style:italic;color:var(--muted);}
+.nc-time{font-size:.7rem;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px;}
+.nc-source-icon{font-size:.78rem;}
+
+/* Notif actions (appear on hover) */
+.notif-actions{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.na-btn{padding:5px 10px;border-radius:8px;font-size:.72rem;font-weight:700;border:1.5px solid var(--border);background:var(--white);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.na-btn:hover{border-color:var(--cmn);color:var(--cmn);}
+.na-btn.primary{background:var(--cmn);border-color:var(--cmn);color:#fff;}
+.na-btn.primary:hover{background:var(--cmn-dark);}
+.na-dismiss{width:24px;height:24px;border-radius:50%;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:.8rem;transition:all .12s;display:flex;align-items:center;justify-content:center;}
+.na-dismiss:hover{background:var(--border);color:var(--ink);}
+
+/* Notification type colour maps */
+.type-like .nav-type-badge{background:#F43F5E;}
+.type-comment .nav-type-badge{background:#6366F1;}
+.type-mention .nav-type-badge{background:#F59E0B;}
+.type-follow .nav-type-badge{background:#10B981;}
+.type-answer .nav-type-badge{background:#8B5CF6;}
+.type-badge-earn .nav-type-badge{background:#F59E0B;}
+.type-system .nav-type-badge{background:#64748B;}
+.type-event .nav-type-badge{background:#0891B2;}
+
+/* Preview snippet */
+.notif-preview{background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;margin-top:7px;font-size:.78rem;color:var(--muted);line-height:1.5;border-left:3px solid var(--cmn);}
+
+/* Settings panel (right column) */
+.setting-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.sr-icon{font-size:1.1rem;flex-shrink:0;}
+.sr-label{flex:1;font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.sr-sub{font-size:.7rem;color:var(--muted);margin-top:1px;}
+/* Toggle switch */
+.toggle{width:36px;height:20px;border-radius:10px;background:var(--border);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--cmn);}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on::after{left:18px;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;}
+.es-icon{font-size:3.5rem;margin-bottom:12px;filter:grayscale(.3);}
+.es-title{font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:5px;}
+.es-sub{font-size:.82rem;color:var(--muted);}
+
+/* Bulk actions bar */
+.bulk-notif-bar{background:var(--cmn);border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;display:none;}
+.bulk-notif-bar.show{display:flex;}
+
+/* Badge earn card */
+.badge-card{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid #FCD34D;border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;margin-top:6px;}
+.badge-img{font-size:2rem;flex-shrink:0;}
+.badge-name{font-size:.88rem;font-weight:900;color:#92400E;}
+.badge-desc{font-size:.74rem;color:#B45309;margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.notif-layout{grid-template-columns:1fr;}.right-panel{display:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header" style="margin-bottom:14px;">
+      <div>
+        <div class="page-eyebrow"> Inbox</div>
+        <div class="page-title">Notifications</div>
+        <div class="page-sub">Stay on top of likes, comments, mentions, and activity from your school community.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="markAllRead()">Mark all read</button>
+        <button class="btn btn-ghost" onclick="showToast('Clearing all notifications&middot;','&#x2705;')" style="color:var(--muted);">Clear all</button>
+      </div>
+    </div>
+
+    <!-- Bulk actions bar -->
+    <div class="bulk-notif-bar" id="bulkBar">
+      <span style="color:#fff;font-size:.82rem;font-weight:700;" id="bulkCountLbl">0 selected</span>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:.76rem;" onclick="bulkMark()">Mark read</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:.76rem;" onclick="bulkDelete()">&#x1F5D1;&#xFE0F; Delete</button>
+      <button class="btn btn-sm" style="background:rgba(0,0,0,.2);border:none;color:#fff;font-size:.76rem;" onclick="clearSel()">Clear</button>
+    </div>
+
+    <div class="notif-layout">
+
+      <!-- MAIN: Notification stream -->
+      <div>
+        <!-- Filter tabs -->
+        <div class="filter-strip anim-1" style="margin-bottom:18px;">
+          <button class="fs-btn on" data-filter="all" onclick="setFilter('all',this)">All <span class="fs-count" id="fc-all">8</span></button>
+          <button class="fs-btn" data-filter="likes" onclick="setFilter('likes',this)"> Likes <span class="fs-count" id="fc-likes" style="background:var(--border);color:var(--muted);">0</span></button>
+          <button class="fs-btn" data-filter="comments" onclick="setFilter('comments',this)"> Comments <span class="fs-count" id="fc-comments" style="background:var(--border);color:var(--muted);">0</span></button>
+          <button class="fs-btn" data-filter="mentions" onclick="setFilter('mentions',this)">@ Mentions <span class="fs-count" id="fc-mentions" style="background:var(--border);color:var(--muted);">0</span></button>
+          <button class="fs-btn" data-filter="follows" onclick="setFilter('follows',this)"> Follows <span class="fs-count" id="fc-follows" style="background:var(--border);color:var(--muted);">0</span></button>
+          <button class="fs-btn" data-filter="answers" onclick="setFilter('answers',this)"> Answers</button>
+          <button class="fs-btn" data-filter="system" onclick="setFilter('system',this)">&#x2699;&#xFE0F; System</button>
+        </div>
+
+        <div id="notifStream" class="anim-1"></div>
+      </div>
+
+      <!-- RIGHT panel -->
+      <div class="right-panel">
+
+        <!-- Summary widget -->
+        <div class="card anim-1" style="padding:0;overflow:hidden;margin-bottom:14px;">
+          <div style="background:var(--cmn-grad);padding:14px 16px;">
+            <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;"> Activity Summary</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#fff;" id="sumUnread">8</div>
+                <div style="font-size:.62rem;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px;">Unread</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#86EFAC;">+38</div>
+                <div style="font-size:.62rem;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px;">Likes Today</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#FDE68A;">+12</div>
+                <div style="font-size:.62rem;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px;">Comments</div>
+              </div>
+              <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#A5F3FC;">+7</div>
+                <div style="font-size:.62rem;color:rgba(255,255,255,.6);font-weight:600;margin-top:1px;">New Followers</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:12px 16px;">
+            <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Weekly trend</div>
+            <div style="display:flex;align-items:flex-end;gap:4px;height:38px;border-bottom:1px solid var(--border);" id="activitySparkline"></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:4px;text-align:center;">Mon &middot; Sun &middot; Notifications received</div>
+          </div>
+        </div>
+
+        <!-- Recent badges -->
+        <div class="card anim-2" style="padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:.76rem;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;"> Recently Earned</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="badgePanel"></div>
+        </div>
+
+        <!-- Notification settings -->
+        <div class="card anim-2" style="padding:0;overflow:hidden;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:.78rem;font-weight:800;color:var(--ink);">Notification Settings</div>
+            <span style="font-size:.68rem;color:var(--cmn);cursor:pointer;font-weight:700;" onclick="showToast('Opening full settings&middot;','&#x2705;')">Edit all</span>
+          </div>
+          <div style="padding:10px 16px;" id="settingsPanel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const NOTIFS = [
+  // --- Today ---
+  {id:1, group:'Today', type:'likes', read:false, time:'2 min ago', timeIcon:'',
+   avatars:[{init:'DK',col:'#1D4ED8'},{init:'MS',col:'#059669'},{init:'AH',col:'#7C3AED'}],
+   typeBadge:{bg:'#F43F5E',icon:''},
+   html: `<strong>Dr. Karim Hossain</strong>, <strong>Ms. Nasrin Ahmed</strong> and <strong>6 others</strong> liked your post`,
+   preview: '"Anyone solved this integration problem? ?(x&middot; + 3x + 2)/(x+1) dx&middot;"',
+   actions: [{label:'View post', primary:true}]},
+
+  {id:2, group:'Today', type:'comments', read:false, time:'5 min ago', timeIcon:'',
+   avatars:[{init:'AH',col:'#7C3AED'}],
+   typeBadge:{bg:'#6366F1',icon:''},
+   html: `<strong>Arif Hossain</strong> commented on your question`,
+   preview: '"Try polynomial long division first when degree of numerator = denominator."',
+   actions: [{label:'Reply', primary:true},{label:'View'}]},
+
+  {id:3, group:'Today', type:'follows', read:false, time:'12 min ago', timeIcon:'',
+   avatars:[{init:'RK',col:'#E11D48'}],
+   typeBadge:{bg:'#10B981',icon:''},
+   html: `<strong>Rahela Khatun</strong> started following you`,
+   preview: null,
+   actions: [{label:'Follow back', primary:true},{label:'View profile'}]},
+
+  {id:4, group:'Today', type:'mentions', read:false, time:'28 min ago', timeIcon:'',
+   avatars:[{init:'MS',col:'#059669'}],
+   typeBadge:{bg:'#F59E0B',icon:'@'},
+   html: `<strong>Ms. Nasrin Ahmed</strong> mentioned you in a post`,
+   preview: '"@Farhan Islam Please confirm attendance for Science Olympiad practice Tuesday."',
+   actions: [{label:'Reply', primary:true},{label:'View post'}]},
+
+  {id:5, group:'Today', type:'answers', read:false, time:'45 min ago', timeIcon:'',
+   avatars:[{init:'DK',col:'#1D4ED8'}],
+   typeBadge:{bg:'#8B5CF6',icon:''},
+   html: `<strong>Dr. Karim Hossain</strong> answered your question`,
+   preview: '"Hint: factor x&middot;+3x+2 first. It factors nicely "',
+   actions: [{label:'View answer', primary:true},{label:'Mark as resolved'}]},
+
+  {id:6, group:'Today', type:'system', read:false, time:'1 hr ago', timeIcon:'',
+   avatars:[{init:'',col:'#F59E0B',isEmoji:true}],
+   typeBadge:{bg:'#F59E0B',icon:''},
+   html: `You earned the <strong>Curious Mind</strong> badge! `,
+   preview: 'Awarded for asking 10 questions in the community that received answers.',
+   badge:{emoji:'',name:'Curious Mind',desc:'Asked 10 answered questions'},
+   actions: [{label:'View badges', primary:false}]},
+
+  {id:7, group:'Today', type:'likes', read:true, time:'2 hrs ago', timeIcon:'',
+   avatars:[{init:'TA',col:'#0891B2'},{init:'SB',col:'#D97706'}],
+   typeBadge:{bg:'#F43F5E',icon:''},
+   html: `<strong>Tanvir Ahmed</strong> and <strong>Sumaiya Begum</strong> liked your comment`,
+   preview: '"The answer is B. Think about Newton\'s Third Law applied to fluid dynamics."',
+   actions: [{label:'View', primary:false}]},
+
+  // --- Yesterday ---
+  {id:8, group:'Yesterday', type:'follows', read:true, time:'Yesterday, 4:12 PM', timeIcon:'',
+   avatars:[{init:'NH',col:'#7C3AED'},{init:'JH',col:'#BE123C'}],
+   typeBadge:{bg:'#10B981',icon:''},
+   html: `<strong>Nabil Hossain</strong> and <strong>Mr. Jabbar Hossain</strong> followed you`,
+   preview: null,
+   actions: [{label:'Follow back', primary:false},{label:'View profiles'}]},
+
+  {id:9, group:'Yesterday', type:'comments', read:true, time:'Yesterday, 2:48 PM', timeIcon:'',
+   avatars:[{init:'MS',col:'#059669'}],
+   typeBadge:{bg:'#6366F1',icon:''},
+   html: `<strong>Ms. Nasrin Ahmed</strong> replied to your comment in <strong>Science Olympiad Prep</strong>`,
+   preview: '"Great point Farhan! That\'s exactly the kind of thinking we need for the district round."',
+   actions: [{label:'Reply', primary:false},{label:'View thread'}]},
+
+  {id:10, group:'Yesterday', type:'mentions', read:true, time:'Yesterday, 11:20 AM', timeIcon:'',
+   avatars:[{init:'DK',col:'#1D4ED8'}],
+   typeBadge:{bg:'#F59E0B',icon:'@'},
+   html: `<strong>Dr. Karim Hossain</strong> mentioned you in <strong>Math Study Circle</strong>`,
+   preview: '"@Farhan Islam can you share your working for Q.14? It would help others in the group."',
+   actions: [{label:'View post', primary:false}]},
+
+  {id:11, group:'Yesterday', type:'system', read:true, time:'Yesterday, 9:00 AM', timeIcon:'',
+   avatars:[{init:'',col:'#64748B',isEmoji:true}],
+   typeBadge:{bg:'#64748B',icon:''},
+   html: `School announcement: <strong>Annual Science Fair 2025</strong> registration is now open`,
+   preview: '"Teams of 2&middot;4. Projects from any science/tech category. Registration closes March 10."',
+   actions: [{label:'View announcement', primary:false}]},
+
+  // --- Earlier ---
+  {id:12, group:'Earlier', type:'likes', read:true, time:'Feb 22', timeIcon:'',
+   avatars:[{init:'RK',col:'#E11D48'},{init:'AH',col:'#7C3AED'},{init:'TA',col:'#0891B2'}],
+   typeBadge:{bg:'#F43F5E',icon:''},
+   html: `<strong>Rahela Khatun</strong>, <strong>Arif Hossain</strong> and <strong>14 others</strong> liked your study note`,
+   preview: '"Chapter 5 Summary: Electromagnetic Induction &middot; Key formulas and diagrams attached."',
+   actions: [{label:'View post', primary:false}]},
+
+  {id:13, group:'Earlier', type:'follows', read:true, time:'Feb 21', timeIcon:'',
+   avatars:[{init:'SB',col:'#D97706'},{init:'KU',col:'#059669'}],
+   typeBadge:{bg:'#10B981',icon:''},
+   html: `<strong>Sumaiya Begum</strong> and <strong>Karim Uddin</strong> started following you`,
+   preview: null,
+   actions: [{label:'Follow back', primary:false}]},
+
+  {id:14, group:'Earlier', type:'answers', read:true, time:'Feb 20', timeIcon:'',
+   avatars:[{init:'MS',col:'#059669'}],
+   typeBadge:{bg:'#8B5CF6',icon:''},
+   html: `Your question received <strong>5 answers</strong> &middot; community picked a best answer`,
+   preview: '"Why does a compass point north? Is it the geographic or magnetic pole?"',
+   actions: [{label:'View answers', primary:false}]},
+
+  {id:15, group:'Earlier', type:'system', read:true, time:'Feb 18', timeIcon:'',
+   avatars:[{init:'',col:'#F59E0B',isEmoji:true}],
+   typeBadge:{bg:'#F59E0B',icon:''},
+   html: `You earned the <strong>Early Bird</strong> badge &middot; first to answer a question this week!`,
+   preview: null,
+   badge:{emoji:'',name:'Early Bird',desc:'First answer of the week'},
+   actions: [{label:'View badges', primary:false}]},
+];
+
+const BADGES=[
+  {emoji:'',name:'Curious Mind',desc:'10 answered questions',date:'Today'},
+  {emoji:'',name:'Early Bird',desc:'First answer of the week',date:'Feb 18'},
+  {emoji:'&#x2705;',name:'Popular Post',desc:'Post with 40+ likes',date:'Feb 15'},
+];
+
+const SETTINGS=[
+  {icon:'&#x270F;&#xFE0F;',label:'Likes & Reactions',sub:'When someone likes your post',on:true},
+  {icon:'&#x270F;&#xFE0F;',label:'Comments',sub:'Replies to your posts',on:true},
+  {icon:'@',label:'Mentions',sub:'When someone tags you',on:true},
+  {icon:'&#x270F;&#xFE0F;',label:'New Followers',sub:'When someone follows you',on:true},
+  {icon:'&#x270F;&#xFE0F;',label:'Answers',sub:'Answers to your questions',on:true},
+  {icon:'&#x270F;&#xFE0F;',label:'Announcements',sub:'School-wide announcements',on:true},
+  {icon:'&#x270F;&#xFE0F;',label:'Push Notifications',sub:'Browser notifications',on:false},
+  {icon:'&#x270F;&#xFE0F;',label:'Email Digest',sub:'Daily summary email',on:false},
+];
+
+let activeFilter='all', selectedIds=new Set();
+
+// Counts
+function updateCounts(){
+  const unread=NOTIFS.filter(n=>!n.read).length;
+  document.getElementById('sumUnread').textContent=unread;
+  document.getElementById('sideCount').textContent=unread;
+  ['likes','comments','mentions','follows','answers'].forEach(type=>{
+    const cnt=NOTIFS.filter(n=>n.type===type&&!n.read).length;
+    const el=document.getElementById('fc-'+type);
+    if(el){el.textContent=cnt;el.style.background=cnt?'var(--cmn)':'var(--border)';el.style.color=cnt?'#fff':'var(--muted)';}
+  });
+  const allUnread=NOTIFS.filter(n=>!n.read).length;
+  const el2=document.getElementById('fc-all');
+  if(el2){el2.textContent=allUnread;el2.style.background=allUnread?'var(--cmn)':'var(--border)';el2.style.color=allUnread?'#fff':'var(--muted)';}
+}
+
+function renderStream(){
+  const filtered=activeFilter==='all'?NOTIFS:NOTIFS.filter(n=>n.type===activeFilter);
+  if(!filtered.length){
+    document.getElementById('notifStream').innerHTML=`<div class="empty-state"><div class="es-icon"></div><div class="es-title">All clear!</div><div class="es-sub">No notifications in this category.</div></div>`;
+    return;
+  }
+  const groups=[...new Set(filtered.map(n=>n.group))];
+  let html='';
+  groups.forEach(g=>{
+    html+=`<div class="notif-group-head"><span>${g==='Today'?' Today':g==='Yesterday'?' Yesterday':' Earlier'}</span><div class="ngh-line"></div>${g==='Today'?`<span style="font-size:.7rem;font-weight:700;color:var(--cmn);cursor:pointer;" onclick="markGroupRead('Today')">Mark read</span>`:''}</div>`;
+    filtered.filter(n=>n.group===g).forEach(n=>{
+      const avs=n.avatars.slice(0,3);
+      const avHtml=avs.length>1
+        ?`<div class="av-group">${avs.map((a,i)=>`<div class="nav-main" style="background:${a.col};">${a.isEmoji?a.init:a.init}</div>`).join('')}</div>`
+        :`<div class="notif-av"><div class="nav-main" style="background:${avs[0].col};">${avs[0].init}</div><div class="nav-type-badge" style="background:${n.typeBadge.bg};">${n.typeBadge.icon}</div></div>`;
+      const previewHtml=n.preview?`<div class="notif-preview">${n.preview}</div>`:'';
+      const badgeCardHtml=n.badge?`<div class="badge-card"><div class="badge-img">${n.badge.emoji}</div><div><div class="badge-name">${n.badge.name}</div><div class="badge-desc">${n.badge.desc}</div></div></div>`:'';
+      const actionsHtml=n.actions?`<div class="notif-actions">${n.actions.map(a=>`<button class="na-btn ${a.primary?'primary':''}" onclick="event.stopPropagation();showToast('${a.label}&middot;','${n.typeBadge.icon}')">${a.label}</button>`).join('')}<button class="na-dismiss" onclick="event.stopPropagation();dismissNotif(${n.id})" title="Dismiss">&times;</button></div>`:'';
+
+      html+=`<div class="notif-row type-${n.type} ${!n.read?'unread':''}" id="nr-${n.id}" onclick="readNotif(${n.id})">
+        ${!n.read?`<div class="unread-dot"></div>`:''}
+        <div style="display:flex;align-items:flex-start;gap:4px;flex-shrink:0;">
+          <input type="checkbox" style="margin-top:14px;accent-color:var(--cmn);" ${selectedIds.has(n.id)?'checked':''} onclick="event.stopPropagation();toggleSel(${n.id},this)">
+          ${avHtml}
+        </div>
+        <div class="notif-content">
+          <div class="nc-text">${n.html}</div>
+          ${previewHtml}${badgeCardHtml}
+          <div class="nc-time"><span class="nc-source-icon">${n.typeBadge.icon}</span>${n.time}${n.timeIcon?` &middot; <span style="color:var(--red);font-size:.7rem;font-weight:700;">New</span>`:''}</div>
+        </div>
+        ${actionsHtml}
+      </div>`;
+    });
+  });
+  document.getElementById('notifStream').innerHTML=html;
+}
+
+function readNotif(id){
+  const n=NOTIFS.find(x=>x.id===id);
+  if(n&&!n.read){n.read=true;renderStream();updateCounts();}
+}
+function dismissNotif(id){
+  const idx=NOTIFS.findIndex(x=>x.id===id);
+  if(idx>-1){NOTIFS.splice(idx,1);renderStream();updateCounts();showToast('Notification dismissed','&#x2705;');}
+}
+function markAllRead(){
+  NOTIFS.forEach(n=>n.read=true);renderStream();updateCounts();showToast('All notifications marked as read','&#x2705;');
+}
+function markGroupRead(group){
+  NOTIFS.filter(n=>n.group===group).forEach(n=>n.read=true);renderStream();updateCounts();
+}
+function setFilter(f,el){
+  activeFilter=f;
+  document.querySelectorAll('.fs-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');renderStream();
+}
+function toggleSel(id,cb){
+  if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);
+  document.getElementById('bulkBar').classList.toggle('show',selectedIds.size>0);
+  document.getElementById('bulkCountLbl').textContent=`${selectedIds.size} selected`;
+}
+function bulkMark(){selectedIds.forEach(id=>{const n=NOTIFS.find(x=>x.id===id);if(n)n.read=true;});clearSel();renderStream();updateCounts();showToast('Marked as read','&#x2705;');}
+function bulkDelete(){selectedIds.forEach(id=>{const idx=NOTIFS.findIndex(x=>x.id===id);if(idx>-1)NOTIFS.splice(idx,1);});clearSel();renderStream();updateCounts();showToast('Deleted selected','&#x2705;');}
+function clearSel(){selectedIds.clear();document.getElementById('bulkBar').classList.remove('show');renderStream();}
+
+// Sparkline
+const weekData=[14,22,18,35,28,42,38];
+const maxW=Math.max(...weekData);
+document.getElementById('activitySparkline').innerHTML=weekData.map((v,i)=>{
+  const h=Math.round(v/maxW*34);
+  const isToday=i===6;
+  return`<div style="flex:1;height:${h}px;background:${isToday?'var(--cmn)':'var(--cmn-light)'};border-radius:2px 2px 0 0;cursor:pointer;" title="${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${v}" onclick="showToast('${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${v} notifications','&#x2705;')"></div>`;
+}).join('');
+
+// Badges
+document.getElementById('badgePanel').innerHTML=BADGES.map(b=>`
+  <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+    <div style="font-size:1.5rem;">${b.emoji}</div>
+    <div style="flex:1;"><div style="font-size:.84rem;font-weight:800;color:var(--ink-2);">${b.name}</div><div style="font-size:.7rem;color:var(--muted);">${b.desc}</div></div>
+    <div style="font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;">${b.date}</div>
+  </div>`).join('');
+
+// Settings
+document.getElementById('settingsPanel').innerHTML=SETTINGS.map((s,i)=>`
+  <div class="setting-row">
+    <div class="sr-icon">${s.icon}</div>
+    <div><div class="sr-label">${s.label}</div><div class="sr-sub">${s.sub}</div></div>
+    <div class="toggle ${s.on?'on':''}" id="tog-${i}" onclick="toggleSetting(${i})"></div>
+  </div>`).join('');
+
+function toggleSetting(i){
+  SETTINGS[i].on=!SETTINGS[i].on;
+  document.getElementById('tog-'+i).classList.toggle('on',SETTINGS[i].on);
+  showToast(`${SETTINGS[i].label} ${SETTINGS[i].on?'enabled':'disabled'}`,SETTINGS[i].icon);
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+updateCounts();
+renderStream();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

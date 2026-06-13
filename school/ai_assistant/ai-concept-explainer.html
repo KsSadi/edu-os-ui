@@ -1,0 +1,306 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Concept Explainer — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Search hero */
+.ce-search-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:32px;color:#fff;text-align:center;margin-bottom:24px;position:relative;overflow:hidden;}
+.ce-search-hero::before{content:'💡';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.05;}
+.cesh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:10px;}
+.cesh-title{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+.cesh-sub{font-size:.84rem;opacity:.65;margin-bottom:22px;}
+.ce-search-bar{display:flex;gap:10px;max-width:600px;margin:0 auto;}
+.ce-search-input{flex:1;padding:13px 18px;border:2px solid rgba(6,182,212,.4);border-radius:12px;font-size:.92rem;font-family:inherit;background:rgba(255,255,255,.06);color:#fff;outline:none;backdrop-filter:blur(4px);}
+.ce-search-input::placeholder{color:rgba(255,255,255,.35);}
+.ce-search-input:focus{border-color:var(--ai);}
+.ce-search-btn{padding:13px 22px;background:var(--ai-soft);border:none;color:#fff;font-size:.9rem;font-weight:800;border-radius:12px;cursor:pointer;white-space:nowrap;transition:opacity .14s;}
+.ce-search-btn:hover{opacity:.86;}
+.ce-search-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ce-subject-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.ce-chip{padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);font-size:.74rem;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;transition:all .12s;}
+.ce-chip:hover,.ce-chip.on{background:rgba(6,182,212,.2);border-color:rgba(6,182,212,.5);color:#67E8F9;}
+
+/* Popular concepts */
+.popular-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:24px;}
+.pop-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:4px;}
+.pop-card:hover{border-color:var(--ai);box-shadow:0 2px 14px rgba(6,182,212,.12);transform:translateY(-1px);}
+.pc-icon{font-size:1.4rem;margin-bottom:4px;}
+.pc-title{font-size:.82rem;font-weight:800;color:var(--ink);}
+.pc-subject{font-size:.68rem;font-weight:700;color:var(--ai);background:var(--ai-pale);padding:2px 8px;border-radius:6px;width:fit-content;}
+
+/* Result card */
+.result-card{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;}
+.rc-main{display:flex;flex-direction:column;gap:16px;}
+.rc-header{background:linear-gradient(135deg,#050314,#0D0828);border-radius:16px;padding:22px 24px;color:#fff;}
+.rc-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:3px 10px;font-size:.65rem;font-weight:800;color:#67E8F9;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
+.rc-concept{font-size:1.5rem;font-weight:900;margin-bottom:6px;}
+.rc-simple-def{font-size:.9rem;opacity:.75;line-height:1.65;}
+.rc-section{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.rcs-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;}
+.rcs-icon{font-size:1rem;}
+.rcs-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.rcs-body{padding:14px 16px;font-size:.82rem;color:var(--ink-2);line-height:1.75;}
+.rcs-step{display:flex;gap:10px;padding:5px 0;}
+.step-num{min-width:22px;height:22px;border-radius:50%;background:var(--ai-soft);color:#fff;font-size:.66rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.rcs-analogy{background:linear-gradient(135deg,#ECFEFF,#F5F3FF);border:1.5px solid #A5F3FC;border-radius:10px;padding:12px 14px;font-size:.82rem;color:var(--ink-2);line-height:1.65;}
+.rcs-formula{background:#050314;color:#67E8F9;border-radius:10px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:.9rem;text-align:center;letter-spacing:.03em;}
+.key-facts{display:flex;flex-direction:column;gap:8px;}
+.kf-item{display:flex;gap:10px;align-items:flex-start;font-size:.8rem;color:var(--ink-2);}
+.kf-num{min-width:22px;height:22px;border-radius:6px;background:var(--ai-pale);color:var(--ai-dark);font-size:.7rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.related-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.rel-chip{padding:5px 12px;border-radius:9px;background:var(--ai-pale);color:var(--ai-dark);font-size:.74rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .12s;}
+.rel-chip:hover{border-color:var(--ai);background:#CFFAFE;}
+
+/* Practice question */
+.pq-card{background:var(--white);border:1.5px solid #A5F3FC;border-radius:14px;overflow:hidden;}
+.pqc-head{padding:12px 16px;border-bottom:1px solid #A5F3FC;background:#ECFEFF;display:flex;align-items:center;gap:8px;}
+.pqc-title{font-size:.84rem;font-weight:900;color:var(--ai-dark);}
+.pqc-body{padding:14px 16px;}
+.pq-text{font-size:.84rem;font-weight:700;color:var(--ink);margin-bottom:12px;line-height:1.65;}
+.pq-opts{display:flex;flex-direction:column;gap:6px;}
+.pq-opt{padding:9px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);font-size:.8rem;color:var(--ink-2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:8px;}
+.pq-opt:hover{border-color:var(--ai);background:var(--ai-pale);}
+.pq-opt.correct{background:#DCFCE7;border-color:#86EFAC;color:#166534;}
+.pq-opt.wrong{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B;}
+.pq-reveal-btn{margin-top:10px;width:100%;padding:8px;border:1.5px solid var(--ai);background:var(--ai-pale);color:var(--ai-dark);font-size:.78rem;font-weight:800;border-radius:9px;cursor:pointer;}
+
+/* Side panel */
+.rc-side{display:flex;flex-direction:column;gap:14px;}
+.side-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 24px;}
+.es-icon{font-size:4rem;margin-bottom:16px;}
+.es-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.es-sub{font-size:.8rem;color:var(--muted);line-height:1.65;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.result-card{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Search hero -->
+    <div class="ce-search-hero anim-1">
+      <div class="cesh-badge">💡 AI Concept Explainer</div>
+      <div class="cesh-title">Understand Any Concept</div>
+      <div class="cesh-sub">Type any topic or concept — the AI explains it simply, with analogies, formulas, and a practice question.</div>
+      <div class="ce-search-bar">
+        <input type="text" class="ce-search-input" id="conceptInput" placeholder="e.g. Photosynthesis, Quadratic Formula, Osmosis…" onkeydown="if(event.key==='Enter')explainConcept()">
+        <button class="ce-search-btn" id="explainBtn" onclick="explainConcept()">💡 Explain</button>
+      </div>
+      <div class="ce-subject-chips">
+        <span class="ce-chip on" id="chip-All" onclick="setSubjectFilter('All',this)">All</span>
+        <span class="ce-chip" id="chip-Math" onclick="setSubjectFilter('Mathematics',this)">📐 Maths</span>
+        <span class="ce-chip" id="chip-Physics" onclick="setSubjectFilter('Physics',this)">⚡ Physics</span>
+        <span class="ce-chip" id="chip-Chemistry" onclick="setSubjectFilter('Chemistry',this)">🧪 Chemistry</span>
+        <span class="ce-chip" id="chip-Biology" onclick="setSubjectFilter('Biology',this)">🌱 Biology</span>
+        <span class="ce-chip" id="chip-English" onclick="setSubjectFilter('English',this)">📖 English</span>
+      </div>
+    </div>
+
+    <!-- Popular concepts -->
+    <div id="popularSection">
+      <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">⚡ Popular Concepts</div>
+      <div class="popular-grid anim-1">
+        <div class="pop-card" onclick="quickExplain('Quadratic Formula','Mathematics')"><div class="pc-icon">📐</div><div class="pc-title">Quadratic Formula</div><div class="pc-subject">Mathematics</div></div>
+        <div class="pop-card" onclick="quickExplain('Photosynthesis','Biology')"><div class="pc-icon">🌿</div><div class="pc-title">Photosynthesis</div><div class="pc-subject">Biology</div></div>
+        <div class="pop-card" onclick="quickExplain('Newton\'s Laws of Motion','Physics')"><div class="pc-icon">⚡</div><div class="pc-title">Newton's Laws</div><div class="pc-subject">Physics</div></div>
+        <div class="pop-card" onclick="quickExplain('Acid-Base Reactions','Chemistry')"><div class="pc-icon">🧪</div><div class="pc-title">Acid-Base Reactions</div><div class="pc-subject">Chemistry</div></div>
+        <div class="pop-card" onclick="quickExplain('Pythagoras Theorem','Mathematics')"><div class="pc-icon">📏</div><div class="pc-title">Pythagoras Theorem</div><div class="pc-subject">Mathematics</div></div>
+        <div class="pop-card" onclick="quickExplain('Mitosis vs Meiosis','Biology')"><div class="pc-icon">🔬</div><div class="pc-title">Mitosis vs Meiosis</div><div class="pc-subject">Biology</div></div>
+        <div class="pop-card" onclick="quickExplain('Passive Voice','English')"><div class="pc-icon">📖</div><div class="pc-title">Passive Voice</div><div class="pc-subject">English</div></div>
+        <div class="pop-card" onclick="quickExplain('Ohm\'s Law','Physics')"><div class="pc-icon">⚡</div><div class="pc-title">Ohm's Law</div><div class="pc-subject">Physics</div></div>
+      </div>
+    </div>
+
+    <!-- Result area -->
+    <div id="resultArea"></div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let subjectFilter = 'All';
+
+function setSubjectFilter(s, el){
+  subjectFilter = s;
+  document.querySelectorAll('.ce-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function quickExplain(concept, subject){
+  document.getElementById('conceptInput').value = concept;
+  subjectFilter = subject;
+  explainConcept();
+}
+
+async function explainConcept(){
+  const concept = document.getElementById('conceptInput').value.trim();
+  if(!concept){ showToast('Please enter a concept','⚠️'); return; }
+  const btn = document.getElementById('explainBtn');
+  btn.disabled = true; btn.textContent = '⚙️ Explaining…';
+  document.getElementById('popularSection').style.display = 'none';
+  document.getElementById('resultArea').innerHTML = `<div style="text-align:center;padding:48px 0;"><div style="font-size:2.5rem;margin-bottom:12px;">⚙️</div><div style="font-size:.9rem;font-weight:800;color:var(--ink-2);">AI is explaining "${concept}"…</div></div>`;
+
+  const prompt = `You are an expert teacher for Bangladeshi students (Class IX-A, SSC level). Explain the concept: "${concept}"${subjectFilter!=='All'?' (subject: '+subjectFilter+')':''}.
+
+Return ONLY valid JSON (no markdown, no extra text):
+{
+  "concept": "Exact concept name",
+  "subject": "Subject name",
+  "subject_icon": "📐",
+  "simple_definition": "One clear sentence a 12-year-old could understand",
+  "explanation_steps": ["Step 1 detailed explanation", "Step 2", "Step 3"],
+  "real_world_analogy": "A relatable real-world analogy appropriate for Bangladeshi students",
+  "formula": "Key formula or rule (leave empty string if not applicable)",
+  "key_facts": ["Important fact 1", "Fact 2", "Fact 3"],
+  "related_concepts": ["Concept 1", "Concept 2", "Concept 3", "Concept 4"],
+  "practice_question": {
+    "question": "A relevant practice question",
+    "options": ["A. option", "B. option", "C. option", "D. option"],
+    "answer": "B",
+    "explanation": "Brief explanation of the correct answer"
+  }
+}`;
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await resp.json();
+    let raw = data.content?.[0]?.text||'{}';
+    raw = raw.replace(/```json|```/g,'').trim();
+    try{ renderResult(JSON.parse(raw)); }
+    catch(e){ renderDemo(concept); }
+  }catch(e){ renderDemo(concept); }
+  btn.disabled=false; btn.textContent='💡 Explain';
+}
+
+function renderDemo(concept){
+  renderResult({
+    concept: concept, subject:'Mathematics', subject_icon:'📐',
+    simple_definition:`${concept} is a fundamental concept that helps us solve mathematical problems in a structured and logical way.`,
+    explanation_steps:[
+      'First, understand what the concept is asking you to find or prove.',
+      'Identify the key variables, values, or conditions given in the problem.',
+      'Apply the relevant formula or rule step by step, showing all your working.',
+    ],
+    real_world_analogy:'Think of it like following a recipe — each step must be done in order, and skipping one step ruins the result.',
+    formula:'Related formula will appear here based on the concept',
+    key_facts:['This concept appears frequently in SSC exam papers','Understanding this helps with related topics in the same chapter','Practice 5-10 problems to gain confidence'],
+    related_concepts:['Algebra','Functions','Equations','Number Theory'],
+    practice_question:{
+      question:`Which of the following best describes ${concept}?`,
+      options:['A. A method of estimation','B. A precise mathematical rule or formula','C. A type of graph','D. A measurement unit'],
+      answer:'B',explanation:'This is the most accurate description of the concept in a mathematical context.'
+    }
+  });
+}
+
+function renderResult(d){
+  let html = `<div class="result-card">
+    <div class="rc-main">
+      <div class="rc-header">
+        <div class="rc-badge">${d.subject_icon||'💡'} ${d.subject||'General'}</div>
+        <div class="rc-concept">${d.concept}</div>
+        <div class="rc-simple-def">${d.simple_definition}</div>
+      </div>
+      <div class="rc-section">
+        <div class="rcs-head"><span class="rcs-icon">📋</span><span class="rcs-title">Step-by-Step Explanation</span></div>
+        <div class="rcs-body">${(d.explanation_steps||[]).map((s,i)=>`<div class="rcs-step"><div class="step-num">${i+1}</div><span>${s}</span></div>`).join('')}</div>
+      </div>
+      <div class="rc-section">
+        <div class="rcs-head"><span class="rcs-icon">🌍</span><span class="rcs-title">Real-World Analogy</span></div>
+        <div class="rcs-body"><div class="rcs-analogy">🎯 ${d.real_world_analogy}</div></div>
+      </div>
+      ${d.formula?`<div class="rc-section">
+        <div class="rcs-head"><span class="rcs-icon">🧮</span><span class="rcs-title">Key Formula / Rule</span></div>
+        <div class="rcs-body"><div class="rcs-formula">${d.formula}</div></div>
+      </div>`:''}
+      <div class="rc-section">
+        <div class="rcs-head"><span class="rcs-icon">⭐</span><span class="rcs-title">3 Key Facts to Remember</span></div>
+        <div class="rcs-body"><div class="key-facts">${(d.key_facts||[]).map((f,i)=>`<div class="kf-item"><div class="kf-num">${i+1}</div><span>${f}</span></div>`).join('')}</div></div>
+      </div>
+    </div>
+    <div class="rc-side">
+      ${d.practice_question?`<div class="pq-card">
+        <div class="pqc-head"><span>🏋️</span><span class="pqc-title">Practice Question</span></div>
+        <div class="pqc-body">
+          <div class="pq-text">${d.practice_question.question}</div>
+          <div class="pq-opts">${(d.practice_question.options||[]).map((opt,i)=>`<div class="pq-opt" id="pqopt${i}" onclick="selectPQ(${i},'${d.practice_question.answer}','${(d.practice_question.explanation||'').replace(/'/g,"\\'")}',${(d.practice_question.options||[]).length})">${opt}</div>`).join('')}</div>
+          <div id="pqFeedback" style="display:none;margin-top:10px;font-size:.78rem;line-height:1.6;padding:9px 12px;border-radius:9px;"></div>
+        </div>
+      </div>`:''}
+      <div class="side-card">
+        <div class="rcs-head"><span class="rcs-icon">🔗</span><span class="rcs-title">Related Concepts</span></div>
+        <div style="padding:12px 16px;"><div class="related-chips">${(d.related_concepts||[]).map(c=>`<span class="rel-chip" onclick="quickExplain('${c}','')">${c}</span>`).join('')}</div></div>
+      </div>
+      <div class="side-card">
+        <div class="rcs-head"><span class="rcs-icon">💬</span><span class="rcs-title">Ask Follow-up</span></div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:7px;">
+          <button style="padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);font-size:.76rem;font-weight:700;color:var(--ink-2);cursor:pointer;text-align:left;" onclick="window.location='ai-chat.html'">💬 Ask AI Chat Tutor →</button>
+          <button style="padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);font-size:.76rem;font-weight:700;color:var(--ink-2);cursor:pointer;text-align:left;word-break:break-word;" onclick="window.location='ai-practice-test.html'">📝 Generate Practice Test →</button>
+        </div>
+      </div>
+      <button style="width:100%;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;font-size:.78rem;font-weight:800;color:var(--muted);cursor:pointer;" onclick="document.getElementById('popularSection').style.display='';document.getElementById('resultArea').innerHTML='';document.getElementById('conceptInput').value='';">← Explain Another Concept</button>
+    </div>
+  </div>`;
+  document.getElementById('resultArea').innerHTML = html;
+  showToast(`"${d.concept}" explained!`,'💡');
+}
+
+function selectPQ(i, correct, explanation, total){
+  const selectedLetter = String.fromCharCode(65+i);
+  const correctIdx = correct.charCodeAt(0)-65;
+  const isCorrect = selectedLetter === correct.toUpperCase();
+  for(let j=0;j<total;j++){
+    const el=document.getElementById('pqopt'+j);
+    if(el){el.style.pointerEvents='none';if(j===correctIdx)el.classList.add('correct');else if(j===i&&!isCorrect)el.classList.add('wrong');}
+  }
+  const fb=document.getElementById('pqFeedback');
+  fb.style.display='block';
+  fb.style.background=isCorrect?'#DCFCE7':'#FEE2E2';
+  fb.style.color=isCorrect?'#166534':'#991B1B';
+  fb.innerHTML=`${isCorrect?'✅ Correct!':'❌ Incorrect.'} ${explanation}`;
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

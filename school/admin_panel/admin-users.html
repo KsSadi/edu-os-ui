@@ -1,0 +1,626 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Role filter pills */
+.role-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.role-pill {
+  padding:6px 14px; border-radius:20px; border:1.5px solid var(--border);
+  background:var(--white); font-size:.8rem; font-weight:600; color:var(--muted);
+  cursor:pointer; transition:all .15s; font-family:'Plus Jakarta Sans',sans-serif;
+}
+.role-pill:hover { border-color:var(--blue); color:var(--blue); }
+.role-pill.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+.role-pill .pill-count { background:rgba(255,255,255,.25); border-radius:10px; padding:1px 6px; margin-left:5px; font-size:.7rem; }
+.role-pill:not(.on) .pill-count { background:var(--bg); color:var(--muted); }
+
+/* User row */
+.user-row-avatar { display:flex; align-items:center; gap:10px; }
+.user-fullname  { font-weight:600; color:var(--ink-2); font-size:.875rem; }
+.user-email     { font-size:.75rem; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+.user-meta-chip { display:inline-flex; align-items:center; gap:4px; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:2px 8px; font-size:.72rem; color:var(--ink-3); }
+
+/* Status dot */
+.status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dot-green  { background:#22C55E; }
+.dot-amber  { background:#F59E0B; }
+.dot-red    { background:#EF4444; }
+.dot-slate  { background:var(--border-mid); }
+
+/* Checkbox column */
+.cb-col { width:36px; }
+.row-check { width:16px; height:16px; accent-color:var(--blue); cursor:pointer; }
+
+/* Bulk action bar */
+.bulk-bar {
+  display:none; align-items:center; gap:12px; padding:10px 16px;
+  background:var(--blue-pale); border:1px solid var(--blue-light);
+  border-radius:10px; margin-bottom:14px;
+  font-size:.84rem;
+}
+.bulk-bar.show { display:flex; }
+.bulk-count { font-weight:700; color:var(--blue); }
+
+/* Stats strip */
+.user-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:22px; }
+.ustat { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.ustat-num   { font-family:'Sora',sans-serif; font-size:1.5rem; font-weight:800; color:var(--ink); line-height:1; margin-bottom:3px; }
+.ustat-label { font-size:.72rem; color:var(--muted); }
+.ustat-dot   { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; }
+
+/* Import/Export dropdown */
+.dropdown-wrap { position:relative; }
+.dropdown-menu {
+  display:none; position:absolute; top:calc(100% + 6px); right:0;
+  background:var(--white); border:1px solid var(--border); border-radius:10px;
+  box-shadow:var(--shadow-lg); min-width:190px; overflow:hidden; z-index:50;
+}
+.dropdown-menu.open { display:block; }
+.dropdown-item {
+  display:flex; align-items:center; gap:9px; padding:10px 14px;
+  font-size:.845rem; color:var(--ink-3); cursor:pointer; transition:background .12s;
+}
+.dropdown-item:hover { background:var(--bg); color:var(--ink); }
+.dropdown-sep { border:none; border-top:1px solid var(--border); margin:4px 0; }
+
+/* Last login */
+.last-login { font-size:.75rem; color:var(--muted); }
+.last-login strong { color:var(--green); font-weight:600; }
+
+/* Inline action buttons */
+.row-actions { display:flex; gap:6px; opacity:0; transition:opacity .15s; }
+.data-table tbody tr:hover .row-actions { opacity:1; }
+
+/* Empty search state */
+.search-empty { text-align:center; padding:40px 24px; }
+
+/* Invite banner */
+.invite-banner {
+  background:linear-gradient(135deg,var(--blue),#0369A1);
+  border-radius:12px; padding:18px 22px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  margin-bottom:20px; flex-wrap:wrap;
+}
+.invite-text { color:#fff; }
+.invite-title { font-family:'Sora',sans-serif; font-size:.95rem; font-weight:700; margin-bottom:3px; }
+.invite-sub   { font-size:.78rem; color:rgba(255,255,255,.7); }
+
+@media(max-width:900px) { .user-stats{grid-template-columns:repeat(3,1fr);} .row-actions{opacity:1;} }
+@media(max-width:600px) { .user-stats{grid-template-columns:repeat(2,1fr);} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">User Management</div>
+        <div class="page-sub">Manage all staff, teachers, and parent accounts for this school.</div>
+      </div>
+      <div class="page-actions">
+        <div class="dropdown-wrap">
+          <button class="btn btn-secondary btn-sm" onclick="toggleDropdown()">Import / Export &middot;</button>
+          <div class="dropdown-menu" id="importDropdown">
+            <div class="dropdown-item" onclick="showToast(' Template downloaded')"> Download CSV Template</div>
+            <div class="dropdown-item" onclick="showToast(' Ready to import')"> Import Users (CSV)</div>
+            <hr class="dropdown-sep">
+            <div class="dropdown-item" onclick="showToast(' Exporting...')"> Export All Users</div>
+            <div class="dropdown-item" onclick="showToast(' Exporting...')"> Export Filtered View</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openInviteModal()"> Invite by Email</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add User</button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="user-stats">
+      <div class="ustat">
+        <div class="ustat-num" id="totalCount">92</div>
+        <div class="ustat-label"><span class="ustat-dot" style="background:var(--blue);"></span>Total Staff</div>
+      </div>
+      <div class="ustat">
+        <div class="ustat-num" style="color:#059669;">68</div>
+        <div class="ustat-label"><span class="ustat-dot" style="background:#059669;"></span>Teachers</div>
+      </div>
+      <div class="ustat">
+        <div class="ustat-num" style="color:var(--purple);">14</div>
+        <div class="ustat-label"><span class="ustat-dot" style="background:var(--purple);"></span>Admin Staff</div>
+      </div>
+      <div class="ustat">
+        <div class="ustat-num" style="color:var(--amber);">10</div>
+        <div class="ustat-label"><span class="ustat-dot" style="background:var(--amber);"></span>Support Staff</div>
+      </div>
+      <div class="ustat">
+        <div class="ustat-num" style="color:var(--muted);">3</div>
+        <div class="ustat-label"><span class="ustat-dot" style="background:var(--border-mid);"></span>Pending Invite</div>
+      </div>
+    </div>
+
+    <!-- Invite banner (if invites pending) -->
+    <div class="invite-banner">
+      <div class="invite-text">
+        <div class="invite-title"> 3 pending invitations</div>
+        <div class="invite-sub">Invited users haven't set up their accounts yet. Resend invitations or cancel them.</div>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);" onclick="showToast(' Reminders sent to 3 users')">Resend All Reminders</button>
+    </div>
+
+    <div class="card">
+      <!-- Filters + search -->
+      <div style="padding:18px 20px; border-bottom:1px solid var(--border);">
+        <div class="role-pills mb-4">
+          <button class="role-pill on"  onclick="filterRole(this,'all')">All Users <span class="pill-count">92</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'admin')"> Admin <span class="pill-count">2</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'teacher')"> Teacher <span class="pill-count">68</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'staff')"> Staff <span class="pill-count">12</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'accountant')"> Accountant <span class="pill-count">3</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'pending')">Pending <span class="pill-count">3</span></button>
+          <button class="role-pill"     onclick="filterRole(this,'inactive')"> Inactive <span class="pill-count">4</span></button>
+        </div>
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-input-icon"></span>
+            <input type="text" class="form-input" placeholder="Search by name, email or phone&middot;" oninput="searchUsers(this.value)">
+          </div>
+          <select class="form-select" style="width:auto;" onchange="filterDept(this.value)">
+            <option value="">All Departments</option>
+            <option>Science</option><option>Mathematics</option><option>English</option>
+            <option>Bangla &amp; Humanities</option><option>ICT</option><option>Administration</option>
+          </select>
+          <select class="form-select" style="width:auto;">
+            <option>Sort: Name A&middot;Z</option>
+            <option>Sort: Name Z&middot;A</option>
+            <option>Sort: Newest first</option>
+            <option>Sort: Last active</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Bulk action bar -->
+      <div class="bulk-bar" id="bulkBar" style="margin:12px 20px 0;">
+        <span class="bulk-count"><span id="selectedCount">0</span> selected</span>
+        <button class="btn btn-secondary btn-xs" onclick="bulkAction('activate')">Activate</button>
+        <button class="btn btn-secondary btn-xs" onclick="bulkAction('deactivate')"> Deactivate</button>
+        <button class="btn btn-secondary btn-xs" onclick="bulkAction('role')"> Change Role</button>
+        <button class="btn btn-secondary btn-xs" onclick="bulkAction('email')"> Send Email</button>
+        <button class="btn btn-danger btn-xs"    onclick="bulkAction('delete')">&#x1F5D1;&#xFE0F; Delete</button>
+        <button class="btn btn-secondary btn-xs" onclick="clearSelection()" style="margin-left:auto;">Clear</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap" style="padding:0 0 8px;">
+        <table class="data-table" id="userTable">
+          <thead>
+            <tr>
+              <th class="cb-col"><input type="checkbox" class="row-check" onchange="selectAll(this)"></th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Department / Class</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Last Active</th>
+              <th style="width:100px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTbody">
+            <!-- Row 1 -->
+            <tr data-role="admin" data-name="Abdur Rahman Molla">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);">AR</div>
+                  <div>
+                    <div class="user-fullname">Abdur Rahman Molla</div>
+                    <div class="user-email">a.rahman@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-purple"> Principal / Admin</span></td>
+              <td><span class="user-meta-chip">Administration</span></td>
+              <td class="td-mono">+880 171-1234567</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-green"></div><span style="font-size:.8rem;font-weight:600;color:#065F46;">Active</span></div></td>
+              <td class="last-login"><strong>Now online</strong></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn btn-icon btn-secondary btn-xs" title="Edit" onclick="openEditModal('Abdur Rahman Molla')">&hellip;</button>
+                  <button class="btn btn-icon btn-secondary btn-xs" title="More" onclick="showToast('Options menu')">&hellip;</button>
+                </div>
+              </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr data-role="teacher" data-name="Fatema Begum">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#EC4899,#BE185D);">FB</div>
+                  <div>
+                    <div class="user-fullname">Fatema Begum</div>
+                    <div class="user-email">f.begum@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-blue"> Vice Principal</span></td>
+              <td><span class="user-meta-chip">Administration</span></td>
+              <td class="td-mono">+880 171-2345678</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-green"></div><span style="font-size:.8rem;font-weight:600;color:#065F46;">Active</span></div></td>
+              <td class="last-login">2 hrs ago</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Fatema Begum')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 3 -->
+            <tr data-role="teacher" data-name="Dr. Karim Hossain">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#10B981,#059669);">KH</div>
+                  <div>
+                    <div class="user-fullname">Dr. Karim Hossain</div>
+                    <div class="user-email">k.hossain@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-green"> Teacher</span></td>
+              <td><span class="user-meta-chip">Science</span></td>
+              <td class="td-mono">+880 171-3456789</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-green"></div><span style="font-size:.8rem;font-weight:600;color:#065F46;">Active</span></div></td>
+              <td class="last-login">Yesterday</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Dr. Karim Hossain')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 4 -->
+            <tr data-role="teacher" data-name="Nasrin Akter">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#F59E0B,#D97706);">NA</div>
+                  <div>
+                    <div class="user-fullname">Nasrin Akter</div>
+                    <div class="user-email">n.akter@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-green"> Teacher</span></td>
+              <td><span class="user-meta-chip">Mathematics</span></td>
+              <td class="td-mono">+880 171-4567890</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-green"></div><span style="font-size:.8rem;font-weight:600;color:#065F46;">Active</span></div></td>
+              <td class="last-login">3 hrs ago</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Nasrin Akter')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 5 -->
+            <tr data-role="teacher" data-name="Shahed Alam">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#6366F1,#4338CA);">SA</div>
+                  <div>
+                    <div class="user-fullname">Shahed Alam</div>
+                    <div class="user-email">s.alam@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-green"> Teacher</span></td>
+              <td><span class="user-meta-chip">English</span></td>
+              <td class="td-mono">+880 171-5678901</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-amber"></div><span style="font-size:.8rem;font-weight:600;color:#92400E;">Away</span></div></td>
+              <td class="last-login">5 hrs ago</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Shahed Alam')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 6 -->
+            <tr data-role="staff" data-name="Tanvir Ahmed">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:linear-gradient(135deg,#14B8A6,#0F766E);">TA</div>
+                  <div>
+                    <div class="user-fullname">Tanvir Ahmed</div>
+                    <div class="user-email">t.ahmed@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-teal"> ICT Coordinator</span></td>
+              <td><span class="user-meta-chip">ICT</span></td>
+              <td class="td-mono">+880 171-6789012</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-green"></div><span style="font-size:.8rem;font-weight:600;color:#065F46;">Active</span></div></td>
+              <td class="last-login">1 hr ago</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Tanvir Ahmed')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 7 &middot; Inactive -->
+            <tr data-role="inactive" data-name="Roksana Parvin">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:var(--border-mid);color:var(--muted);">RP</div>
+                  <div>
+                    <div class="user-fullname" style="color:var(--muted);">Roksana Parvin</div>
+                    <div class="user-email">r.parvin@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-slate"> Teacher</span></td>
+              <td><span class="user-meta-chip">Bangla &amp; Humanities</span></td>
+              <td class="td-mono">+880 171-7890123</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-slate"></div><span style="font-size:.8rem;color:var(--muted);">Inactive</span></div></td>
+              <td class="last-login">15 days ago</td>
+              <td><div class="row-actions"><button class="btn btn-icon btn-secondary btn-xs" onclick="openEditModal('Roksana Parvin')">&hellip;</button><button class="btn btn-icon btn-secondary btn-xs">&hellip;</button></div></td>
+            </tr>
+            <!-- Row 8 &middot; Pending -->
+            <tr data-role="pending" data-name="Sumaiya Islam">
+              <td><input type="checkbox" class="row-check" onchange="rowCheck(this)"></td>
+              <td>
+                <div class="user-row-avatar">
+                  <div class="avatar av-36" style="background:var(--amber-light);color:var(--amber);">SI</div>
+                  <div>
+                    <div class="user-fullname">Sumaiya Islam</div>
+                    <div class="user-email">s.islam@dhakahigh.edu.bd</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-amber">Pending Setup</span></td>
+              <td><span class="user-meta-chip">Counselor</span></td>
+              <td class="td-mono">+880 171-8901234</td>
+              <td><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot dot-amber"></div><span style="font-size:.8rem;font-weight:600;color:#92400E;">Invite sent</span></div></td>
+              <td class="last-login">Never logged in</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn btn-xs btn-secondary" onclick="showToast(' Invite resent to Sumaiya')">Resend</button>
+                  <button class="btn btn-icon btn-secondary btn-xs">&hellip;</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div style="padding:14px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:.8rem; color:var(--muted);">Showing <strong style="color:var(--ink);">8</strong> of <strong style="color:var(--ink);">92</strong> users</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-xs" disabled>Prev</button>
+          <button class="btn btn-secondary btn-xs" style="background:var(--blue);color:#fff;border-color:var(--blue);">1</button>
+          <button class="btn btn-secondary btn-xs">2</button>
+          <button class="btn btn-secondary btn-xs">3</button>
+          <span style="display:flex;align-items:center;font-size:.8rem;color:var(--muted);padding:0 4px;">&middot;</span>
+          <button class="btn btn-secondary btn-xs">12</button>
+          <button class="btn btn-secondary btn-xs">Next &middot;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New User</div>
+      <button class="modal-close" onclick="closeModal('addModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" style="margin-bottom:20px;">
+        <button class="tab on" onclick="switchAddTab(this,'single')">Single User</button>
+        <button class="tab"    onclick="switchAddTab(this,'bulk')">Bulk Import</button>
+      </div>
+      <div id="singleForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" class="form-input" placeholder="e.g. Karim">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input type="text" class="form-input" placeholder="e.g. Hossain">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" class="form-input" placeholder="user@dhakahigh.edu.bd">
+          <div class="form-hint">A setup invitation will be sent to this email.</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Role *</label>
+            <select class="form-select" id="roleSelect" onchange="toggleDeptField(this.value)">
+              <option value="">Select role&middot;</option>
+              <option value="teacher">Teacher</option>
+              <option value="admin">Admin Staff</option>
+              <option value="accountant">Accountant</option>
+              <option value="librarian">Librarian</option>
+              <option value="counselor">Counselor</option>
+            </select>
+          </div>
+          <div class="form-group" id="deptField">
+            <label class="form-label">Department</label>
+            <select class="form-select">
+              <option>Science</option><option>Mathematics</option><option>English</option>
+              <option>Bangla &amp; Humanities</option><option>ICT</option>
+              <option>Social Studies</option><option>Administration</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Join Date</label>
+            <input type="date" class="form-input" value="2025-02-25">
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;font-size:.845rem;cursor:pointer;font-weight:500;">
+            <input type="checkbox" checked style="accent-color:var(--blue);width:16px;height:16px;">
+            Send welcome email with login instructions
+          </label>
+        </div>
+      </div>
+      <div id="bulkForm" style="display:none;">
+        <div class="alert alert-blue" style="margin-bottom:16px;">
+          <span class="alert-icon"></span>
+          <div><div class="alert-title">CSV Format Required</div><div class="alert-msg">Download the template below. Columns: first_name, last_name, email, role, department, phone</div></div>
+        </div>
+        <button class="btn btn-secondary btn-sm mb-4" onclick="showToast(' Template downloaded')"> Download CSV Template</button>
+        <div class="logo-upload" style="border:2px dashed var(--border-mid);border-radius:12px;padding:32px;text-align:center;background:var(--bg);">
+          <div style="font-size:2rem;margin-bottom:8px;"></div>
+          <div style="font-size:.875rem;font-weight:600;color:var(--ink-2);">Drag CSV file here or click to browse</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Max 500 rows per import</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddUser()">Add User &amp; Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit User &middot; <span id="editModalName"></span></div>
+      <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" value="Abdur"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" value="Rahman Molla"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" value="a.rahman@dhakahigh.edu.bd"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select"><option selected>Principal / Admin</option><option>Teacher</option><option>Staff</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Department</label><select class="form-select"><option selected>Administration</option><option>Science</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" value="+880 171-1234567"></div>
+      <div class="divider"></div>
+      <div class="form-group">
+        <div class="form-label">Account Status</div>
+        <div style="display:flex;gap:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:.845rem;cursor:pointer;"><input type="radio" name="status" value="active" checked style="accent-color:var(--blue);">Active</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.845rem;cursor:pointer;"><input type="radio" name="status" value="inactive" style="accent-color:var(--blue);">Inactive</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.845rem;cursor:pointer;"><input type="radio" name="status" value="suspended" style="accent-color:var(--red);">Suspended</label>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-secondary btn-sm" onclick="showToast(' Password reset email sent')"> Reset Password</button>
+        <button class="btn btn-secondary btn-sm" onclick="showToast(' Sessions cleared')"> Force Logout</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="closeModal('editModal');showToast(' User deleted','&#x2705;')">&#x1F5D1;&#xFE0F; Delete User</button>
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('editModal');showToast('User updated')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let selectedRows = 0;
+
+function filterRole(btn, role) {
+  document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  const rows = document.querySelectorAll('#userTbody tr');
+  let vis = 0;
+  rows.forEach(r => {
+    const show = role === 'all' || r.dataset.role === role;
+    r.style.display = show &middot; '' : 'none';
+    if (show) vis++;
+  });
+}
+
+function searchUsers(q) {
+  const term = q.toLowerCase();
+  document.querySelectorAll('#userTbody tr').forEach(r => {
+    r.style.display = r.dataset.name.toLowerCase().includes(term) &middot; '' : 'none';
+  });
+}
+
+function selectAll(cb) {
+  document.querySelectorAll('#userTbody .row-check').forEach(c => {
+    if (c.closest('tr').style.display !== 'none') c.checked = cb.checked;
+  });
+  updateBulkBar();
+}
+
+function rowCheck() { updateBulkBar(); }
+
+function updateBulkBar() {
+  const checked = document.querySelectorAll('#userTbody .row-check:checked').length;
+  selectedRows = checked;
+  document.getElementById('selectedCount').textContent = checked;
+  document.getElementById('bulkBar').classList.toggle('show', checked > 0);
+}
+
+function clearSelection() {
+  document.querySelectorAll('.row-check').forEach(c => c.checked = false);
+  updateBulkBar();
+}
+
+function bulkAction(type) {
+  const msgs = {activate:'Users activated',deactivate:'Users deactivated',role:'Roles updated',email:'Emails sent',delete:'Users deleted'};
+  showToast(msgs[type] || 'Done');
+  clearSelection();
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function openInviteModal() { openAddModal(); }
+function openEditModal(name) {
+  document.getElementById('editModalName').textContent = name;
+  document.getElementById('editModal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function switchAddTab(btn, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('singleForm').style.display = tab === 'single' &middot; '' : 'none';
+  document.getElementById('bulkForm').style.display = tab === 'bulk' &middot; '' : 'none';
+}
+
+function submitAddUser() {
+  closeModal('addModal');
+  showToast('User added & invite sent');
+}
+
+function toggleDropdown() {
+  document.getElementById('importDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrap')) document.getElementById('importDropdown').classList.remove('open');
+});
+
+function showToast(msg, icon='&#x2139;&#xFE0F;') {
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-icon">${icon}</span>${msg}`;
+  stack.appendChild(t);
+  setTimeout(() => t.style.opacity='0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

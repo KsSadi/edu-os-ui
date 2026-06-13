@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform Analytics � Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+/* Period selector */
+.period-tabs{display:flex;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg);}
+.pt-btn{padding:7px 16px;font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .12s;}
+.pt-btn.on{background:var(--sup);color:#fff;}
+
+/* Big KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi-card{border:1.5px solid var(--border);border-radius:16px;padding:18px 20px;background:var(--white);position:relative;overflow:hidden;}
+.kc-num{font-size:1.8rem;font-weight:900;font-family:'DM Mono',monospace;line-height:1.1;margin-bottom:3px;}
+.kc-lbl{font-size:.76rem;color:var(--muted);font-weight:600;}
+.kc-delta{font-size:.74rem;font-weight:700;margin-top:5px;display:flex;align-items:center;gap:5px;}
+.kc-spark{position:absolute;right:0;bottom:0;left:0;height:38px;display:flex;align-items:flex-end;gap:1px;padding:0 10px;opacity:.25;}
+.kc-spark-bar{flex:1;border-radius:2px 2px 0 0;min-height:4px;}
+
+/* Chart container */
+.chart-area{padding:14px 18px;}
+.chart-canvas{border-bottom:2px solid var(--border);}
+.chart-labels{display:flex;gap:0;margin-top:6px;}
+.chart-lbl{flex:1;text-align:center;font-size:.58rem;color:var(--muted);font-weight:600;}
+
+/* Feature adoption table */
+.feat-table{width:100%;border-collapse:collapse;}
+.feat-table th{padding:9px 14px;text-align:left;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);}
+.feat-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.83rem;vertical-align:middle;}
+.feat-table tr:last-child td{border-bottom:none;}
+.feat-adopt-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:3px;}
+.feat-adopt-in{height:100%;border-radius:4px;}
+
+/* Cohort heatmap */
+.cohort-table{width:100%;border-collapse:collapse;font-size:.74rem;}
+.cohort-table th{padding:7px 10px;text-align:center;font-size:.66rem;font-weight:700;color:var(--muted);border:1px solid var(--border);background:var(--bg);}
+.cohort-table td{padding:7px 10px;text-align:center;border:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:800;font-size:.72rem;cursor:pointer;transition:opacity .1s;}
+.cohort-table td:hover{opacity:.75;}
+
+/* Funnel */
+.funnel-step{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.fs-label{font-size:.82rem;font-weight:700;color:var(--ink-2);min-width:140px;}
+.fs-bar-out{flex:1;height:28px;background:var(--border);border-radius:6px;overflow:hidden;position:relative;}
+.fs-bar-in{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;transition:width .6s ease;}
+.fs-bar-txt{font-size:.76rem;font-weight:800;color:#fff;z-index:1;}
+.fs-num{min-width:70px;text-align:right;font-family:'DM Mono',monospace;font-weight:800;font-size:.82rem;color:var(--ink);}
+.fs-rate{min-width:42px;text-align:right;font-size:.72rem;font-weight:700;color:var(--muted);}
+
+/* Plan mix donut text */
+.plan-legend{display:flex;flex-direction:column;gap:8px;}
+.pl-row{display:flex;align-items:center;gap:8px;}
+.pl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.pl-name{flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.pl-pct{font-family:'DM Mono',monospace;font-weight:900;font-size:.82rem;}
+.pl-cnt{font-size:.7rem;color:var(--muted);}
+
+/* Geo map bars */
+.geo-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.geo-name{min-width:105px;font-size:.78rem;font-weight:700;color:var(--ink-2);}
+.geo-bar-out{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+.geo-bar-in{height:100%;border-radius:5px;}
+.geo-num{min-width:42px;text-align:right;font-family:'DM Mono',monospace;font-weight:800;font-size:.76rem;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link active"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Anthropic</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Platform Analytics</span></div></div>
+    <div class="topbar-right">
+      <div class="period-tabs">
+        <button class="pt-btn" onclick="setPeriod('7d',this)">7D</button>
+        <button class="pt-btn" onclick="setPeriod('30d',this)">30D</button>
+        <button class="pt-btn on" onclick="setPeriod('12m',this)">12M</button>
+        <button class="pt-btn" onclick="setPeriod('all',this)">All</button>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="showToast('Generating analytics report PDF�','??')">?? Export</button>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Growth & Insights</div>
+        <div class="page-title">Platform Analytics</div>
+        <div class="page-sub">Revenue trends, tenant growth, feature adoption, and user behaviour across all 12,847 schools.</div>
+      </div>
+    </div>
+
+    <!-- Big KPIs -->
+    <div class="kpi-row anim-1">
+      <div class="kpi-card" style="border-top:3px solid var(--sup);">
+        <div class="kc-spark" id="spark1"></div>
+        <div class="kc-num" style="color:var(--sup);">? 3.84Cr</div>
+        <div class="kc-lbl">Monthly Recurring Revenue</div>
+        <div class="kc-delta" style="color:var(--green);">? +18.4% <span style="color:var(--muted);font-weight:500;">vs last year</span></div>
+      </div>
+      <div class="kpi-card" style="border-top:3px solid var(--blue);">
+        <div class="kc-spark" id="spark2"></div>
+        <div class="kc-num" style="color:var(--blue);">12,847</div>
+        <div class="kc-lbl">Active Tenants</div>
+        <div class="kc-delta" style="color:var(--green);">? +248 <span style="color:var(--muted);font-weight:500;">this month</span></div>
+      </div>
+      <div class="kpi-card" style="border-top:3px solid var(--green);">
+        <div class="kc-spark" id="spark3"></div>
+        <div class="kc-num" style="color:var(--green);">4.21M</div>
+        <div class="kc-lbl">Total Students</div>
+        <div class="kc-delta" style="color:var(--green);">? +91K <span style="color:var(--muted);font-weight:500;">this month</span></div>
+      </div>
+      <div class="kpi-card" style="border-top:3px solid var(--amber);">
+        <div class="kc-spark" id="spark4"></div>
+        <div class="kc-num" style="color:var(--amber);">2.4%</div>
+        <div class="kc-lbl">Monthly Churn Rate</div>
+        <div class="kc-delta" style="color:var(--green);">? -0.3% <span style="color:var(--muted);font-weight:500;">vs last month</span></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Revenue chart -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Revenue Over Time</div><div class="card-sub">Monthly Recurring Revenue � Last 12 months � All plans</div></div>
+          <div style="display:flex;gap:10px;font-size:.72rem;color:var(--muted);align-items:center;">
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:3px;border-radius:2px;background:var(--sup);"></div>MRR</div>
+            <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:3px;border-radius:2px;background:var(--blue);"></div>New Revenue</div>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-canvas" style="display:flex;align-items:flex-end;gap:8px;height:140px;" id="revenueMainChart"></div>
+          <div class="chart-labels" id="revenueMainLabels"></div>
+        </div>
+      </div>
+
+      <!-- Plan mix donut -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Plan Distribution</div><div class="card-sub">Active tenants by plan</div></div>
+        <div style="padding:14px 18px;display:flex;align-items:center;gap:16px;">
+          <svg viewBox="0 0 120 120" width="100" height="100" style="flex-shrink:0;">
+            <!-- Donut segments approximated -->
+            <circle cx="60" cy="60" r="40" fill="none" stroke="#5B21B6" stroke-width="18" stroke-dasharray="50 201.1" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="#1D4ED8" stroke-width="18" stroke-dasharray="66 201.1" stroke-dashoffset="-50" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="#059669" stroke-width="18" stroke-dasharray="97 201.1" stroke-dashoffset="-116" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="#D97706" stroke-width="18" stroke-dasharray="42 201.1" stroke-dashoffset="-185" transform="rotate(-90 60 60)"/>
+            <text x="60" y="56" text-anchor="middle" style="font-size:11px;font-weight:900;fill:#1F2937;">12,847</text>
+            <text x="60" y="68" text-anchor="middle" style="font-size:7px;fill:#6B7280;">tenants</text>
+          </svg>
+          <div class="plan-legend">
+            <div class="pl-row"><div class="pl-dot" style="background:#5B21B6;"></div><div class="pl-name">Enterprise</div><div class="pl-pct" style="color:#5B21B6;">6.6%</div><div class="pl-cnt">842</div></div>
+            <div class="pl-row"><div class="pl-dot" style="background:#1D4ED8;"></div><div class="pl-name">Pro</div><div class="pl-pct" style="color:#1D4ED8;">32.8%</div><div class="pl-cnt">4,210</div></div>
+            <div class="pl-row"><div class="pl-dot" style="background:#059669;"></div><div class="pl-name">Basic</div><div class="pl-pct" style="color:#059669;">47.9%</div><div class="pl-cnt">6,152</div></div>
+            <div class="pl-row"><div class="pl-dot" style="background:#D97706;"></div><div class="pl-name">Trial</div><div class="pl-pct" style="color:#D97706;">9.3%</div><div class="pl-cnt">1,198</div></div>
+            <div style="padding-top:8px;border-top:1px solid var(--border);margin-top:4px;font-size:.74rem;color:var(--muted);">Avg revenue / tenant: <strong style="color:var(--ink);">? 2,988</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Tenant growth chart -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Tenant Growth</div><div class="card-sub">New signups vs churned � Monthly</div></div>
+          <span class="badge badge-green" style="font-size:.7rem;">Net +248 this month</span>
+        </div>
+        <div class="chart-area">
+          <div style="display:flex;align-items:flex-end;gap:5px;height:120px;border-bottom:2px solid var(--border);" id="growthChart"></div>
+          <div style="display:flex;gap:5px;margin-top:6px;" id="growthLabels"></div>
+          <div style="display:flex;gap:14px;margin-top:10px;font-size:.72rem;">
+            <div style="display:flex;align-items:center;gap:5px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue);"></div>New</div>
+            <div style="display:flex;align-items:center;gap:5px;"><div style="width:10px;height:10px;border-radius:2px;background:#FECACA;"></div>Churned</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cohort retention heatmap -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Retention Cohort</div><div class="card-sub">% tenants retained by signup month</div></div>
+        <div style="padding:14px 18px;overflow-x:auto;">
+          <table class="cohort-table" id="cohortTable"></table>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:10px;">Darker = better retention. Green =80%, Amber 60�79%, Red &lt;60%</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Feature adoption -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Feature Adoption</div><div class="card-sub">% tenants actively using each module</div></div>
+        <div style="padding:0;">
+          <table class="feat-table">
+            <thead><tr>
+              <th>Feature</th>
+              <th>Adoption</th>
+              <th>DAU/MAU</th>
+              <th>Plan</th>
+            </tr></thead>
+            <tbody id="featureAdoptionBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Conversion funnel -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Conversion Funnel</div><div class="card-sub">Trial ? Paid journey � Last 90 days</div></div>
+        <div style="padding:18px 20px;" id="funnelArea"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+
+      <!-- Geographic distribution -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Geographic Reach</div><div class="card-sub">Schools by division � Bangladesh</div></div>
+        <div style="padding:16px 18px;" id="geoChart"></div>
+      </div>
+
+      <!-- User activity heatmap by hour -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">? Usage by Hour of Day</div><div class="card-sub">Average daily sessions � All tenants</div></div>
+        <div style="padding:16px 18px;">
+          <div style="display:flex;align-items:flex-end;gap:3px;height:90px;border-bottom:2px solid var(--border);" id="hourChart"></div>
+          <div style="display:flex;gap:3px;margin-top:5px;" id="hourLabels"></div>
+          <div style="margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:.78rem;color:var(--muted);line-height:1.7;">
+            <strong style="color:var(--ink);">Peak hours:</strong> 9�11 AM (morning lessons) and 2�4 PM (result checks). <strong style="color:var(--ink);">Lowest:</strong> 11 PM � 5 AM. Consider scheduling maintenance windows 2�4 AM.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Sparklines for KPI cards
+function makeSparks(id,data,col){
+  const max=Math.max(...data);
+  document.getElementById(id).innerHTML=data.map(v=>`<div class="kc-spark-bar" style="height:${Math.max(4,Math.round(v/max*34))}px;background:${col};"></div>`).join('');
+}
+makeSparks('spark1',[2.1,2.3,2.5,2.4,2.7,2.9,3.0,3.1,3.3,3.5,3.7,3.84],'var(--sup)');
+makeSparks('spark2',[10200,10450,10800,11000,11200,11400,11600,11800,12000,12200,12600,12847],'var(--blue)');
+makeSparks('spark3',[3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.05,4.12,4.21],'var(--green)');
+makeSparks('spark4',[3.1,2.9,2.8,3.0,2.7,2.8,2.6,2.7,2.5,2.6,2.5,2.4],'var(--amber)');
+
+// Revenue main chart � stacked bars
+const months=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb'];
+const mrrData=[2.1,2.3,2.5,2.4,2.7,2.9,3.0,3.1,3.3,3.5,3.7,3.84];
+const newRevData=[0.3,0.25,0.28,0.2,0.35,0.3,0.22,0.25,0.28,0.3,0.28,0.32];
+const maxRev=Math.max(...mrrData);
+document.getElementById('revenueMainChart').innerHTML=months.map((m,i)=>{
+  const mrrH=Math.round(mrrData[i]/maxRev*130);
+  const newH=Math.round(newRevData[i]/maxRev*130);
+  const isCur=i===months.length-1;
+  return`<div style="flex:1;display:flex;flex-direction:column;align-items:stretch;gap:0;">
+    <div style="flex:1;"></div>
+    <div style="background:${isCur?'var(--blue)':'#BFDBFE'};height:${newH}px;border-radius:3px 3px 0 0;opacity:.8;cursor:pointer;" title="${m} new: ?${newRevData[i]}Cr" onclick="showToast('${m} new revenue: ? ${newRevData[i]}Cr','??')"></div>
+    <div style="background:${isCur?'var(--sup)':'#FBCFE8'};height:${mrrH-newH}px;cursor:pointer;" title="${m} MRR: ?${mrrData[i]}Cr" onclick="showToast('${m} MRR: ? ${mrrData[i]} Crore','??')"></div>
+  </div>`;}).join('');
+document.getElementById('revenueMainLabels').innerHTML=months.map(m=>`<div class="chart-lbl">${m}</div>`).join('');
+
+// Growth chart � grouped bars
+const newData=[820,890,940,880,960,1040,1100,1060,1140,1200,1160,1248];
+const churnData=[120,110,130,100,120,115,105,110,98,105,92,88];
+const maxG=Math.max(...newData);
+document.getElementById('growthChart').innerHTML=months.map((m,i)=>{
+  const nh=Math.round(newData[i]/maxG*110);
+  const ch=Math.round(churnData[i]/maxG*110);
+  const isCur=i===months.length-1;
+  return`<div style="flex:1;display:flex;gap:2px;align-items:flex-end;">
+    <div style="flex:1;height:${nh}px;background:${isCur?'var(--blue)':'#BFDBFE'};border-radius:3px 3px 0 0;cursor:pointer;" title="New: ${newData[i]}" onclick="showToast('${m} new signups: ${newData[i]}','??')"></div>
+    <div style="flex:1;height:${ch}px;background:${isCur?'#F87171':'#FECACA'};border-radius:3px 3px 0 0;cursor:pointer;" title="Churned: ${churnData[i]}" onclick="showToast('${m} churned: ${churnData[i]}','??')"></div>
+  </div>`;}).join('');
+document.getElementById('growthLabels').innerHTML=months.map(m=>`<div style="flex:1;text-align:center;font-size:.58rem;color:var(--muted);font-weight:600;">${m}</div>`).join('');
+
+// Cohort heatmap
+const cohortMonths=['Sep','Oct','Nov','Dec','Jan','Feb'];
+const cohortData=[
+  [100,88,82,78,74,71],
+  [100,91,85,81,77,null],
+  [100,89,83,79,null,null],
+  [100,92,86,null,null,null],
+  [100,90,null,null,null,null],
+  [100,null,null,null,null,null],
+];
+const headMonths=['M0','M1','M2','M3','M4','M5'];
+function cohortColor(v){if(v===null)return'#F9FAFB';if(v>=80)return`rgba(5,150,105,${v/100})`;if(v>=60)return`rgba(217,119,6,${v/100})`;return`rgba(220,38,38,${v/100})`;}
+function cohortText(v){if(v===null)return'�';return v+'%';}
+document.getElementById('cohortTable').innerHTML=`
+  <thead><tr><th>Cohort</th>${headMonths.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+  <tbody>${cohortMonths.map((m,ri)=>`<tr><td style="font-weight:700;text-align:left;padding:7px 10px;border:1px solid var(--border);background:var(--bg);">${m} '24</td>${headMonths.map((_,ci)=>{const v=cohortData[ri][ci];return`<td style="background:${cohortColor(v)};color:${v&&v<70?'#fff':'#1F2937'};" onclick="showToast('${m} cohort M${ci}: ${cohortText(v)} retained','??')">${cohortText(v)}</td>`;}).join('')}</tr>`).join('')}
+  </tbody>`;
+
+// Feature adoption
+const features=[
+  {icon:'??',name:'Student Mgmt',pct:98,dau:72,plan:'All',col:'var(--green)'},
+  {icon:'??',name:'Attendance',pct:94,dau:68,plan:'All',col:'var(--green)'},
+  {icon:'??',name:'Fee Collection',pct:91,dau:45,plan:'All',col:'var(--green)'},
+  {icon:'??',name:'Exam & Results',pct:88,dau:38,plan:'All',col:'var(--green)'},
+  {icon:'??',name:'Notice Board',pct:78,dau:55,plan:'All',col:'var(--blue)'},
+  {icon:'??',name:'Study Materials',pct:71,dau:40,plan:'All',col:'var(--blue)'},
+  {icon:'??',name:'Parent Portal',pct:62,dau:34,plan:'All',col:'var(--amber)'},
+  {icon:'??',name:'Marketplace',pct:38,dau:22,plan:'Pro+',col:'var(--amber)'},
+  {icon:'??',name:'Contest Hub',pct:24,dau:15,plan:'Pro+',col:'var(--red)'},
+  {icon:'??',name:'Analytics',pct:48,dau:19,plan:'Pro+',col:'var(--amber)'},
+];
+document.getElementById('featureAdoptionBody').innerHTML=features.map(f=>`
+  <tr>
+    <td><div style="display:flex;align-items:center;gap:7px;"><span>${f.icon}</span><span style="font-size:.83rem;font-weight:700;color:var(--ink-2);">${f.name}</span></div></td>
+    <td style="min-width:100px;">
+      <div style="font-family:'DM Mono',monospace;font-weight:800;font-size:.78rem;color:${f.col};">${f.pct}%</div>
+      <div class="feat-adopt-bar"><div class="feat-adopt-in" style="width:${f.pct}%;background:${f.col};"></div></div>
+    </td>
+    <td style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;">${f.dau}%</td>
+    <td><span style="font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--bg);color:var(--muted);border:1px solid var(--border);">${f.plan}</span></td>
+  </tr>`).join('');
+
+// Funnel
+const funnel=[
+  {label:'Page Visit',n:48200,col:'var(--blue)'},
+  {label:'Sign Up Click',n:12400,col:'#6366F1'},
+  {label:'EIIN Verified',n:9800,col:'var(--purple)'},
+  {label:'Trial Started',n:7200,col:'var(--amber)'},
+  {label:'First Login',n:5900,col:'#D97706'},
+  {label:'Paid Conversion',n:3840,col:'var(--green)'},
+];
+const maxFn=funnel[0].n;
+document.getElementById('funnelArea').innerHTML=funnel.map((f,i)=>`
+  <div class="funnel-step">
+    <div class="fs-label">${f.label}</div>
+    <div class="fs-bar-out">
+      <div class="fs-bar-in" style="width:${Math.round(f.n/maxFn*100)}%;background:${f.col};">
+        <span class="fs-bar-txt">${Math.round(f.n/maxFn*100)}%</span>
+      </div>
+    </div>
+    <div class="fs-num">${f.n.toLocaleString()}</div>
+    <div class="fs-rate">${i>0?Math.round(f.n/funnel[i-1].n*100)+'%':''}</div>
+  </div>`).join('');
+
+// Geo chart
+const geos=[
+  {name:'Dhaka',v:3420,col:'var(--sup)'},
+  {name:'Chattogram',v:2180,col:'var(--blue)'},
+  {name:'Rajshahi',v:1890,col:'var(--purple)'},
+  {name:'Sylhet',v:1540,col:'var(--green)'},
+  {name:'Khulna',v:1240,col:'var(--amber)'},
+  {name:'Barishal',v:980,col:'#0891B2'},
+  {name:'Mymensingh',v:860,col:'var(--muted)'},
+  {name:'Rangpur',v:737,col:'var(--muted)'},
+];
+const maxG2=geos[0].v;
+document.getElementById('geoChart').innerHTML=geos.map(g=>`
+  <div class="geo-row">
+    <div class="geo-name">${g.name}</div>
+    <div class="geo-bar-out"><div class="geo-bar-in" style="width:${Math.round(g.v/maxG2*100)}%;background:${g.col};"></div></div>
+    <div class="geo-num" style="color:${g.col};">${g.v.toLocaleString()}</div>
+  </div>`).join('');
+
+// Hour-of-day chart
+const hourData=[12,8,6,5,6,14,42,88,120,148,162,134,118,126,152,172,168,145,122,94,68,46,34,20];
+const maxH=Math.max(...hourData);
+document.getElementById('hourChart').innerHTML=hourData.map((v,i)=>{
+  const h=Math.round(v/maxH*80);
+  const isPeak=i>=9&&i<=11||i>=14&&i<=16;
+  return`<div style="flex:1;height:${h}px;background:${isPeak?'var(--sup)':'#FBCFE8'};border-radius:2px 2px 0 0;cursor:pointer;" title="${i}:00 � ${v} sessions" onclick="showToast('${i}:00h: avg ${v} sessions','?')"></div>`;}).join('');
+document.getElementById('hourLabels').innerHTML=hourData.map((_,i)=>`<div style="flex:1;text-align:center;font-size:.52rem;color:var(--muted);font-weight:600;">${i%4===0?i+'h':''}</div>`).join('');
+
+function setPeriod(p,el){document.querySelectorAll('.pt-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');showToast(`Viewing: ${p} period`,'??');}
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

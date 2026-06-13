@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Dashboard — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Hero */
+.dash-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.dash-hero::before{content:'📊';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.dh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.dh-title{font-size:1.5rem;font-weight:900;margin-bottom:6px;}
+.dh-sub{font-size:.84rem;opacity:.65;line-height:1.6;}
+.dh-stats{display:flex;gap:0;background:rgba(0,0,0,.25);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);max-width:520px;margin-top:18px;}
+.dh-stat{flex:1;padding:12px 14px;text-align:center;border-right:1px solid rgba(255,255,255,.08);}
+.dh-stat:last-child{border-right:none;}
+.dh-stat-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:#67E8F9;}
+.dh-stat-lbl{font-size:.62rem;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* Usage cards */
+.usage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.usage-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;transition:box-shadow .15s;}
+.usage-card:hover{box-shadow:0 2px 14px rgba(6,182,212,.1);}
+.uc-icon{font-size:1.6rem;margin-bottom:8px;}
+.uc-val{font-size:1.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);margin-bottom:2px;}
+.uc-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.uc-bar{margin-top:10px;background:var(--border);border-radius:3px;height:5px;overflow:hidden;}
+.uc-fill{height:100%;border-radius:3px;background:var(--ai-soft);}
+.uc-bar-label{font-size:.64rem;color:var(--muted);font-weight:600;margin-top:4px;display:flex;justify-content:space-between;}
+
+/* Two column grid */
+.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+
+/* Recent activity */
+.act-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.ac-head{padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.ac-title{font-size:.88rem;font-weight:900;color:var(--ink);}
+.ac-badge{font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:8px;background:var(--ai-pale);color:var(--ai-dark);}
+.ac-body{padding:6px 0;}
+.act-row{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);transition:background .1s;}
+.act-row:last-child{border-bottom:none;}
+.act-row:hover{background:var(--bg);}
+.ar-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ar-info{flex:1;min-width:0;}
+.ar-title{font-size:.82rem;font-weight:800;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ar-meta{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.ar-score{font-family:'DM Mono',monospace;font-size:.84rem;font-weight:800;}
+
+/* Subject stats */
+.subj-row{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);}
+.subj-row:last-child{border-bottom:none;}
+.sr-icon{font-size:1.1rem;width:32px;text-align:center;flex-shrink:0;}
+.sr-info{flex:1;}
+.sr-name{font-size:.82rem;font-weight:800;color:var(--ink-2);}
+.sr-bar{margin-top:4px;background:var(--border);border-radius:3px;height:4px;overflow:hidden;}
+.sr-fill{height:100%;border-radius:3px;}
+.sr-stats{display:flex;gap:12px;flex-shrink:0;}
+.sr-stat{text-align:center;}
+.sr-stat-num{font-size:.82rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.sr-stat-lbl{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+
+/* Quick access grid */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.q-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all .15s;text-decoration:none;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;}
+.q-card:hover{border-color:var(--ai);transform:translateY(-2px);box-shadow:0 4px 18px rgba(6,182,212,.12);}
+.qc-icon{font-size:1.8rem;}
+.qc-title{font-size:.84rem;font-weight:800;color:var(--ink);}
+.qc-desc{font-size:.7rem;color:var(--muted);line-height:1.5;}
+
+/* Streak */
+.streak-row{display:flex;gap:4px;padding:12px 18px;}
+.streak-day{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;}
+.sd-active{background:var(--ai-pale);color:var(--ai-dark);}
+.sd-inactive{background:var(--bg);color:var(--muted);}
+.sd-today{background:var(--ai-soft);color:#fff;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+.anim-2{animation:fadeUp .35s .1s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1000px){.usage-grid{grid-template-columns:repeat(2,1fr);}.two-cols{grid-template-columns:1fr;}.quick-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="dash-hero anim-1">
+      <div class="dh-badge">📊 AI Study Analytics · Your Progress</div>
+      <div class="dh-title">Your AI Learning Dashboard</div>
+      <div class="dh-sub">Track your AI assistant usage, study progress, and performance across all AI tools. Keep your streak going!</div>
+      <div class="dh-stats">
+        <div class="dh-stat"><div class="dh-stat-num">42</div><div class="dh-stat-lbl">Total Sessions</div></div>
+        <div class="dh-stat"><div class="dh-stat-num">156</div><div class="dh-stat-lbl">Questions Asked</div></div>
+        <div class="dh-stat"><div class="dh-stat-num">78%</div><div class="dh-stat-lbl">Avg. Test Score</div></div>
+        <div class="dh-stat"><div class="dh-stat-num">🔥 5</div><div class="dh-stat-lbl">Day Streak</div></div>
+      </div>
+    </div>
+
+    <!-- Usage cards -->
+    <div class="usage-grid anim-1">
+      <div class="usage-card">
+        <div class="uc-icon">💬</div>
+        <div class="uc-val">18</div>
+        <div class="uc-label">Chat Sessions Today</div>
+        <div class="uc-bar"><div class="uc-fill" style="width:60%;"></div></div>
+        <div class="uc-bar-label"><span>Used: 18</span><span>Limit: 30</span></div>
+      </div>
+      <div class="usage-card">
+        <div class="uc-icon">📝</div>
+        <div class="uc-val">7</div>
+        <div class="uc-label">Tests Generated</div>
+        <div class="uc-bar"><div class="uc-fill" style="width:35%;"></div></div>
+        <div class="uc-bar-label"><span>Used: 7</span><span>Limit: 20</span></div>
+      </div>
+      <div class="usage-card">
+        <div class="uc-icon">✍️</div>
+        <div class="uc-val">3</div>
+        <div class="uc-label">Essays Reviewed</div>
+        <div class="uc-bar"><div class="uc-fill" style="width:30%;"></div></div>
+        <div class="uc-bar-label"><span>Used: 3</span><span>Limit: 10</span></div>
+      </div>
+      <div class="usage-card">
+        <div class="uc-icon">💡</div>
+        <div class="uc-val">12</div>
+        <div class="uc-label">Concepts Explored</div>
+        <div class="uc-bar"><div class="uc-fill" style="width:48%;"></div></div>
+        <div class="uc-bar-label"><span>Used: 12</span><span>Limit: 25</span></div>
+      </div>
+    </div>
+
+    <!-- Quick access -->
+    <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">⚡ Quick Access</div>
+    <div class="quick-grid anim-1">
+      <a href="ai-chat.html" class="q-card"><div class="qc-icon">💬</div><div class="qc-title">AI Chat Tutor</div><div class="qc-desc">Ask anything about your studies</div></a>
+      <a href="ai-practice-test.html" class="q-card"><div class="qc-icon">📝</div><div class="qc-title">Practice Tests</div><div class="qc-desc">Generate custom tests for any topic</div></a>
+      <a href="ai-essay-feedback.html" class="q-card"><div class="qc-icon">✍️</div><div class="qc-title">Essay Feedback</div><div class="qc-desc">Get instant grading and tips</div></a>
+      <a href="ai-concept-explainer.html" class="q-card"><div class="qc-icon">💡</div><div class="qc-title">Concept Explainer</div><div class="qc-desc">Understand any concept clearly</div></a>
+      <a href="ai-study-plan.html" class="q-card"><div class="qc-icon">🗓️</div><div class="qc-title">Study Planner</div><div class="qc-desc">AI-generated study schedules</div></a>
+      <a href="ai-chat.html" class="q-card"><div class="qc-icon">🔥</div><div class="qc-title">Continue Learning</div><div class="qc-desc">Pick up where you left off</div></a>
+    </div>
+
+    <!-- Two columns -->
+    <div class="two-cols anim-2">
+
+      <!-- Recent activity -->
+      <div class="act-card">
+        <div class="ac-head"><span class="ac-title">⚡ Recent Activity</span><span class="ac-badge">Last 7 days</span></div>
+        <div class="ac-body">
+          <div class="act-row">
+            <div class="ar-icon" style="background:#CFFAFE;">📝</div>
+            <div class="ar-info"><div class="ar-title">Math Practice Test — Quadratic Equations</div><div class="ar-meta">Today, 2:30 PM · 5 questions · 8 min</div></div>
+            <div class="ar-score" style="color:#16A34A;">4/5</div>
+          </div>
+          <div class="act-row">
+            <div class="ar-icon" style="background:#EDE9FE;">💬</div>
+            <div class="ar-info"><div class="ar-title">Chat: Newton's Laws of Motion explained</div><div class="ar-meta">Today, 1:15 PM · Physics · 12 messages</div></div>
+            <div class="ar-score" style="color:var(--ai);">💬</div>
+          </div>
+          <div class="act-row">
+            <div class="ar-icon" style="background:#FEF3C7;">✍️</div>
+            <div class="ar-info"><div class="ar-title">Essay: Climate Change — Argumentative</div><div class="ar-meta">Yesterday · English · 320 words</div></div>
+            <div class="ar-score" style="color:#2563EB;">76/100</div>
+          </div>
+          <div class="act-row">
+            <div class="ar-icon" style="background:#DCFCE7;">💡</div>
+            <div class="ar-info"><div class="ar-title">Concept: Photosynthesis explained</div><div class="ar-meta">Yesterday · Biology</div></div>
+            <div class="ar-score" style="color:var(--ai);">💡</div>
+          </div>
+          <div class="act-row">
+            <div class="ar-icon" style="background:#CFFAFE;">📝</div>
+            <div class="ar-info"><div class="ar-title">Physics Test — Electricity & Circuits</div><div class="ar-meta">2 days ago · 8 questions · 14 min</div></div>
+            <div class="ar-score" style="color:#16A34A;">6/8</div>
+          </div>
+          <div class="act-row">
+            <div class="ar-icon" style="background:#EDE9FE;">🗓️</div>
+            <div class="ar-info"><div class="ar-title">Study Plan: 4-week SSC Exam Prep</div><div class="ar-meta">3 days ago · 4 subjects</div></div>
+            <div class="ar-score" style="color:var(--ai);">🗓️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject performance -->
+      <div class="act-card">
+        <div class="ac-head"><span class="ac-title">📊 Subject Performance</span><span class="ac-badge">Practice Tests</span></div>
+        <div class="ac-body">
+          <div class="subj-row">
+            <div class="sr-icon">📐</div>
+            <div class="sr-info"><div class="sr-name">Mathematics</div><div class="sr-bar"><div class="sr-fill" style="width:82%;background:linear-gradient(90deg,#06B6D4,#3B82F6);"></div></div></div>
+            <div class="sr-stats"><div class="sr-stat"><div class="sr-stat-num">82%</div><div class="sr-stat-lbl">Avg</div></div><div class="sr-stat"><div class="sr-stat-num">5</div><div class="sr-stat-lbl">Tests</div></div></div>
+          </div>
+          <div class="subj-row">
+            <div class="sr-icon">⚡</div>
+            <div class="sr-info"><div class="sr-name">Physics</div><div class="sr-bar"><div class="sr-fill" style="width:75%;background:linear-gradient(90deg,#06B6D4,#8B5CF6);"></div></div></div>
+            <div class="sr-stats"><div class="sr-stat"><div class="sr-stat-num">75%</div><div class="sr-stat-lbl">Avg</div></div><div class="sr-stat"><div class="sr-stat-num">3</div><div class="sr-stat-lbl">Tests</div></div></div>
+          </div>
+          <div class="subj-row">
+            <div class="sr-icon">🧪</div>
+            <div class="sr-info"><div class="sr-name">Chemistry</div><div class="sr-bar"><div class="sr-fill" style="width:68%;background:linear-gradient(90deg,#8B5CF6,#EC4899);"></div></div></div>
+            <div class="sr-stats"><div class="sr-stat"><div class="sr-stat-num">68%</div><div class="sr-stat-lbl">Avg</div></div><div class="sr-stat"><div class="sr-stat-num">2</div><div class="sr-stat-lbl">Tests</div></div></div>
+          </div>
+          <div class="subj-row">
+            <div class="sr-icon">🌱</div>
+            <div class="sr-info"><div class="sr-name">Biology</div><div class="sr-bar"><div class="sr-fill" style="width:88%;background:linear-gradient(90deg,#10B981,#06B6D4);"></div></div></div>
+            <div class="sr-stats"><div class="sr-stat"><div class="sr-stat-num">88%</div><div class="sr-stat-lbl">Avg</div></div><div class="sr-stat"><div class="sr-stat-num">2</div><div class="sr-stat-lbl">Tests</div></div></div>
+          </div>
+          <div class="subj-row">
+            <div class="sr-icon">📖</div>
+            <div class="sr-info"><div class="sr-name">English</div><div class="sr-bar"><div class="sr-fill" style="width:72%;background:linear-gradient(90deg,#F59E0B,#EF4444);"></div></div></div>
+            <div class="sr-stats"><div class="sr-stat"><div class="sr-stat-num">72%</div><div class="sr-stat-lbl">Avg</div></div><div class="sr-stat"><div class="sr-stat-num">1</div><div class="sr-stat-lbl">Tests</div></div></div>
+          </div>
+
+          <!-- Streak -->
+          <div style="padding:12px 18px 4px;font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">🔥 This Week's Streak</div>
+          <div class="streak-row">
+            <div class="streak-day sd-active">M</div>
+            <div class="streak-day sd-active">T</div>
+            <div class="streak-day sd-active">W</div>
+            <div class="streak-day sd-active">T</div>
+            <div class="streak-day sd-today">F</div>
+            <div class="streak-day sd-inactive">S</div>
+            <div class="streak-day sd-inactive">S</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

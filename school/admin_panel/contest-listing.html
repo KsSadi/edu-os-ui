@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contest Listing &middot; EduOS National Contest</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --con:#1D4ED8;--con-light:#DBEAFE;--con-pale:#EFF6FF;--con-dark:#1E3A8A;
+  --gold:#F59E0B;--gold-light:#FEF3C7;--silver:#94A3B8;--bronze:#B45309;
+}
+.sidebar{background:linear-gradient(180deg,#0F1E4A 0%,#1E3A8A 100%);}
+.sb-link.active{background:rgba(29,78,216,.3);color:#93C5FD;}
+.sb-link.active .sb-icon{background:rgba(29,78,216,.4);color:#60A5FA;}
+.sb-link:hover{background:rgba(255,255,255,.08);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--gold);}
+
+/* Hero */
+.con-hero{background:linear-gradient(135deg,#0F1E4A 0%,#1E3A8A 50%,#2563EB 100%);border-radius:18px;padding:30px 34px;color:#fff;position:relative;overflow:hidden;margin-bottom:26px;}
+.con-hero::before{content:'';position:absolute;right:32px;top:50%;transform:translateY(-50%);font-size:7rem;opacity:.12;pointer-events:none;}
+.con-hero::after{content:'';position:absolute;right:-40px;bottom:-40px;width:200px;height:200px;border-radius:50%;background:rgba(245,158,11,.08);}
+.ch-eyebrow{font-size:.7rem;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.ch-title{font-size:1.8rem;font-weight:900;line-height:1.15;margin-bottom:8px;}
+.ch-sub{font-size:.86rem;opacity:.75;max-width:480px;line-height:1.6;margin-bottom:20px;}
+.ch-stats{display:flex;gap:0;background:rgba(0,0,0,.25);border-radius:12px;overflow:hidden;max-width:500px;}
+.ch-stat{flex:1;padding:12px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.1);}
+.ch-stat:last-child{border-right:none;}
+.ch-stat-num{font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;}
+.ch-stat-lbl{font-size:.64rem;opacity:.6;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:22px;}
+.fb-pill{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;user-select:none;}
+.fb-pill:hover{border-color:var(--con);color:var(--con);}
+.fb-pill.on{background:var(--con);border-color:var(--con);color:#fff;}
+
+/* Contest card */
+.contest-card{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;transition:all .18s;cursor:pointer;}
+.contest-card:hover{box-shadow:0 8px 28px rgba(29,78,216,.13);transform:translateY(-3px);border-color:var(--con);}
+.contest-card.featured{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.12);}
+.cc-banner{height:90px;position:relative;display:flex;align-items:center;padding:0 20px;gap:14px;}
+.cc-emoji{font-size:2.6rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15));}
+.cc-featured-badge{position:absolute;top:10px;right:12px;font-size:.62rem;font-weight:900;padding:3px 9px;border-radius:6px;background:var(--gold);color:#fff;display:flex;align-items:center;gap:3px;}
+.cc-body{padding:14px 20px;}
+.cc-org{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.cc-name{font-size:.96rem;font-weight:900;color:var(--ink);line-height:1.3;margin-bottom:5px;}
+.cc-desc{font-size:.76rem;color:var(--muted);line-height:1.55;margin-bottom:12px;}
+.cc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.cc-tag{font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--con-pale);color:var(--con-dark);border:1px solid var(--con-light);}
+.cc-tag.gold{background:var(--gold-light);color:#92400E;border-color:#FDE68A;}
+.cc-footer{border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.cc-deadline{display:flex;align-items:center;gap:6px;}
+.cc-deadline-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cc-deadline-txt{font-size:.74rem;font-weight:700;}
+.cc-prize{font-size:.76rem;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:4px;}
+.cc-participants{font-size:.72rem;color:var(--muted);}
+.register-btn{padding:7px 16px;border-radius:9px;border:none;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .14s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.register-btn.primary{background:var(--con);color:#fff;}
+.register-btn.primary:hover{background:var(--con-dark);transform:scale(1.03);}
+.register-btn.registered{background:var(--mkt-light,#D1FAE5);color:#065F46;cursor:default;}
+.register-btn.closed{background:var(--bg);color:var(--muted);cursor:not-allowed;}
+
+/* Upcoming deadline strip */
+.deadline-strip{border:1.5px solid #FECACA;border-radius:12px;background:#FFF5F5;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+
+/* Stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.sb2-card{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--white);border-top:3px solid var(--con);}
+.sb2-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--con);}
+.sb2-lbl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.stats-bar{grid-template-columns:1fr 1fr;}.contest-grid{grid-template-columns:1fr!important;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero -->
+    <div class="con-hero anim-1">
+      <div class="ch-eyebrow"> Bangladesh National Contest Portal</div>
+      <div class="ch-title">Compete. Excel.<br>Represent Your School.</div>
+      <div class="ch-sub">Browse active national competitions in Mathematics, Science, ICT, Literature, and more. Register your school and students to compete at district and national level.</div>
+      <div class="ch-stats">
+        <div class="ch-stat"><div class="ch-stat-num">12</div><div class="ch-stat-lbl">Active Contests</div></div>
+        <div class="ch-stat"><div class="ch-stat-num" style="color:#FDE68A;">4,280</div><div class="ch-stat-lbl">Participants</div></div>
+        <div class="ch-stat"><div class="ch-stat-num">64</div><div class="ch-stat-lbl">Districts</div></div>
+        <div class="ch-stat"><div class="ch-stat-num" style="color:#86EFAC;">14L</div><div class="ch-stat-lbl">Total Prize Pool</div></div>
+      </div>
+    </div>
+
+    <!-- Urgent deadline strip -->
+    <div class="deadline-strip anim-1">
+      <div style="font-size:1.3rem;"></div>
+      <div style="flex:1;">
+        <div style="font-size:.86rem;font-weight:800;color:var(--red);">2 contest registrations close in 3 days!</div>
+        <div style="font-size:.76rem;color:#991B1B;margin-top:1px;">National Science Olympiad (Mar 5) &middot; BDMath Challenge (Mar 6) &middot; Register before the deadline.</div>
+      </div>
+      <a href="contest-registration.html" class="register-btn primary" style="flex-shrink:0;">Register Now</a>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar anim-1">
+      <div class="sb2-card"><div class="sb2-num">3</div><div class="sb2-lbl">Your Registrations</div></div>
+      <div class="sb2-card" style="border-top-color:var(--gold);"><div class="sb2-num" style="color:var(--gold);">2</div><div class="sb2-lbl">Gold Medals (Lifetime)</div></div>
+      <div class="sb2-card" style="border-top-color:var(--green);"><div class="sb2-num" style="color:var(--green);">12</div><div class="sb2-lbl">Students Competing</div></div>
+      <div class="sb2-card" style="border-top-color:var(--red);"><div class="sb2-num" style="color:var(--red);">2</div><div class="sb2-lbl">Deadlines This Week</div></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar anim-1" id="filterBar">
+      <div class="fb-pill on" data-filter="all" onclick="filterContest('all',this)">All (12)</div>
+      <div class="fb-pill" data-filter="open" onclick="filterContest('open',this)"> Open</div>
+      <div class="fb-pill" data-filter="registered" onclick="filterContest('registered',this)">Registered</div>
+      <div class="fb-pill" data-filter="Mathematics" onclick="filterContest('Mathematics',this)"> Mathematics</div>
+      <div class="fb-pill" data-filter="Science" onclick="filterContest('Science',this)"> Science</div>
+      <div class="fb-pill" data-filter="ICT" onclick="filterContest('ICT',this)"> ICT</div>
+      <div class="fb-pill" data-filter="English" onclick="filterContest('English',this)"> English</div>
+      <div class="fb-pill" data-filter="Art" onclick="filterContest('Art',this)"> Art</div>
+      <div style="margin-left:auto;">
+        <select class="form-select" style="padding:7px 12px;font-size:.78rem;width:160px;" onchange="sortContests(this.value)">
+          <option>Sort: Deadline Soon</option>
+          <option>Sort: Prize Pool</option>
+          <option>Sort: A&middot;Z</option>
+          <option>Sort: Most Popular</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Contest grid -->
+    <div class="contest-grid anim-1" id="contestGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-bottom:32px;"></div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const contests=[
+  {id:'NSO25',name:'National Science Olympiad 2025',org:'Bangladesh Academy of Sciences',subj:'Science',emoji:'',
+   grad:['135deg','#1E3A8A','#0891B2'],desc:'Bangladesh\'s premier science competition for Class VIII&middot;X students. Topics: Physics, Chemistry, Biology. District heats National final in Dhaka.',
+   deadline:'Mar 5, 2025',daysLeft:9,open:true,featured:true,registered:true,
+   tags:['National','Class VIII&middot;X','Olympiad','Science'],prize:'৳2,00,000',participants:1240,slots:2,
+  },
+  {id:'BDM25',name:'BDMath Challenge 2025',org:'Bangladesh Mathematical Society',subj:'Mathematics',emoji:'',
+   grad:['135deg','#1E3A8A','#7C3AED'],desc:'National mathematics competition. MCQ + written rounds. Class VI&middot;XII. Winners represent Bangladesh in international math olympiad.',
+   deadline:'Mar 6, 2025',daysLeft:10,open:true,featured:true,registered:false,
+   tags:['National','Class VI&middot;XII','Mathematics','Olympiad'],prize:'৳1,50,000',participants:2180,slots:3,
+  },
+  {id:'BDICS25',name:'National ICT Showcase 2025',org:'ICT Division, Bangladesh',subj:'ICT',emoji:'',
+   grad:['135deg','#064E3B','#0891B2'],desc:'Showcase student software projects, mobile apps, and digital innovations. Individual and team entries. Best projects win grants.',
+   deadline:'Mar 20, 2025',daysLeft:24,open:true,featured:false,registered:true,
+   tags:['National','All Classes','Project','ICT'],prize:'৳3,00,000',participants:580,slots:5,
+  },
+  {id:'BDELQ25',name:'Bangladesh English Language Quiz 2025',org:'British Council Bangladesh',subj:'English',emoji:'',
+   grad:['135deg','#78350F','#D97706'],desc:'Reading comprehension, vocabulary, grammar, essay writing. District and national rounds. Scholarships for finalists.',
+   deadline:'Mar 28, 2025',daysLeft:32,open:true,featured:false,registered:false,
+   tags:['National','Class VII&middot;X','English','Quiz'],prize:'Scholarship',participants:890,slots:2,
+  },
+  {id:'NABA25',name:'National Art & Design Biennale 2025',org:'Shilpakala Academy',subj:'Art',emoji:'',
+   grad:['135deg','#831843','#BE185D'],desc:'Creative visual arts competition &middot; drawing, watercolour, digital art. Submissions evaluated by national jury. Exhibition at national museum.',
+   deadline:'Apr 10, 2025',daysLeft:45,open:true,featured:false,registered:false,
+   tags:['National','All Classes','Art','Creative'],prize:'৳80,000',participants:340,slots:4,
+  },
+  {id:'BDPHYS25',name:'Young Physicists Tournament 2025',org:'Dhaka University Physics Dept',subj:'Science',emoji:'&#x2705;',
+   grad:['135deg','#1E3A8A','#7C3AED'],desc:'Team-based physics problem-solving tournament. 5-member teams present solutions and defend against opposing teams. Class IX&middot;XII.',
+   deadline:'Apr 15, 2025',daysLeft:50,open:true,featured:false,registered:false,
+   tags:['National','Class IX&middot;XII','Physics','Team'],prize:'৳1,20,000',participants:420,slots:5,
+  },
+  {id:'BDCHEM25',name:'Chemistry Quiz Bangladesh 2025',org:'Bangladesh Chemical Society',subj:'Science',emoji:'',
+   grad:['135deg','#064E3B','#059669'],desc:'Written and practical chemistry competition. Topics: organic, inorganic, physical chemistry. Class IX&middot;XII. Lab round at district level.',
+   deadline:'Apr 22, 2025',daysLeft:57,open:true,featured:false,registered:true,
+   tags:['National','Class IX&middot;XII','Chemistry'],prize:'৳90,000',participants:610,slots:3,
+  },
+  {id:'BDBIO25',name:'National Biology Olympiad 2025',org:'Bangladesh Biological Society',subj:'Science',emoji:'',
+   grad:['135deg','#064E3B','#16A34A'],desc:'Topics: Cell biology, genetics, ecology, evolution. MCQ prelim lab-based final. Class IX&middot;XII. Winners to IBO 2026.',
+   deadline:'May 5, 2025',daysLeft:70,open:true,featured:false,registered:false,
+   tags:['National','Class IX&middot;XII','Biology','Olympiad'],prize:'৳1,00,000',participants:720,slots:3,
+  },
+  {id:'BDCODE25',name:'Code for Bangladesh Hackathon 2025',org:'BASIS & a2i',subj:'ICT',emoji:'',
+   grad:['135deg','#0F1E4A','#1D4ED8'],desc:'48-hour hackathon to build technology solutions for social problems. Teams of 3. Mentors from top tech companies. Funding for winners.',
+   deadline:'May 15, 2025',daysLeft:80,open:true,featured:false,registered:false,
+   tags:['National','Class IX&middot;XII','Coding','Hackathon','Team'],prize:'৳5,00,000',participants:380,slots:3,
+  },
+  {id:'BDLIT25',name:'Bangladesh Literature Fest Debate 2025',org:'Bangla Academy',subj:'English',emoji:'',
+   grad:['135deg','#78350F','#92400E'],desc:'Inter-school Bangla and English debate competition. Individual elocution and team debate rounds. Open to all classes.',
+   deadline:'May 20, 2025',daysLeft:85,open:true,featured:false,registered:false,
+   tags:['National','All Classes','Debate','Bangla','English'],prize:'Trophies + Scholarship',participants:490,slots:4,
+  },
+  {id:'BDSTAT25',name:'Statistics Talent Hunt 2025',org:'Bangladesh Bureau of Statistics',subj:'Mathematics',emoji:'',
+   grad:['135deg','#1E3A8A','#0891B2'],desc:'Data analysis and statistics competition. Participants interpret real government datasets and present findings. Class X&middot;XII.',
+   deadline:'Jun 1, 2025',daysLeft:97,open:true,featured:false,registered:false,
+   tags:['National','Class X&middot;XII','Statistics','Data'],prize:'৳60,000',participants:240,slots:2,
+  },
+  {id:'BDROBO25',name:'National Robotics Championship 2025',org:'SPARRSO & ICT Division',subj:'ICT',emoji:'',
+   grad:['135deg','#064E3B','#1D4ED8'],desc:'Build, programme and compete with robots. Line following, maze solving, and creative challenge rounds. Teams of 2&middot;4 students.',
+   deadline:'Jun 10, 2025',daysLeft:106,open:true,featured:false,registered:false,
+   tags:['National','Class VII&middot;XII','Robotics','ICT','Team'],prize:'৳2,50,000',participants:310,slots:4,
+  },
+];
+
+let activeFilter='all';
+
+function filterContest(f,el){
+  activeFilter=f;
+  document.querySelectorAll('.fb-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  buildGrid();
+}
+function filterSubj(s){
+  activeFilter=s;
+  document.querySelectorAll('.fb-pill').forEach(p=>p.classList.remove('on'));
+  const pill=document.querySelector(`[data-filter="${s}"]`);
+  if(pill)pill.classList.add('on');
+  buildGrid();
+}
+function sortContests(v){buildGrid();}
+
+function buildGrid(){
+  let list=[...contests];
+  if(activeFilter==='open')list=list.filter(c=>c.open);
+  else if(activeFilter==='registered')list=list.filter(c=>c.registered);
+  else if(activeFilter!=='all')list=list.filter(c=>c.subj===activeFilter||c.tags.includes(activeFilter));
+
+  document.getElementById('contestGrid').innerHTML=list.length
+    ?list.map(c=>contestCard(c)).join('')
+    :'<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--muted);"><div style="font-size:2.5rem;margin-bottom:8px;"></div><div>No contests found for this filter</div></div>';
+}
+
+function contestCard(c){
+  const urgentDeadline=c.daysLeft<=10;
+  const deadlineColor=c.daysLeft<=3?'var(--red)':c.daysLeft<=10?'var(--amber)':'var(--green)';
+  return`<div class="contest-card ${c.featured?'featured':''}" onclick="openContest('${c.id}')">
+    <div class="cc-banner" style="background:linear-gradient(${c.grad[0]},${c.grad[1]},${c.grad[2]})">
+      <div class="cc-emoji">${c.emoji}</div>
+      <div>
+        <div style="font-size:.68rem;font-weight:700;opacity:.65;color:#fff;text-transform:uppercase;letter-spacing:.06em;">${c.org}</div>
+        <div style="font-size:.9rem;font-weight:800;color:#fff;line-height:1.25;margin-top:3px;">${c.name}</div>
+      </div>
+      ${c.featured?'<div class="cc-featured-badge">Featured</div>':''}
+      ${c.registered?'<div style="position:absolute;top:10px;left:10px;font-size:.62rem;font-weight:900;padding:3px 9px;border-radius:6px;background:rgba(5,150,105,.9);color:#fff;">Registered</div>':''}
+    </div>
+    <div class="cc-body">
+      <div class="cc-desc">${c.desc}</div>
+      <div class="cc-tags">${c.tags.map(t=>`<div class="cc-tag">${t}</div>`).join('')}</div>
+    </div>
+    <div class="cc-footer">
+      <div>
+        <div class="cc-deadline">
+          <div class="cc-deadline-dot" style="background:${deadlineColor};"></div>
+          <div class="cc-deadline-txt" style="color:${urgentDeadline?deadlineColor:'var(--ink-2)'};">
+            ${c.daysLeft<=0?'Closed':c.daysLeft===1?'Closes tomorrow':c.daysLeft<=10?`? ${c.daysLeft} days left`:`Deadline: ${c.deadline}`}
+          </div>
+        </div>
+        <div class="cc-prize"> ${c.prize} <span style="color:var(--muted);font-weight:500;font-size:.68rem;">&middot; ${c.participants.toLocaleString()} registered</span></div>
+      </div>
+      ${c.registered
+        ?`<a href="contest-leaderboard.html" class="register-btn registered" onclick="event.stopPropagation()">Registered</a>`
+        :c.open
+          ?`<a href="contest-registration.html" class="register-btn primary" onclick="event.stopPropagation()">Register &middot;</a>`
+          :`<button class="register-btn closed" disabled>Closed</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function openContest(id){
+  window.location='contest-detail.html';
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildGrid();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

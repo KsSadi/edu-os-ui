@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.msg-layout{display:grid;grid-template-columns:280px 1fr;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--white);min-height:500px;}
+.msg-sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.msg-search{padding:12px 14px;border-bottom:1px solid var(--border);}
+.msg-search input{width:100%;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:.83rem;}
+.msg-list{flex:1;overflow-y:auto;}
+.msg-contact{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;}
+.msg-contact:hover,.msg-contact.on{background:var(--teacher-pale);}
+.msg-contact.on{border-left:3px solid var(--teacher);}
+.contact-avatar{width:38px;height:38px;border-radius:50%;background:var(--teacher-light);color:var(--teacher-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;}
+.contact-name{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.contact-preview{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.contact-time{font-size:.68rem;color:var(--muted);margin-left:auto;align-self:flex-start;flex-shrink:0;}
+.unread-badge{background:var(--teacher);color:#fff;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:auto;flex-shrink:0;}
+.msg-main{display:flex;flex-direction:column;}
+.msg-thread-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.msg-thread{flex:1;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:var(--bg);}
+.msg-bubble{max-width:65%;padding:10px 14px;border-radius:14px;font-size:.86rem;line-height:1.55;}
+.msg-bubble.them{background:var(--white);border:1px solid var(--border);border-radius:14px 14px 14px 2px;align-self:flex-start;}
+.msg-bubble.me{background:var(--teacher);color:#fff;border-radius:14px 14px 2px 14px;align-self:flex-end;}
+.msg-time{font-size:.68rem;opacity:.7;margin-top:4px;text-align:right;}
+.msg-input-area{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+.msg-input{flex:1;min-height:38px;max-height:100px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-size:.85rem;resize:none;outline:none;font-family:inherit;}
+.msg-input:focus{border-color:var(--teacher);}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Communication</div>
+        <div class="page-title">Messages</div>
+        <div class="page-sub">Communicate with students and parents.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);" onclick="newMessagePrompt()">✉️ New Message</button>
+      </div>
+    </div>
+
+    <div class="msg-layout">
+      <!-- Contact List -->
+      <div class="msg-sidebar">
+        <div class="msg-search">
+          <input type="text" id="searchInput" placeholder="Search contacts..." class="msg-input" style="height:34px;min-height:34px;max-height:34px;resize:none;">
+        </div>
+        <div class="msg-list" id="contactList"></div>
+      </div>
+
+      <!-- Thread -->
+      <div class="msg-main">
+        <div class="msg-thread-header" id="threadHeader"></div>
+        <div class="msg-thread" id="msgThread"></div>
+        <div class="msg-input-area">
+          <textarea class="msg-input" id="msgInput" placeholder="Type a message… (Enter to send)" rows="1"></textarea>
+          <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);flex-shrink:0;" onclick="sendMessage()">Send ➤</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+<script>
+/* ── Conversation data ──────────────────────────────────────────── */
+var CONTACTS = [
+  {
+    id: 'ma', initials: 'MA', name: 'Mrs. Akter', role: 'Parent of Karim Bhuiyan · Class 8-A',
+    avatarBg: '', unread: 2,
+    messages: [
+      { from: 'them', text: 'Assalamu Alaikum Sir. I wanted to ask about Karim\'s recent attendance. He has been absent quite a few times this month.', time: '10:15 AM' },
+      { from: 'me',   text: 'Wa Alaikum Assalam. Yes, Karim has been absent 4 times in February. Please make sure he attends regularly as we have exams approaching.', time: '10:25 AM' },
+      { from: 'them', text: 'He has been unwell. I will ensure he attends from tomorrow. Can you please share what topics were covered?', time: '10:32 AM' },
+      { from: 'them', text: 'Also, will he be able to appear in the test?', time: '10:33 AM' },
+    ]
+  },
+  {
+    id: 'rh', initials: 'RH', name: 'Mr. Hossain', role: 'Parent of Rahim Ahmed · Class 9-A',
+    avatarBg: '', unread: 0,
+    messages: [
+      { from: 'me',   text: 'Good morning Mr. Hossain. Please find the attached revision notes for the upcoming term exam.', time: 'Yesterday' },
+      { from: 'them', text: 'Thank you teacher for the notes. Rahim will study them tonight.', time: 'Yesterday' },
+    ]
+  },
+  {
+    id: 'nb', initials: 'NB', name: 'Mrs. Begum', role: 'Parent of Sadia Begum · Class 8-A',
+    avatarBg: '', unread: 0,
+    messages: [
+      { from: 'them', text: 'Sir please check Sadia\'s assignment. She submitted it yesterday.', time: 'Monday' },
+      { from: 'me',   text: 'I will check it today and update the grade by evening.', time: 'Monday' },
+    ]
+  },
+  {
+    id: 'rastu', initials: 'RA', name: 'Rahim Ahmed', role: 'Student · Class 9-A',
+    avatarBg: 'background:#DBEAFE;color:#1D4ED8;', unread: 1,
+    messages: [
+      { from: 'them', text: 'Sir, can I submit the trigonometry assignment late? I was unwell yesterday.', time: '09:14 AM' },
+    ]
+  },
+  {
+    id: 'sbstu', initials: 'SB', name: 'Sadia Begum', role: 'Student · Class 8-A',
+    avatarBg: 'background:#DBEAFE;color:#1D4ED8;', unread: 0,
+    messages: [
+      { from: 'them', text: 'Sir, assignment submitted.', time: 'Yesterday' },
+      { from: 'me',   text: 'Thank you Sadia. I will grade it by tomorrow.', time: 'Yesterday' },
+    ]
+  },
+];
+
+var activeId = 'ma';
+
+/* ── Helpers ────────────────────────────────────────────────────── */
+function now() {
+  var d = new Date();
+  var h = d.getHours(), m = d.getMinutes();
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+}
+
+function getContact(id) {
+  return CONTACTS.find(function(c){ return c.id === id; });
+}
+
+function lastMsg(c) {
+  if (!c.messages.length) return '';
+  return c.messages[c.messages.length - 1].text;
+}
+
+function lastTime(c) {
+  if (!c.messages.length) return '';
+  return c.messages[c.messages.length - 1].time;
+}
+
+/* ── Render contact list ────────────────────────────────────────── */
+function renderList(query) {
+  query = (query || '').toLowerCase();
+  var list = document.getElementById('contactList');
+  list.innerHTML = '';
+
+  var parents  = CONTACTS.filter(function(c){ return c.role.indexOf('Parent') !== -1; });
+  var students = CONTACTS.filter(function(c){ return c.role.indexOf('Student') !== -1; });
+
+  function renderGroup(label, items) {
+    var filtered = items.filter(function(c){ return !query || c.name.toLowerCase().indexOf(query) !== -1; });
+    if (!filtered.length) return;
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'padding:8px 14px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--border);margin-top:4px;';
+    lbl.textContent = label;
+    list.appendChild(lbl);
+    filtered.forEach(function(c) {
+      var el = document.createElement('div');
+      el.className = 'msg-contact' + (c.id === activeId ? ' on' : '');
+      el.onclick = function(){ openChat(c.id); };
+      el.innerHTML =
+        '<div class="contact-avatar" style="' + c.avatarBg + '">' + c.initials + '</div>'
+        + '<div style="min-width:0;flex:1;">'
+        + '<div class="contact-name">' + c.name + '</div>'
+        + '<div class="contact-preview">' + (lastMsg(c) || '—') + '</div>'
+        + '</div>'
+        + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
+        + '<div class="contact-time">' + lastTime(c) + '</div>'
+        + (c.unread > 0 ? '<div class="unread-badge" style="' + (c.avatarBg ? 'background:#3B82F6;' : '') + '">' + c.unread + '</div>' : '')
+        + '</div>';
+      list.appendChild(el);
+    });
+  }
+
+  renderGroup('Parents', parents);
+  renderGroup('Students', students);
+}
+
+/* ── Render thread ──────────────────────────────────────────────── */
+function renderThread(c) {
+  var header = document.getElementById('threadHeader');
+  header.innerHTML =
+    '<div class="contact-avatar" style="' + c.avatarBg + '">' + c.initials + '</div>'
+    + '<div>'
+    + '<div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">' + c.name + '</div>'
+    + '<div style="font-size:.74rem;color:var(--muted);">' + c.role + '</div>'
+    + '</div>'
+    + '<div style="margin-left:auto;display:flex;gap:6px;">'
+    + '<button class="btn btn-xs btn-secondary">📞 Call</button>'
+    + '</div>';
+
+  var thread = document.getElementById('msgThread');
+  thread.innerHTML = '';
+  c.messages.forEach(function(m) {
+    appendBubble(m.from, m.text, m.time);
+  });
+  scrollBottom();
+}
+
+function appendBubble(from, text, time) {
+  var thread = document.getElementById('msgThread');
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:' + (from === 'me' ? 'flex-end' : 'flex-start') + ';';
+  wrap.innerHTML = '<div class="msg-bubble ' + from + '">'
+    + escHtml(text)
+    + '<div class="msg-time">' + time + '</div>'
+    + '</div>';
+  thread.appendChild(wrap);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function scrollBottom() {
+  var t = document.getElementById('msgThread');
+  t.scrollTop = t.scrollHeight;
+}
+
+/* ── Open chat ──────────────────────────────────────────────────── */
+function openChat(id) {
+  activeId = id;
+  var c = getContact(id);
+  c.unread = 0;
+  renderList(document.getElementById('searchInput').value);
+  renderThread(c);
+  document.getElementById('msgInput').focus();
+}
+
+/* ── Send message ───────────────────────────────────────────────── */
+function sendMessage() {
+  var input = document.getElementById('msgInput');
+  var text  = input.value.trim();
+  if (!text) return;
+  var c = getContact(activeId);
+  var t = now();
+  c.messages.push({ from: 'me', text: text, time: t });
+  appendBubble('me', text, t);
+  scrollBottom();
+  input.value = '';
+  input.style.height = 'auto';
+  renderList(document.getElementById('searchInput').value);
+
+  /* Simulate reply after 1.2s */
+  var replies = [
+    'Thank you for the information, Sir.',
+    'Understood. We will follow up.',
+    'Thank you. I will let him know.',
+    'Okay Sir, noted.',
+    'Thank you Sir.',
+  ];
+  setTimeout(function() {
+    var reply = replies[Math.floor(Math.random() * replies.length)];
+    c.messages.push({ from: 'them', text: reply, time: now() });
+    if (activeId === c.id) {
+      appendBubble('them', reply, now());
+      scrollBottom();
+    } else {
+      c.unread++;
+    }
+    renderList(document.getElementById('searchInput').value);
+  }, 1200);
+}
+
+/* ── New message modal ──────────────────────────────────────────── */
+function newMessagePrompt() {
+  var name = prompt('Type contact name to start chat with:');
+  if (!name) return;
+  alert('Message to "' + name + '" — feature coming soon.');
+}
+
+/* ── Init ───────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  renderList();
+  openChat('ma');
+
+  /* Enter to send, Shift+Enter for newline */
+  document.getElementById('msgInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  /* Auto-resize textarea */
+  document.getElementById('msgInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+  /* Search */
+  document.getElementById('searchInput').addEventListener('input', function() {
+    renderList(this.value);
+  });
+});
+</script>
+</body>
+</html>

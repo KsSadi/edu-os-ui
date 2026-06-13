@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Resources — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Subject filter pills */
+.subject-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.subj-pill{padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);transition:all .12s;}
+.subj-pill:hover{border-color:var(--stu);color:var(--stu);}
+.subj-pill.on{border-color:var(--stu);background:var(--stu);color:#fff;}
+
+/* Material card */
+.mat-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;transition:all .15s;cursor:pointer;}
+.mat-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--stu);}
+.mat-card-head{padding:16px 18px 12px;display:flex;align-items:flex-start;gap:12px;}
+.mc-file{width:48px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;position:relative;}
+.mc-ext-tag{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:.42rem;font-weight:900;color:#fff;background:rgba(0,0,0,.35);padding:1px 4px;border-radius:2px;letter-spacing:.04em;white-space:nowrap;}
+.mc-title{font-size:.88rem;font-weight:800;color:var(--ink-2);line-height:1.35;margin-bottom:4px;}
+.mc-teacher{font-size:.74rem;color:var(--muted);}
+.mc-chapter{font-size:.72rem;color:var(--stu);font-weight:700;margin-top:3px;}
+.mat-card-foot{padding:8px 18px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);}
+.mat-size{font-size:.72rem;color:var(--muted);flex:1;}
+.mat-date{font-size:.72rem;color:var(--muted);}
+
+/* File type colors */
+.ft-pdf{background:linear-gradient(135deg,#EF4444,#DC2626);}
+.ft-docx{background:linear-gradient(135deg,#2563EB,#1D4ED8);}
+.ft-pptx{background:linear-gradient(135deg,#F97316,#EA580C);}
+.ft-xlsx{background:linear-gradient(135deg,#059669,#047857);}
+.ft-mp4{background:linear-gradient(135deg,#E11D48,#BE123C);}
+.ft-zip{background:linear-gradient(135deg,#D97706,#B45309);}
+
+/* Type badge -->
+.type-badge{font-size:.64rem;font-weight:800;padding:2px 8px;border-radius:10px;display:inline-block;}
+.tb-notes{background:#EFF6FF;color:#1D4ED8;}
+.tb-qpaper{background:#FFF5F5;color:#991B1B;}
+.tb-slides{background:#FFF7ED;color:#C2410C;}
+.tb-worksheet{background:#ECFDF5;color:#065F46;}
+.tb-video{background:#F5F3FF;color:#5B21B6;}
+
+/* Downloaded badge */
+.dl-badge{display:inline-flex;align-items:center;gap:3px;font-size:.64rem;font-weight:700;color:var(--green);background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:2px 7px;}
+
+/* Download btn */
+.dl-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--stu);color:var(--stu);font-size:.76rem;font-weight:700;background:var(--stu-pale);cursor:pointer;transition:all .12s;}
+.dl-btn:hover{background:var(--stu);color:#fff;}
+.dl-btn.downloaded{border-color:var(--green);color:var(--green);background:#ECFDF5;}
+.dl-btn.downloading{border-color:var(--amber);color:var(--amber);background:#FFFBEB;}
+
+/* New banner */
+.new-chip{font-size:.6rem;font-weight:900;padding:1px 6px;border-radius:4px;background:var(--stu);color:#fff;vertical-align:middle;margin-left:4px;}
+
+/* Progress overlay for download */
+.dl-progress{height:3px;background:var(--stu);border-radius:0 0 14px 14px;transition:width .4s ease;position:absolute;bottom:0;left:0;}
+
+/* Stats strip */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.ss-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;}
+.ss-num{font-size:1.3rem;font-weight:800;}
+.ss-lbl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.stats-strip{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📁 Resources</div>
+        <div class="page-title">Study Resources</div>
+        <div class="page-sub">Notes, question papers, slides, and worksheets shared by your teachers for Class IX–A.</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip anim-1">
+      <div class="ss-card"><div class="ss-num" style="color:var(--stu);">32</div><div class="ss-lbl">Files Available</div></div>
+      <div class="ss-card"><div class="ss-num" style="color:var(--green);">18</div><div class="ss-lbl">Downloaded</div></div>
+      <div class="ss-card"><div class="ss-num" style="color:var(--amber);">5</div><div class="ss-lbl">New This Week</div></div>
+      <div class="ss-card"><div class="ss-num" style="color:var(--blue);">6</div><div class="ss-lbl">Subjects</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;" class="anim-1">
+      <div class="subject-pills" id="subjectPills"></div>
+      <div class="search-bar" style="margin-left:auto;width:220px;">
+        <span class="sb-search-icon">🔍</span>
+        <input type="text" placeholder="Search resources…" oninput="searchMaterials(this.value)" id="searchInput">
+      </div>
+      <select class="form-select" style="width:130px;padding:7px 10px;font-size:.78rem;" onchange="filterType(this.value)">
+        <option value="">All Types</option>
+        <option value="notes">Lecture Notes</option>
+        <option value="qpaper">Question Papers</option>
+        <option value="slides">Slides</option>
+        <option value="worksheet">Worksheets</option>
+        <option value="video">Video</option>
+      </select>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start;">
+
+      <!-- Materials grid -->
+      <div>
+        <!-- New this week highlight -->
+        <div style="font-size:.78rem;font-weight:800;color:var(--stu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">🆕 New This Week</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:24px;" id="newMaterialsGrid"></div>
+
+        <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">📂 All Materials</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;" id="allMaterialsGrid"></div>
+
+        <div style="text-align:center;padding:18px;" id="noResultsMsg" style="display:none;">
+          <div style="font-size:2rem;margin-bottom:6px;">🔍</div>
+          <div style="color:var(--muted);font-size:.86rem;">No materials found</div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- My downloads -->
+        <div class="card anim-1">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">⬇ Recently Downloaded</div></div>
+          <div style="padding:10px 16px;display:flex;flex-direction:column;gap:8px;" id="recentDownloads"></div>
+        </div>
+
+        <!-- Study tip -->
+        <div class="card anim-2" style="padding:16px;background:var(--stu-pale);border-color:var(--stu);">
+          <div style="font-size:.82rem;font-weight:800;color:var(--stu-dark);margin-bottom:6px;">💡 Study Tip</div>
+          <div style="font-size:.78rem;color:var(--stu-dark);line-height:1.7;">Half-Yearly exams begin <strong>Feb 15</strong>. Question papers from past exams are the best preparation. Check the <strong>Q-Paper</strong> filter!</div>
+        </div>
+
+        <!-- Subject coverage -->
+        <div class="card anim-2" style="padding:14px 16px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📚 Coverage by Subject</div>
+          <div style="display:flex;flex-direction:column;gap:7px;" id="subjectCoverage"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const subjects=['All','Mathematics','Physics','Chemistry','Biology','English','Bangla'];
+const subjectColors={'Mathematics':'#2563EB','Physics':'#7C3AED','Chemistry':'#E11D48','Biology':'#059669','English':'#D97706','Bangla':'#0891B2'};
+
+const materials=[
+  // NEW (this week)
+  {id:1,title:'Chapter 7 — Coordinate Geometry Notes',subject:'Mathematics',teacher:'Dr. Karim Hossain',type:'notes',ext:'pdf',size:'3.2 MB',date:'Feb 22',chapter:'Ch. 7',isNew:true,downloaded:false},
+  {id:2,title:'Half-Yearly Physics Question Paper 2025',subject:'Physics',teacher:'Ms. Nasrin Begum',type:'qpaper',ext:'pdf',size:'1.8 MB',date:'Feb 21',chapter:'HY-2025',isNew:true,downloaded:false},
+  {id:3,title:'Organic Chemistry — Reaction Summary Sheet',subject:'Chemistry',teacher:'Mr. Shahed Alam',type:'notes',ext:'pdf',size:'980 KB',date:'Feb 20',chapter:'Ch. 6',isNew:true,downloaded:false},
+  {id:4,title:'English Grammar MCQ Practice Set 3',subject:'English',teacher:'Ms. Roksana Parvin',type:'worksheet',ext:'docx',size:'450 KB',date:'Feb 20',chapter:'Grammar',isNew:true,downloaded:false},
+  {id:5,title:'Cell Biology — Slide Presentation',subject:'Biology',teacher:'Mr. Tanvir Ahmed',type:'slides',ext:'pptx',size:'8.4 MB',date:'Feb 19',chapter:'Ch. 5',isNew:true,downloaded:true},
+  // Older
+  {id:6,title:'Annual Exam 2024 Solution Key — Math',subject:'Mathematics',teacher:'Dr. Karim Hossain',type:'qpaper',ext:'pdf',size:'2.9 MB',date:'Jan 28',chapter:'Annual-24',isNew:false,downloaded:true},
+  {id:7,title:'Trigonometry Worksheet — Practice Set 1',subject:'Mathematics',teacher:'Dr. Karim Hossain',type:'worksheet',ext:'docx',size:'420 KB',date:'Feb 10',chapter:'Ch. 5',isNew:false,downloaded:true},
+  {id:8,title:'Algebra Revision Slides — Class IX',subject:'Mathematics',teacher:'Dr. Karim Hossain',type:'slides',ext:'pptx',size:'6.1 MB',date:'Feb 14',chapter:'Ch. 4',isNew:false,downloaded:false},
+  {id:9,title:'Newton\'s Laws — Video Lecture',subject:'Physics',teacher:'Ms. Nasrin Begum',type:'video',ext:'mp4',size:'48 MB',date:'Feb 5',chapter:'Ch. 3',isNew:false,downloaded:false},
+  {id:10,title:'Half-Yearly Chemistry Q-Paper 2024',subject:'Chemistry',teacher:'Mr. Shahed Alam',type:'qpaper',ext:'pdf',size:'1.4 MB',date:'Jan 10',chapter:'HY-2024',isNew:false,downloaded:true},
+  {id:11,title:'Photosynthesis Notes — Biology Ch. 4',subject:'Biology',teacher:'Mr. Tanvir Ahmed',type:'notes',ext:'pdf',size:'2.1 MB',date:'Feb 1',chapter:'Ch. 4',isNew:false,downloaded:true},
+  {id:12,title:'Bangla Grammar — Summary Notes',subject:'Bangla',teacher:'Ms. Fatema Begum',type:'notes',ext:'pdf',size:'1.6 MB',date:'Jan 25',chapter:'Grammar',isNew:false,downloaded:false},
+];
+
+const typeInfo={
+  notes:{label:'Lecture Notes',cls:'tb-notes',icon:'📄'},
+  qpaper:{label:'Question Paper',cls:'tb-qpaper',icon:'📝'},
+  slides:{label:'Slides',cls:'tb-slides',icon:'📊'},
+  worksheet:{label:'Worksheet',cls:'tb-worksheet',icon:'📋'},
+  video:{label:'Video',cls:'tb-video',icon:'🎥'},
+};
+const extColors={pdf:'ft-pdf',docx:'ft-docx',pptx:'ft-pptx',xlsx:'ft-xlsx',mp4:'ft-mp4',zip:'ft-zip'};
+const extIcons={pdf:'📄',docx:'📝',pptx:'📊',mp4:'🎥',xlsx:'📈',zip:'📦'};
+
+let activeSubject='All',activeType='',searchQ='';
+
+// Build subject pills
+document.getElementById('subjectPills').innerHTML=subjects.map(s=>`
+  <div class="subj-pill ${s==='All'?'on':''}" onclick="filterSubject('${s}',this)" style="${s!=='All'?`border-color:${subjectColors[s]}20`:''}">${s}</div>`).join('');
+
+function filterSubject(s,el){
+  activeSubject=s;
+  document.querySelectorAll('.subj-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  buildGrids();
+}
+function filterType(v){activeType=v;buildGrids();}
+function searchMaterials(q){searchQ=q.toLowerCase();buildGrids();}
+
+function matchFilter(m){
+  const subjOk=activeSubject==='All'||m.subject===activeSubject;
+  const typeOk=!activeType||m.type===activeType;
+  const searchOk=!searchQ||m.title.toLowerCase().includes(searchQ)||m.subject.toLowerCase().includes(searchQ);
+  return subjOk&&typeOk&&searchOk;
+}
+
+function makeCard(m){
+  const ti=typeInfo[m.type]||{label:m.type,cls:'',icon:'📄'};
+  const col=subjectColors[m.subject]||'#6B7280';
+  return`<div class="mat-card" id="mc-${m.id}" style="position:relative;" onclick="triggerDownload(${m.id})">
+    <div class="mat-card-head">
+      <div class="mc-file ${extColors[m.ext]||'ft-pdf'}">${extIcons[m.ext]||'📄'}<div class="mc-ext-tag">${m.ext.toUpperCase()}</div></div>
+      <div style="flex:1;min-width:0;">
+        <div class="mc-title">${m.title}${m.isNew?'<span class="new-chip">NEW</span>':''}</div>
+        <div class="mc-teacher">By ${m.teacher}</div>
+        <div class="mc-chapter" style="color:${col};">${m.subject} · ${m.chapter}</div>
+      </div>
+    </div>
+    <div class="mat-card-foot">
+      <span class="type-badge ${ti.cls}">${ti.icon} ${ti.label}</span>
+      <span class="mat-size">${m.size}</span>
+      <span class="mat-date">${m.date}</span>
+      <button class="dl-btn ${m.downloaded?'downloaded':''}" id="dlbtn-${m.id}" onclick="event.stopPropagation();triggerDownload(${m.id})">
+        ${m.downloaded?'<span>✓</span> Saved':'<span>⬇</span> Download'}
+      </button>
+    </div>
+  </div>`;
+}
+
+function buildGrids(){
+  const filtered=materials.filter(matchFilter);
+  const newMats=filtered.filter(m=>m.isNew);
+  const oldMats=filtered.filter(m=>!m.isNew);
+
+  const newSection=document.querySelector('[style*="New This Week"]')?.nextElementSibling;
+  document.getElementById('newMaterialsGrid').innerHTML=newMats.length?newMats.map(makeCard).join(''):'<div style="grid-column:1/-1;color:var(--muted);font-size:.84rem;padding:8px 0;">No new materials for selected filter.</div>';
+  document.getElementById('allMaterialsGrid').innerHTML=oldMats.length?oldMats.map(makeCard).join(''):'';
+  document.getElementById('noResultsMsg').style.display=(!newMats.length&&!oldMats.length)?'block':'none';
+}
+
+function triggerDownload(id){
+  const m=materials.find(x=>x.id===id);
+  if(!m)return;
+  const btn=document.getElementById('dlbtn-'+id);
+  if(m.downloaded){showToast(`Opening ${m.title}…`,'📄');return;}
+  btn.className='dl-btn downloading';
+  btn.innerHTML='<span>⏳</span> Downloading…';
+  let pct=0;
+  const interval=setInterval(()=>{
+    pct+=Math.floor(15+Math.random()*25);
+    if(pct>=100){
+      clearInterval(interval);
+      m.downloaded=true;
+      btn.className='dl-btn downloaded';
+      btn.innerHTML='<span>✓</span> Saved';
+      showToast(`${m.title} saved!`,'✅');
+      buildRecentDownloads();
+    }
+  },300);
+}
+
+// Recent downloads
+function buildRecentDownloads(){
+  const dl=materials.filter(m=>m.downloaded).slice(0,5);
+  document.getElementById('recentDownloads').innerHTML=dl.map(m=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);" class="dl-recent-item">
+      <div class="mc-file ${extColors[m.ext]||'ft-pdf'}" style="width:28px;height:32px;border-radius:6px;font-size:.8rem;">${extIcons[m.ext]||'📄'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.title}</div>
+        <div style="font-size:.66rem;color:var(--muted);">${m.subject} · ${m.date}</div>
+      </div>
+    </div>`).join('')||'<div style="font-size:.78rem;color:var(--muted);">No downloads yet</div>';
+}
+
+// Subject coverage
+const coverage=[
+  {subj:'Mathematics',count:8,color:'#2563EB'},
+  {subj:'Physics',count:6,color:'#7C3AED'},
+  {subj:'Chemistry',count:6,color:'#E11D48'},
+  {subj:'Biology',count:5,color:'#059669'},
+  {subj:'English',count:4,color:'#D97706'},
+  {subj:'Bangla',count:3,color:'#0891B2'},
+];
+document.getElementById('subjectCoverage').innerHTML=coverage.map(c=>`
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:.76rem;font-weight:700;color:var(--ink-2);min-width:70px;">${c.subj}</span>
+    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+      <div style="height:100%;width:${c.count/8*100}%;background:${c.color};border-radius:3px;"></div>
+    </div>
+    <span style="font-size:.7rem;font-weight:800;color:${c.color};min-width:16px;text-align:right;">${c.count}</span>
+  </div>`).join('');
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildGrids();
+buildRecentDownloads();
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

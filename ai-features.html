@@ -1,0 +1,1448 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Features — EduOS</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── AI PAGE HERO ─────────────────────────────────────── */
+.ai-hero {
+  background: linear-gradient(135deg, #07091A 0%, #0D1228 55%, #120A24 100%);
+  padding: 140px 5% 80px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.ai-hero::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 70% at 20% 40%, rgba(99,102,241,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 80% 60%, rgba(139,92,246,.14) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(14,165,233,.08) 0%, transparent 55%);
+}
+.ai-hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(90deg, rgba(99,102,241,.18), rgba(139,92,246,.18));
+  border: 1px solid rgba(99,102,241,.38);
+  color: #A5B4FC; font-size: .78rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 6px 18px; border-radius: 20px; margin-bottom: 22px;
+  position: relative;
+}
+.ai-hero h1 {
+  font-size: clamp(2rem,5vw,3.4rem); font-weight: 800; color: #fff;
+  margin-bottom: 18px; line-height: 1.15; position: relative;
+}
+.ai-hero h1 .grad {
+  background: linear-gradient(90deg, #A5B4FC, #C4B5FD, #7DD3FC);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.ai-hero p {
+  font-size: 1.1rem; color: rgba(255,255,255,.55); max-width: 580px;
+  margin: 0 auto 36px; line-height: 1.7; position: relative;
+}
+.ai-hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+
+/* hero stats strip */
+.ai-hero-stats {
+  display: flex; justify-content: center; gap: 0;
+  max-width: 680px; margin: 56px auto 0;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; overflow: hidden; position: relative;
+}
+.ai-hero-stat {
+  flex: 1; padding: 20px 16px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+.ai-hero-stat:last-child { border-right: none; }
+.ai-hero-stat-num {
+  font-family:'Sora',sans-serif; font-size: 1.6rem; font-weight: 800;
+  background: linear-gradient(135deg,#A5B4FC,#C4B5FD);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.ai-hero-stat-lbl { font-size:.7rem; color:rgba(255,255,255,.35); font-weight:600; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+
+/* ── FLOATING ROLE NAVIGATOR ──────────────────────────── */
+.rfloat {
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  z-index: 300; display: flex; flex-direction: column; gap: 6px;
+  padding: 6px 0 6px 6px;
+}
+.rfloat-role {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  background: rgba(10,12,28,.9); backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255,255,255,.07); border-right: none;
+  border-radius: 14px 0 0 14px;
+  padding: 10px 14px 10px 10px;
+  cursor: pointer; white-space: nowrap;
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  box-shadow: -4px 4px 24px rgba(0,0,0,.35);
+}
+.rfloat-role:hover { background: rgba(15,20,50,.98); border-color: rgba(255,255,255,.15); }
+.rfloat-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .95rem; transition: transform .2s;
+}
+.rfloat-role:hover .rfloat-icon { transform: scale(1.12); }
+.rfloat-info { display: flex; flex-direction: column; gap: 2px; }
+.rfloat-name { font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.55); transition: color .15s; }
+.rfloat-role:hover .rfloat-name { color: rgba(255,255,255,.9); }
+.rfloat-badge {
+  font-size: .6rem; font-weight: 800; letter-spacing: .02em;
+  background: rgba(255,255,255,.07); color: rgba(255,255,255,.28);
+  padding: 1px 7px; border-radius: 20px; transition: all .15s;
+}
+/* Active roles */
+.rf-active-teacher { border-left: 2.5px solid #F59E0B !important; }
+.rf-active-teacher .rfloat-name { color: #FCD34D !important; }
+.rf-active-teacher .rfloat-badge { background: rgba(245,158,11,.18); color: #FCD34D; }
+.rf-active-admin   { border-left: 2.5px solid #6366F1 !important; }
+.rf-active-admin   .rfloat-name { color: #A5B4FC !important; }
+.rf-active-admin   .rfloat-badge { background: rgba(99,102,241,.18); color: #A5B4FC; }
+.rf-active-student { border-left: 2.5px solid #10B981 !important; }
+.rf-active-student .rfloat-name { color: #6EE7B7 !important; }
+.rf-active-student .rfloat-badge { background: rgba(16,185,129,.18); color: #6EE7B7; }
+.rf-active-parent  { border-left: 2.5px solid #EC4899 !important; }
+.rf-active-parent  .rfloat-name { color: #F9A8D4 !important; }
+.rf-active-parent  .rfloat-badge { background: rgba(236,72,153,.18); color: #F9A8D4; }
+/* Hover dropdown panel */
+.rfloat-drop {
+  position: absolute; right: calc(100% + 14px); top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  background: rgba(10,12,30,.98); backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+  padding: 8px 6px; min-width: 216px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+}
+.rfloat-role:hover .rfloat-drop {
+  opacity: 1; pointer-events: all;
+  transform: translateY(-50%) translateX(0);
+}
+.rfloat-drop-hdr {
+  font-size: .6rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+  color: rgba(255,255,255,.22); padding: 4px 12px 8px;
+}
+.rfloat-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 12px; border-radius: 9px; text-decoration: none;
+  font-size: .78rem; color: rgba(255,255,255,.48); transition: all .15s;
+}
+.rfloat-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+.rfloat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+@media(max-width:900px) { .rfloat { display: none; } }
+
+/* ── FEATURE ROWS ─────────────────────────────────────── */
+.ai-feat-section {
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  padding: 88px 5%; max-width: 1200px; margin: 0 auto;
+}
+.ai-feat-section:last-of-type { border-bottom: none; }
+.ai-feat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;
+}
+.ai-feat-grid.flip { direction: rtl; }
+.ai-feat-grid.flip > * { direction: ltr; }
+
+.ai-feat-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(90deg,rgba(99,102,241,.15),rgba(139,92,246,.12));
+  border: 1px solid rgba(99,102,241,.28);
+  color: #A5B4FC; font-size: .72rem; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 20px; margin-bottom: 14px;
+}
+.ai-feat-num { opacity:.4; margin-right:4px; }
+.ai-feat-title {
+  font-size: clamp(1.5rem,3vw,2rem); font-weight: 800; color: #fff;
+  margin-bottom: 14px; line-height: 1.25;
+}
+.ai-feat-desc { font-size: .98rem; color: rgba(255,255,255,.5); line-height: 1.75; margin-bottom: 24px; }
+.ai-feat-list { list-style: none; }
+.ai-feat-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .9rem; color: rgba(255,255,255,.65); margin-bottom: 13px; line-height: 1.55;
+}
+.ai-feat-list li::before {
+  content: ''; display: inline-block; width: 18px; height: 18px;
+  border-radius: 50%; background: linear-gradient(135deg,#6366F1,#8B5CF6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23fff' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 12px; background-repeat: no-repeat; background-position: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.ai-feat-impact {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.22);
+  border-radius: 8px; padding: 8px 14px; font-size: .8rem; color: #C7D2FE;
+  margin-top: 6px;
+}
+
+/* ── VISUAL MOCKS ─────────────────────────────────────── */
+.ai-mock-wrap {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px; padding: 20px;
+  box-shadow: 0 16px 60px rgba(0,0,0,.4);
+}
+.ai-mock-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,.35); border-radius: 9px; padding: 10px 14px; margin-bottom: 14px;
+}
+.ai-mock-bar-dots { display:flex;gap:5px; }
+.ai-mock-bar-dot { width:9px;height:9px;border-radius:50%; }
+.ai-mock-bar-title { font-size:.75rem; font-weight:600; color:rgba(255,255,255,.45); margin-left:4px; }
+
+/* Chat bubbles */
+.ai-bubble-wrap { display:flex; flex-direction:column; gap:10px; }
+.ai-bubble { display:flex; gap:8px; align-items:flex-start; }
+.ai-bubble.right { flex-direction:row-reverse; }
+.ai-bubble-av {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:.75rem;
+}
+.ai-bubble-msg {
+  max-width:80%; padding:10px 14px; border-radius:0 12px 12px 12px;
+  font-size:.78rem; line-height:1.55; color:rgba(255,255,255,.75);
+  background: rgba(255,255,255,.07);
+}
+.ai-bubble.right .ai-bubble-msg {
+  background: rgba(99,102,241,.22); color:#C7D2FE;
+  border-radius:12px 0 12px 12px;
+}
+.ai-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 11px; border-radius:8px; font-size:.7rem; font-weight:700;
+  cursor:pointer; margin-right:6px; margin-top:6px;
+  border:1px solid; transition:filter .12s;
+}
+.ai-chip:hover { filter:brightness(1.2); }
+
+/* Risk gauge */
+.risk-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.risk-row:last-child { border:none; }
+.risk-name { font-size:.78rem; font-weight:600; color:rgba(255,255,255,.65); width:110px; flex-shrink:0; }
+.risk-bar-track { flex:1; height:7px; background:rgba(255,255,255,.06); border-radius:4px; overflow:hidden; }
+.risk-bar-fill { height:100%; border-radius:4px; transition:width .3s; }
+.risk-pct { font-family:'JetBrains Mono',monospace; font-size:.72rem; font-weight:700; width:36px; text-align:right; }
+.risk-tag { font-size:.6rem; font-weight:900; padding:2px 7px; border-radius:6px; flex-shrink:0; }
+
+/* Fee prediction card */
+.fee-pred-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.fee-pred-row:last-child { border:none; }
+.fee-pred-name { font-size:.78rem; font-weight:600; color:rgba(255,255,255,.65); }
+.fee-pred-chance { font-size:.72rem; font-weight:800; padding:2px 9px; border-radius:6px; }
+.fee-pred-action { font-size:.67rem; color:rgba(255,255,255,.3); }
+
+/* Report narrative card */
+.narrative-card {
+  background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  border-radius:12px; padding:14px;
+}
+.narrative-student { font-size:.75rem; font-weight:700; color:#A5B4FC; margin-bottom:8px; }
+.narrative-text { font-size:.78rem; color:rgba(255,255,255,.6); line-height:1.65; font-style:italic; }
+.narrative-tag { font-size:.62rem; font-weight:800; padding:2px 8px; border-radius:6px; margin-top:8px; display:inline-block; }
+
+/* Question cards */
+.q-card { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+.q-type { font-size:.6rem; font-weight:900; text-transform:uppercase; letter-spacing:.05em; padding:2px 7px; border-radius:6px; margin-bottom:8px; display:inline-block; }
+.q-text { font-size:.78rem; color:rgba(255,255,255,.65); line-height:1.55; }
+.q-opt { font-size:.72rem; color:rgba(255,255,255,.4); margin-top:6px; padding-left:8px; }
+.q-opt.correct { color:#6EE7B7; font-weight:700; }
+
+/* Typing animation */
+.typing-dots { display:inline-flex;gap:4px;align-items:center;padding:10px 14px; background:rgba(255,255,255,.07); border-radius:0 12px 12px 12px; }
+.typing-dots span { width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35); animation:td .8s infinite ease-in-out; }
+.typing-dots span:nth-child(2){animation-delay:.15s;}
+.typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes td{0%,80%,100%{transform:scale(.7);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+
+/* ── COMPARE TABLE ────────────────────────────────────── */
+.compare-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+.compare-table th { padding:14px 18px; text-align:left; font-family:'Sora',sans-serif; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:rgba(255,255,255,.3); border-bottom:1px solid rgba(255,255,255,.07); }
+.compare-table th.ai-col { color:#A5B4FC; }
+.compare-table td { padding:13px 18px; border-bottom:1px solid rgba(255,255,255,.05); color:rgba(255,255,255,.6); }
+.compare-table tr:last-child td { border:none; }
+.compare-table td.ai-col { color:#A5B4FC; font-weight:700; }
+.compare-table .check { color:#6EE7B7; font-weight:800; }
+.compare-table .cross { color:rgba(255,255,255,.2); }
+.compare-table tr:hover td { background:rgba(255,255,255,.03); }
+
+/* ── BOTTOM CTA ───────────────────────────────────────── */
+.ai-page-cta {
+  background: linear-gradient(135deg, #07091A 0%, #0D1228 100%);
+  text-align: center; padding: 96px 5%;
+  position: relative; overflow: hidden;
+}
+.ai-page-cta::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(99,102,241,.12) 0%, transparent 60%);
+}
+.ai-page-cta h2 { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; color:#fff; margin-bottom:14px; position:relative; }
+.ai-page-cta p { font-size:1rem; color:rgba(255,255,255,.5); margin-bottom:34px; max-width:500px; margin-left:auto; margin-right:auto; position:relative; }
+
+/* ── DARK NAV ─────────────────────────────────────────── */
+.nav.dark-ai { background:rgba(7,9,26,.92); border-bottom-color:rgba(255,255,255,.07); }
+.nav.dark-ai .nav-links a { color:rgba(255,255,255,.5); }
+.nav.dark-ai .nav-links a:hover, .nav.dark-ai .nav-links a.active { color:#A5B4FC; }
+.nav.dark-ai.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.4); }
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media(max-width:900px){
+  .ai-feat-grid{grid-template-columns:1fr;gap:36px;}
+  .ai-feat-grid.flip{direction:ltr;}
+  .ai-hero-stats{flex-direction:column;border-radius:14px;}
+  .ai-hero-stat{border-right:none;border-bottom:1px solid rgba(255,255,255,.07);}
+  .ai-hero-stat:last-child{border-bottom:none;}
+}
+
+/* ── LIGHT THEME ──────────────────────────────────────── */
+body { background: #F8FAFC; }
+
+/* Badges / section pills */
+.ai-hero-badge {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+  color: #4338CA;
+}
+.ai-feat-tag {
+  background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;
+}
+.ai-feat-tag .ai-feat-num { color: #818CF8; opacity: 1; }
+
+/* Content text */
+.ai-feat-title { color: #0F172A; }
+.ai-feat-desc { color: #64748B; }
+.ai-feat-list li { color: #374151; }
+.ai-feat-list li::before { background: linear-gradient(135deg,#4F46E5,#7C3AED); }
+.ai-feat-impact { background: #EEF2FF; border-color: #C7D2FE; color: #4338CA; }
+.ai-feat-section { border-bottom-color: #E2E8F0; }
+
+/* Mocks stay dark */
+.ai-mock-wrap { background: #0D1117 !important; border-color: #1E293B; box-shadow: 0 8px 40px rgba(15,23,42,.14); }
+
+/* Compare table */
+.compare-table th { color: #64748B; border-bottom-color: #E2E8F0; }
+.compare-table th.ai-col { color: #4338CA; }
+.compare-table td { color: #374151; border-bottom-color: #F1F5F9; }
+.compare-table td.ai-col { color: #4338CA; }
+.compare-table .check { color: #059669; font-weight: 800; }
+.compare-table tr:hover td { background: #F8FAFC; }
+
+/* CTA section */
+.ai-page-cta { background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%); text-align: center; }
+.ai-page-cta::before { background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(99,102,241,.07) 0%, transparent 60%); }
+.ai-page-cta h2 { color: #0F172A; }
+.ai-page-cta p { color: #64748B; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;">
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="features.html">Features</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html">Contact</a>
+    <a href="ai-features.html" class="active" style="color:#4F46E5;font-weight:700;">✨ AI Features</a>
+  </div>
+  <div class="nav-cta">
+    <a href="contact.html" class="btn btn-outline btn-sm">📅 Book Demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="">
+<div class="ai-hero">
+  <div class="ai-hero-badge">
+    <span style="width:8px;height:8px;border-radius:50%;background:#818CF8;display:inline-block;animation:pulse-dot 1.5s infinite;"></span>
+    ✨ EduOS Artificial Intelligence
+  </div>
+  <h1>Your institution gets a<br><span class="grad">built-in AI brain</span></h1>
+  <p>6 AI modules for staff + 5 AI tools for students — all embedded directly into EduOS. Predicting, automating, teaching, and personalising so every teacher, parent, and student gets the most out of every day.</p>
+  <div class="ai-hero-btns">
+    <a href="register.html" class="btn btn-lg" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;box-shadow:0 6px 24px rgba(99,102,241,.4);">Start Free Trial →</a>
+    <a href="contact.html" class="btn btn-lg btn-outline">📅 Book AI Demo</a>
+  </div>
+
+  <div class="ai-hero-stats">
+    <div class="ai-hero-stat">
+      <div class="ai-hero-stat-num">2,840+</div>
+      <div class="ai-hero-stat-lbl">AI Questions / week</div>
+    </div>
+    <div class="ai-hero-stat">
+      <div class="ai-hero-stat-num">40%</div>
+      <div class="ai-hero-stat-lbl">Fewer fee defaults</div>
+    </div>
+    <div class="ai-hero-stat">
+      <div class="ai-hero-stat-num">4 hrs</div>
+      <div class="ai-hero-stat-lbl">Saved per teacher/week</div>
+    </div>
+    <div class="ai-hero-stat">
+      <div class="ai-hero-stat-num">11</div>
+      <div class="ai-hero-stat-lbl">AI Modules total</div>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING ROLE NAVIGATOR -->
+<div id="roleNav" class="rfloat">
+
+  <!-- Teachers -->
+  <div class="rfloat-role" id="rf-teacher" onclick="location.href='#question-gen'">
+    <div class="rfloat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);">👩‍🏫</div>
+    <div class="rfloat-info">
+      <div class="rfloat-name">Teachers</div>
+      <div class="rfloat-badge">3 AI tools</div>
+    </div>
+    <div class="rfloat-drop">
+      <div class="rfloat-drop-hdr">For Teachers</div>
+      <a class="rfloat-item" href="#question-gen"><span class="rfloat-dot" style="background:#F59E0B;"></span>Question Generator</a>
+      <a class="rfloat-item" href="#narratives"><span class="rfloat-dot" style="background:#F59E0B;"></span>Report Narratives</a>
+      <a class="rfloat-item" href="#attendance-ai"><span class="rfloat-dot" style="background:#F59E0B;"></span>Attendance AI</a>
+    </div>
+  </div>
+
+  <!-- School Admin -->
+  <div class="rfloat-role" id="rf-admin" onclick="location.href='#fail-risk'">
+    <div class="rfloat-icon" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">🏫</div>
+    <div class="rfloat-info">
+      <div class="rfloat-name">School Admin</div>
+      <div class="rfloat-badge">2 AI tools</div>
+    </div>
+    <div class="rfloat-drop">
+      <div class="rfloat-drop-hdr">For Management</div>
+      <a class="rfloat-item" href="#fail-risk"><span class="rfloat-dot" style="background:#6366F1;"></span>Fail-Risk Predictor</a>
+      <a class="rfloat-item" href="#fee-pred"><span class="rfloat-dot" style="background:#6366F1;"></span>Fee Default Predictor</a>
+    </div>
+  </div>
+
+  <!-- Parents -->
+  <div class="rfloat-role" id="rf-parent" onclick="location.href='#parent-ai'">
+    <div class="rfloat-icon" style="background:linear-gradient(135deg,#EC4899,#DB2777);">👨‍👩‍👧</div>
+    <div class="rfloat-info">
+      <div class="rfloat-name">Parents</div>
+      <div class="rfloat-badge">1 AI tool</div>
+    </div>
+    <div class="rfloat-drop">
+      <div class="rfloat-drop-hdr">For Parents</div>
+      <a class="rfloat-item" href="#parent-ai"><span class="rfloat-dot" style="background:#EC4899;"></span>AI Parent Assistant</a>
+    </div>
+  </div>
+
+  <!-- Students -->
+  <div class="rfloat-role" id="rf-student" onclick="location.href='#study-tutor'">
+    <div class="rfloat-icon" style="background:linear-gradient(135deg,#10B981,#059669);">🎓</div>
+    <div class="rfloat-info">
+      <div class="rfloat-name">Students</div>
+      <div class="rfloat-badge">5 AI tools</div>
+    </div>
+    <div class="rfloat-drop">
+      <div class="rfloat-drop-hdr">For Students</div>
+      <a class="rfloat-item" href="#study-tutor"><span class="rfloat-dot" style="background:#10B981;"></span>AI Study Tutor</a>
+      <a class="rfloat-item" href="#practice-quiz"><span class="rfloat-dot" style="background:#10B981;"></span>Practice Quiz</a>
+      <a class="rfloat-item" href="#my-progress"><span class="rfloat-dot" style="background:#10B981;"></span>My Progress AI</a>
+      <a class="rfloat-item" href="#exam-planner"><span class="rfloat-dot" style="background:#10B981;"></span>Exam Planner</a>
+      <a class="rfloat-item" href="#note-summarizer"><span class="rfloat-dot" style="background:#10B981;"></span>Note Summarizer</a>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- TEACHER GROUP DIVIDER                                  -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;padding:72px 5% 0;">
+  <div style="max-width:1200px;margin:0 auto;border-top:1px solid #E2E8F0;padding-top:64px;text-align:center;">
+    <div class="ai-hero-badge" style="margin-bottom:16px;background:#FFFBEB;border-color:#FDE68A;color:#92400E;">👩‍🏫 For Teachers</div>
+    <h2 style="color:#0F172A;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px;">AI tools that <span style="background:linear-gradient(90deg,#FCD34D,#F59E0B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">save hours every week</span></h2>
+    <p style="color:#64748B;max-width:520px;margin:0 auto;">3 AI modules built to reduce teacher workload — from question generation to attendance analysis.</p>
+  </div>
+</section>
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 1. AI QUESTION GENERATOR                               -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="question-gen">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">01</span> AI Question Generator</div>
+      <div class="ai-feat-title">Exam-ready questions<br>in seconds, not hours</div>
+      <div class="ai-feat-desc">Teachers spend hours crafting questions. EduOS AI reads your syllabus or topic, and generates MCQ, short answer, and essay questions aligned with Bangladesh NCTB curriculum — instantly.</div>
+      <ul class="ai-feat-list">
+        <li>Generate MCQ, short answer, and essay questions from any topic or chapter</li>
+        <li>NCTB curriculum-aligned — Class 1 through SSC / HSC level</li>
+        <li>Set difficulty: Easy, Medium, Hard with one click</li>
+        <li>Bangla and English language support</li>
+        <li>One-click export to exam paper PDF</li>
+        <li>Question bank — save, reuse, and remix previous questions</li>
+      </ul>
+      <div class="ai-feat-impact">⚡ Teachers save an average of <strong style="color:#A5B4FC;margin:0 4px;">4 hours per week</strong> on exam prep</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">🤖 AI Question Generator — Class 9 · Physics</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <input style="flex:1;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:9px;padding:9px 13px;color:rgba(255,255,255,.6);font-size:.8rem;outline:none;" value="Newton's Laws of Motion — Chapter 4" readonly>
+          <select style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);border-radius:9px;padding:9px;color:#A5B4FC;font-size:.8rem;outline:none;">
+            <option>Medium</option>
+          </select>
+          <button style="background:linear-gradient(135deg,#4F46E5,#7C3AED);border:none;border-radius:9px;padding:9px 14px;color:#fff;font-size:.8rem;font-weight:700;cursor:pointer;">Generate ✨</button>
+        </div>
+
+        <div class="q-card">
+          <span class="q-type" style="background:rgba(99,102,241,.2);color:#A5B4FC;border:1px solid rgba(99,102,241,.3);">MCQ</span>
+          <div class="q-text">An object of mass 5 kg is acted upon by a force of 20 N. What is the acceleration of the object?</div>
+          <div class="q-opt">A) 2 m/s²</div>
+          <div class="q-opt correct">B) 4 m/s² ✓</div>
+          <div class="q-opt">C) 10 m/s²</div>
+          <div class="q-opt">D) 100 m/s²</div>
+        </div>
+        <div class="q-card">
+          <span class="q-type" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">Short Answer</span>
+          <div class="q-text">State Newton's Second Law of Motion and write its mathematical expression. Explain each symbol used.</div>
+        </div>
+        <div class="q-card">
+          <span class="q-type" style="background:rgba(245,158,11,.12);color:#FCD34D;border:1px solid rgba(245,158,11,.22);">Essay</span>
+          <div class="q-text">Describe with examples how Newton's Three Laws of Motion apply in everyday life. Include at least two real-world scenarios for each law. (10 marks)</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button style="flex:1;padding:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.5);font-size:.76rem;cursor:pointer;">🔄 Regenerate</button>
+          <button style="flex:1;padding:9px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);border-radius:9px;color:#A5B4FC;font-size:.76rem;font-weight:700;cursor:pointer;">📄 Export PDF</button>
+          <button style="flex:1;padding:9px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);border-radius:9px;color:#6EE7B7;font-size:.76rem;font-weight:700;cursor:pointer;">💾 Save to Bank</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 2. AUTO REPORT NARRATIVES                              -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#fff;">
+<div class="ai-feat-section" id="narratives">
+  <div class="ai-feat-grid flip">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">02</span> Auto Report Narratives</div>
+      <div class="ai-feat-title">Personalized comments<br>for every student — zero effort</div>
+      <div class="ai-feat-desc">Writing individual progress comments for 1,200 students is impossible. EduOS AI reads each student's performance data and writes a unique, meaningful narrative comment for every single report card — in seconds.</div>
+      <ul class="ai-feat-list">
+        <li>Unique narrative generated from marks, attendance, and behaviour notes</li>
+        <li>Writes in Bangla, English, or both</li>
+        <li>Tone settings: Encouraging, Formal, or Constructive</li>
+        <li>Teacher can review and edit before printing</li>
+        <li>Applied across all students with one click</li>
+        <li>Compliant with standard report card formats</li>
+      </ul>
+      <div class="ai-feat-impact">📝 Generate <strong style="color:#A5B4FC;margin:0 4px;">1,200 comments in under 2 minutes</strong> — what used to take a week</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📝 AI Report Narratives — Class 9A · Term 2</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+          <span style="font-size:.75rem;color:rgba(255,255,255,.35);">Tone:</span>
+          <button style="padding:5px 12px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);border-radius:8px;color:#A5B4FC;font-size:.72rem;font-weight:700;cursor:pointer;">Encouraging</button>
+          <button style="padding:5px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:rgba(255,255,255,.35);font-size:.72rem;cursor:pointer;">Formal</button>
+          <button style="padding:5px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:rgba(255,255,255,.35);font-size:.72rem;cursor:pointer;">Constructive</button>
+          <select style="margin-left:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 9px;color:rgba(255,255,255,.45);font-size:.72rem;outline:none;">
+            <option>Bangla</option>
+          </select>
+        </div>
+
+        <div class="narrative-card" style="margin-bottom:10px;">
+          <div class="narrative-student">🧑‍🎓 Rahim Ahmed · Avg: 82% · Attendance: 91%</div>
+          <div class="narrative-text">"রহিম এই টার্মে অত্যন্ত উৎসাহী এবং পরিশ্রমী ছিল। গণিত ও বিজ্ঞানে তার ফলাফল প্রশংসনীয়। নিয়মিত উপস্থিতি তার শেখার আগ্রহকে প্রতিফলিত করে। আগামী টার্মে আরও উন্নতির সুযোগ রয়েছে।"</div>
+          <span class="narrative-tag" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">✓ Auto-generated</span>
+          <span class="narrative-tag" style="background:rgba(99,102,241,.12);color:#A5B4FC;border:1px solid rgba(99,102,241,.22);margin-left:6px;">✏ Edit</span>
+        </div>
+
+        <div class="narrative-card" style="margin-bottom:10px;">
+          <div class="narrative-student">👧 Fatema Khanam · Avg: 91% · Attendance: 98%</div>
+          <div class="narrative-text">"ফাতেমা এই সেশনে তার শ্রেণিতে শীর্ষস্থানীয় পারফর্মারদের একজন। তার মনোযোগ, শৃঙ্খলা এবং মেধা অনুকরণীয়। সকল শিক্ষক তার অগ্রগতিতে অত্যন্ত সন্তুষ্ট।"</div>
+          <span class="narrative-tag" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">✓ Auto-generated</span>
+          <span class="narrative-tag" style="background:rgba(99,102,241,.12);color:#A5B4FC;border:1px solid rgba(99,102,241,.22);margin-left:6px;">✏ Edit</span>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button style="flex:1;padding:9px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border:none;border-radius:9px;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer;">✨ Generate for All 42 Students</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 3. ATTENDANCE PATTERN AI                               -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="attendance-ai">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">03</span> Attendance Pattern AI</div>
+      <div class="ai-feat-title">Catch chronic absence<br>before it becomes dropout</div>
+      <div class="ai-feat-desc">Absence for one day is normal. A pattern is a warning sign. EduOS AI tracks every student's long-term attendance trends, identifies students at risk of chronic absenteeism, and automatically escalates alerts to parents and admin.</div>
+      <ul class="ai-feat-list">
+        <li>Pattern detection: Monday absences, pre-exam skipping, post-holiday drops</li>
+        <li>Chronic absenteeism alert at &lt;75% monthly attendance</li>
+        <li>Auto SMS + app notification to parents when pattern detected</li>
+        <li>AI-generated counsellor referral notes</li>
+        <li>Division-wide and class-wide trend heatmap</li>
+        <li>Absence reason tracking (medical, family, unexcused)</li>
+      </ul>
+      <div class="ai-feat-impact">🎯 Schools reduced chronic absenteeism by <strong style="color:#A5B4FC;margin:0 4px;">33%</strong> within one semester</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📅 Attendance Pattern AI — May 2026</div>
+        </div>
+
+        <!-- Heatmap weeks -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:.66rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Weekly attendance heatmap — Rahim Ahmed (Class 9A)</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);text-align:center;">Mon</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);text-align:center;">Tue</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);text-align:center;">Wed</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);text-align:center;">Thu</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.25);text-align:center;">Fri</div>
+            <!-- Week 1 -->
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <!-- Week 2 -->
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <!-- Week 3 -->
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(245,158,11,.45);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <!-- Week 4 -->
+            <div style="height:28px;border-radius:5px;background:rgba(239,68,68,.5);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(245,158,11,.45);"></div>
+            <div style="height:28px;border-radius:5px;background:rgba(16,185,129,.4);"></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:8px;font-size:.62rem;color:rgba(255,255,255,.25);">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(16,185,129,.4);margin-right:4px;"></span>Present</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.45);margin-right:4px;"></span>Late</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.5);margin-right:4px;"></span>Absent</span>
+          </div>
+        </div>
+
+        <!-- AI insight -->
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+          <div style="font-size:.72rem;font-weight:800;color:#FCA5A5;margin-bottom:5px;">🤖 AI Pattern Detected</div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.55;">Rahim is absent <strong style="color:#FCA5A5;">every Monday</strong> for the past 4 weeks (4/4). This suggests a recurring issue. Recommend counsellor follow-up.</div>
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;padding:9px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.22);border-radius:9px;color:#FCA5A5;font-size:.75rem;font-weight:700;cursor:pointer;">📲 Alert Parent</button>
+          <button style="flex:1;padding:9px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.22);border-radius:9px;color:#C4B5FD;font-size:.75rem;font-weight:700;cursor:pointer;">📋 Counsellor Note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- ADMIN GROUP DIVIDER                                    -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;padding:72px 5% 0;">
+  <div style="max-width:1200px;margin:0 auto;border-top:1px solid #E2E8F0;padding-top:64px;text-align:center;">
+    <div class="ai-hero-badge" style="margin-bottom:16px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;">🏫 For School Admin</div>
+    <h2 style="color:#0F172A;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px;">AI that makes <span style="background:linear-gradient(90deg,#A5B4FC,#818CF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">smarter decisions</span> for management</h2>
+    <p style="color:#64748B;max-width:520px;margin:0 auto;">2 AI modules for school management — predict failure before it happens and prevent fee defaults before they cost you.</p>
+  </div>
+</section>
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 4. FAIL-RISK PREDICTOR                                 -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#fff;">
+<div class="ai-feat-section" id="fail-risk">
+  <div class="ai-feat-grid flip">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">04</span> Fail-Risk Predictor</div>
+      <div class="ai-feat-title">Intervene 30 days<br>before the exam</div>
+      <div class="ai-feat-desc">EduOS AI continuously analyses each student's attendance rate, assignment scores, and historical exam performance to calculate a fail-risk score — giving you time to act before it's too late.</div>
+      <ul class="ai-feat-list">
+        <li>Real-time risk score (0–100%) per student per subject</li>
+        <li>Analysed signals: attendance, marks trend, assignment completion</li>
+        <li>Auto-alert parents when a child enters high-risk zone</li>
+        <li>Class-wide risk dashboard — spot trends in one glance</li>
+        <li>Weekly AI summary report for principal and teachers</li>
+        <li>Track improvement after intervention</li>
+      </ul>
+      <div class="ai-feat-impact">📉 Schools using this feature see <strong style="color:#A5B4FC;margin:0 4px;">28% fewer failures</strong> on average</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📊 AI Fail-Risk Dashboard — Class 9A</div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;color:#FCA5A5;">7</div>
+            <div style="font-size:.63rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">High Risk</div>
+          </div>
+          <div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;color:#FCD34D;">12</div>
+            <div style="font-size:.63rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Medium Risk</div>
+          </div>
+          <div style="flex:1;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;color:#6EE7B7;">23</div>
+            <div style="font-size:.63rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">On Track</div>
+          </div>
+        </div>
+
+        <div class="risk-row">
+          <div class="risk-name">Rahim Ahmed</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill" style="width:82%;background:linear-gradient(90deg,#EF4444,#DC2626);"></div></div>
+          <div class="risk-pct" style="color:#FCA5A5;">82%</div>
+          <span class="risk-tag" style="background:rgba(239,68,68,.15);color:#FCA5A5;border:1px solid rgba(239,68,68,.25);">HIGH</span>
+        </div>
+        <div class="risk-row">
+          <div class="risk-name">Priya Das</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill" style="width:67%;background:linear-gradient(90deg,#F59E0B,#D97706);"></div></div>
+          <div class="risk-pct" style="color:#FCD34D;">67%</div>
+          <span class="risk-tag" style="background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid rgba(245,158,11,.25);">MED</span>
+        </div>
+        <div class="risk-row">
+          <div class="risk-name">Sumon Islam</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill" style="width:71%;background:linear-gradient(90deg,#F59E0B,#D97706);"></div></div>
+          <div class="risk-pct" style="color:#FCD34D;">71%</div>
+          <span class="risk-tag" style="background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid rgba(245,158,11,.25);">MED</span>
+        </div>
+        <div class="risk-row">
+          <div class="risk-name">Nadia Hossain</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill" style="width:18%;background:linear-gradient(90deg,#10B981,#059669);"></div></div>
+          <div class="risk-pct" style="color:#6EE7B7;">18%</div>
+          <span class="risk-tag" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">SAFE</span>
+        </div>
+        <div class="risk-row">
+          <div class="risk-name">Karim Mia</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill" style="width:9%;background:linear-gradient(90deg,#10B981,#059669);"></div></div>
+          <div class="risk-pct" style="color:#6EE7B7;">9%</div>
+          <span class="risk-tag" style="background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.22);">SAFE</span>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button style="flex:1;padding:9px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);border-radius:9px;color:#FCA5A5;font-size:.75rem;font-weight:700;cursor:pointer;">⚠ Alert 7 Parents</button>
+          <button style="flex:1;padding:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:9px;color:rgba(255,255,255,.45);font-size:.75rem;cursor:pointer;">📄 Full Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 5. FEE DEFAULT PREDICTOR                               -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#fff;">
+<div class="ai-feat-section" id="fee-pred">
+  <div class="ai-feat-grid flip">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">05</span> Fee Default Predictor</div>
+      <div class="ai-feat-title">Know who won't pay<br>before they miss the deadline</div>
+      <div class="ai-feat-desc">EduOS AI analyses each family's historical payment patterns, late payment frequency, and seasonal trends to flag students likely to miss the upcoming fee deadline — so the finance team can act proactively.</div>
+      <ul class="ai-feat-list">
+        <li>Per-student default probability score updated monthly</li>
+        <li>Considers: payment history, sibling records, seasonal patterns</li>
+        <li>Auto-send gentle reminder SMS 7 days before due date to at-risk families</li>
+        <li>Finance dashboard: total projected overdue amount</li>
+        <li>Track how many predicted defaults were prevented</li>
+        <li>Export risk report as PDF or Excel</li>
+      </ul>
+      <div class="ai-feat-impact">💰 Schools report <strong style="color:#A5B4FC;margin:0 4px;">40% reduction in overdue fees</strong> within the first 3 months</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">💰 Fee Default Predictor — June 2026</div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:800;color:#FCA5A5;font-family:'Sora',sans-serif;">24</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">High Risk</div>
+          </div>
+          <div style="flex:1;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:800;color:#FCD34D;font-family:'Sora',sans-serif;">৳ 48K</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Projected Overdue</div>
+          </div>
+          <div style="flex:1;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:800;color:#6EE7B7;font-family:'Sora',sans-serif;">৳ 19K</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Prevented Last Month</div>
+          </div>
+        </div>
+
+        <div class="fee-pred-row">
+          <div><div class="fee-pred-name">Karim Uddin</div><div class="fee-pred-action">Missed 3 of last 6 months</div></div>
+          <div style="text-align:right;">
+            <span class="fee-pred-chance" style="background:rgba(239,68,68,.15);color:#FCA5A5;">89% risk</span>
+            <div style="font-size:.64rem;color:rgba(255,255,255,.2);margin-top:4px;">SMS sent ✓</div>
+          </div>
+        </div>
+        <div class="fee-pred-row">
+          <div><div class="fee-pred-name">Nasrin Begum</div><div class="fee-pred-action">Usually pays late in June</div></div>
+          <div style="text-align:right;">
+            <span class="fee-pred-chance" style="background:rgba(239,68,68,.15);color:#FCA5A5;">76% risk</span>
+            <div style="font-size:.64rem;color:rgba(255,255,255,.2);margin-top:4px;">Reminder pending</div>
+          </div>
+        </div>
+        <div class="fee-pred-row">
+          <div><div class="fee-pred-name">Sumon Islam</div><div class="fee-pred-action">Last payment: 2 months ago</div></div>
+          <div style="text-align:right;">
+            <span class="fee-pred-chance" style="background:rgba(245,158,11,.13);color:#FCD34D;">54% risk</span>
+            <div style="font-size:.64rem;color:rgba(255,255,255,.2);margin-top:4px;">Monitoring</div>
+          </div>
+        </div>
+        <div class="fee-pred-row">
+          <div><div class="fee-pred-name">Rahim Ahmed</div><div class="fee-pred-action">Always pays on time</div></div>
+          <div style="text-align:right;">
+            <span class="fee-pred-chance" style="background:rgba(16,185,129,.12);color:#6EE7B7;">6% risk</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button style="flex:1;padding:9px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.22);border-radius:9px;color:#FCA5A5;font-size:.75rem;font-weight:700;cursor:pointer;">📲 Send 24 Reminders</button>
+          <button style="flex:1;padding:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:9px;color:rgba(255,255,255,.4);font-size:.75rem;cursor:pointer;">📊 Export Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- PARENT GROUP DIVIDER                                   -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;padding:72px 5% 0;">
+  <div style="max-width:1200px;margin:0 auto;border-top:1px solid #E2E8F0;padding-top:64px;text-align:center;">
+    <div class="ai-hero-badge" style="margin-bottom:16px;background:#FDF2F8;border-color:#F9A8D4;color:#9D174D;">👨‍👩‍👧 For Parents</div>
+    <h2 style="color:#0F172A;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px;">Parents always know <span style="background:linear-gradient(90deg,#F9A8D4,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">what's happening</span></h2>
+    <p style="color:#64748B;max-width:520px;margin:0 auto;">AI Parent Assistant handles every parent query instantly — in Bangla, 24/7, so your office staff can focus on what matters.</p>
+  </div>
+</section>
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 6. AI PARENT ASSISTANT                                 -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="parent-ai">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag"><span class="ai-feat-num">06</span> AI Parent Assistant</div>
+      <div class="ai-feat-title">24/7 AI answers every<br>parent question instantly</div>
+      <div class="ai-feat-desc">Parents don't wait until office hours. The EduOS AI Assistant handles attendance queries, fee status checks, result lookups, and school notices — in Bangla and English, any time of day.</div>
+      <ul class="ai-feat-list">
+        <li>Instant answers to attendance, fees, results, and schedule queries</li>
+        <li>Fully bilingual — Bangla (বাংলা) and English</li>
+        <li>Escalates complex issues to admin staff automatically</li>
+        <li>Accessible via Parent Mobile App and WhatsApp</li>
+        <li>AI drafts and sends fee reminders, exam notifications</li>
+        <li>Learns your school's schedule, policies, and contacts</li>
+      </ul>
+      <div class="ai-feat-impact">💬 Reduces parent call volume to the office by <strong style="color:#A5B4FC;margin:0 4px;">65%</strong></div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+            <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:.6rem;">🤖</div>
+            <div class="ai-mock-bar-title">EduOS AI Assistant</div>
+            <span style="width:7px;height:7px;border-radius:50%;background:#22C55E;display:inline-block;margin-left:auto;"></span>
+            <span style="font-size:.65rem;color:rgba(255,255,255,.3);">Online</span>
+          </div>
+        </div>
+
+        <div class="ai-bubble-wrap">
+          <div class="ai-bubble right">
+            <div class="ai-bubble-msg">আমার ছেলে Rahim এর এই মাসের attendance কত?</div>
+            <div class="ai-bubble-av" style="background:rgba(99,102,241,.25);">👩</div>
+          </div>
+          <div class="ai-bubble">
+            <div class="ai-bubble-av" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">🤖</div>
+            <div class="ai-bubble-msg">
+              Rahim Ahmed (Class 9A, Roll 12) এর এই মাসের (মে ২০২৬) attendance:<br><br>
+              📅 মোট উপস্থিত: <strong style="color:#6EE7B7;">18 দিন</strong><br>
+              📅 অনুপস্থিত: <strong style="color:#FCA5A5;">3 দিন</strong> (মে ৭, ১২, ১৯)<br>
+              📊 Attendance rate: <strong style="color:#FCD34D;">85.7%</strong><br><br>
+              তার attendance গত মাসের চেয়ে একটু কমেছে। কোনো সাহায্য দরকার?
+            </div>
+          </div>
+          <div class="ai-bubble right">
+            <div class="ai-bubble-msg">এই মাসের fee বাকি আছে কি?</div>
+            <div class="ai-bubble-av" style="background:rgba(99,102,241,.25);">👩</div>
+          </div>
+          <div class="ai-bubble">
+            <div class="ai-bubble-av" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">🤖</div>
+            <div>
+              <div class="ai-bubble-msg">হ্যাঁ, জুন মাসের মাসিক বেতন <strong style="color:#FCA5A5;">৳ 1,200</strong> এখনও বাকি আছে। Due date: ১০ জুন ২০২৬।</div>
+              <div style="margin-top:6px;margin-left:36px;">
+                <span class="ai-chip" style="background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.35);color:#A5B4FC;">💳 Pay via bKash</span>
+                <span class="ai-chip" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.4);">🧾 View Receipt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;">
+          <input style="flex:1;background:none;border:none;outline:none;font-size:.78rem;color:rgba(255,255,255,.4);" placeholder="আপনার প্রশ্ন লিখুন…" readonly>
+          <button style="background:linear-gradient(135deg,#4F46E5,#7C3AED);border:none;border-radius:7px;padding:6px 12px;color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- STUDENT AI DIVIDER                                     -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;padding:72px 5% 0;">
+  <div style="max-width:1200px;margin:0 auto;border-top:1px solid #E2E8F0;padding-top:64px;text-align:center;">
+    <div class="ai-hero-badge" style="margin-bottom:16px;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">🎓 For Students</div>
+    <h2 style="color:#0F172A;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px;">AI that helps <span style="background:linear-gradient(90deg,#6EE7B7,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">students learn better</span></h2>
+    <p style="color:#64748B;max-width:520px;margin:0 auto;">5 dedicated AI tools built directly into the student dashboard — helping every student study smarter, not harder.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 7. AI STUDY TUTOR                                      -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="study-tutor" style="padding-top:56px;">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag" style="background:#ECFDF5;border-color:#6EE7B7;color:#065F46;"><span class="ai-feat-num">07</span> AI Study Tutor</div>
+      <div class="ai-feat-title">Ask anything. Learn instantly.<br>In Bangla or English.</div>
+      <div class="ai-feat-desc">Students no longer have to wait for class or search YouTube. The EduOS AI Tutor explains any topic, solves problems step-by-step, and answers follow-up questions — 24/7, in their own language.</div>
+      <ul class="ai-feat-list">
+        <li>Ask questions on any subject — Bangla, English, Math, Science, Social Studies</li>
+        <li>Step-by-step explanations with worked examples</li>
+        <li>Bangla and English response, student can switch anytime</li>
+        <li>Built into the student dashboard — no separate app needed</li>
+        <li>Safe, curriculum-scoped answers (no off-topic distractions)</li>
+        <li>Session history — revisit previous explanations</li>
+      </ul>
+      <div class="ai-feat-impact" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">🎓 Students get instant help on any topic — any time of day</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+            <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;font-size:.6rem;">🎓</div>
+            <div class="ai-mock-bar-title">EduOS AI Tutor</div>
+            <span style="width:7px;height:7px;border-radius:50%;background:#22C55E;display:inline-block;margin-left:auto;"></span>
+            <span style="font-size:.65rem;color:rgba(255,255,255,.3);">Online 24/7</span>
+          </div>
+        </div>
+        <div class="ai-bubble-wrap">
+          <div class="ai-bubble right">
+            <div class="ai-bubble-msg" style="background:rgba(16,185,129,.2);color:#A7F3D0;border-radius:12px 0 12px 12px;">Photosynthesis কি? সহজ করে বুঝাও।</div>
+            <div class="ai-bubble-av" style="background:rgba(16,185,129,.2);">🧑‍🎓</div>
+          </div>
+          <div class="ai-bubble">
+            <div class="ai-bubble-av" style="background:linear-gradient(135deg,#10B981,#059669);">🎓</div>
+            <div class="ai-bubble-msg">
+              <strong style="color:#6EE7B7;">Photosynthesis</strong> হলো সবুজ গাছপালার খাবার তৈরির প্রক্রিয়া।<br><br>
+              🌿 গাছ <strong style="color:#A7F3D0;">সূর্যালোক + পানি + CO₂</strong> ব্যবহার করে:<br>
+              <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 12px;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#6EE7B7;">CO₂ + H₂O + আলো → গ্লুকোজ + O₂</div>
+              সহজ কথায়: গাছ সূর্যের আলো থেকে শক্তি নিয়ে নিজের খাবার বানায় এবং আমাদের জন্য অক্সিজেন ছাড়ে। 🌱
+            </div>
+          </div>
+          <div class="ai-bubble right">
+            <div class="ai-bubble-msg" style="background:rgba(16,185,129,.2);color:#A7F3D0;border-radius:12px 0 12px 12px;">Chlorophyll এর কাজ কি?</div>
+            <div class="ai-bubble-av" style="background:rgba(16,185,129,.2);">🧑‍🎓</div>
+          </div>
+          <div class="ai-bubble">
+            <div class="ai-bubble-av" style="background:linear-gradient(135deg,#10B981,#059669);">🎓</div>
+            <div class="ai-bubble-msg">Chlorophyll হলো পাতার সবুজ রঙের উপাদান যা সূর্যালোক শোষণ করে এবং photosynthesis শুরু করতে সাহায্য করে। এটা ছাড়া গাছ আলো ব্যবহার করতে পারত না।</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;">
+          <input style="flex:1;background:none;border:none;outline:none;font-size:.78rem;color:rgba(255,255,255,.4);" placeholder="যেকোনো প্রশ্ন করো..." readonly>
+          <button style="background:linear-gradient(135deg,#10B981,#059669);border:none;border-radius:7px;padding:6px 12px;color:#fff;font-size:.75rem;font-weight:700;cursor:pointer;">Ask</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 8. SMART PRACTICE QUIZ                                 -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#fff;">
+<div class="ai-feat-section" id="practice-quiz">
+  <div class="ai-feat-grid flip">
+    <div>
+      <div class="ai-feat-tag" style="background:#ECFDF5;border-color:#6EE7B7;color:#065F46;"><span class="ai-feat-num">08</span> Smart Practice Quiz</div>
+      <div class="ai-feat-title">Practice tests that adapt<br>to each student's weak spots</div>
+      <div class="ai-feat-desc">Instead of random practice, EduOS AI generates targeted quizzes based on where each student is struggling — so every minute of practice is focused and effective.</div>
+      <ul class="ai-feat-list">
+        <li>AI detects weak subjects and chapters from previous scores</li>
+        <li>Auto-generates 10-question adaptive practice quiz per subject</li>
+        <li>Immediate feedback — right/wrong with explanation</li>
+        <li>Tracks improvement over time with progress chart</li>
+        <li>Student can also request quiz on any topic manually</li>
+        <li>Works offline — syncs when back online</li>
+      </ul>
+      <div class="ai-feat-impact" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">📈 Students who practice with AI show <strong style="color:#6EE7B7;margin:0 4px;">23% better exam scores</strong> on average</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📚 Smart Practice — Math · Rahim (Class 9A)</div>
+        </div>
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:.72rem;font-weight:800;color:#6EE7B7;margin-bottom:4px;">🎯 AI-Targeted Weak Areas</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+            <span style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:#FCA5A5;padding:3px 10px;border-radius:8px;font-size:.72rem;font-weight:700;">Algebra</span>
+            <span style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.22);color:#FCD34D;padding:3px 10px;border-radius:8px;font-size:.72rem;font-weight:700;">Fractions</span>
+            <span style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);color:#6EE7B7;padding:3px 10px;border-radius:8px;font-size:.72rem;font-weight:700;">Geometry ✓</span>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:.72rem;font-weight:800;color:#A5B4FC;">Question 3 of 10 · Algebra</span>
+            <span style="font-size:.72rem;color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace;">02:14</span>
+          </div>
+          <div style="font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.55;margin-bottom:12px;">If 3x + 7 = 22, what is the value of x?</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button style="padding:9px 14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:9px;color:#FCA5A5;font-size:.78rem;text-align:left;cursor:pointer;">A) 3</button>
+            <button style="padding:9px 14px;background:rgba(16,185,129,.18);border:1.5px solid rgba(16,185,129,.4);border-radius:9px;color:#6EE7B7;font-size:.78rem;font-weight:700;text-align:left;cursor:pointer;">B) 5 ✓</button>
+            <button style="padding:9px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;color:rgba(255,255,255,.4);font-size:.78rem;text-align:left;cursor:pointer;">C) 7</button>
+            <button style="padding:9px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;color:rgba(255,255,255,.4);font-size:.78rem;text-align:left;cursor:pointer;">D) 15</button>
+          </div>
+          <div style="margin-top:10px;padding:9px 12px;background:rgba(16,185,129,.08);border-radius:8px;font-size:.75rem;color:#A7F3D0;">✅ Correct! <strong>x = 5</strong> because 3(5)+7 = 22. Well done!</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <div style="flex:1;height:6px;background:rgba(16,185,129,.5);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(16,185,129,.5);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(99,102,241,.5);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+          <div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;"></div>
+        </div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.25);margin-top:5px;">3/10 complete · 2 correct · 1 incorrect</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 9. MY PROGRESS AI                                      -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="my-progress">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag" style="background:#ECFDF5;border-color:#6EE7B7;color:#065F46;"><span class="ai-feat-num">09</span> My Progress AI</div>
+      <div class="ai-feat-title">AI tells each student exactly<br>where to focus next</div>
+      <div class="ai-feat-desc">Every student's dashboard has a personalised AI progress summary — showing their strongest subjects, their biggest gaps, and a clear recommended action for this week.</div>
+      <ul class="ai-feat-list">
+        <li>Subject strength radar — visual breakdown per subject</li>
+        <li>AI-generated weekly recommendation: "Focus on Algebra this week"</li>
+        <li>Trend chart: is the student improving or declining?</li>
+        <li>Comparison against class average (anonymous)</li>
+        <li>AI identifies specific chapters to review</li>
+        <li>Milestone badges when targets are hit</li>
+      </ul>
+      <div class="ai-feat-impact" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">🚀 Students with progress AI spend <strong style="color:#6EE7B7;margin:0 4px;">40% more time</strong> on their actual weak areas</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📊 My Progress — Rahim (Class 9A)</div>
+        </div>
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:.72rem;font-weight:800;color:#6EE7B7;margin-bottom:6px;">🤖 AI Recommendation This Week</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.55;">"তোমার Math এর Algebra chapter এ মনোযোগ দাও। গত ৩টি quiz এ এই অংশে তুমি সবচেয়ে কম নম্বর পেয়েছ।"</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px;">
+            <div style="font-size:.65rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Subject Scores</div>
+            <div class="risk-row" style="margin-bottom:7px;">
+              <div class="risk-name" style="font-size:.72rem;">Science</div>
+              <div class="risk-bar-track"><div class="risk-bar-fill" style="width:90%;background:linear-gradient(90deg,#10B981,#059669);"></div></div>
+              <div class="risk-pct" style="color:#6EE7B7;">90%</div>
+            </div>
+            <div class="risk-row" style="margin-bottom:7px;">
+              <div class="risk-name" style="font-size:.72rem;">Bangla</div>
+              <div class="risk-bar-track"><div class="risk-bar-fill" style="width:82%;background:linear-gradient(90deg,#10B981,#059669);"></div></div>
+              <div class="risk-pct" style="color:#6EE7B7;">82%</div>
+            </div>
+            <div class="risk-row" style="margin-bottom:7px;">
+              <div class="risk-name" style="font-size:.72rem;">English</div>
+              <div class="risk-bar-track"><div class="risk-bar-fill" style="width:68%;background:linear-gradient(90deg,#F59E0B,#D97706);"></div></div>
+              <div class="risk-pct" style="color:#FCD34D;">68%</div>
+            </div>
+            <div class="risk-row">
+              <div class="risk-name" style="font-size:.72rem;">Math</div>
+              <div class="risk-bar-track"><div class="risk-bar-fill" style="width:52%;background:linear-gradient(90deg,#EF4444,#DC2626);"></div></div>
+              <div class="risk-pct" style="color:#FCA5A5;">52%</div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px;">
+            <div style="font-size:.65rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">This Month Trend</div>
+            <div style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+              <div style="flex:1;background:rgba(16,185,129,.4);border-radius:3px 3px 0 0;height:45%;"></div>
+              <div style="flex:1;background:rgba(16,185,129,.4);border-radius:3px 3px 0 0;height:55%;"></div>
+              <div style="flex:1;background:rgba(16,185,129,.4);border-radius:3px 3px 0 0;height:50%;"></div>
+              <div style="flex:1;background:rgba(16,185,129,.4);border-radius:3px 3px 0 0;height:65%;"></div>
+              <div style="flex:1;background:rgba(16,185,129,.4);border-radius:3px 3px 0 0;height:70%;"></div>
+              <div style="flex:1;background:rgba(16,185,129,.6);border-radius:3px 3px 0 0;height:78%;"></div>
+              <div style="flex:1;background:rgba(99,102,241,.6);border-radius:3px 3px 0 0;height:85%;border:1px solid rgba(99,102,241,.5);"></div>
+            </div>
+            <div style="font-size:.65rem;color:rgba(255,255,255,.3);margin-top:5px;">↑ Improving +14% this month</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;padding:9px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);border-radius:9px;color:#6EE7B7;font-size:.75rem;font-weight:700;cursor:pointer;">📚 Start Algebra Practice</button>
+          <button style="flex:1;padding:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;color:rgba(255,255,255,.4);font-size:.75rem;cursor:pointer;">📊 Full Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 10. AI EXAM PLANNER                                    -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#fff;">
+<div class="ai-feat-section" id="exam-planner">
+  <div class="ai-feat-grid flip">
+    <div>
+      <div class="ai-feat-tag" style="background:#ECFDF5;border-color:#6EE7B7;color:#065F46;"><span class="ai-feat-num">10</span> AI Exam Planner</div>
+      <div class="ai-feat-title">Tell AI your exam date.<br>Get your study plan instantly.</div>
+      <div class="ai-feat-desc">Students enter their upcoming exam schedule, and the EduOS AI Planner builds a personalised day-by-day study schedule — prioritising weak subjects and leaving buffer days for revision.</div>
+      <ul class="ai-feat-list">
+        <li>Input exam dates → AI outputs a day-by-day study timetable</li>
+        <li>Automatically prioritises weaker subjects based on progress data</li>
+        <li>Accounts for school days, holidays, and free time</li>
+        <li>Daily study reminders via app notification</li>
+        <li>Mark days complete — AI adjusts remaining plan if you fall behind</li>
+        <li>Shareable study plan — parents can view progress</li>
+      </ul>
+      <div class="ai-feat-impact" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">📅 Students who follow AI study plans are <strong style="color:#6EE7B7;margin:0 4px;">3× more likely to complete exam prep</strong> on time</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📅 AI Exam Planner — Final Exam · June 15</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <div style="flex:1;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;color:#6EE7B7;font-family:'Sora',sans-serif;">15</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Days Left</div>
+          </div>
+          <div style="flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.18);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;color:#A5B4FC;font-family:'Sora',sans-serif;">6</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Subjects</div>
+          </div>
+          <div style="flex:1;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;color:#FCD34D;font-family:'Sora',sans-serif;">2h</div>
+            <div style="font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;">Per Day</div>
+          </div>
+        </div>
+        <div style="font-size:.66rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">This week's plan</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:9px;">
+            <span style="font-size:.72rem;font-weight:800;color:#6EE7B7;width:32px;flex-shrink:0;">Mon</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.65);">Math — Algebra (2 chapters)</span>
+            <span style="margin-left:auto;font-size:.65rem;background:rgba(16,185,129,.15);color:#6EE7B7;padding:2px 8px;border-radius:6px;">Done ✓</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:9px;">
+            <span style="font-size:.72rem;font-weight:800;color:#6EE7B7;width:32px;flex-shrink:0;">Tue</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.65);">Math — Equations + practice quiz</span>
+            <span style="margin-left:auto;font-size:.65rem;background:rgba(16,185,129,.15);color:#6EE7B7;padding:2px 8px;border-radius:6px;">Done ✓</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(99,102,241,.12);border:1.5px solid rgba(99,102,241,.3);border-radius:9px;">
+            <span style="font-size:.72rem;font-weight:800;color:#A5B4FC;width:32px;flex-shrink:0;">Wed</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.75);font-weight:600;">English — Grammar + Reading</span>
+            <span style="margin-left:auto;font-size:.65rem;background:rgba(99,102,241,.2);color:#A5B4FC;padding:2px 8px;border-radius:6px;">Today</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;">
+            <span style="font-size:.72rem;font-weight:800;color:rgba(255,255,255,.3);width:32px;flex-shrink:0;">Thu</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.35);">Science — Chapter 5 & 6</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;">
+            <span style="font-size:.72rem;font-weight:800;color:rgba(255,255,255,.3);width:32px;flex-shrink:0;">Fri</span>
+            <span style="font-size:.78rem;color:rgba(255,255,255,.35);">Bangla — Poems + Composition</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- 11. AI NOTE SUMMARIZER                                 -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;">
+<div class="ai-feat-section" id="note-summarizer">
+  <div class="ai-feat-grid">
+    <div>
+      <div class="ai-feat-tag" style="background:#ECFDF5;border-color:#6EE7B7;color:#065F46;"><span class="ai-feat-num">11</span> AI Note Summarizer</div>
+      <div class="ai-feat-title">Long notes? AI turns them into<br>crisp revision summaries.</div>
+      <div class="ai-feat-desc">Students paste or upload their class notes or textbook chapters, and EduOS AI instantly produces a clean, structured summary — with key points, definitions, and important formulas highlighted.</div>
+      <ul class="ai-feat-list">
+        <li>Paste text or upload PDF — AI reads and summarises</li>
+        <li>Output: bullet-point summary, key terms, formulas</li>
+        <li>Bangla and English support</li>
+        <li>Generate flashcards from summary for quick revision</li>
+        <li>Save summaries to personal study library</li>
+        <li>Share summary with classmates via EduOS</li>
+      </ul>
+      <div class="ai-feat-impact" style="background:#ECFDF5;border-color:#A7F3D0;color:#065F46;">⏱ Reduces revision time by <strong style="color:#6EE7B7;margin:0 4px;">up to 60%</strong> for long-form chapters</div>
+    </div>
+    <div>
+      <div class="ai-mock-wrap">
+        <div class="ai-mock-bar">
+          <div class="ai-mock-bar-dots">
+            <div class="ai-mock-bar-dot" style="background:#FF5F57;"></div>
+            <div class="ai-mock-bar-dot" style="background:#FFBD2E;"></div>
+            <div class="ai-mock-bar-dot" style="background:#28CA42;"></div>
+          </div>
+          <div class="ai-mock-bar-title">📝 AI Note Summarizer</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-size:.65rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Original Note (3 pages)</div>
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px;font-size:.71rem;color:rgba(255,255,255,.3);line-height:1.65;height:140px;overflow:hidden;">
+              The digestive system is a group of organs working together to convert food into energy and basic nutrients. Food passes through a long tube inside the body known as the alimentary canal. The alimentary canal is made up of the oral cavity, pharynx, esophagus, stomach, small intestines, and large intestines. The digestive organs also include the liver, gallbladder, and pancreas. These organs produce enzymes and chemicals that help break down food into simpler substances...
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.65rem;color:#6EE7B7;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">✨ AI Summary</div>
+            <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:9px;padding:11px;font-size:.71rem;color:rgba(255,255,255,.65);line-height:1.65;height:140px;overflow:hidden;">
+              <strong style="color:#6EE7B7;">🔑 Key Points:</strong><br>
+              • পরিপাকতন্ত্র খাদ্যকে শক্তিতে রূপান্তরিত করে<br>
+              • Alimentary canal: মুখ → গলা → খাদ্যনালী → পাকস্থলী → ক্ষুদ্রান্ত্র → বৃহদান্ত্র<br>
+              • যকৃত, পিত্তথলি, অগ্ন্যাশয় — এনজাইম তৈরি করে<br>
+              <strong style="color:#6EE7B7;">📌 Key Term:</strong> Enzyme = হজম সহায়ক রাসায়নিক
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:10px;padding:11px;margin-bottom:10px;">
+          <div style="font-size:.66rem;font-weight:800;color:#6EE7B7;margin-bottom:7px;">🃏 AI-Generated Flashcards</div>
+          <div style="display:flex;gap:7px;">
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:8px;padding:9px;text-align:center;font-size:.68rem;color:rgba(255,255,255,.5);">Q: Alimentary canal কি?</div>
+            <div style="flex:1;background:rgba(16,185,129,.1);border-radius:8px;padding:9px;text-align:center;font-size:.68rem;color:#A7F3D0;">A: খাদ্য পরিবহনের দীর্ঘ নল</div>
+            <div style="flex:1;background:rgba(255,255,255,.05);border-radius:8px;padding:9px;text-align:center;font-size:.68rem;color:rgba(255,255,255,.5);">Q: Enzyme এর কাজ?</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;padding:9px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);border-radius:9px;color:#6EE7B7;font-size:.75rem;font-weight:700;cursor:pointer;">💾 Save to Library</button>
+          <button style="flex:1;padding:9px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.22);border-radius:9px;color:#A5B4FC;font-size:.75rem;font-weight:700;cursor:pointer;">🔗 Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- COMPARE: WITH VS WITHOUT AI                            -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="background:#F8FAFC;padding:80px 5%;">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:44px;">
+      <div class="ai-hero-badge" style="margin-bottom:14px;background:#FFF7ED;border-color:#FED7AA;color:#92400E;">⚡ Why AI Matters</div>
+      <h2 style="color:#0F172A;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:10px;">EduOS without AI vs. with AI</h2>
+      <p style="color:#64748B;max-width:480px;margin:0 auto;">The same platform. Unimaginable difference.</p>
+    </div>
+    <div style="max-width:800px;margin:0 auto;background:#fff;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Without AI</th>
+            <th class="ai-col">✨ With EduOS AI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Exam question creation</td><td>3–4 hours per paper</td><td class="ai-col check">⚡ Under 30 seconds</td></tr>
+          <tr><td>Identifying failing students</td><td>After exam — too late</td><td class="ai-col check">⚡ 30 days before exam</td></tr>
+          <tr><td>Parent queries (daily)</td><td>Staff answer calls all day</td><td class="ai-col check">⚡ AI handles 24/7</td></tr>
+          <tr><td>Report card comments</td><td>1 week for 1,200 students</td><td class="ai-col check">⚡ 2 minutes, all 1,200</td></tr>
+          <tr><td>Fee default detection</td><td>After deadline — already overdue</td><td class="ai-col check">⚡ 7 days before deadline</td></tr>
+          <tr><td>Attendance pattern analysis</td><td>Manual review, maybe monthly</td><td class="ai-col check">⚡ Real-time, automatic</td></tr>
+          <tr><td>Student homework help</td><td>Wait for next class</td><td class="ai-col check">⚡ AI Tutor answers instantly</td></tr>
+          <tr><td>Student exam preparation</td><td>Student figures it out alone</td><td class="ai-col check">⚡ Personalised study plan + practice</td></tr>
+          <tr><td>Revision notes</td><td>Re-read 30 pages</td><td class="ai-col check">⚡ AI summary in 10 seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<div class="ai-page-cta">
+  <div class="ai-hero-badge" style="margin-bottom:18px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;">🚀 Ready to get started?</div>
+  <h2>Give your institution an AI advantage today</h2>
+  <p>All 11 AI modules included on Growth plan and above. 30-day free trial. No credit card needed.</p>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;margin:0 auto;">
+    <a href="register.html" class="btn btn-lg" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;box-shadow:0 6px 24px rgba(99,102,241,.4);">Start Free Trial →</a>
+    <a href="contact.html" class="btn btn-lg btn-outline">📅 Book AI Demo</a>
+    <a href="pricing.html" class="btn btn-lg btn-outline">View Pricing</a>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-grid container">
+    <div>
+      <div class="footer-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></div>
+      <div class="footer-desc">Bangladesh's AI-powered school management platform.</div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="features.html">Features</a>
+      <a href="ai-features.html" style="font-weight:700;">✨ AI Features</a>
+      <a href="pricing.html">Pricing</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="#">Blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Privacy Policy</a>
+      <a href="admin/login.html" style="font-weight:700;">🔐 Admin Login</a>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <div>© 2026 EduOS. All rights reserved.</div>
+    <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;background:#22C55E;border-radius:50%;display:inline-block;"></span> All systems operational</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Floating role navigator — scroll-active state
+const roleMap = {
+  'question-gen':'teacher','narratives':'teacher','attendance-ai':'teacher',
+  'fail-risk':'admin','fee-pred':'admin',
+  'parent-ai':'parent',
+  'study-tutor':'student','practice-quiz':'student','my-progress':'student',
+  'exam-planner':'student','note-summarizer':'student'
+};
+const rfEls = {
+  teacher: document.getElementById('rf-teacher'),
+  admin:   document.getElementById('rf-admin'),
+  parent:  document.getElementById('rf-parent'),
+  student: document.getElementById('rf-student')
+};
+const rfClasses = { teacher:'rf-active-teacher', admin:'rf-active-admin', parent:'rf-active-parent', student:'rf-active-student' };
+const allSIDs = Object.keys(roleMap);
+
+window.addEventListener('scroll', () => {
+  let cur = 'teacher';
+  allSIDs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 220) cur = roleMap[id];
+  });
+  Object.entries(rfEls).forEach(([role, el]) => {
+    if (!el) return;
+    el.classList.remove('rf-active-teacher','rf-active-admin','rf-active-student');
+    if (role === cur) el.classList.add(rfClasses[role]);
+  });
+});
+</script>
+</body>
+</html>
+
+
+
+
+

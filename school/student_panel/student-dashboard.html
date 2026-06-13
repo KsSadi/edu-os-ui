@@ -1,0 +1,274 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard — Prathomik EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Hero card */
+.hero-card{background:linear-gradient(135deg,#1E0A3C 0%,#4C1D95 45%,#7C3AED 100%);border-radius:18px;padding:26px 28px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px;}
+.hero-card::before{content:'';position:absolute;right:-30px;top:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);}
+.hero-card::after{content:'';position:absolute;right:80px;bottom:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.04);}
+.hc-greeting{font-size:.72rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.hc-name{font-size:1.5rem;font-weight:800;margin-bottom:3px;}
+.hc-sub{font-size:.82rem;opacity:.7;margin-bottom:18px;}
+.hc-stats{display:flex;gap:0;background:rgba(0,0,0,.2);border-radius:12px;overflow:hidden;}
+.hc-stat{flex:1;padding:12px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.1);}
+.hc-stat:last-child{border-right:none;}
+.hc-stat-num{font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;}
+.hc-stat-lbl{font-size:.65rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* Attendance ring */
+.att-ring-wrap{position:relative;width:96px;height:96px;flex-shrink:0;}
+.att-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.att-ring-pct{font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.att-ring-lbl{font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+
+/* Exam countdown card */
+.exam-countdown{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--white);display:flex;align-items:center;gap:14px;transition:box-shadow .15s;}
+.exam-countdown:hover{box-shadow:var(--shadow);}
+.ec-days{min-width:60px;text-align:center;background:var(--stu-pale);border-radius:10px;padding:10px 8px;}
+.ec-days-num{font-size:1.5rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu);}
+.ec-days-lbl{font-size:.6rem;font-weight:700;color:var(--stu);text-transform:uppercase;letter-spacing:.04em;}
+.ec-info{flex:1;}
+.ec-name{font-size:.9rem;font-weight:800;color:var(--ink-2);}
+.ec-meta{font-size:.75rem;color:var(--muted);margin-top:2px;}
+
+/* Notice row student */
+.stu-notice-row{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.stu-notice-row:last-child{border-bottom:none;}
+.snr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.snr-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.snr-meta{font-size:.71rem;color:var(--muted);margin-top:2px;}
+
+/* Activity timeline */
+.timeline-item{display:flex;gap:12px;padding:10px 0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.tl-connector{width:2px;background:var(--border);margin:0 4px;flex-shrink:0;}
+.tl-text{font-size:.83rem;font-weight:700;color:var(--ink-2);}
+.tl-meta{font-size:.72rem;color:var(--muted);margin-top:1px;}
+
+/* Quick link cards */
+.ql-card{border:1.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;background:var(--white);cursor:pointer;transition:all .15s;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ql-card:hover{border-color:var(--stu);background:var(--stu-pale);transform:translateY(-2px);}
+.ql-icon{font-size:1.5rem;}
+.ql-label{font-size:.76rem;font-weight:700;color:var(--ink-2);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.hc-stats{flex-wrap:wrap;}.hc-stat{min-width:50%;border-bottom:1px solid rgba(255,255,255,.1);}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero card -->
+    <div class="hero-card anim-1">
+      <div class="hc-greeting" id="greetMsg">Good morning ·</div>
+      <div class="hc-name">Farhan Islam 👋</div>
+      <div class="hc-sub">Student ID: STU-2024-001 · Class IX–A (Science) · Roll 001 · Session 2026–27</div>
+      <div class="hc-stats">
+        <div class="hc-stat"><div class="hc-stat-num">94%</div><div class="hc-stat-lbl">Attendance</div></div>
+        <div class="hc-stat"><div class="hc-stat-num" style="color:#86EFAC;">5.00</div><div class="hc-stat-lbl">Latest GPA</div></div>
+        <div class="hc-stat"><div class="hc-stat-num">1st</div><div class="hc-stat-lbl">Class Rank</div></div>
+        <div class="hc-stat"><div class="hc-stat-num" style="color:#FCA5A5;">৳ 800</div><div class="hc-stat-lbl">Fee Due</div></div>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;" class="anim-1">
+      <a href="student-results.html" class="ql-card"><div class="ql-icon">📊</div><div class="ql-label">My Results</div></a>
+      <a href="student-fee.html" class="ql-card"><div class="ql-icon">💳</div><div class="ql-label">Pay Fee</div></a>
+      <a href="student-resources.html" class="ql-card"><div class="ql-icon">📁</div><div class="ql-label">Study Materials</div></a>
+      <a href="../admin_panel/admin-exam-online.html" class="ql-card"><div class="ql-icon">🖥️</div><div class="ql-label">Online Exam</div></a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Attendance card -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📋 My Attendance</div><div class="card-sub">February 2025 · Class IX–A</div></div>
+        </div>
+        <div class="card-body" style="display:flex;align-items:center;gap:20px;padding:18px;">
+          <!-- SVG ring -->
+          <div class="att-ring-wrap">
+            <svg width="96" height="96" viewBox="0 0 96 96" style="transform:rotate(-90deg)">
+              <circle cx="48" cy="48" r="38" fill="none" stroke="var(--border)" stroke-width="10"/>
+              <circle cx="48" cy="48" r="38" fill="none" stroke="var(--stu)" stroke-width="10"
+                stroke-dasharray="238.76" stroke-dashoffset="14.33" stroke-linecap="round"/>
+            </svg>
+            <div class="att-ring-label">
+              <div class="att-ring-pct" style="color:var(--stu);">94%</div>
+              <div class="att-ring-lbl">Present</div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;">
+                <span style="color:var(--muted);">Days Present</span><strong style="color:var(--green);">16 / 17</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;">
+                <span style="color:var(--muted);">Days Absent</span><strong style="color:var(--red);">1</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;">
+                <span style="color:var(--muted);">Late</span><strong style="color:var(--amber);">0</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;">
+                <span style="color:var(--muted);">YTD (Aug–Feb)</span><strong style="color:var(--stu);">94.2%</strong>
+              </div>
+            </div>
+            <!-- Month dots -->
+            <div style="display:flex;gap:3px;margin-top:12px;flex-wrap:wrap;" id="attDots"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="text-sm text-muted">Absent: Feb 7 (Illness)</span>
+          <span class="badge" style="background:var(--stu-light);color:var(--stu-dark);border:1px solid #DDD6FE;font-size:.7rem;">Above 85% ✓</span>
+        </div>
+      </div>
+
+      <!-- Upcoming exams -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📅 Upcoming Exams</div><div class="card-sub">Half-Yearly 2025 · In progress</div></div>
+          <a href="../admin_panel/admin-exam-schedule.html" style="font-size:.78rem;color:var(--stu);font-weight:700;text-decoration:none;">Full Schedule →</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;" id="examCountdowns"></div>
+        <div class="card-footer">
+          <span class="text-sm text-muted">Half-Yearly ends Mar 5</span>
+          <span class="badge badge-amber" style="font-size:.7rem;">4 exams remaining</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;">
+
+      <!-- Notices -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📢 School Notices</div><div class="card-sub">Latest announcements for students</div></div>
+          <span class="sb-badge" style="font-size:.72rem;">3 new</span>
+        </div>
+        <div id="noticeList"></div>
+        <div class="card-footer"><a href="../admin_panel/admin-notices-board.html" style="font-size:.8rem;color:var(--stu);font-weight:700;text-decoration:none;">All notices →</a></div>
+      </div>
+
+      <!-- Recent activity -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card anim-2">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">⏱ Recent Activity</div></div>
+          <div style="padding:12px 16px;" id="activityFeed"></div>
+        </div>
+        <div class="card anim-2" style="padding:16px 18px;border:1.5px solid #FDE68A;background:#FFFBEB;">
+          <div style="font-size:.82rem;font-weight:800;color:#92400E;margin-bottom:6px;">💳 Fee Reminder</div>
+          <div style="font-size:.78rem;color:#78350F;margin-bottom:10px;">February tuition of <strong>৳ 800</strong> is due by Feb 10. Late fine: ৳10/day.</div>
+          <a href="student-fee.html" class="btn btn-sm" style="background:#F59E0B;color:#fff;border:none;font-size:.76rem;width:100%;justify-content:center;">Pay Now →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Clock & greeting
+function tick(){
+  const now=new Date(),h=now.getHours(),m=now.getMinutes();
+  document.getElementById('liveClockBadge').textContent=`${String(h%12||12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`;
+  document.getElementById('greetMsg').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+' ·';
+}
+tick();setInterval(tick,30000);
+
+// Attendance dots (17 working days Feb, 1 absent on day 7)
+const dots=document.getElementById('attDots');
+for(let d=1;d<=17;d++){
+  const sp=document.createElement('div');
+  const absent=d===7;
+  sp.style.cssText=`width:10px;height:10px;border-radius:2px;background:${absent?'var(--red)':'var(--stu)'};opacity:${absent?.6:1};cursor:pointer;`;
+  sp.title=`Feb ${d}: ${absent?'Absent':'Present'}`;
+  sp.onclick=()=>showToast(`Feb ${d}: ${absent?'Absent':'Present'}`,absent?'🔴':'✅');
+  dots.appendChild(sp);
+}
+
+// Upcoming exams
+const exams=[
+  {subj:'Mathematics',date:'Feb 24 (Today!)',days:0,icon:'📐',room:'Hall A',time:'10:00 AM'},
+  {subj:'Physics',date:'Feb 26',days:2,icon:'⚗️',room:'Hall C',time:'10:00 AM'},
+  {subj:'Chemistry',date:'Mar 1',days:5,icon:'🧪',room:'Hall C',time:'10:00 AM'},
+  {subj:'Biology',date:'Mar 3',days:7,icon:'🌱',room:'Hall A',time:'10:00 AM'},
+];
+document.getElementById('examCountdowns').innerHTML=exams.map(e=>`
+  <div class="exam-countdown">
+    <div class="ec-days" style="${e.days===0?'background:#FFF5F5;':''}">
+      <div class="ec-days-num" style="${e.days===0?'color:var(--red);':'color:var(--stu);'}">${e.days===0?'NOW':e.days}</div>
+      <div class="ec-days-lbl" style="${e.days===0?'color:var(--red);':'color:var(--stu);}'">${e.days===0?'Today':'days'}</div>
+    </div>
+    <div class="ec-info">
+      <div class="ec-name">${e.icon} ${e.subj}</div>
+      <div class="ec-meta">${e.date} · ${e.time} · ${e.room}</div>
+    </div>
+    ${e.days===0?'<span class="badge" style="background:#FFF5F5;color:var(--red);border:1px solid #FECACA;font-size:.68rem;">Today!</span>':''}
+  </div>`).join('');
+
+// Notices
+const notices=[
+  {title:'Half-Yearly Result will be published on March 15',icon:'📊',date:'Feb 23',new:true,color:'var(--stu)'},
+  {title:'Annual Sports Day: March 20 — Students encouraged to participate',icon:'🏃',date:'Feb 21',new:true,color:'var(--green)'},
+  {title:'Library books due for return by Feb 28',icon:'📚',date:'Feb 19',new:true,color:'var(--amber)'},
+  {title:'Parent-Teacher Meeting: March 15 · Bring report card',icon:'👨‍👩‍👧',date:'Feb 17',new:false,color:'var(--blue)'},
+];
+document.getElementById('noticeList').innerHTML=notices.map(n=>`
+  <div class="stu-notice-row">
+    <div class="snr-dot" style="background:${n.color};margin-top:6px;"></div>
+    <div>
+      <div class="snr-title">${n.icon} ${n.title} ${n.new?'<span style="font-size:.62rem;background:var(--stu-light);color:var(--stu-dark);border:1px solid #DDD6FE;border-radius:4px;padding:1px 5px;font-weight:700;">NEW</span>':''}</div>
+      <div class="snr-meta">${n.date}, 2025</div>
+    </div>
+  </div>`).join('');
+
+// Activity feed
+const activity=[
+  {icon:'📄',text:'Chapter 7 Notes downloaded',meta:'Math · 10 min ago',color:'var(--stu)'},
+  {icon:'✅',text:'Attendance marked Present',meta:'Class IX–A · Today',color:'var(--green)'},
+  {icon:'📊',text:'Half-Yearly result available',meta:'Annual 2024 · Feb 20',color:'var(--blue)'},
+  {icon:'💳',text:'Fee payment received',meta:'৳ 1,200 Session Fee · Feb 5',color:'var(--amber)'},
+  {icon:'🖥️',text:'Math MCQ Exam submitted',meta:'Score: 27/30 · Feb 10',color:'var(--purple)'},
+];
+document.getElementById('activityFeed').innerHTML=activity.map(a=>`
+  <div style="display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);">
+    <div style="width:26px;height:26px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">${a.icon}</div>
+    <div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--ink-2);">${a.text}</div>
+      <div style="font-size:.7rem;color:var(--muted);">${a.meta}</div>
+    </div>
+  </div>`).join('');
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

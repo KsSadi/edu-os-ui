@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us — Dhaka High School</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="school.css">
+<style>
+/* Contact layout */
+.contact-grid { display:grid; grid-template-columns:1fr 1.2fr; gap:36px; }
+
+/* Contact info panel */
+.info-panel { }
+.contact-block { margin-bottom:28px; }
+.contact-block-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.contact-item { display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--border); }
+.contact-item:last-child { border:none; }
+.ci-icon { width:40px; height:40px; border-radius:10px; background:var(--gold-light); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; border:1px solid rgba(201,146,42,.2); }
+.ci-label { font-size:.75rem; color:var(--muted); margin-bottom:3px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+.ci-value { font-size:.92rem; color:var(--ink-2); font-weight:500; }
+.ci-value a { color:var(--navy); text-decoration:none; font-weight:600; }
+.ci-value a:hover { text-decoration:underline; color:var(--gold); }
+
+/* Hours table */
+.hours-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+.hours-table td { padding:8px 0; border-bottom:1px solid var(--border); color:var(--ink-3); }
+.hours-table td:last-child { text-align:right; font-weight:600; color:var(--navy); border:none; }
+.hours-table tr:last-child td { border:none; }
+.closed { color:var(--red) !important; }
+.open-now { color:var(--green) !important; }
+.day-badge { display:inline-flex; align-items:center; gap:5px; }
+
+/* Map mock */
+.map-mock {
+  background:linear-gradient(145deg, #E8EDFF 0%, #D6E0FF 100%);
+  border-radius:14px; height:240px; border:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; margin-bottom:20px; position:relative; overflow:hidden;
+}
+.map-mock::before { content:''; position:absolute; inset:0; background-image:radial-gradient(var(--navy-pale) 1px,transparent 1px); background-size:24px 24px; opacity:.4; }
+.map-pin { font-size:2.8rem; position:relative; z-index:1; animation:bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.map-label { font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:700; color:var(--navy); position:relative; z-index:1; }
+.map-sub { font-size:.75rem; color:var(--muted); position:relative; z-index:1; }
+.map-btn { position:absolute; bottom:12px; right:12px; z-index:2; }
+
+/* Directions strip */
+.directions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.dir-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.dir-icon { font-size:1.2rem; margin-bottom:5px; }
+.dir-name { font-size:.72rem; font-weight:700; color:var(--ink-2); margin-bottom:2px; }
+.dir-dist { font-size:.68rem; color:var(--muted); }
+
+/* Form card */
+.form-card { background:#fff; border-radius:20px; border:1px solid var(--border); box-shadow:var(--card-shadow); overflow:hidden; }
+.form-card-head { background:linear-gradient(135deg,var(--navy),#162E8A); padding:24px 28px; }
+.form-card-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:#fff; margin-bottom:4px; }
+.form-card-sub { font-size:.8rem; color:rgba(255,255,255,.6); }
+.form-card-body { padding:28px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+/* Department selector */
+.dept-pills { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:6px; }
+.dept-pill { padding:6px 12px; border-radius:20px; border:1.5px solid var(--border); background:#fff; font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:600; color:var(--muted); cursor:pointer; transition:all .18s; }
+.dept-pill.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+.dept-pill:hover:not(.on) { border-color:var(--navy); color:var(--navy); }
+
+/* Submit btn */
+.submit-btn { width:100%; padding:13px; background:var(--navy); color:#fff; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(12,27,69,.26); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.submit-btn:hover { background:var(--navy-light); transform:translateY(-1px); }
+.spin { display:none; width:15px; height:15px; border-radius:50%; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; animation:spin .65s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* Success */
+.form-success { display:none; padding:32px; text-align:center; }
+.success-icon { font-size:3rem; margin-bottom:14px; }
+.success-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:800; color:var(--navy); margin-bottom:8px; }
+.success-msg { font-size:.88rem; color:var(--muted); line-height:1.7; }
+.ticket-num { font-family:'JetBrains Mono',monospace; font-size:.95rem; font-weight:700; color:var(--navy); background:var(--navy-pale); padding:7px 18px; border-radius:8px; display:inline-block; margin:14px 0; }
+
+/* Department cards at bottom */
+.dept-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.dept-card { padding:22px; }
+.dept-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.dept-icon2 { width:40px; height:40px; border-radius:10px; background:var(--gold-light); display:flex; align-items:center; justify-content:center; font-size:1rem; border:1px solid rgba(201,146,42,.2); flex-shrink:0; }
+.dept-name { font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:700; color:var(--navy); }
+.dept-email { font-size:.78rem; color:var(--muted); }
+.dept-contact-row { font-size:.82rem; color:var(--ink-3); display:flex; align-items:center; gap:6px; margin-top:5px; }
+
+@media(max-width:900px) { .contact-grid{grid-template-columns:1fr;} .dept-grid{grid-template-columns:1fr 1fr;} .form-row{grid-template-columns:1fr;} }
+@media(max-width:560px) { .dept-grid{grid-template-columns:1fr;} .directions{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left"><span class="top-bar-item">📞 +880 2-9876543</span><span class="top-bar-item">✉ info@dhakahigh.edu.bd</span><span class="top-bar-item">📍 Road 4, Dhanmondi, Dhaka</span></div>
+  <div class="top-bar-right"><a href="school-results.html">Results</a><a href="school-notices.html">Notices</a><button class="lang-btn">বাংলা</button></div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="school-identity">
+      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <div class="school-name-wrap">
+        <div class="school-name">Dhaka High School</div>
+        <div class="school-tagline">Excellence in Education Since 1962</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="school-about.html"      class="nav-link">About</a>
+      <a href="school-notices.html"    class="nav-link">Notices</a>
+      <a href="school-admission.html"  class="nav-link">Admission</a>
+      <a href="school-results.html"    class="nav-link">Results</a>
+      <a href="school-contact.html"    class="nav-link active">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
+      <a href="auth/login.html" class="btn-portal">🔐 Student Portal</a>
+    </div>
+    <button class="ham-btn" onclick="toggleMobileNav()">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="school-home.html">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <span style="color:rgba(255,255,255,.8);">Contact</span>
+    </div>
+    <div class="page-hero-badge">📞 Get In Touch</div>
+    <h1>Contact Dhaka High School</h1>
+    <p>We're here to help — whether you have a question about admissions, fees, results, or general school matters. Reach us by phone, email, or visit us in person.</p>
+  </div>
+</div>
+
+<!-- CONTACT SECTION -->
+<section class="section" style="background:var(--bg);">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- LEFT: Info + Map -->
+      <div>
+        <!-- Map -->
+        <div class="map-mock">
+          <div class="map-pin">📍</div>
+          <div class="map-label">Dhaka High School</div>
+          <div class="map-sub">Road 4, Dhanmondi, Dhaka 1205</div>
+          <a href="https://maps.google.com" target="_blank" class="btn btn-navy map-btn" style="font-size:.78rem;padding:7px 14px;">Open in Maps →</a>
+        </div>
+
+        <!-- Directions -->
+        <div class="directions">
+          <div class="dir-card"><div class="dir-icon">🚌</div><div class="dir-name">By Bus</div><div class="dir-dist">Route 2, 9 · Stop: Dhanmondi 4</div></div>
+          <div class="dir-card"><div class="dir-icon">🚘</div><div class="dir-name">By Car</div><div class="dir-dist">Parking available · Road 4 entrance</div></div>
+          <div class="dir-card"><div class="dir-icon">🚶</div><div class="dir-name">On Foot</div><div class="dir-dist">8 min walk from Dhanmondi 15</div></div>
+        </div>
+
+        <!-- Contact items -->
+        <div class="contact-block" style="margin-top:28px;">
+          <div class="contact-block-title">📞 Direct Contact</div>
+          <div class="contact-item">
+            <div class="ci-icon">📞</div>
+            <div>
+              <div class="ci-label">Main Office</div>
+              <div class="ci-value"><a href="tel:+88029876543">+880 2-9876543</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">📱</div>
+            <div>
+              <div class="ci-label">Mobile (WhatsApp)</div>
+              <div class="ci-value"><a href="tel:+8801711234567">+880 171-1234567</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">✉</div>
+            <div>
+              <div class="ci-label">General Email</div>
+              <div class="ci-value"><a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">📋</div>
+            <div>
+              <div class="ci-label">Admission Enquiry</div>
+              <div class="ci-value"><a href="mailto:admission@dhakahigh.edu.bd">admission@dhakahigh.edu.bd</a></div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">📍</div>
+            <div>
+              <div class="ci-label">Address</div>
+              <div class="ci-value">Road 4, Dhanmondi, Dhaka 1205<br>Bangladesh</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Office hours -->
+        <div class="contact-block">
+          <div class="contact-block-title">🕐 Office Hours</div>
+          <div class="card" style="padding:16px 20px;">
+            <table class="hours-table">
+              <tr><td><span class="day-badge"><span class="open-now">●</span> Sunday</span></td><td>7:30 AM – 3:30 PM</td></tr>
+              <tr><td>Monday</td><td>7:30 AM – 3:30 PM</td></tr>
+              <tr><td>Tuesday</td><td>7:30 AM – 3:30 PM</td></tr>
+              <tr><td>Wednesday</td><td>7:30 AM – 3:30 PM</td></tr>
+              <tr><td>Thursday</td><td>7:30 AM – 1:30 PM</td></tr>
+              <tr><td class="closed">Friday</td><td class="closed">Closed</td></tr>
+              <tr><td class="closed">Saturday</td><td class="closed">Closed</td></tr>
+            </table>
+            <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:.78rem; color:var(--muted);">
+              <span class="open-now" style="font-weight:700;">● Open now</span> — Office closes at 3:30 PM today
+            </div>
+          </div>
+        </div>
+
+        <!-- Social / portal links -->
+        <div class="contact-block">
+          <div class="contact-block-title">🌐 Online Portals</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <a href="auth/login.html" class="btn btn-outline-navy" style="justify-content:center; font-size:.83rem;">🧑‍🎓 Student Portal</a>
+            <a href="auth/login.html" class="btn btn-outline-navy" style="justify-content:center; font-size:.83rem;">👨‍👩‍👧 Parent Portal</a>
+            <a href="auth/login.html" class="btn btn-outline-navy" style="justify-content:center; font-size:.83rem;">👩‍🏫 Teacher Login</a>
+            <a href="school-results.html" class="btn btn-outline-navy" style="justify-content:center; font-size:.83rem;">📊 Results</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Inquiry form -->
+      <div>
+        <div class="form-card">
+          <div class="form-card-head">
+            <div class="form-card-title">✉ Send Us a Message</div>
+            <div class="form-card-sub">We respond to all inquiries within 1–2 business days.</div>
+          </div>
+          <div class="form-card-body" id="formArea">
+
+            <!-- Department selector -->
+            <div class="form-group">
+              <label class="form-label">I'm enquiring about… *</label>
+              <div class="dept-pills">
+                <button class="dept-pill on" onclick="selectDept(this,'Admission')">📋 Admission</button>
+                <button class="dept-pill" onclick="selectDept(this,'Fees')">💰 Fees</button>
+                <button class="dept-pill" onclick="selectDept(this,'Results')">📊 Results</button>
+                <button class="dept-pill" onclick="selectDept(this,'General')">💬 General</button>
+                <button class="dept-pill" onclick="selectDept(this,'Transfer')">📂 Transfer</button>
+                <button class="dept-pill" onclick="selectDept(this,'Complaint')">⚠ Complaint</button>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Your Full Name *</label>
+                <input type="text" class="form-input" placeholder="Full name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Your Role</label>
+                <select class="form-select">
+                  <option>Parent / Guardian</option>
+                  <option>Student</option>
+                  <option>Alumni</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Mobile Number *</label>
+                <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" placeholder="your@email.com">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Student's Class (if applicable)</label>
+              <select class="form-select">
+                <option value="">Not applicable</option>
+                <option>Applying (prospective)</option>
+                <option>Class I – V</option>
+                <option>Class VI – VIII</option>
+                <option>Class IX – X</option>
+                <option>Class XI – XII</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subject *</label>
+              <input type="text" class="form-input" id="subjectInput" placeholder="Brief subject of your message">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Message *</label>
+              <textarea class="form-textarea" id="messageInput" placeholder="Please describe your enquiry in detail. The more information you provide, the faster we can help." style="min-height:120px;"></textarea>
+            </div>
+
+            <!-- Preferred contact -->
+            <div class="form-group">
+              <label class="form-label">Preferred way to reach you</label>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;"><input type="radio" name="pref" value="phone" checked style="accent-color:var(--navy);"> 📱 Phone Call</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;"><input type="radio" name="pref" value="sms" style="accent-color:var(--navy);"> 💬 SMS</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;"><input type="radio" name="pref" value="email" style="accent-color:var(--navy);"> ✉ Email</label>
+              </div>
+            </div>
+
+            <button class="submit-btn" onclick="submitForm()">
+              <span id="btnTxt">Send Message →</span>
+              <div class="spin" id="btnSpin"></div>
+            </button>
+
+            <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:10px;">
+              🔒 Your information is kept confidential and will not be shared.
+            </p>
+          </div>
+
+          <!-- Success state -->
+          <div class="form-success" id="formSuccess">
+            <div class="success-icon">✉️</div>
+            <div class="success-title">Message Sent!</div>
+            <div class="success-msg">Thank you for reaching out. We've received your message and will get back to you within 1–2 business days.</div>
+            <div class="ticket-num" id="ticketNum">REF: DHS-MSG-00284</div>
+            <div class="success-msg">A copy has been sent to your email. If urgent, call us at <a href="tel:+88029876543" style="color:var(--navy);font-weight:600;">+880 2-9876543</a></div>
+            <button class="btn btn-navy" style="margin-top:20px;" onclick="resetForm()">Send Another Message</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DEPARTMENT CONTACTS -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">🏛 Departments</div>
+      <h2 class="s-title">Contact the right office</h2>
+    </div>
+    <div class="dept-grid">
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">📋</div>
+          <div>
+            <div class="dept-name">Admission Office</div>
+            <div class="dept-email">admission@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📞 +880 2-9876543 ext. 201</div>
+        <div class="dept-contact-row">🕐 Sun–Thu, 9 AM – 2 PM</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">New admissions, transfers, withdrawals</div>
+      </div>
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">💰</div>
+          <div>
+            <div class="dept-name">Accounts / Fees</div>
+            <div class="dept-email">accounts@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📞 +880 2-9876543 ext. 202</div>
+        <div class="dept-contact-row">🕐 Sun–Thu, 9 AM – 3 PM</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">Fee payments, receipts, scholarships</div>
+      </div>
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">📊</div>
+          <div>
+            <div class="dept-name">Examination Cell</div>
+            <div class="dept-email">exam@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📞 +880 2-9876543 ext. 203</div>
+        <div class="dept-contact-row">🕐 Sun–Thu, 9 AM – 1 PM</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">Results, admit cards, exam schedules</div>
+      </div>
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">👨‍💼</div>
+          <div>
+            <div class="dept-name">Principal's Office</div>
+            <div class="dept-email">principal@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📞 +880 2-9876543 ext. 100</div>
+        <div class="dept-contact-row">🕐 By appointment only</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">Formal complaints, senior matters</div>
+      </div>
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">🧑‍🎓</div>
+          <div>
+            <div class="dept-name">Student Welfare</div>
+            <div class="dept-email">welfare@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📞 +880 2-9876543 ext. 204</div>
+        <div class="dept-contact-row">🕐 Sun–Thu, 8 AM – 2 PM</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">Student counseling, attendance, welfare</div>
+      </div>
+      <div class="card dept-card">
+        <div class="dept-head">
+          <div class="dept-icon2">💻</div>
+          <div>
+            <div class="dept-name">EduOS Portal Support</div>
+            <div class="dept-email">portal@dhakahigh.edu.bd</div>
+          </div>
+        </div>
+        <div class="dept-contact-row">📱 WhatsApp: +880 171-1234567</div>
+        <div class="dept-contact-row">🕐 Sun–Thu, 9 AM – 5 PM</div>
+        <div class="dept-contact-row" style="color:var(--muted);font-size:.78rem;">Login issues, portal access, SMS alerts</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--bg);">
+  <div class="container container-narrow">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">❓ FAQ</div>
+      <h2 class="s-title">Frequently Asked Questions</h2>
+    </div>
+    <div id="faqList">
+      <div class="card" style="margin-bottom:10px;padding:20px 24px;cursor:pointer;" onclick="toggleFaq(this)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);">How do I apply for admission?</div>
+          <span class="faq-arrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s;">▾</span>
+        </div>
+        <div class="faq-body" style="display:none;font-size:.87rem;color:var(--muted);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">You can apply online using the Admission page, or collect a physical form from our school office. Applications are open from 20 February to 15 March 2025 for Session 2025-26.</div>
+      </div>
+      <div class="card" style="margin-bottom:10px;padding:20px 24px;cursor:pointer;" onclick="toggleFaq(this)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);">How can I pay my child's fees?</div>
+          <span class="faq-arrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s;">▾</span>
+        </div>
+        <div class="faq-body" style="display:none;font-size:.87rem;color:var(--muted);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">Fees can be paid online via the Parent Portal (bKash, Nagad, Rocket, bank transfer), or in person at the school accounts office. You will receive an SMS confirmation after every payment.</div>
+      </div>
+      <div class="card" style="margin-bottom:10px;padding:20px 24px;cursor:pointer;" onclick="toggleFaq(this)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);">How do I check my child's attendance?</div>
+          <span class="faq-arrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s;">▾</span>
+        </div>
+        <div class="faq-body" style="display:none;font-size:.87rem;color:var(--muted);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">Log in to the Parent Portal at dhaka-high.prathomik.edu.bd. You'll see your child's daily attendance, and you will receive an SMS if your child is marked absent.</div>
+      </div>
+      <div class="card" style="margin-bottom:10px;padding:20px 24px;cursor:pointer;" onclick="toggleFaq(this)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);">Where can I see the school's exam schedule?</div>
+          <span class="faq-arrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s;">▾</span>
+        </div>
+        <div class="faq-body" style="display:none;font-size:.87rem;color:var(--muted);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">All exam schedules are published on the Notice Board. You can also download the routine as a PDF from the Downloads section. Students can also see it in the Student Portal.</div>
+      </div>
+      <div class="card" style="margin-bottom:10px;padding:20px 24px;cursor:pointer;" onclick="toggleFaq(this)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);">Is there a scholarship program?</div>
+          <span class="faq-arrow" style="font-size:1.1rem;color:var(--muted);transition:transform .2s;">▾</span>
+        </div>
+        <div class="faq-body" style="display:none;font-size:.87rem;color:var(--muted);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">Yes. Students with GPA 5.00 in the half-yearly or annual exam receive a 25% tuition fee waiver for the following semester. Meritorious students from underprivileged backgrounds may apply for full scholarships through the welfare office.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-school">
+      <div class="footer-logo-row">
+        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div class="footer-school-name">Dhaka High School</div>
+      </div>
+      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
+      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="school-about.html">About School</a>
+      <a href="school-notices.html">Notice Board</a>
+      <a href="school-admission.html">Admission</a>
+      <a href="school-results.html">Results</a>
+      <a href="school-contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Portals</h4>
+      <a href="auth/login.html">Student Portal</a>
+      <a href="auth/login.html">Teacher Portal</a>
+      <a href="auth/login.html">Parent Portal</a>
+      <a href="auth/login.html">Admin Login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+88029876543">+880 2-9876543</a>
+      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
+      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
+      <a href="#">EIIN: 108765</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Dhaka High School. All rights reserved.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+let selectedDept = 'Admission';
+function selectDept(btn, dept) {
+  document.querySelectorAll('.dept-pill').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  selectedDept = dept;
+  document.getElementById('subjectInput').placeholder = 'Re: ' + dept + ' Enquiry';
+}
+function submitForm() {
+  const msg = document.getElementById('messageInput').value.trim();
+  if (!msg) { alert('Please write your message.'); return; }
+  document.getElementById('btnTxt').style.display = 'none';
+  document.getElementById('btnSpin').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+    document.getElementById('ticketNum').textContent = 'REF: DHS-MSG-' + Math.floor(Math.random()*90000+10000);
+  }, 1200);
+}
+function resetForm() {
+  document.getElementById('formArea').style.display = 'block';
+  document.getElementById('formSuccess').style.display = 'none';
+  document.getElementById('messageInput').value = '';
+  document.getElementById('btnTxt').style.display = 'inline';
+  document.getElementById('btnSpin').style.display = 'none';
+}
+function toggleFaq(card) {
+  const body  = card.querySelector('.faq-body');
+  const arrow = card.querySelector('.faq-arrow');
+  const open  = body.style.display === 'block';
+  body.style.display  = open ? 'none' : 'block';
+  arrow.style.transform = open ? '' : 'rotate(180deg)';
+}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>
+

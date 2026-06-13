@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Config � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+.cfg-section{background:var(--white);border:1px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;}
+.cfg-section-head{background:var(--bg);padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.cfg-section-title{font-size:.85rem;font-weight:800;color:var(--ink);}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);}
+.cfg-row:last-child{border:none;}
+.cfg-key{font-size:.84rem;font-weight:600;color:var(--ink-2);}
+.cfg-hint{font-size:.72rem;color:var(--muted);margin-top:1px;}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link active"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">System Config</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>Config v3.2.1</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">? Platform</div>
+        <div class="page-title">System Configuration</div>
+        <div class="page-sub">Manage global platform settings, limits, integrations and environment variables. Changes apply to all tenants.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Config exported','??')">?? Export Config</button>
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="showToast('Configuration saved','?')">?? Save Changes</button>
+      </div>
+    </div>
+
+    <div class="alert alert-amber anim-1 mb-6"><span class="alert-icon">??</span><div><div class="alert-title">Caution � Global Settings</div>Changes here affect all 12,847 tenants instantly. Test in staging before applying to production.</div></div>
+
+    <div class="grid-2" style="gap:20px;">
+      <div>
+        <!-- Platform Limits -->
+        <div class="cfg-section anim-1">
+          <div class="cfg-section-head"><span>??</span><div class="cfg-section-title">Platform Limits</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Max students per tenant (Basic)</div><div class="cfg-hint">Trial and Basic plan limit</div></div><input type="number" class="form-input" value="1000" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Max students per tenant (Pro)</div><div class="cfg-hint">Pro plan limit</div></div><input type="number" class="form-input" value="5000" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Max students per tenant (Enterprise)</div><div class="cfg-hint">Enterprise plan limit (0 = unlimited)</div></div><input type="number" class="form-input" value="0" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Max file upload size (MB)</div><div class="cfg-hint">Per file limit for all attachments</div></div><input type="number" class="form-input" value="20" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">API rate limit (req/min)</div><div class="cfg-hint">Per tenant API call limit</div></div><input type="number" class="form-input" value="300" style="width:100px;text-align:center;"></div>
+        </div>
+
+        <!-- SMS Gateway -->
+        <div class="cfg-section anim-2">
+          <div class="cfg-section-head"><span>??</span><div class="cfg-section-title">SMS Gateway</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">SMS Provider</div><div class="cfg-hint">Primary SMS gateway</div></div><select class="form-select" style="width:160px;"><option selected>SSL Wireless</option><option>Infobip</option><option>Twilio</option></select></div>
+          <div class="cfg-row"><div><div class="cfg-key">Sender ID</div><div class="cfg-hint">Displayed name on received SMS</div></div><input type="text" class="form-input" value="PRATHOMIK" style="width:140px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Default SMS rate (?/SMS)</div></div><input type="text" class="form-input" value="0.40" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">SMS enabled globally</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('SMS global toggle updated','??')"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Security Settings -->
+        <div class="cfg-section anim-1">
+          <div class="cfg-section-head"><span>??</span><div class="cfg-section-title">Security</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Session timeout (minutes)</div><div class="cfg-hint">Auto logout after inactivity</div></div><input type="number" class="form-input" value="60" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Max login attempts</div><div class="cfg-hint">Before temporary lockout</div></div><input type="number" class="form-input" value="5" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Lockout duration (minutes)</div></div><input type="number" class="form-input" value="30" style="width:100px;text-align:center;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Force 2FA for Super Admins</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('2FA policy updated','??')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">IP whitelist for Super Admin</div><div class="cfg-hint">Comma-separated CIDRs</div></div><button class="btn btn-outline btn-sm" onclick="showToast('Opening IP whitelist editor','??')">Manage</button></div>
+        </div>
+
+        <!-- Email Config -->
+        <div class="cfg-section anim-2">
+          <div class="cfg-section-head"><span>??</span><div class="cfg-section-title">Email / SMTP</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">SMTP Provider</div></div><select class="form-select" style="width:160px;"><option selected>SendGrid</option><option>Amazon SES</option><option>Mailgun</option></select></div>
+          <div class="cfg-row"><div><div class="cfg-key">From Email</div></div><input type="text" class="form-input" value="noreply@prathomik.edu.bd" style="width:220px;font-size:.8rem;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">From Name</div></div><input type="text" class="form-input" value="EduOS" style="width:160px;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Email notifications enabled</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Email toggled','??')"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Place Order — EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* Checkout steps */
+.step-bar{display:flex;align-items:center;gap:0;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+.step{display:flex;align-items:center;gap:8px;flex:1;}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:900;flex-shrink:0;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:all .2s;}
+.step-num.done{background:var(--mkt);border-color:var(--mkt);color:#fff;}
+.step-num.active{background:var(--white);border-color:var(--mkt);color:var(--mkt);}
+.step-label{font-size:.78rem;font-weight:700;color:var(--muted);transition:color .2s;}
+.step-label.active,.step-label.done{color:var(--ink-2);}
+.step-connector{flex:1;height:2px;background:var(--border);margin:0 6px;transition:background .2s;}
+.step-connector.done{background:var(--mkt);}
+
+/* Cart item row */
+.order-item{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);}
+.order-item:last-child{border-bottom:none;}
+.oi-img{width:50px;height:50px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.oi-name{flex:1;font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.oi-cat{font-size:.72rem;color:var(--muted);}
+.oi-price{font-family:'DM Mono',monospace;font-weight:800;font-size:.88rem;color:var(--ink);}
+.oi-qty{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+.oi-qty-btn{width:28px;height:28px;border:none;background:var(--bg);cursor:pointer;font-size:.9rem;font-weight:800;color:var(--muted);transition:background .1s;display:flex;align-items:center;justify-content:center;}
+.oi-qty-btn:hover{background:var(--mkt-light);}
+.oi-qty-num{width:30px;text-align:center;font-size:.8rem;font-weight:800;font-family:'DM Mono',monospace;}
+.oi-remove{background:none;border:none;font-size:.9rem;cursor:pointer;color:var(--muted);transition:color .1s;padding:4px;}
+.oi-remove:hover{color:var(--red);}
+
+/* Order summary box */
+.summary-box{background:var(--bg);border-radius:12px;padding:18px;margin-bottom:16px;}
+.sb-row{display:flex;justify-content:space-between;font-size:.84rem;padding:5px 0;}
+.sb-row.total{font-size:.96rem;font-weight:800;padding-top:10px;border-top:2px solid var(--border);}
+
+/* Payment method -->
+.pay-card{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:var(--white);display:flex;align-items:center;gap:10px;}
+.pay-card:hover,.pay-card.sel{border-color:var(--mkt);background:var(--mkt-pale);}
+.pay-card-icon{font-size:1.4rem;flex-shrink:0;}
+.pay-card-name{font-size:.84rem;font-weight:800;color:var(--ink-2);}
+.pay-card-sub{font-size:.72rem;color:var(--muted);}
+
+/* Delivery option */
+.del-option{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:var(--white);display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.del-option:hover,.del-option.sel{border-color:var(--mkt);background:var(--mkt-pale);}
+.del-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:2px;transition:all .12s;display:flex;align-items:center;justify-content:center;}
+.del-option.sel .del-radio{border-color:var(--mkt);background:var(--mkt);}
+.del-option.sel .del-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;}
+.del-name{font-size:.86rem;font-weight:700;color:var(--ink-2);}
+.del-info{font-size:.72rem;color:var(--muted);}
+.del-price{font-size:.82rem;font-weight:800;color:var(--mkt);font-family:'DM Mono',monospace;margin-left:auto;flex-shrink:0;}
+
+/* Success overlay */
+.success-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;}
+.success-overlay.show{display:flex;}
+.success-box{background:var(--white);border-radius:20px;padding:40px 36px;max-width:420px;width:90%;text-align:center;animation:toast-in .3s ease;}
+@keyframes toast-in{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:fade-in .25s ease both;transition:opacity .3s;}
+@keyframes fade-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <!-- Step bar -->
+  <div class="step-bar">
+    <div class="step">
+      <div class="step-num active" id="sn1">1</div>
+      <div class="step-label active" id="sl1">Cart Review</div>
+    </div>
+    <div class="step-connector" id="sc1"></div>
+    <div class="step">
+      <div class="step-num" id="sn2">2</div>
+      <div class="step-label" id="sl2">Delivery</div>
+    </div>
+    <div class="step-connector" id="sc2"></div>
+    <div class="step">
+      <div class="step-num" id="sn3">3</div>
+      <div class="step-label" id="sl3">Payment</div>
+    </div>
+    <div class="step-connector" id="sc3"></div>
+    <div class="step">
+      <div class="step-num" id="sn4">4</div>
+      <div class="step-label" id="sl4">Confirm</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- Step panels -->
+    <div id="step1Panel">
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title">🛒 Your Cart</div><div id="cartItemCount" class="card-sub">5 items</div></div>
+          <div id="cartItemsBody"></div>
+          <div class="card-footer">
+            <a href="market-catalogue.html" style="font-size:.8rem;color:var(--mkt);font-weight:700;text-decoration:none;">← Continue Shopping</a>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="card anim-1">
+            <div class="card-header" style="padding:16px 18px 0;"><div class="card-title">📋 Order Summary</div></div>
+            <div style="padding:14px 18px;">
+              <div class="summary-box" id="summaryBox"></div>
+              <div style="font-size:.74rem;color:var(--muted);margin-bottom:14px;display:flex;gap:6px;"><span>🏷️</span><span>Coupon code? <a href="#" style="color:var(--mkt);font-weight:700;" onclick="showToast('Enter code at checkout','🏷️');return false;">Apply here</a></span></div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;background:var(--mkt);border-color:var(--mkt);font-size:.88rem;" onclick="goStep(2)">Continue to Delivery →</button>
+            </div>
+          </div>
+          <div class="card anim-2" style="padding:14px 16px;background:var(--mkt-pale);border-color:#A7F3D0;">
+            <div style="font-size:.76rem;font-weight:700;color:var(--mkt-dark);margin-bottom:6px;">🚚 Delivery Info</div>
+            <div style="font-size:.76rem;color:var(--mkt-dark);line-height:1.7;">Free delivery on orders <strong>over ৳ 500</strong>. School pickup available at zero cost. Estimated arrival: <strong>2–3 working days</strong>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="step2Panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title">🚚 Choose Delivery Method</div><div class="card-sub">How would you like to receive your order?</div></div>
+          <div style="padding:16px 18px;">
+            <div class="del-option sel" id="del-school" onclick="selDel('school',this)">
+              <div class="del-radio"></div>
+              <div>
+                <div class="del-name">🏫 School Pickup</div>
+                <div class="del-info">Collect from school office within 3 working days</div>
+              </div>
+              <div class="del-price">Free</div>
+            </div>
+            <div class="del-option" id="del-home" onclick="selDel('home',this)">
+              <div class="del-radio"></div>
+              <div>
+                <div class="del-name">🏠 Home Delivery (Dhaka)</div>
+                <div class="del-info">Delivered to your address in 2–3 working days</div>
+              </div>
+              <div class="del-price">৳ 60</div>
+            </div>
+            <div class="del-option" id="del-express" onclick="selDel('express',this)">
+              <div class="del-radio"></div>
+              <div>
+                <div class="del-name">⚡ Express Home Delivery</div>
+                <div class="del-info">Next-day delivery to your address</div>
+              </div>
+              <div class="del-price">৳ 150</div>
+            </div>
+            <div id="homeAddressForm" style="display:none;margin-top:16px;padding:16px;background:var(--bg);border-radius:10px;">
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label class="form-label">Full Address</label>
+                  <input type="text" class="form-input" placeholder="House/Flat No., Road, Area" value="House 12, Road 5, Dhanmondi, Dhaka-1205">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone</label>
+                  <input type="text" class="form-input" value="01711-234567">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Alternate Phone</label>
+                  <input type="text" class="form-input" placeholder="Optional">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+            <button class="btn btn-primary" style="background:var(--mkt);border-color:var(--mkt);" onclick="goStep(3)">Continue to Payment →</button>
+          </div>
+        </div>
+        <div class="card anim-1" style="padding:16px 18px;">
+          <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📋 Items (5)</div>
+          <div id="step2ItemsSummary"></div>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
+            <div id="step2Total" style="font-size:.9rem;font-weight:800;display:flex;justify-content:space-between;color:var(--ink);">
+              <span>Total</span><span style="color:var(--mkt);font-family:'DM Mono',monospace;">৳ 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="step3Panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title">💳 Payment Method</div><div class="card-sub">All payments are secure and encrypted</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 18px;" id="payMethodGrid"></div>
+          <div id="payDetails" style="padding:0 18px 16px;"></div>
+          <div class="card-footer">
+            <button class="btn btn-outline" onclick="goStep(2)">← Back</button>
+            <button class="btn btn-primary" style="background:var(--mkt);border-color:var(--mkt);" onclick="goStep(4)">Review Order →</button>
+          </div>
+        </div>
+        <div class="card anim-1" style="padding:16px 18px;" id="step3Summary"></div>
+      </div>
+    </div>
+
+    <div id="step4Panel" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title">✅ Review &amp; Confirm</div><div class="card-sub">Please review your order before placing it</div></div>
+          <div style="padding:16px 18px;" id="reviewBody"></div>
+          <div class="card-footer">
+            <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
+            <button class="btn btn-primary" style="background:var(--mkt);border-color:var(--mkt);padding:10px 24px;" onclick="placeOrder()">🛍️ Place Order Now</button>
+          </div>
+        </div>
+        <div class="card anim-1" style="padding:16px 18px;" id="step4Summary"></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div style="font-size:3.5rem;margin-bottom:12px;">🎉</div>
+    <div style="font-size:1.3rem;font-weight:900;color:var(--ink);margin-bottom:6px;">Order Placed!</div>
+    <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px;">Your order has been received and is being processed.</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.84rem;background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px;">Order ID: <strong id="orderId">MKT-2025-4291</strong></div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px;">📱 SMS confirmation sent to your registered number.</div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <a href="market-tracking.html" class="btn btn-primary" style="background:var(--mkt);border-color:var(--mkt);">Track Order →</a>
+      <a href="market-catalogue.html" class="btn btn-outline">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Demo cart items
+const cartItems=[
+  {id:1,name:'Higher Mathematics Textbook IX–X',cat:'Books',price:220,qty:1,emoji:'📐'},
+  {id:7,name:'Camlin Geometry Box Set',cat:'Stationery',price:95,qty:2,emoji:'📐'},
+  {id:9,name:'A4 Notebook — 200 pages (5-pack)',cat:'Stationery',price:180,qty:1,emoji:'📓'},
+  {id:11,name:'Scientific Calculator FX-991EX',cat:'Stationery',price:1450,qty:1,emoji:'🔢'},
+  {id:19,name:'Biology Dissection Kit',cat:'Lab Supplies',price:380,qty:1,emoji:'🔬'},
+];
+let deliveryMethod='school',deliveryCharge=0;
+let payMethod='bkash';
+let currentStep=1;
+
+const payMethods=[
+  {id:'bkash',name:'bKash',icon:'🟣',sub:'Mobile Banking · Instant'},
+  {id:'nagad',name:'Nagad',icon:'🔴',sub:'Mobile Banking · Instant'},
+  {id:'cash',name:'Cash on Delivery',icon:'💵',sub:'Pay when you receive'},
+  {id:'bank',name:'Bank Transfer',icon:'🏦',sub:'NPSB / Online Banking'},
+];
+
+function calcSubtotal(){return cartItems.reduce((a,i)=>a+i.price*i.qty,0);}
+function calcTotal(){return calcSubtotal()+deliveryCharge;}
+
+function goStep(n){
+  currentStep=n;
+  [1,2,3,4].forEach(s=>{
+    document.getElementById(`step${s}Panel`).style.display=s===n?'block':'none';
+    const numEl=document.getElementById(`sn${s}`);
+    const lblEl=document.getElementById(`sl${s}`);
+    numEl.className='step-num'+(s<n?' done':s===n?' active':'');
+    lblEl.className='step-label'+(s<=n?' active':'');
+    if(s<n)numEl.textContent='✓';else numEl.textContent=s;
+    const connEl=document.getElementById(`sc${s}`);
+    if(connEl)connEl.className='step-connector'+(s<n?' done':'');
+  });
+  if(n===2){renderStep2();}
+  if(n===3){renderStep3();}
+  if(n===4){renderStep4();}
+}
+
+function renderItems(){
+  document.getElementById('cartItemCount').textContent=`${cartItems.length} items`;
+  document.getElementById('cartItemsBody').innerHTML=cartItems.map((item,idx)=>`
+    <div class="order-item">
+      <div class="oi-img">${item.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="oi-name">${item.name}</div>
+        <div class="oi-cat">${item.cat}</div>
+      </div>
+      <div class="oi-qty">
+        <button class="oi-qty-btn" onclick="changeQty(${idx},-1)">−</button>
+        <div class="oi-qty-num">${item.qty}</div>
+        <button class="oi-qty-btn" onclick="changeQty(${idx},1)">+</button>
+      </div>
+      <div class="oi-price" style="min-width:80px;text-align:right;">৳ ${(item.price*item.qty).toLocaleString()}</div>
+      <button class="oi-remove" onclick="removeItem(${idx})">🗑</button>
+    </div>`).join('');
+  renderSummary();
+}
+
+function renderSummary(){
+  const sub=calcSubtotal();
+  document.getElementById('summaryBox').innerHTML=`
+    <div class="sb-row"><span style="color:var(--muted);">Subtotal (${cartItems.length} items)</span><span style="font-family:'DM Mono',monospace;">৳ ${sub.toLocaleString()}</span></div>
+    <div class="sb-row"><span style="color:var(--muted);">Delivery</span><span style="font-family:'DM Mono',monospace;color:${deliveryCharge?'var(--ink)':'var(--green)'};">${deliveryCharge?'৳ '+deliveryCharge:'Free'}</span></div>
+    <div class="sb-row total"><span>Total</span><span style="font-family:'DM Mono',monospace;color:var(--mkt);">৳ ${calcTotal().toLocaleString()}</span></div>`;
+}
+
+function changeQty(idx,d){
+  cartItems[idx].qty=Math.max(1,cartItems[idx].qty+d);
+  renderItems();
+}
+function removeItem(idx){
+  cartItems.splice(idx,1);
+  renderItems();
+  if(!cartItems.length)showToast('Cart is empty. Add items first.','🛒');
+}
+
+function selDel(method,el){
+  deliveryMethod=method;
+  document.querySelectorAll('.del-option').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  deliveryCharge=method==='home'৳60:method==='express'৳150:0;
+  document.getElementById('homeAddressForm').style.display=(method==='home'||method==='express')?'block':'none';
+  renderStep2();
+}
+
+function renderStep2(){
+  document.getElementById('step2ItemsSummary').innerHTML=cartItems.map(i=>`
+    <div style="display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;color:var(--ink-2);">
+      <span>${i.emoji} ${i.name.slice(0,28)}${i.name.length>28?'…':''} ×${i.qty}</span>
+      <span style="font-family:'DM Mono',monospace;">৳ ${(i.price*i.qty).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('step2Total').innerHTML=`<span>Total</span><span style="color:var(--mkt);font-family:'DM Mono',monospace;">৳ ${calcTotal().toLocaleString()}</span>`;
+}
+
+function renderStep3(){
+  document.getElementById('payMethodGrid').innerHTML=payMethods.map(m=>`
+    <div class="pay-card ${m.id===payMethod?'sel':''}" onclick="selPay('${m.id}',this)">
+      <div class="pay-card-icon">${m.icon}</div>
+      <div><div class="pay-card-name">${m.name}</div><div class="pay-card-sub">${m.sub}</div></div>
+    </div>`).join('');
+  renderPayDetails();
+  document.getElementById('step3Summary').innerHTML=summaryHTML();
+}
+
+function selPay(id,el){payMethod=id;document.querySelectorAll('.pay-card').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');renderPayDetails();}
+
+function renderPayDetails(){
+  const details={
+    bkash:'<div style="background:var(--bg);border-radius:10px;padding:12px 14px;"><div style="font-size:.8rem;font-weight:700;margin-bottom:8px;">bKash Instructions</div><div style="font-size:.78rem;color:var(--muted);line-height:1.8;">1. Go to bKash → Send Money<br>2. Number: <strong style="font-family:\'DM Mono\',monospace;">01711-000000</strong><br>3. Amount: <strong>৳ TOTAL</strong><br>4. Reference: Your Order ID<br>5. Enter PIN and confirm</div></div>',
+    nagad:'<div style="background:var(--bg);border-radius:10px;padding:12px 14px;"><div style="font-size:.8rem;font-weight:700;margin-bottom:8px;">Nagad Instructions</div><div style="font-size:.78rem;color:var(--muted);line-height:1.8;">1. Open Nagad App → Send Money<br>2. Number: <strong style="font-family:\'DM Mono\',monospace;">01711-000000</strong><br>3. Amount: <strong>৳ TOTAL</strong><br>4. Reference: Your Order ID</div></div>',
+    cash:'<div style="background:var(--bg);border-radius:10px;padding:12px 14px;"><div style="font-size:.78rem;color:var(--muted);line-height:1.8;">Pay ৳ TOTAL in cash when your order arrives at school or your doorstep. Our delivery person will provide a paper receipt.</div></div>',
+    bank:'<div style="background:var(--bg);border-radius:10px;padding:12px 14px;"><div style="font-size:.8rem;font-weight:700;margin-bottom:8px;">Bank Transfer Details</div><div style="font-size:.78rem;color:var(--muted);line-height:1.8;">Bank: Dutch-Bangla Bank Ltd<br>Account: <strong>123-456-789012</strong><br>Branch: Dhanmondi<br>Reference: Your Order ID</div></div>',
+  };
+  document.getElementById('payDetails').innerHTML=details[payMethod].replace(/৳ TOTAL/g,'৳ '+calcTotal().toLocaleString());
+}
+
+function renderStep4(){
+  const delLabels={school:'School Pickup (Free)',home:'Home Delivery (৳ 60)',express:'Express Delivery (৳ 150)'};
+  const payLabels={bkash:'bKash 🟣',nagad:'Nagad 🔴',cash:'Cash on Delivery 💵',bank:'Bank Transfer 🏦'};
+  document.getElementById('reviewBody').innerHTML=`
+    <div style="margin-bottom:18px;">
+      <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Order Items</div>
+      ${cartItems.map(i=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:1.2rem;">${i.emoji}</span>
+        <span style="flex:1;font-size:.84rem;font-weight:700;color:var(--ink-2);">${i.name} <span style="color:var(--muted);font-weight:500;">×${i.qty}</span></span>
+        <span style="font-family:'DM Mono',monospace;font-weight:800;">৳ ${(i.price*i.qty).toLocaleString()}</span>
+      </div>`).join('')}
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:.82rem;">
+      <div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--muted);">Delivery</span><span style="font-weight:700;">${delLabels[deliveryMethod]}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--muted);">Payment</span><span style="font-weight:700;">${payLabels[payMethod]}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid var(--border);margin-top:4px;font-size:.94rem;font-weight:900;"><span>Total</span><span style="color:var(--mkt);font-family:'DM Mono',monospace;">৳ ${calcTotal().toLocaleString()}</span></div>
+    </div>`;
+  document.getElementById('step4Summary').innerHTML=summaryHTML();
+}
+
+function summaryHTML(){
+  return`<div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">📋 Summary</div>
+    ${cartItems.map(i=>`<div style="display:flex;justify-content:space-between;font-size:.76rem;padding:4px 0;color:var(--ink-2);"><span>${i.emoji} ${i.name.slice(0,22)}…×${i.qty}</span><span style="font-family:'DM Mono',monospace;">৳${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;font-size:.9rem;font-weight:900;padding:8px 0;border-top:2px solid var(--border);margin-top:6px;"><span>Total</span><span style="color:var(--mkt);font-family:'DM Mono',monospace;">৳ ${calcTotal().toLocaleString()}</span></div>`;
+}
+
+function placeOrder(){
+  const id='MKT-2025-'+Math.floor(4000+Math.random()*999);
+  document.getElementById('orderId').textContent=id;
+  document.getElementById('successOverlay').classList.add('show');
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+renderItems();
+</script>
+
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

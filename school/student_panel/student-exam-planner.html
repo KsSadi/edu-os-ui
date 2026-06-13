@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Exam Planner — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+
+.badge-ai{background:#6366F1;color:#FFFFFF;font-size:.74rem;font-weight:800;padding:4px 12px;border-radius:8px;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 2px 8px rgba(99,102,241,.25);}
+
+/* Exam form card */
+.planner-form{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:24px 26px;margin-bottom:18px;}
+.pf-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.pf-subj{display:flex;flex-direction:column;gap:5px;}
+.pf-subj label{font-size:.76rem;font-weight:700;color:var(--muted);}
+
+/* Countdown strip */
+.countdown-strip{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.cd-card{flex:1;min-width:80px;background:linear-gradient(135deg,#1E0A3C,#2D1B69);border:1.5px solid rgba(124,58,237,.3);border-radius:12px;padding:14px 10px;text-align:center;}
+.cd-val{font-size:1.8rem;font-weight:900;font-family:'DM Mono',monospace;color:#C4B5FD;line-height:1;}
+.cd-lbl{font-size:.65rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+
+/* Plan day card */
+.plan-day{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;transition:box-shadow .15s;}
+.plan-day:hover{box-shadow:var(--shadow);}
+.pd-head{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;}
+.pd-date{font-size:.78rem;font-weight:800;color:var(--muted);width:62px;flex-shrink:0;}
+.pd-day{font-size:.82rem;font-weight:800;color:var(--ink);}
+.pd-subj{font-size:.78rem;color:var(--muted);margin-top:1px;}
+.pd-status{margin-left:auto;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:8px;}
+.status-done{background:#DCFCE7;color:#166534;}
+.status-today{background:var(--stu-pale);color:var(--stu-dark);border:1px solid var(--stu-light);}
+.status-upcoming{background:#F1F5F9;color:#64748B;}
+.status-rest{background:#FEF3C7;color:#92400E;}
+.pd-body{padding:0 16px 14px;display:none;}
+.pd-body.show{display:block;}
+.task-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:.74rem;font-weight:600;color:var(--ink);margin:3px 4px 3px 0;cursor:pointer;}
+.task-chip.done-chip{background:#ECFDF5;border-color:#A7F3D0;color:#065F46;text-decoration:line-through;}
+
+/* Progress ring */
+.prog-ring{position:relative;width:90px;height:90px;}
+.prog-ring svg{transform:rotate(-90deg);}
+.prog-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:var(--stu);font-family:'DM Mono',monospace;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .25s ease both;}
+@keyframes tin{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📅 AI Tools</div>
+        <div class="page-title">AI Exam Planner</div>
+        <div class="page-sub">Tell AI your exam date — get your personalised day-by-day study schedule instantly.</div>
+      </div>
+    </div>
+
+    <!-- Input form -->
+    <div class="planner-form">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="font-size:.88rem;font-weight:800;color:var(--ink);">📋 Set Up My Study Plan</div>
+        <span class="badge-ai">AI Powered</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+          <label class="form-label">Exam Start Date</label>
+          <input type="date" class="form-input" id="examDate" value="2026-07-15">
+        </div>
+        <div>
+          <label class="form-label">Daily Study Hours</label>
+          <select class="form-input" id="studyHours">
+            <option>1 hour</option>
+            <option selected>2 hours</option>
+            <option>3 hours</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Priority</label>
+          <select class="form-input" id="priority">
+            <option selected>Weak subjects first (AI)</option>
+            <option>Balanced across subjects</option>
+            <option>Custom order</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);" onclick="generatePlan()">🤖 Generate AI Study Plan</button>
+      <button class="btn btn-outline" style="margin-left:8px;" onclick="showToast('Plan shared with parent portal! 👨‍👩‍👦','🔗')">🔗 Share with Parent</button>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-strip" id="countdownStrip"></div>
+
+    <!-- Main grid: plan + summary -->
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;">
+
+      <!-- Day plan -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-title">📆 Day-by-Day Study Plan</div>
+          <div style="font-size:.75rem;color:var(--muted);" id="planMeta">14 days · Annual Exam 2026</div>
+        </div>
+        <div id="planList"></div>
+      </div>
+
+      <!-- Right panel -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Completion ring -->
+        <div class="card" style="text-align:center;padding:20px 16px;">
+          <div style="font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Plan Completion</div>
+          <div class="prog-ring" style="margin:0 auto 12px;">
+            <svg width="90" height="90" viewBox="0 0 90 90">
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#E2E8F0" stroke-width="9"/>
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#7C3AED" stroke-width="9"
+                stroke-dasharray="226.2" stroke-dashoffset="158" stroke-linecap="round"/>
+            </svg>
+            <div class="prog-ring-pct">30%</div>
+          </div>
+          <div style="font-size:.78rem;color:var(--muted);">4 of 14 days done</div>
+        </div>
+
+        <!-- Subjects coverage -->
+        <div class="card" style="padding:16px;">
+          <div style="font-size:.8rem;font-weight:800;color:var(--ink);margin-bottom:12px;">📚 Subject Coverage</div>
+          <div id="subjectCoverage"></div>
+        </div>
+
+        <!-- AI tip -->
+        <div style="background:linear-gradient(135deg,#1E0A3C,#2D1B69);border:1.5px solid rgba(124,58,237,.3);border-radius:12px;padding:16px;">
+          <div style="font-size:.7rem;font-weight:800;color:#A78BFA;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">💡 AI Tip</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.6;" id="aiTip">তুমি গত ৩ দিন ধরে plan follow করছ — এটি চালিয়ে যাও! তোমার Algebra practice quiz দেখা যাচ্ছে তুমি সপ্তাহে ২টি করলেই exam এ ভালো করতে পারবে।</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ── Plan data ────────────────────────────────────────────────────
+let PLAN = [
+  { date:'Jul 1','day':'Wed','subjects':'Math — Algebra (Chapter 4)','icon':'📐','status':'done','tasks':['Read Chapter 4','Do exercise 4A','Do 10 practice problems'] },
+  { date:'Jul 2','day':'Thu','subjects':'Math — Algebra (Chapter 5)','icon':'📐','status':'done','tasks':['Read Chapter 5','Practice quiz','Revise Ch 4+5'] },
+  { date:'Jul 3','day':'Fri','subjects':'English — Grammar','icon':'✍️','status':'done','tasks':['Tense revision','Voice change exercises','10 MCQ practice'] },
+  { date:'Jul 4','day':'Sat','subjects':'Rest Day 🌿','icon':'🌿','status':'rest','tasks':['Light revision only — 30 mins max','Sleep early'] },
+  { date:'Jul 5','day':'Sun','subjects':'Science — Chemical Equations','icon':'⚗️','status':'today','tasks':['Chapter 7 equations','Balance 20 equations','Formula cards'] },
+  { date:'Jul 6','day':'Mon','subjects':'English — Reading + Writing','icon':'✍️','status':'upcoming','tasks':['Comprehension passage','Write 1 essay','Vocabulary list'] },
+  { date:'Jul 7','day':'Tue','subjects':'Bangla — Poems + Grammar','icon':'📖','status':'upcoming','tasks':['কবিতা পাঠ + ব্যাখ্যা','সন্ধি-সমাস practice'] },
+  { date:'Jul 8','day':'Wed','subjects':'Math — Fractions & Geometry','icon':'📐','status':'upcoming','tasks':['Fractions chapter','Geometry diagrams','Practice quiz'] },
+  { date:'Jul 9','day':'Thu','subjects':'Biology — Cell Structure','icon':'🔬','status':'upcoming','tasks':['Cell diagram','Organelle functions','MCQ practice'] },
+  { date:'Jul 10','day':'Fri','subjects':'Social Studies — Geography','icon':'🌍','status':'upcoming','tasks':['Map work','River systems','Short notes'] },
+  { date:'Jul 11','day':'Sat','subjects':'Rest Day 🌿','icon':'🌿','status':'rest','tasks':['Light review — 1 hour only'] },
+  { date:'Jul 12','day':'Sun','subjects':'Full Revision — Math + Science','icon':'📝','status':'upcoming','tasks':['Math past paper','Science MCQ 50 questions'] },
+  { date:'Jul 13','day':'Mon','subjects':'Full Revision — English + Bangla','icon':'📝','status':'upcoming','tasks':['English past paper','Bangla composition practice'] },
+  { date:'Jul 14','day':'Tue','subjects':'Final Quick Review + Rest','icon':'🌙','status':'upcoming','tasks':['Flash cards only — 1 hour','Sleep by 10 PM','No new topics'] },
+];
+
+const COVERAGE = [
+  { sub: 'Mathematics', days: 4, color: '#7C3AED' },
+  { sub: 'English',     days: 3, color: '#6366F1' },
+  { sub: 'Bangla',      days: 2, color: '#8B5CF6' },
+  { sub: 'Science',     days: 2, color: '#A78BFA' },
+  { sub: 'Biology',     days: 1, color: '#C4B5FD' },
+  { sub: 'Soc. Studies',days: 1, color: '#DDD6FE' },
+];
+
+let taskDone = {};
+let WEAK_SUBJECTS = ['Mathematics','English','Social Studies'];
+let STRONG_SUBJECTS = ['Bangla','Biology','Science'];
+
+function generatePlan() {
+  const examDateVal = document.getElementById('examDate').value;
+  const studyHours = document.getElementById('studyHours').value;
+  const priority = document.getElementById('priority').value;
+  
+  const examDate = examDateVal ? new Date(examDateVal) : new Date('2026-07-15');
+  const days = 14;
+  
+  // Generate dynamic plan
+  PLAN = generateStudyPlanData(examDate, days, studyHours, priority);
+  taskDone = {};
+  
+  const dateStr = examDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('planMeta').textContent = `${days} days · Exam: ${dateStr}`;
+  
+  showToast(`✅ AI study plan generated! ${days} days, ${studyHours}/day`, '🤖');
+  renderPlan();
+  renderCoverage();
+}
+
+function generateStudyPlanData(examDate, days, studyHours, priority) {
+  const plan = [];
+  const subjects = priority === 'Weak subjects first (AI)' 
+    ? [...WEAK_SUBJECTS, ...STRONG_SUBJECTS]
+    : priority === 'Balanced across subjects'
+    ? ['Mathematics','English','Science','Bangla','Biology','Social Studies']
+    : ['Mathematics','English','Science','Bangla','Biology','Social Studies'];
+  
+  const chapters = {
+    'Mathematics': ['Algebra (Ch. 4)','Fractions (Ch. 5)','Geometry (Ch. 6)','Quadratic Equations (Ch. 7)'],
+    'English': ['Grammar','Reading & Comprehension','Writing Essays','Vocabulary'],
+    'Bangla': ['Poems','Grammar','সন্ধি-সমাস','প্রবন্ধ রচনা'],
+    'Science': ['Chemical Equations','Atomic Structure','Periodic Table','Reactions'],
+    'Biology': ['Cell Structure','Photosynthesis','Heredity','Ecology'],
+    'Social Studies': ['Geography - Map Work','History - Ancient Period','Civics','Economics']
+  };
+  
+  const icons = {'Mathematics':'📐','English':'✍️','Bangla':'📖','Science':'⚗️','Biology':'🔬','Social Studies':'🌍'};
+  
+  let subIdx = 0;
+  let chIdx = {};
+  subjects.forEach(s => chIdx[s] = 0);
+  
+  for (let i = 0; i < days; i++) {
+    const d = new Date(examDate);
+    d.setDate(d.getDate() - days + i);
+    const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    
+    // Rest days every 4-5 days
+    if ((i + 1) % 5 === 0 && i < days - 2) {
+      plan.push({
+        date: dateStr, day: dayName, subjects: 'Rest Day 🌿', icon: '🌿',
+        status: 'upcoming', 
+        tasks: ['Light review only — 30-45 min max','Sleep early','Mental freshness']
+      });
+      continue;
+    }
+    
+    // Final revision days
+    if (i >= days - 3 && i < days - 1) {
+      plan.push({
+        date: dateStr, day: dayName, 
+        subjects: `Full Revision ${i === days-3 ? '— Math + Science' : '— English + Bangla'}`,
+        icon: '📝', status: 'upcoming',
+        tasks: i === days-3 
+          ? ['Math past paper (2 hours)','Science MCQ 50 questions','Weak chapter review']
+          : ['English past paper','Bangla composition','Grammar practice']
+      });
+      continue;
+    }
+    
+    // Final day - light review
+    if (i === days - 1) {
+      plan.push({
+        date: dateStr, day: dayName, subjects: 'Final Quick Review + Rest', icon: '🌙',
+        status: 'upcoming', tasks: ['Flash cards only — 1 hour','Sleep early','No new topics','Confidence building']
+      });
+      continue;
+    }
+    
+    // Regular study days
+    const subject = subjects[subIdx % subjects.length];
+    const chapter = chapters[subject][chIdx[subject] % chapters[subject].length];
+    const tasks = generateTasks(subject, chapter, studyHours);
+    
+    plan.push({
+      date: dateStr, day: dayName, 
+      subjects: `${subject} — ${chapter}`, icon: icons[subject],
+      status: i < 3 ? (i === 2 ? 'today' : 'done') : 'upcoming',
+      tasks: tasks
+    });
+    
+    chIdx[subject]++;
+    if (i % 2 === 1) subIdx++;
+  }
+  
+  return plan;
+}
+
+function generateTasks(subject, chapter, studyHours) {
+  const hourNum = parseInt(studyHours);
+  const taskSets = {
+    'Mathematics': ['Read chapter','Do practice problems (15 mins)','Solve examples','Quick quiz (10 mins)'],
+    'English': ['Read & comprehend','Vocabulary list','Grammar exercises','Writing practice'],
+    'Bangla': ['পাঠ পড়ুন','ব্যাখ্যা লিখুন','ব্যাকরণ অনুশীলন','সংক্ষিপ্ত পরীক্ষা'],
+    'Science': ['Concept review','Numericals practice','Diagram labeling','MCQ practice (15 mins)'],
+    'Biology': ['Diagram study','Function notes','Key terms','Review quiz'],
+    'Social Studies': ['Map work (15 mins)','Note-taking','Timeline study','Short answer practice']
+  };
+  
+  const baseTasks = taskSets[subject] || ['Study chapter','Practice problems','Quick test'];
+  if (hourNum === 1) return baseTasks.slice(0,2);
+  if (hourNum === 2) return baseTasks.slice(0,3);
+  return baseTasks;
+}
+
+function renderPlan() {
+  const list = document.getElementById('planList');
+  list.innerHTML = '';
+  PLAN.forEach((p, i) => {
+    const statusClass = {done:'status-done',today:'status-today',upcoming:'status-upcoming',rest:'status-rest'}[p.status] || 'status-upcoming';
+    const statusLabel = {done:'Done ✓',today:'Today',upcoming:'Upcoming',rest:'Rest Day 🌿'}[p.status];
+    const div = document.createElement('div');
+    div.className = 'plan-day';
+    if (p.status === 'today') div.style.borderColor = 'var(--stu)';
+    if (p.status === 'done') div.style.background = '#FAFFFE';
+    div.innerHTML = `
+      <div class="pd-head" onclick="toggleDay(this)">
+        <div class="pd-date">${p.date}</div>
+        <div><div class="pd-day">${p.icon} ${p.subjects}</div></div>
+        <div class="pd-status ${statusClass}">${statusLabel}</div>
+        <span style="margin-left:8px;color:var(--muted);font-size:.7rem;">▼</span>
+      </div>
+      <div class="pd-body" id="pb${i}">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+          ${p.tasks.map((t,ti) => `<span class="task-chip${taskDone[i+'-'+ti]?' done-chip':''}" onclick="toggleTask(this,${i},${ti})">${t}</span>`).join('')}
+        </div>
+        ${p.status !== 'rest' ? `<button class="btn btn-outline btn-sm" style="margin-top:10px;font-size:.74rem;" onclick="showToast('AI sent a reminder for ${p.date}!','🔔')">🔔 Set Reminder</button>` : ''}
+      </div>`;
+    list.appendChild(div);
+    if (p.status === 'today') {
+      const body = div.querySelector('.pd-body');
+      body.classList.add('show');
+    }
+  });
+}
+
+function toggleDay(head) {
+  const body = head.nextElementSibling;
+  body.classList.toggle('show');
+}
+
+function toggleTask(el, planIdx, taskIdx) {
+  const key = planIdx + '-' + taskIdx;
+  taskDone[key] = !taskDone[key];
+  el.classList.toggle('done-chip', taskDone[key]);
+}
+
+function renderCountdown() {
+  const examDateVal = document.getElementById('examDate').value;
+  const examDate = examDateVal ? new Date(examDateVal + 'T00:00:00') : new Date('2026-07-15T00:00:00');
+  const now = new Date();
+  const diff = examDate - now;
+  const days = Math.floor(diff / (1000*60*60*24));
+  const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+  const examDateStr = examDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const strip = document.getElementById('countdownStrip');
+  strip.innerHTML = `
+    <div class="cd-card"><div class="cd-val">${Math.max(0,days)}</div><div class="cd-lbl">Days Left</div></div>
+    <div class="cd-card"><div class="cd-val">${Math.max(0,hours)}</div><div class="cd-lbl">Hours</div></div>
+    <div class="cd-card"><div class="cd-val">${Math.max(0,mins)}</div><div class="cd-lbl">Minutes</div></div>
+    <div class="cd-card" style="flex:2;text-align:left;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+      <div style="font-size:1.6rem;">📅</div>
+      <div><div style="font-size:.88rem;font-weight:800;color:#C4B5FD;">Annual Exam 2026</div><div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:3px;">Starting ${examDateStr} · Class IX–A</div></div>
+    </div>`;
+}
+
+function renderCoverage() {
+  const el = document.getElementById('subjectCoverage');
+  const coverage = {};
+  PLAN.forEach(p => {
+    const subj = p.subjects.split(' — ')[0];
+    coverage[subj] = (coverage[subj] || 0) + 1;
+  });
+  
+  const total = PLAN.filter(p => p.icon !== '🌿' && p.icon !== '📝' && p.icon !== '🌙').length;
+  const colors = {'Mathematics':'#7C3AED','English':'#6366F1','Bangla':'#8B5CF6','Science':'#A78BFA','Biology':'#C4B5FD','Social Studies':'#DDD6FE'};
+  
+  el.innerHTML = Object.entries(coverage)
+    .filter(([k]) => k !== 'Rest Day' && k !== 'Full Revision' && k !== 'Final Quick Review')
+    .map(([sub, days]) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <div style="font-size:.74rem;font-weight:700;color:var(--ink);width:80px;flex-shrink:0;">${sub}</div>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${Math.round(days/total*100)}%;background:${colors[sub] || '#7C3AED'};border-radius:4px;"></div>
+      </div>
+      <div style="font-size:.7rem;color:var(--muted);width:30px;text-align:right;">${days}d</div>
+    </div>`).join('');
+}
+
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; d.style.transition='opacity .3s'; setTimeout(() => d.remove(),300); }, 3000);
+}
+
+renderCountdown();
+setInterval(renderCountdown, 60000);
+// Generate initial demo plan
+PLAN = generateStudyPlanData(new Date('2026-07-15'), 14, '2 hours', 'Weak subjects first (AI)');
+renderPlan();
+renderCoverage();
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

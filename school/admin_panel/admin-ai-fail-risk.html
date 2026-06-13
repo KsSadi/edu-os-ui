@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Fail-Risk Predictor — Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* ── AI page accent ── */
+:root { --ai:#6366F1; --ai-2:#8B5CF6; --ai-pale:#EEF2FF; }
+
+.ai-banner {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  border-radius: 16px; padding: 22px 26px; color:#fff;
+  display:flex; align-items:center; gap:18px; margin-bottom:22px;
+  position:relative; overflow:hidden;
+}
+.ai-banner::before{
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E");
+}
+.ai-banner-icon{
+  width:54px;height:54px;border-radius:14px;flex-shrink:0;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:1.6rem;
+  position:relative;z-index:1;
+}
+.ai-banner-txt{position:relative;z-index:1;flex:1;}
+.ai-banner-title{font-family:'Sora',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:3px;}
+.ai-banner-sub{font-size:.83rem;opacity:.85;}
+.ai-banner-model{
+  position:relative;z-index:1;font-family:'JetBrains Mono',monospace;
+  font-size:.68rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
+  padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:6px;
+}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:aipulse 1.6s infinite;}
+@keyframes aipulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+/* Analyze button */
+.btn-ai{
+  background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;border:none;
+  box-shadow:0 4px 16px rgba(99,102,241,.3);
+}
+.btn-ai:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ai:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* Analyzing overlay */
+.ai-analyzing{
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  padding:60px 20px; text-align:center;
+}
+.ai-analyzing.show{display:flex;}
+.ai-brain{
+  width:80px;height:80px;border-radius:22px;
+  background:linear-gradient(135deg,#4F46E5,#7C3AED);
+  display:flex;align-items:center;justify-content:center;font-size:2.4rem;
+  margin-bottom:22px;box-shadow:0 10px 40px rgba(99,102,241,.4);
+  animation:brainfloat 2s ease-in-out infinite;
+}
+@keyframes brainfloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-8px) scale(1.04);}}
+.ai-analyzing-title{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:8px;}
+.ai-step{
+  font-size:.85rem;color:var(--muted);margin-bottom:6px;
+  display:flex;align-items:center;gap:9px;opacity:.35;transition:opacity .3s;
+}
+.ai-step.active{opacity:1;color:var(--ai);font-weight:600;}
+.ai-step.done{opacity:1;color:var(--green);}
+.ai-step-ic{width:18px;text-align:center;}
+.ai-progress-track{width:280px;height:6px;background:var(--border);border-radius:3px;margin:18px 0 6px;overflow:hidden;}
+.ai-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#4F46E5,#7C3AED);border-radius:3px;transition:width .4s;}
+.ai-progress-pct{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--ai);font-weight:700;}
+
+/* Risk results */
+.ai-results{display:none;}
+.ai-results.show{display:block;animation:fadein .5s ease both;}
+@keyframes fadein{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+.risk-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.risk-stat{border-radius:14px;padding:18px;border:1.5px solid;position:relative;overflow:hidden;}
+.risk-stat-num{font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;line-height:1;}
+.risk-stat-lbl{font-size:.74rem;font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:.04em;}
+.rs-high{background:#FEF2F2;border-color:#FECACA;}
+.rs-high .risk-stat-num{color:#DC2626;} .rs-high .risk-stat-lbl{color:#991B1B;}
+.rs-med{background:#FFFBEB;border-color:#FDE68A;}
+.rs-med .risk-stat-num{color:#D97706;} .rs-med .risk-stat-lbl{color:#92400E;}
+.rs-safe{background:#ECFDF5;border-color:#A7F3D0;}
+.rs-safe .risk-stat-num{color:#059669;} .rs-safe .risk-stat-lbl{color:#065F46;}
+.rs-acc{background:#EEF2FF;border-color:#C7D2FE;}
+.rs-acc .risk-stat-num{color:#4F46E5;} .rs-acc .risk-stat-lbl{color:#3730A3;}
+
+/* Risk student row */
+.rsk-row{
+  display:flex;align-items:center;gap:14px;padding:14px 18px;
+  border-bottom:1px solid var(--border);transition:background .12s;
+}
+.rsk-row:last-child{border-bottom:none;}
+.rsk-row:hover{background:var(--bg);}
+.rsk-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.82rem;}
+.rsk-info{min-width:140px;}
+.rsk-name{font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.rsk-meta{font-size:.73rem;color:var(--muted);margin-top:1px;}
+.rsk-signals{display:flex;gap:6px;flex:1;flex-wrap:wrap;}
+.rsk-sig{font-size:.68rem;padding:3px 8px;border-radius:7px;background:var(--bg);border:1px solid var(--border);color:var(--ink-3);font-weight:600;}
+.rsk-sig.bad{background:#FEF2F2;border-color:#FECACA;color:#B91C1C;}
+.rsk-sig.warn{background:#FFFBEB;border-color:#FDE68A;color:#B45309;}
+.rsk-sig.good{background:#ECFDF5;border-color:#A7F3D0;color:#047857;}
+.rsk-track{width:120px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;flex-shrink:0;}
+.rsk-fill{height:100%;border-radius:4px;width:0;transition:width 1s cubic-bezier(.22,.61,.36,1);}
+.rsk-pct{font-family:'Sora',sans-serif;font-weight:800;font-size:1rem;width:54px;text-align:right;flex-shrink:0;}
+.rsk-tag{font-size:.66rem;font-weight:800;padding:3px 9px;border-radius:20px;flex-shrink:0;width:56px;text-align:center;}
+.tag-high{background:#FEE2E2;color:#991B1B;}
+.tag-med{background:#FEF3C7;color:#92400E;}
+.tag-safe{background:#D1FAE5;color:#065F46;}
+
+/* AI insight box */
+.ai-insight{
+  background:linear-gradient(135deg,#EEF2FF,#F5F3FF);
+  border:1.5px solid #C7D2FE;border-radius:14px;padding:18px 20px;margin-bottom:20px;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.ai-insight-ic{font-size:1.4rem;flex-shrink:0;}
+.ai-insight-title{font-size:.84rem;font-weight:800;color:#3730A3;margin-bottom:4px;}
+.ai-insight-txt{font-size:.84rem;color:#4338CA;line-height:1.6;}
+.ai-insight-txt strong{color:#312E81;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:11px 16px;border-radius:10px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:900px){ .risk-summary{grid-template-columns:1fr 1fr;} .rsk-signals{display:none;} }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- AI BANNER -->
+    <div class="ai-banner">
+      <div class="ai-banner-icon">🧠</div>
+      <div class="ai-banner-txt">
+        <div class="ai-banner-title">AI Fail-Risk Predictor</div>
+        <div class="ai-banner-sub">Predict which students are at risk of failing — 30 days before the exam.</div>
+      </div>
+      <div class="ai-banner-model"><span class="ai-dot"></span> EduOS-Predict v2.4 · Online</div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="card" style="padding:18px 22px;margin-bottom:22px;">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);margin-bottom:3px;">Run prediction analysis</div>
+          <div style="font-size:.78rem;color:var(--muted);">AI will scan attendance, marks trends &amp; assignment data for the selected class.</div>
+        </div>
+        <select id="classSel" class="btn btn-outline btn-sm" style="cursor:pointer;">
+          <option value="Class 9A">Class 9A — 42 students</option>
+          <option value="Class 9B">Class 9B — 40 students</option>
+          <option value="Class 10A">Class 10A — 38 students</option>
+          <option value="Class 8B">Class 8B — 28 students</option>
+        </select>
+        <button class="btn btn-ai" id="runBtn" onclick="runAnalysis()">✨ Run AI Analysis</button>
+      </div>
+    </div>
+
+    <!-- EMPTY / PROMPT STATE -->
+    <div class="card" id="emptyState" style="padding:0;">
+      <div style="padding:60px 20px;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:14px;opacity:.5;">🔮</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:700;color:var(--ink-2);margin-bottom:6px;">No analysis run yet</div>
+        <div style="font-size:.85rem;color:var(--muted);max-width:380px;margin:0 auto;">Select a class above and click <strong>Run AI Analysis</strong>. The model will evaluate every student and score their fail-risk.</div>
+      </div>
+    </div>
+
+    <!-- ANALYZING STATE -->
+    <div class="card ai-analyzing" id="analyzing" style="padding:0;">
+      <div class="ai-brain">🧠</div>
+      <div class="ai-analyzing-title">AI is analysing <span id="anClass">Class 9A</span>…</div>
+      <div style="margin:18px 0 4px;">
+        <div class="ai-step" id="step1"><span class="ai-step-ic">📊</span> Loading attendance records (180 days)</div>
+        <div class="ai-step" id="step2"><span class="ai-step-ic">📈</span> Computing marks trend per subject</div>
+        <div class="ai-step" id="step3"><span class="ai-step-ic">📝</span> Evaluating assignment completion rate</div>
+        <div class="ai-step" id="step4"><span class="ai-step-ic">🧮</span> Running risk model (gradient boosting)</div>
+        <div class="ai-step" id="step5"><span class="ai-step-ic">✅</span> Generating recommendations</div>
+      </div>
+      <div class="ai-progress-track"><div class="ai-progress-fill" id="progFill"></div></div>
+      <div class="ai-progress-pct" id="progPct">0%</div>
+    </div>
+
+    <!-- RESULTS STATE -->
+    <div class="ai-results" id="results">
+
+      <!-- Summary -->
+      <div class="risk-summary">
+        <div class="risk-stat rs-high"><div class="risk-stat-num" id="cHigh">0</div><div class="risk-stat-lbl">High Risk</div></div>
+        <div class="risk-stat rs-med"><div class="risk-stat-num" id="cMed">0</div><div class="risk-stat-lbl">Medium Risk</div></div>
+        <div class="risk-stat rs-safe"><div class="risk-stat-num" id="cSafe">0</div><div class="risk-stat-lbl">On Track</div></div>
+        <div class="risk-stat rs-acc"><div class="risk-stat-num">94%</div><div class="risk-stat-lbl">Model Confidence</div></div>
+      </div>
+
+      <!-- AI Insight -->
+      <div class="ai-insight">
+        <div class="ai-insight-ic">💡</div>
+        <div>
+          <div class="ai-insight-title">AI Recommendation</div>
+          <div class="ai-insight-txt" id="aiInsight">—</div>
+        </div>
+      </div>
+
+      <!-- Student list -->
+      <div class="card" style="padding:0;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="card-title">Student Risk Scores — <span id="resClass">Class 9A</span></div>
+            <div class="card-sub">Sorted by risk · updated just now by AI</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-danger btn-sm" onclick="alertParents()">⚠ Alert High-Risk Parents</button>
+            <button class="btn btn-outline btn-sm" onclick="exportReport()">📄 Export Report</button>
+          </div>
+        </div>
+        <div id="riskList"></div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ── Demo student datasets per class ──────────────────────────────
+const DATA = {
+  'Class 9A': [
+    { name:'Rahim Ahmed',   roll:'9A-04', att:58, marks:34, assign:40, color:'#EF4444' },
+    { name:'Sumon Islam',   roll:'9A-11', att:67, marks:45, assign:55, color:'#F59E0B' },
+    { name:'Priya Das',     roll:'9A-19', att:71, marks:48, assign:60, color:'#8B5CF6' },
+    { name:'Jahid Hasan',   roll:'9A-07', att:74, marks:52, assign:58, color:'#0EA5E9' },
+    { name:'Fatima Khatun', roll:'9A-22', att:82, marks:61, assign:70, color:'#EC4899' },
+    { name:'Nadia Hossain', roll:'9A-15', att:91, marks:78, assign:88, color:'#10B981' },
+    { name:'Karim Mia',     roll:'9A-02', att:95, marks:84, assign:92, color:'#14B8A6' },
+    { name:'Ayesha Siddika',roll:'9A-31', att:97, marks:89, assign:95, color:'#6366F1' },
+  ],
+  'Class 9B': [
+    { name:'Tanvir Alam',   roll:'9B-08', att:61, marks:38, assign:44, color:'#EF4444' },
+    { name:'Sadia Rahman',  roll:'9B-14', att:69, marks:47, assign:51, color:'#F59E0B' },
+    { name:'Mehedi Hasan',  roll:'9B-03', att:76, marks:55, assign:63, color:'#0EA5E9' },
+    { name:'Lamia Akter',   roll:'9B-20', att:88, marks:72, assign:80, color:'#10B981' },
+    { name:'Rifat Khan',    roll:'9B-11', att:93, marks:81, assign:90, color:'#14B8A6' },
+    { name:'Sabrina Yasmin',roll:'9B-27', att:96, marks:86, assign:93, color:'#6366F1' },
+  ],
+  'Class 10A': [
+    { name:'Imran Hossain', roll:'10A-05',att:54, marks:31, assign:38, color:'#EF4444' },
+    { name:'Nusrat Jahan',  roll:'10A-18',att:63, marks:42, assign:49, color:'#F59E0B' },
+    { name:'Arif Chowdhury',roll:'10A-09',att:72, marks:50, assign:57, color:'#8B5CF6' },
+    { name:'Tania Sultana', roll:'10A-25',att:85, marks:68, assign:76, color:'#EC4899' },
+    { name:'Shakib Rahman', roll:'10A-02',att:94, marks:83, assign:91, color:'#10B981' },
+  ],
+  'Class 8B': [
+    { name:'Joy Barua',     roll:'8B-12', att:60, marks:37, assign:42, color:'#EF4444' },
+    { name:'Mitu Akter',    roll:'8B-06', att:70, marks:49, assign:58, color:'#F59E0B' },
+    { name:'Hasan Ali',     roll:'8B-21', att:80, marks:64, assign:72, color:'#0EA5E9' },
+    { name:'Rumana Begum',  roll:'8B-17', att:92, marks:79, assign:87, color:'#10B981' },
+  ],
+};
+
+// ── Risk model (deterministic, looks like real AI) ───────────────
+function computeRisk(s) {
+  // Weighted: attendance 35%, marks 40%, assignments 25% — inverted to risk
+  const score = (100 - s.att) * 0.35 + (100 - s.marks) * 0.40 + (100 - s.assign) * 0.25;
+  return Math.round(Math.min(98, Math.max(4, score)));
+}
+function riskLevel(r) {
+  if (r >= 65) return { tag:'HIGH', cls:'tag-high', fill:'linear-gradient(90deg,#EF4444,#DC2626)', col:'#DC2626' };
+  if (r >= 45) return { tag:'MED',  cls:'tag-med',  fill:'linear-gradient(90deg,#F59E0B,#D97706)', col:'#D97706' };
+  return { tag:'SAFE', cls:'tag-safe', fill:'linear-gradient(90deg,#10B981,#059669)', col:'#059669' };
+}
+
+const STEPS = ['step1','step2','step3','step4','step5'];
+let lastResults = [];
+
+function runAnalysis() {
+  const cls = document.getElementById('classSel').value;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('anClass').textContent = cls;
+
+  const an = document.getElementById('analyzing');
+  an.classList.add('show');
+
+  // Reset steps
+  STEPS.forEach(id => { const e = document.getElementById(id); e.className = 'ai-step'; });
+  const fill = document.getElementById('progFill');
+  const pct  = document.getElementById('progPct');
+  fill.style.width = '0%'; pct.textContent = '0%';
+
+  let stepIdx = 0;
+  let progress = 0;
+
+  // Animate steps
+  function nextStep() {
+    if (stepIdx > 0) document.getElementById(STEPS[stepIdx-1]).className = 'ai-step done';
+    if (stepIdx < STEPS.length) {
+      document.getElementById(STEPS[stepIdx]).className = 'ai-step active';
+      stepIdx++;
+      setTimeout(nextStep, 520 + Math.random() * 280);
+    }
+  }
+  nextStep();
+
+  // Animate progress
+  const prog = setInterval(() => {
+    progress += Math.random() * 9 + 3;
+    if (progress >= 100) { progress = 100; clearInterval(prog); finish(cls); }
+    fill.style.width = progress + '%';
+    pct.textContent = Math.round(progress) + '%';
+  }, 130);
+}
+
+function finish(cls) {
+  setTimeout(() => {
+    document.getElementById('analyzing').classList.remove('show');
+    renderResults(cls);
+    document.getElementById('results').classList.add('show');
+    document.getElementById('runBtn').disabled = false;
+    toast('AI analysis complete ✓', '🧠');
+  }, 400);
+}
+
+function renderResults(cls) {
+  const students = DATA[cls].map(s => ({ ...s, risk: computeRisk(s) }))
+                            .sort((a,b) => b.risk - a.risk);
+  lastResults = students;
+
+  let high = 0, med = 0, safe = 0;
+  students.forEach(s => {
+    if (s.risk >= 65) high++; else if (s.risk >= 45) med++; else safe++;
+  });
+
+  document.getElementById('cHigh').textContent = high;
+  document.getElementById('cMed').textContent  = med;
+  document.getElementById('cSafe').textContent = safe;
+  document.getElementById('resClass').textContent = cls;
+
+  // Insight
+  const topRisk = students[0];
+  document.getElementById('aiInsight').innerHTML =
+    `Detected <strong>${high} high-risk</strong> and <strong>${med} medium-risk</strong> students in ${cls}. ` +
+    `<strong>${topRisk.name}</strong> has the highest fail-risk at <strong>${topRisk.risk}%</strong>, driven mainly by ` +
+    `low attendance (${topRisk.att}%) and declining marks (${topRisk.marks}% avg). ` +
+    `Recommended action: schedule a parent meeting and assign a remedial study plan within 7 days.`;
+
+  // Rows
+  const list = document.getElementById('riskList');
+  list.innerHTML = '';
+  students.forEach((s, i) => {
+    const lv = riskLevel(s.risk);
+    const init = s.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+    const attSig  = s.att < 70 ? 'bad' : s.att < 85 ? 'warn' : 'good';
+    const mkSig   = s.marks < 50 ? 'bad' : s.marks < 70 ? 'warn' : 'good';
+    const asSig   = s.assign < 55 ? 'bad' : s.assign < 75 ? 'warn' : 'good';
+    const row = document.createElement('div');
+    row.className = 'rsk-row';
+    row.innerHTML = `
+      <div class="rsk-av" style="background:${s.color}">${init}</div>
+      <div class="rsk-info">
+        <div class="rsk-name">${s.name}</div>
+        <div class="rsk-meta">Roll ${s.roll}</div>
+      </div>
+      <div class="rsk-signals">
+        <span class="rsk-sig ${attSig}">📊 Att ${s.att}%</span>
+        <span class="rsk-sig ${mkSig}">📈 Marks ${s.marks}%</span>
+        <span class="rsk-sig ${asSig}">📝 Assign ${s.assign}%</span>
+      </div>
+      <div class="rsk-track"><div class="rsk-fill" style="background:${lv.fill}"></div></div>
+      <div class="rsk-pct" style="color:${lv.col}">${s.risk}%</div>
+      <span class="rsk-tag ${lv.cls}">${lv.tag}</span>`;
+    list.appendChild(row);
+    // animate bar
+    setTimeout(() => { row.querySelector('.rsk-fill').style.width = s.risk + '%'; }, 80 + i * 70);
+  });
+}
+
+function alertParents() {
+  const high = lastResults.filter(s => s.risk >= 65).length;
+  toast(`📲 Risk alert SMS sent to ${high} parent${high!==1?'s':''}`, '⚠');
+}
+function exportReport() {
+  toast('📄 Generating PDF report…', '📄');
+  setTimeout(() => toast('Report downloaded ✓', '✅'), 1100);
+}
+
+function toast(msg, icon) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${icon||'✓'}</span> ${msg}`;
+  document.getElementById('toastStack').appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="admin-shell.js"></script>
+</body>
+</html>

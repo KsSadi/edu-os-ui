@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Hero search bar */
+.explore-hero{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 55%,#4338CA 100%);border-radius:18px;padding:28px 32px;margin-bottom:24px;text-align:center;position:relative;overflow:hidden;}
+.explore-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.05);}
+.explore-hero::after{content:'';position:absolute;left:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;background:rgba(99,102,241,.15);}
+.eh-title{font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:6px;}
+.eh-sub{font-size:.84rem;color:rgba(255,255,255,.65);margin-bottom:20px;}
+.eh-search{display:flex;max-width:480px;margin:0 auto;background:rgba(255,255,255,.15);border-radius:14px;overflow:hidden;border:1.5px solid rgba(255,255,255,.25);}
+.eh-search input{flex:1;background:transparent;border:none;outline:none;padding:12px 18px;color:#fff;font-size:.9rem;font-weight:500;}
+.eh-search input::placeholder{color:rgba(255,255,255,.5);}
+.eh-search button{background:rgba(255,255,255,.2);border:none;padding:0 20px;cursor:pointer;font-size:1rem;color:#fff;transition:background .15s;}
+.eh-search button:hover{background:rgba(255,255,255,.3);}
+.eh-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.eh-tag{padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);font-size:.74rem;font-weight:700;color:rgba(255,255,255,.8);cursor:pointer;transition:all .12s;}
+.eh-tag:hover{background:rgba(255,255,255,.25);}
+
+/* Section label with see-all */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sh-title{font-size:.92rem;font-weight:800;color:var(--ink);}
+.sh-see-all{font-size:.78rem;font-weight:700;color:var(--cmn);cursor:pointer;text-decoration:none;}
+.sh-see-all:hover{text-decoration:underline;}
+
+/* Trending post card (compact) */
+.trend-post-card{border:1.5px solid var(--border);border-radius:12px;background:var(--white);padding:12px 14px;display:flex;gap:10px;transition:all .15s;cursor:pointer;}
+.trend-post-card:hover{border-color:var(--cmn);box-shadow:0 3px 12px rgba(99,102,241,.1);}
+.tpc-num{font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--border);min-width:24px;padding-top:2px;line-height:1;}
+.tpc-body{flex:1;}
+.tpc-title{font-size:.86rem;font-weight:800;color:var(--ink-2);line-height:1.35;margin-bottom:3px;}
+.tpc-meta{font-size:.71rem;color:var(--muted);}
+.tpc-tag{font-size:.62rem;font-weight:800;padding:1px 7px;border-radius:6px;display:inline-block;margin-bottom:3px;}
+.tpc-stats{font-size:.68rem;color:var(--muted);display:flex;gap:10px;margin-top:4px;}
+
+/* Group card */
+.group-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;transition:all .18s;cursor:pointer;}
+.group-card:hover{box-shadow:0 5px 18px rgba(99,102,241,.12);transform:translateY(-2px);border-color:var(--cmn);}
+.gc-banner{height:60px;display:flex;align-items:center;padding:0 14px;gap:10px;}
+.gc-av{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:rgba(255,255,255,.2);}
+.gc-name{font-size:.9rem;font-weight:900;color:#fff;line-height:1.2;}
+.gc-category{font-size:.66rem;font-weight:700;opacity:.7;color:#fff;margin-top:1px;}
+.gc-body{padding:10px 14px 12px;}
+.gc-desc{font-size:.76rem;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.gc-footer{display:flex;align-items:center;justify-content:space-between;}
+.gc-members{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.join-btn{padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:800;border:1.5px solid var(--cmn);color:var(--cmn);background:transparent;cursor:pointer;transition:all .12s;}
+.join-btn:hover,.join-btn.joined{background:var(--cmn);color:#fff;}
+
+/* Subject topic card */
+.subj-card{border:1.5px solid var(--border);border-radius:12px;background:var(--white);padding:14px 16px;display:flex;gap:12px;align-items:center;cursor:pointer;transition:all .15s;}
+.subj-card:hover{border-color:var(--cmn);background:var(--cmn-pale);}
+.sc-icon{font-size:1.8rem;flex-shrink:0;}
+.sc-name{font-size:.88rem;font-weight:800;color:var(--ink-2);}
+.sc-count{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.sc-arrow{color:var(--muted);font-size:.9rem;margin-left:auto;}
+
+/* People card */
+.person-card{border:1.5px solid var(--border);border-radius:12px;background:var(--white);padding:14px 16px;text-align:center;transition:all .15s;cursor:pointer;}
+.person-card:hover{border-color:var(--cmn);box-shadow:0 4px 12px rgba(99,102,241,.1);}
+.person-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:900;color:#fff;margin:0 auto 8px;}
+.person-name{font-size:.86rem;font-weight:800;color:var(--ink-2);}
+.person-role{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.person-stats{font-size:.7rem;color:var(--muted);margin-top:5px;}
+.person-follow{margin-top:8px;width:100%;padding:5px;border-radius:20px;font-size:.74rem;font-weight:800;border:1.5px solid var(--cmn);color:var(--cmn);background:transparent;cursor:pointer;transition:all .12s;}
+.person-follow:hover,.person-follow.on{background:var(--cmn);color:#fff;}
+
+/* Tab bar */
+.explore-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:22px;}
+.et-btn{padding:9px 18px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.et-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+.et-btn:hover{color:var(--cmn-dark);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero search -->
+    <div class="explore-hero anim-1">
+      <div class="eh-title">Discover Your School Community</div>
+      <div class="eh-sub">Find trending posts, study groups, teachers and students sharing knowledge.</div>
+      <div class="eh-search">
+        <input type="text" placeholder="Search topics, groups, people&middot;" id="exploreSearch" oninput="liveSearch(this.value)">
+        <button onclick="showToast('Searching&middot;','&#x2705;')"></button>
+      </div>
+      <div class="eh-tags">
+        <span class="eh-tag" onclick="showToast('Filtering: #SSCPrep2025','&#x2705;')">#SSCPrep2025</span>
+        <span class="eh-tag" onclick="showToast('Filtering: #MathHelp','&#x2705;')">#MathHelp</span>
+        <span class="eh-tag" onclick="showToast('Filtering: Science','&#x2705;')">#Science</span>
+        <span class="eh-tag" onclick="showToast('Filtering: Coding','&#x2705;')">#Coding</span>
+        <span class="eh-tag" onclick="showToast('Filtering: English','&#x2705;')">#English</span>
+        <span class="eh-tag" onclick="showToast('Filtering: Art','&#x2705;')">#Art</span>
+      </div>
+    </div>
+
+    <!-- Section tabs -->
+    <div class="explore-tabs anim-1">
+      <button class="et-btn on" onclick="setTab('all',this)">All</button>
+      <button class="et-btn" onclick="setTab('trending',this)"> Trending Posts</button>
+      <button class="et-btn" onclick="setTab('groups',this)"> Groups</button>
+      <button class="et-btn" onclick="setTab('people',this)"> People</button>
+      <button class="et-btn" onclick="setTab('topics',this)"> Topics</button>
+    </div>
+
+    <!-- Trending Posts -->
+    <div class="anim-1 section-block" id="block-trending">
+      <div class="section-header"><div class="sh-title"> Trending Posts This Week</div><span class="sh-see-all" onclick="showToast('Showing all trending posts','&#x2705;')">See all &middot;</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:28px;" id="trendingPosts"></div>
+    </div>
+
+    <!-- Groups -->
+    <div class="anim-2 section-block" id="block-groups">
+      <div class="section-header"><div class="sh-title"> Popular Groups</div><span class="sh-see-all" onclick="showToast('Browsing all groups','&#x2705;')">See all &middot;</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:28px;" id="groupsGrid"></div>
+    </div>
+
+    <!-- People -->
+    <div class="anim-2 section-block" id="block-people">
+      <div class="section-header"><div class="sh-title"> Active Community Members</div><span class="sh-see-all" onclick="showToast('Viewing all members','&#x2705;')">See all &middot;</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px;" id="peopleGrid"></div>
+    </div>
+
+    <!-- Topic categories -->
+    <div class="anim-2 section-block" id="block-topics">
+      <div class="section-header"><div class="sh-title"> Browse by Subject</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;" id="topicsGrid"></div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const trendingPosts=[
+  {rank:1,title:'Complete SSC 2025 Mathematics Revision Roadmap &middot; Week by Week',author:'Dr. Karim Hossain',role:'Math Teacher',time:'5h ago',likes:142,comments:38,tag:{label:'Study Guide',bg:'#EFF6FF',col:'#1D4ED8'},tag2:'#SSCPrep2025'},
+  {rank:2,title:'How I scored 98/100 in Physics: My full preparation strategy + notes',author:'Nabil Hossain',role:'Class X-A',time:'12h ago',likes:118,comments:24,tag:{label:'Achievement',bg:'#FEF3C7',col:'#92400E'},tag2:'#PhysicsHelp'},
+  {rank:3,title:'10 Python projects for beginners &middot; with full code on GitHub ',author:'Tanvir Ahmed',role:'Class IX-A',time:'1d ago',likes:94,comments:31,tag:{label:'Resource',bg:'#ECFDF5',col:'#065F46'},tag2:'#Coding'},
+  {rank:4,title:'Why does NaCl conduct electricity in solution but not solid state?',author:'Rahela Khatun',role:'Class IX-A',time:'2h ago',likes:67,comments:19,tag:{label:'Question',bg:'#FFF1F2',col:'#BE123C'},tag2:'#Chemistry'},
+  {rank:5,title:'Annual Science Fair 2025 &middot; Team Registration & Project Ideas Thread',author:'Ms. Nasrin Ahmed',role:'Physics Teacher',time:'2d ago',likes:89,comments:42,tag:{label:'Event',bg:'#F3E8FF',col:'#5B21B6'},tag2:'#ScienceFair'},
+  {rank:6,title:'Bangla 2nd Paper: Common mistakes in SSC exam &middot; full analysis',author:'Mr. Jabbar Hossain',role:'Bangla Teacher',time:'1d ago',likes:76,comments:15,tag:{label:'Tip',bg:'#FEF3C7',col:'#92400E'},tag2:'#BanglaSSC'},
+];
+
+const groups=[
+  {emoji:'',name:'Math Study Circle',category:'Mathematics',members:124,posts:340,desc:'Daily problem solving, doubt clearing, and exam tips for all math levels.',col:'#1D4ED8',joined:true},
+  {emoji:'',name:'Science Olympiad Prep',category:'Science',members:86,posts:218,desc:'Official prep group for national science olympiad. Coached by Ms. Nasrin.',col:'#059669',joined:true},
+  {emoji:'',name:'Coding Club',category:'ICT',members:98,posts:192,desc:'Python, web dev, competitive programming. Weekly coding challenges.',col:'#7C3AED',joined:true},
+  {emoji:'',name:'Art & Culture Club',category:'Arts',members:67,posts:144,desc:'Showcase artwork, discuss culture, plan exhibitions and competitions.',col:'#D97706',joined:false},
+  {emoji:'',name:'Book Discussion',category:'Literature',members:54,posts:108,desc:'Monthly book picks, Bangla and English literature, author discussions.',col:'#E11D48',joined:false},
+  {emoji:'',name:'English Writing Workshop',category:'English',members:72,posts:156,desc:'Essay writing, grammar, vocabulary building for SSC & beyond.',col:'#0891B2',joined:false},
+  {emoji:'&#x2705;',name:'Physics Problem Bank',category:'Physics',members:91,posts:204,desc:'Solved problems, past papers, MCQ practice for SSC/HSC physics.',col:'#6366F1',joined:false},
+  {emoji:'',name:'Biology Explorers',category:'Biology',members:48,posts:96,desc:'Diagrams, experiments, questions and discussions on life sciences.',col:'#16A34A',joined:false},
+];
+
+const people=[
+  {init:'DK',name:'Dr. Karim Hossain',role:'Math Teacher',posts:84,followers:412,col:'#1D4ED8',following:true},
+  {init:'MN',name:'Ms. Nasrin Ahmed',role:'Physics Teacher',posts:62,followers:385,col:'#059669',following:true},
+  {init:'FI',name:'Farhan Islam',role:'Class IX-A &middot; Student',posts:24,followers:148,col:'#6366F1',following:false},
+  {init:'RK',name:'Rahela Khatun',role:'Class IX-A &middot; Student',posts:18,followers:92,col:'#E11D48',following:false},
+  {init:'TA',name:'Tanvir Ahmed',role:'Class IX-A &middot; Student',posts:31,followers:168,col:'#0891B2',following:false},
+  {init:'NH',name:'Nabil Hossain',role:'Class X-A &middot; Student',posts:45,followers:220,col:'#7C3AED',following:false},
+  {init:'SB',name:'Sumaiya Begum',role:'Class IX-A &middot; Student',posts:15,followers:74,col:'#D97706',following:false},
+  {init:'JH',name:'Mr. Jabbar Hossain',role:'Bangla Teacher',posts:38,followers:294,col:'#BE123C',following:false},
+];
+
+const topics=[
+  {emoji:'',name:'Mathematics',posts:284,questions:62,col:'#1D4ED8'},
+  {emoji:'',name:'Physics',posts:218,questions:48,col:'#059669'},
+  {emoji:'',name:'Chemistry',posts:196,questions:44,col:'#7C3AED'},
+  {emoji:'',name:'Biology',posts:164,questions:38,col:'#16A34A'},
+  {emoji:'',name:'Bangla Literature',posts:148,questions:22,col:'#BE123C'},
+  {emoji:'',name:'English',posts:136,questions:28,col:'#0891B2'},
+  {emoji:'',name:'ICT & Coding',posts:192,questions:54,col:'#6366F1'},
+  {emoji:'',name:'Art & Culture',posts:112,questions:14,col:'#D97706'},
+];
+
+function renderAll(){
+  document.getElementById('trendingPosts').innerHTML=trendingPosts.map(p=>`
+    <div class="trend-post-card" onclick="showToast('Opening post&middot;','&#x2705;')">
+      <div class="tpc-num" style="color:${p.rank<=3?'var(--cmn)':'var(--border)'};">${p.rank}</div>
+      <div class="tpc-body">
+        <div><span class="tpc-tag" style="background:${p.tag.bg};color:${p.tag.col};">${p.tag.label}</span> <span style="font-size:.68rem;font-weight:700;color:var(--cmn);">${p.tag2}</span></div>
+        <div class="tpc-title">${p.title}</div>
+        <div class="tpc-meta">${p.author} &middot; ${p.role} &middot; ${p.time}</div>
+        <div class="tpc-stats"><span> ${p.likes}</span><span> ${p.comments}</span></div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('groupsGrid').innerHTML=groups.map(g=>`
+    <div class="group-card">
+      <div class="gc-banner" style="background:linear-gradient(135deg,${g.col}dd,${g.col}88);">
+        <div class="gc-av">${g.emoji}</div>
+        <div><div class="gc-name">${g.name}</div><div class="gc-category">${g.category}</div></div>
+      </div>
+      <div class="gc-body">
+        <div class="gc-desc">${g.desc}</div>
+        <div class="gc-footer">
+          <div class="gc-members"> ${g.members} members &middot; ${g.posts} posts</div>
+          <button class="join-btn ${g.joined?'joined':''}" onclick="event.stopPropagation();this.classList.toggle('joined');showToast(this.classList.contains('joined')?'Joined ${g.name}':'Left ${g.name}','${g.emoji}')">${g.joined?'Joined':'Join'}</button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('peopleGrid').innerHTML=people.map(p=>`
+    <div class="person-card">
+      <div class="person-av" style="background:${p.col};">${p.init}</div>
+      <div class="person-name">${p.name}</div>
+      <div class="person-role">${p.role}</div>
+      <div class="person-stats">${p.posts} posts &middot; ${p.followers} followers</div>
+      <button class="person-follow ${p.following?'on':''}" onclick="this.classList.toggle('on');showToast(this.classList.contains('on')?'Following ${p.name}':'Unfollowed','&#x2705;')">${p.following?'Following':'+ Follow'}</button>
+    </div>`).join('');
+
+  document.getElementById('topicsGrid').innerHTML=topics.map(t=>`
+    <div class="subj-card" onclick="showToast('Viewing ${t.name} topic','${t.emoji}')">
+      <div class="sc-icon">${t.emoji}</div>
+      <div><div class="sc-name">${t.name}</div><div class="sc-count">${t.posts} posts &middot; ${t.questions} questions</div></div>
+      <div class="sc-arrow">&middot;</div>
+    </div>`).join('');
+}
+
+function setTab(tab,el){
+  document.querySelectorAll('.et-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.section-block').forEach(b=>b.style.display='block');
+  if(tab!=='all'){
+    document.querySelectorAll('.section-block').forEach(b=>b.style.display='none');
+    const block=document.getElementById(`block-${tab}`);
+    if(block)block.style.display='block';
+  }
+}
+
+function liveSearch(q){if(q.length>1)showToast(`Searching: "${q}"&middot;`,'&#x2705;');}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+renderAll();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notice Board — Dhaka High School</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="school.css">
+<style>
+/* Layout */
+.notices-layout { display:grid; grid-template-columns:1fr 280px; gap:32px; }
+
+/* Search + filter bar */
+.filter-bar {
+  background:#fff; border-radius:14px; border:1px solid var(--border);
+  box-shadow:var(--card-shadow); padding:22px 24px; margin-bottom:24px;
+  display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+}
+.search-wrap { flex:1; position:relative; min-width:220px; }
+.search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:.95rem; color:var(--muted); }
+.search-input {
+  width:100%; padding:10px 14px 10px 40px;
+  border-radius:9px; border:1.5px solid var(--border);
+  background:var(--bg); font-family:'DM Sans',sans-serif;
+  font-size:.92rem; color:var(--ink);
+  transition:border-color .2s; outline:none;
+}
+.search-input:focus { border-color:var(--navy); background:#fff; box-shadow:0 0 0 3px rgba(12,27,69,.07); }
+.filter-select {
+  padding:10px 14px; border-radius:9px; border:1.5px solid var(--border);
+  background:var(--bg); font-family:'DM Sans',sans-serif; font-size:.88rem;
+  color:var(--ink); cursor:pointer; outline:none;
+  transition:border-color .2s;
+}
+.filter-select:focus { border-color:var(--navy); }
+
+/* Category filter pills */
+.cat-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.cat-pill {
+  padding:7px 16px; border-radius:20px; border:1.5px solid var(--border);
+  background:#fff; font-family:'DM Sans',sans-serif; font-size:.82rem;
+  font-weight:600; color:var(--muted); cursor:pointer;
+  transition:all .18s;
+}
+.cat-pill:hover { border-color:var(--navy); color:var(--navy); }
+.cat-pill.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+/* Notice cards */
+.notice-card {
+  background:#fff; border-radius:14px; border:1px solid var(--border);
+  box-shadow:var(--card-shadow); margin-bottom:14px; overflow:hidden;
+  transition:box-shadow .2s, transform .2s;
+}
+.notice-card:hover { box-shadow:var(--card-hover); transform:translateY(-2px); }
+.notice-card-inner { display:flex; }
+.notice-accent { width:5px; flex-shrink:0; }
+.notice-body { padding:20px 22px; flex:1; }
+.notice-meta { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.notice-cat-badge { font-size:.71rem; font-weight:700; padding:3px 9px; border-radius:20px; }
+.notice-date { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--muted); }
+.new-badge { background:#FEF3C7; color:#92400E; font-size:.68rem; font-weight:700; padding:2px 7px; border-radius:10px; }
+.notice-h { font-family:'DM Sans',sans-serif; font-size:.98rem; font-weight:700; color:var(--ink-2); margin-bottom:7px; }
+.notice-p { font-size:.85rem; color:var(--muted); line-height:1.65; }
+.notice-footer { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+.notice-by { font-size:.75rem; color:var(--muted); }
+.notice-download { display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:600; color:var(--navy); text-decoration:none; background:var(--navy-pale); padding:5px 12px; border-radius:6px; transition:background .2s; }
+.notice-download:hover { background:rgba(12,27,69,.12); }
+
+/* Pinned */
+.notice-card.pinned { border-color:var(--gold); }
+.notice-card.pinned .notice-accent { background:var(--gold) !important; }
+
+/* Sidebar */
+.sidebar-box { background:#fff; border-radius:14px; border:1px solid var(--border); box-shadow:var(--card-shadow); overflow:hidden; margin-bottom:20px; }
+.sb-header { padding:16px 18px; border-bottom:1px solid var(--border); background:var(--gold-pale); }
+.sb-title { font-family:'Playfair Display',serif; font-size:.95rem; font-weight:700; color:var(--navy); }
+.sb-body { padding:14px 0; }
+.sb-link { display:flex; align-items:center; gap:10px; padding:9px 18px; font-size:.85rem; color:var(--ink-3); text-decoration:none; transition:background .2s; cursor:pointer; border:none; background:none; width:100%; font-family:'DM Sans',sans-serif; }
+.sb-link:hover { background:var(--bg); color:var(--navy); }
+.sb-link .sb-count { margin-left:auto; background:var(--navy-pale); color:var(--navy); font-size:.72rem; font-weight:700; padding:2px 7px; border-radius:10px; }
+.archive-month { display:flex; align-items:center; justify-content:space-between; padding:8px 18px; font-size:.83rem; color:var(--ink-3); border-bottom:1px solid var(--border); }
+.archive-month:last-child { border:none; }
+.archive-count { background:var(--bg); border:1px solid var(--border); font-size:.72rem; color:var(--muted); padding:2px 7px; border-radius:10px; }
+
+/* Pagination */
+.pagination { display:flex; gap:6px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+.page-btn {
+  width:38px; height:38px; border-radius:8px; border:1.5px solid var(--border);
+  background:#fff; font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600;
+  color:var(--muted); cursor:pointer; transition:all .18s;
+  display:flex; align-items:center; justify-content:center;
+}
+.page-btn:hover { border-color:var(--navy); color:var(--navy); }
+.page-btn.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+/* Count bar */
+.results-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+.results-count { font-size:.85rem; color:var(--muted); }
+.results-count strong { color:var(--ink); }
+
+@media(max-width:900px){ .notices-layout{grid-template-columns:1fr;} }
+@media(max-width:560px){ .filter-bar{flex-direction:column;} }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left"><span class="top-bar-item">📞 +880 2-9876543</span><span class="top-bar-item">✉ info@dhakahigh.edu.bd</span></div>
+  <div class="top-bar-right"><a href="school-results.html">Results</a><a href="school-admission.html">Admissions</a><button class="lang-btn">বাংলা</button></div>
+</div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="school-identity">
+      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <div class="school-name-wrap"><div class="school-name">Dhaka High School</div><div class="school-tagline">Excellence in Education Since 1962</div></div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="school-about.html"      class="nav-link">About</a>
+      <a href="school-notices.html"    class="nav-link active">Notices</a>
+      <a href="school-admission.html"  class="nav-link">Admission</a>
+      <a href="school-results.html"    class="nav-link">Results</a>
+      <a href="school-contact.html"    class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
+      <a href="auth/login.html" class="btn-portal">🔐 Student Portal</a>
+    </div>
+    <button class="ham-btn" onclick="toggleMobileNav()">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb"><a href="school-home.html">Home</a><span class="breadcrumb-sep">›</span><span style="color:rgba(255,255,255,.8);">Notice Board</span></div>
+    <div class="page-hero-badge">📢 Public Notice Board</div>
+    <h1>School Notices &amp; Announcements</h1>
+    <p>Stay updated with all official notices, exam schedules, fee reminders, holiday announcements, and school events.</p>
+  </div>
+</div>
+
+<section class="section" style="background:var(--bg);">
+  <div class="container">
+
+    <!-- Search + Filter -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search notices..." oninput="searchNotices(this.value)">
+      </div>
+      <select class="filter-select" onchange="filterByYear(this.value)">
+        <option>2025</option><option>2024</option><option>2023</option>
+      </select>
+      <select class="filter-select" onchange="filterByMonth(this.value)">
+        <option value="">All Months</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+      </select>
+    </div>
+
+    <!-- Category pills -->
+    <div class="cat-pills">
+      <button class="cat-pill on"  onclick="filterCat(this,'all')">All Notices</button>
+      <button class="cat-pill"     onclick="filterCat(this,'exam')">📝 Examination</button>
+      <button class="cat-pill"     onclick="filterCat(this,'fee')">💰 Fee &amp; Finance</button>
+      <button class="cat-pill"     onclick="filterCat(this,'holiday')">🗓 Holidays</button>
+      <button class="cat-pill"     onclick="filterCat(this,'admission')">📋 Admission</button>
+      <button class="cat-pill"     onclick="filterCat(this,'result')">📊 Results</button>
+      <button class="cat-pill"     onclick="filterCat(this,'event')">🎉 Events</button>
+    </div>
+
+    <div class="notices-layout">
+      <div>
+        <div class="results-bar">
+          <div class="results-count">Showing <strong id="noticeCount">12</strong> notices</div>
+          <div style="font-size:.78rem;color:var(--muted);">Last updated: 25 Feb 2025</div>
+        </div>
+
+        <!-- Notice List -->
+        <div id="noticeList">
+
+          <!-- PINNED -->
+          <div class="notice-card pinned" data-cat="exam" data-title="Final Examination 2025 — Class 9 & 10 Schedule">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:var(--gold);"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-gold">📝 Examination</span>
+                  <span class="new-badge">📌 Pinned</span>
+                  <span class="notice-date">25 Feb 2025</span>
+                </div>
+                <div class="notice-h">Final Examination 2025 — Class 9 &amp; 10 Schedule Released</div>
+                <div class="notice-p">The schedule for the Final Examination 2025 for Classes 9 and 10 has been finalized. Examinations will commence from 10 March 2025. Students are required to collect their admit cards from the administration office between 3–7 March during school hours. No student will be permitted to sit for exams without a valid admit card.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Examination Committee · Principal's Office</div>
+                  <a href="#" class="notice-download">📄 Download PDF</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card pinned" data-cat="admission" data-title="Class I Admission 2025-26 Application Open">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:var(--gold);"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-gold">📋 Admission</span>
+                  <span class="new-badge">📌 Pinned</span>
+                  <span class="notice-date">20 Feb 2025</span>
+                </div>
+                <div class="notice-h">Class I Admission 2025–26 — Applications Now Open</div>
+                <div class="notice-p">Applications for Class I (Session 2025–2026) are now open. Eligible students must have completed 5 years of age by January 1, 2025. Both online applications (via this portal) and physical forms from the school office are accepted. Last date to apply: 15 March 2025. Admission test: 22 March 2025.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Admission Committee</div>
+                  <a href="school-admission.html" class="notice-download">Apply Online →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="fee" data-title="February Tuition Fee Last Date">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:#059669;"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-green">💰 Fee &amp; Finance</span>
+                  <span class="new-badge" style="background:#DCFCE7;color:#166534;">New</span>
+                  <span class="notice-date">18 Feb 2025</span>
+                </div>
+                <div class="notice-h">February Tuition Fee — Last Date 28 February 2025</div>
+                <div class="notice-p">All students are reminded to pay their monthly tuition fee for February 2025 by 28 February. Fees can be paid via bKash, Nagad, or at the school accounts office. A late fee of ৳200 will be charged from 1 March. Students with outstanding fees from previous months must clear all dues by 28 February.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Accounts Department</div>
+                  <a href="auth/login.html" class="notice-download">Pay Online →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="holiday" data-title="Eid Holiday March April 2025">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:#DC2626;"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-red">🗓 Holiday</span>
+                  <span class="notice-date">15 Feb 2025</span>
+                </div>
+                <div class="notice-h">Eid-ul-Fitr Holiday — 28 March to 6 April 2025</div>
+                <div class="notice-p">The school will remain closed for the Eid-ul-Fitr holidays from 28 March to 6 April 2025 (inclusive). Classes will resume normally on 7 April 2025 (Monday). All scheduled exams or classes during this period will be rescheduled. The updated exam timetable will be issued separately.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Principal's Office</div>
+                  <a href="#" class="notice-download">📄 Download</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="result" data-title="Half-Yearly Result Distribution 5 March">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:var(--navy);"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-navy">📊 Result</span>
+                  <span class="notice-date">12 Feb 2025</span>
+                </div>
+                <div class="notice-h">Half-Yearly Result Distribution — 5 March 2025</div>
+                <div class="notice-p">Half-yearly examination results will be distributed on 5 March 2025. Parents or guardians must accompany students to collect result sheets. The distribution will take place in each class from 9:00 AM to 1:00 PM. Students who are absent on the day can collect their results from the class teacher the following week.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Examination Committee</div>
+                  <a href="school-results.html" class="notice-download">View Results →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="event" data-title="Annual Sports Day 5 April">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:#D97706;"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-gold">🎉 Event</span>
+                  <span class="notice-date">10 Feb 2025</span>
+                </div>
+                <div class="notice-h">Annual Sports Day 2025 — 5 April</div>
+                <div class="notice-p">The Annual Sports Day 2025 will be held on 5 April at the school ground from 8:00 AM to 4:00 PM. All students are encouraged to participate. Registration for individual and team events is open until 20 March. Parents and guardians are warmly invited to attend. Refreshments will be provided.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Sports Committee</div>
+                  <a href="#" class="notice-download">Register Now →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="exam" data-title="Science Fair 2025 April Participation">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:var(--navy);"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-navy">🔬 Event</span>
+                  <span class="notice-date">5 Feb 2025</span>
+                </div>
+                <div class="notice-h">Annual Science Fair 2025 — Participation Open for All Classes</div>
+                <div class="notice-p">Science Fair 2025 will be held on 22 April. Students from Classes 6–12 are eligible to participate individually or in teams of 2–3. Projects must be original and related to science or technology. Registration deadline: 31 March. The top 3 projects will be forwarded to the inter-school science fair.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Science Department</div>
+                  <a href="#" class="notice-download">Register →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-card" data-cat="fee" data-title="Annual Fee Payment March">
+            <div class="notice-card-inner">
+              <div class="notice-accent" style="background:#059669;"></div>
+              <div class="notice-body">
+                <div class="notice-meta">
+                  <span class="notice-cat-badge badge badge-green">💰 Fee &amp; Finance</span>
+                  <span class="notice-date">1 Feb 2025</span>
+                </div>
+                <div class="notice-h">Annual Exam Fee — Payable by 10 March 2025</div>
+                <div class="notice-p">Students appearing for the final examination must pay the examination fee of ৳800 (Classes 9–10) and ৳1,000 (Classes 11–12) by 10 March 2025. Students who fail to pay the exam fee will not receive their admit card. Payment can be made online via the student portal or at the accounts office.</div>
+                <div class="notice-footer">
+                  <div class="notice-by">📌 Issued by: Accounts Department</div>
+                  <a href="auth/login.html" class="notice-download">Pay Now →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- No results message -->
+        <div id="noResults" style="display:none;text-align:center;padding:48px;color:var(--muted);">
+          <div style="font-size:2.5rem;margin-bottom:12px;">📭</div>
+          <div style="font-size:1rem;font-weight:600;color:var(--ink-2);margin-bottom:6px;">No notices found</div>
+          <div style="font-size:.87rem;">Try a different search term or category filter.</div>
+        </div>
+
+        <div class="pagination">
+          <button class="page-btn on">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn" style="width:auto;padding:0 14px;">Next →</button>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div>
+        <div class="sidebar-box">
+          <div class="sb-header"><div class="sb-title">📂 Categories</div></div>
+          <div class="sb-body">
+            <button class="sb-link" onclick="filterCat(null,'all')">📋 All Notices <span class="sb-count">24</span></button>
+            <button class="sb-link" onclick="filterCat(null,'exam')">📝 Examination <span class="sb-count">8</span></button>
+            <button class="sb-link" onclick="filterCat(null,'fee')">💰 Fee &amp; Finance <span class="sb-count">5</span></button>
+            <button class="sb-link" onclick="filterCat(null,'holiday')">🗓 Holidays <span class="sb-count">4</span></button>
+            <button class="sb-link" onclick="filterCat(null,'admission')">📋 Admission <span class="sb-count">3</span></button>
+            <button class="sb-link" onclick="filterCat(null,'result')">📊 Results <span class="sb-count">2</span></button>
+            <button class="sb-link" onclick="filterCat(null,'event')">🎉 Events <span class="sb-count">2</span></button>
+          </div>
+        </div>
+
+        <div class="sidebar-box">
+          <div class="sb-header"><div class="sb-title">📅 Archive</div></div>
+          <div>
+            <div class="archive-month"><span>February 2025</span><span class="archive-count">8</span></div>
+            <div class="archive-month"><span>January 2025</span><span class="archive-count">6</span></div>
+            <div class="archive-month"><span>December 2024</span><span class="archive-count">10</span></div>
+            <div class="archive-month"><span>November 2024</span><span class="archive-count">7</span></div>
+            <div class="archive-month"><span>October 2024</span><span class="archive-count">5</span></div>
+          </div>
+        </div>
+
+        <div class="sidebar-box">
+          <div class="sb-header"><div class="sb-title">📥 Downloads</div></div>
+          <div class="sb-body">
+            <a class="sb-link" href="#">📄 Academic Calendar 2025</a>
+            <a class="sb-link" href="#">📄 Exam Routine — Final 2025</a>
+            <a class="sb-link" href="#">📄 Holiday List 2025</a>
+            <a class="sb-link" href="#">📄 Fee Structure 2025</a>
+            <a class="sb-link" href="#">📄 Admission Form 2025</a>
+          </div>
+        </div>
+
+        <div style="background:linear-gradient(145deg,var(--navy),#162E8A);border-radius:14px;padding:22px;color:#fff;">
+          <div style="font-size:1.1rem;margin-bottom:8px;">📱</div>
+          <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:6px;">Get SMS Alerts</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.6);margin-bottom:14px;">Parents can receive instant SMS for every new notice.</div>
+          <a href="auth/login.html" class="btn btn-gold" style="width:100%;justify-content:center;font-size:.82rem;">Enable in Parent Portal</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-school">
+      <div class="footer-logo-row">
+        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div class="footer-school-name">Dhaka High School</div>
+      </div>
+      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
+      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="school-about.html">About School</a>
+      <a href="school-notices.html">Notice Board</a>
+      <a href="school-admission.html">Admission</a>
+      <a href="school-results.html">Results</a>
+      <a href="school-contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Portals</h4>
+      <a href="auth/login.html">Student Portal</a>
+      <a href="auth/login.html">Teacher Portal</a>
+      <a href="auth/login.html">Parent Portal</a>
+      <a href="auth/login.html">Admin Login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+88029876543">+880 2-9876543</a>
+      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
+      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
+      <a href="#">EIIN: 108765</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Dhaka High School. All rights reserved.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+let currentCat = 'all';
+
+function filterCat(btn, cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  applyFilters();
+}
+
+function searchNotices(q) { applyFilters(q); }
+
+function applyFilters(q) {
+  const query = (q || document.querySelector('.search-input').value).toLowerCase();
+  const cards = document.querySelectorAll('.notice-card');
+  let visible = 0;
+  cards.forEach(c => {
+    const catMatch = currentCat === 'all' || c.dataset.cat === currentCat;
+    const titleMatch = !query || c.dataset.title.toLowerCase().includes(query) || c.querySelector('.notice-p').textContent.toLowerCase().includes(query);
+    const show = catMatch && titleMatch;
+    c.style.display = show ? 'block' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('noticeCount').textContent = visible;
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>
+

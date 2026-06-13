@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Classes — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.class-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.class-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--white);transition:box-shadow .18s;}
+.class-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.class-card-top{padding:18px 20px 14px;border-bottom:1px solid var(--border);}
+.class-grade{font-size:1.6rem;font-weight:800;color:var(--teacher);font-family:'Sora',sans-serif;}
+.class-section{font-size:.9rem;font-weight:600;color:var(--ink-2);margin-top:2px;}
+.class-subject{font-size:.8rem;color:var(--muted);}
+.class-card-body{padding:14px 20px;}
+.class-stat{display:flex;align-items:center;justify-content:space-between;font-size:.82rem;margin-bottom:7px;}
+.class-stat-lbl{color:var(--muted);}
+.class-stat-val{font-weight:700;color:var(--ink-2);}
+.class-card-foot{padding:12px 20px;background:var(--bg);border-top:1px solid var(--border);display:flex;gap:8px;}
+@media(max-width:900px){.class-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.class-grid{grid-template-columns:1fr;}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">My Portal</div>
+        <div class="page-title">My Classes</div>
+        <div class="page-sub">All classes assigned to you for this academic session.</div>
+      </div>
+    </div>
+
+    <div class="class-grid">
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 7</div>
+          <div class="class-section">Section A &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">34</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">88%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">3 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">No</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 8</div>
+          <div class="class-section">Section A &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">31</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">85%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">2 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">Yes 🌟</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 8</div>
+          <div class="class-section">Section B &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">29</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">82%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">2 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">No</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 9</div>
+          <div class="class-section">Section A &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">33</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">90%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">4 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">No</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 9</div>
+          <div class="class-section">Section B &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">28</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">86%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">3 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">No</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <div class="class-grade">Class 10</div>
+          <div class="class-section">Section C &nbsp;&nbsp; <span class="badge badge-green" style="font-size:.7rem;">Active</span></div>
+          <div class="class-subject">Mathematics &nbsp;·&nbsp; 5 Periods/week</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-stat"><span class="class-stat-lbl">Students</span><span class="class-stat-val">29</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Avg Attendance</span><span class="class-stat-val">84%</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Assignments</span><span class="class-stat-val">5 active</span></div>
+          <div class="class-stat"><span class="class-stat-lbl">Class Teacher</span><span class="class-stat-val">No</span></div>
+        </div>
+        <div class="class-card-foot">
+          <a href="teacher-attendance.html" class="btn btn-xs btn-secondary">✅ Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">📝 Assign</a>
+          <a href="teacher-materials.html" class="btn btn-xs btn-secondary">📁 Materials</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

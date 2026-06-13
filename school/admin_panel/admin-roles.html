@@ -1,0 +1,570 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles & Permissions &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Layout */
+.roles-layout { display:grid; grid-template-columns:280px 1fr; gap:22px; align-items:start; }
+
+/* Role cards (left panel) */
+.role-card-list { display:flex; flex-direction:column; gap:8px; }
+.role-card-item {
+  display:flex; align-items:center; gap:12px; padding:13px 14px;
+  border-radius:10px; border:1.5px solid var(--border); background:var(--white);
+  cursor:pointer; transition:all .15s; position:relative;
+}
+.role-card-item:hover { border-color:var(--blue); background:var(--blue-pale); }
+.role-card-item.active { border-color:var(--blue); background:var(--blue-pale); }
+.role-card-item.active::before {
+  content:''; position:absolute; left:0; top:20%; bottom:20%;
+  width:3px; border-radius:0 3px 3px 0; background:var(--blue);
+}
+.rc-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0; }
+.rc-name  { font-weight:700; font-size:.875rem; color:var(--ink-2); margin-bottom:2px; }
+.rc-count { font-size:.72rem; color:var(--muted); }
+.rc-badge { margin-left:auto; flex-shrink:0; }
+.rc-system { font-size:.65rem; font-weight:700; background:var(--bg); border:1px solid var(--border); color:var(--muted); padding:2px 7px; border-radius:6px; }
+
+/* Permission matrix */
+.perm-matrix { }
+.perm-module {
+  border:1px solid var(--border); border-radius:12px;
+  overflow:hidden; margin-bottom:14px;
+}
+.perm-module-header {
+  background:var(--bg); padding:12px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  cursor:pointer; user-select:none; transition:background .12s;
+}
+.perm-module-header:hover { background:var(--border); }
+.perm-module-name { font-family:'Sora',sans-serif; font-size:.875rem; font-weight:700; color:var(--ink-2); display:flex; align-items:center; gap:8px; }
+.perm-module-count { font-size:.72rem; color:var(--muted); }
+.perm-toggle-btn { font-size:.75rem; font-weight:700; color:var(--blue); background:none; border:none; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; }
+
+/* Permission rows */
+.perm-rows { padding:4px 0; }
+.perm-row {
+  display:grid; grid-template-columns:1fr 80px 80px 80px 80px;
+  align-items:center; padding:10px 18px; border-top:1px solid var(--border);
+  transition:background .12s;
+}
+.perm-row:hover { background:var(--bg); }
+.perm-row:first-child { border-top:none; }
+.perm-name { font-size:.83rem; color:var(--ink-3); }
+.perm-name strong { display:block; font-weight:600; color:var(--ink-2); font-size:.845rem; }
+.perm-name span { font-size:.72rem; color:var(--muted); }
+.perm-cell { display:flex; justify-content:center; }
+
+/* Permission header row */
+.perm-header-row {
+  display:grid; grid-template-columns:1fr 80px 80px 80px 80px;
+  padding:10px 18px 8px; background:var(--bg);
+  border-bottom:1px solid var(--border);
+}
+.perm-header-col { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); text-align:center; }
+.perm-header-col:first-child { text-align:left; }
+
+/* Checkbox styled */
+.perm-check { width:18px; height:18px; accent-color:var(--blue); cursor:pointer; }
+
+/* Role color map */
+.role-admin       { background:var(--purple-light); color:var(--purple); }
+.role-teacher     { background:var(--blue-light);   color:var(--blue); }
+.role-accountant  { background:var(--green-light);  color:var(--green); }
+.role-staff       { background:var(--amber-light);  color:var(--amber); }
+.role-parent      { background:var(--teal-light);   color:var(--teal); }
+.role-librarian   { background:#FEE2E2; color:var(--red); }
+
+/* Role header strip */
+.role-detail-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);
+  flex-wrap:wrap; gap:12px;
+}
+.rh-left { display:flex; align-items:center; gap:14px; }
+.rh-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+.rh-name { font-family:'Sora',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); }
+.rh-meta { font-size:.8rem; color:var(--muted); margin-top:2px; }
+
+/* Quick permission pills */
+.quick-perms { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.qp-btn { padding:6px 13px; border-radius:20px; border:1.5px solid var(--border); background:var(--white); font-size:.78rem; font-weight:600; color:var(--muted); cursor:pointer; transition:all .15s; }
+.qp-btn:hover { border-color:var(--blue); color:var(--blue); }
+.qp-btn.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+/* Section collapse chevron */
+.chevron { transition:transform .2s; display:inline-block; font-size:.75rem; color:var(--muted); }
+.chevron.down { transform:rotate(180deg); }
+
+@media(max-width:960px) { .roles-layout{grid-template-columns:1fr;} .perm-row,.perm-header-row{grid-template-columns:1fr 60px 60px 60px 60px;} }
+@media(max-width:600px) { .perm-row,.perm-header-row{grid-template-columns:1fr 50px 50px;} .perm-cell:nth-child(4),.perm-cell:nth-child(5),.perm-header-col:nth-child(4),.perm-header-col:nth-child(5){display:none;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Roles &amp; Permissions</div>
+        <div class="page-sub">Define what each role can view and do inside the portal.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary btn-sm"> Clone Role</button>
+        <button class="btn btn-primary btn-sm" onclick="openNewRoleModal()">+ Create Custom Role</button>
+      </div>
+    </div>
+
+    <div class="alert alert-blue" style="margin-bottom:20px;">
+      <span class="alert-icon"></span>
+      <div>
+        <div class="alert-title">System roles cannot be deleted</div>
+        <div class="alert-msg">Admin, Teacher, Parent and Student are built-in roles. You can adjust their permissions but not remove them. Create custom roles for unique staff positions.</div>
+      </div>
+    </div>
+
+    <div class="roles-layout">
+
+      <!-- LEFT: Role List -->
+      <div>
+        <div class="card card-pad" style="padding:14px;">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0 4px 10px;">Roles (6)</div>
+          <div class="role-card-list">
+
+            <div class="role-card-item active" onclick="selectRole(this,'admin')">
+              <div class="rc-icon role-admin"></div>
+              <div>
+                <div class="rc-name">Admin</div>
+                <div class="rc-count">2 users &middot; All access</div>
+              </div>
+              <span class="rc-badge rc-system">System</span>
+            </div>
+
+            <div class="role-card-item" onclick="selectRole(this,'teacher')">
+              <div class="rc-icon role-teacher"></div>
+              <div>
+                <div class="rc-name">Teacher</div>
+                <div class="rc-count">68 users &middot; Academic access</div>
+              </div>
+              <span class="rc-badge rc-system">System</span>
+            </div>
+
+            <div class="role-card-item" onclick="selectRole(this,'accountant')">
+              <div class="rc-icon role-accountant"></div>
+              <div>
+                <div class="rc-name">Accountant</div>
+                <div class="rc-count">3 users &middot; Finance access</div>
+              </div>
+              <span class="rc-badge rc-system">System</span>
+            </div>
+
+            <div class="role-card-item" onclick="selectRole(this,'staff')">
+              <div class="rc-icon role-staff"></div>
+              <div>
+                <div class="rc-name">Office Staff</div>
+                <div class="rc-count">10 users &middot; Limited access</div>
+              </div>
+            </div>
+
+            <div class="role-card-item" onclick="selectRole(this,'librarian')">
+              <div class="rc-icon role-librarian"></div>
+              <div>
+                <div class="rc-name">Librarian</div>
+                <div class="rc-count">2 users &middot; Custom role</div>
+              </div>
+              <span class="badge bg-green" style="font-size:.65rem;margin-left:auto;">Custom</span>
+            </div>
+
+            <div class="role-card-item" onclick="selectRole(this,'parent')">
+              <div class="rc-icon role-parent"></div>
+              <div>
+                <div class="rc-name">Parent</div>
+                <div class="rc-count">1,248 &middot; View only</div>
+              </div>
+              <span class="rc-badge rc-system">System</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Permission Matrix -->
+      <div>
+        <div class="card">
+          <div class="card-pad" style="border-bottom:1px solid var(--border);">
+            <div class="role-detail-header">
+              <div class="rh-left">
+                <div class="rh-icon role-admin"></div>
+                <div>
+                  <div class="rh-name" id="roleName">Admin</div>
+                  <div class="rh-meta" id="roleMeta">2 users assigned &middot; System role &middot; All permissions enabled</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="showToast(' Viewing Admin users')"> View Users</button>
+                <button class="btn btn-primary btn-sm"   onclick="savePerms()"> Save Permissions</button>
+              </div>
+            </div>
+
+            <!-- Quick sets -->
+            <div>
+              <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px;">Quick Permission Sets</div>
+              <div class="quick-perms">
+                <button class="qp-btn on" onclick="applyQuick(this,'full')">Full Access</button>
+                <button class="qp-btn"    onclick="applyQuick(this,'view')"> View Only</button>
+                <button class="qp-btn"    onclick="applyQuick(this,'academic')"> Academic Only</button>
+                <button class="qp-btn"    onclick="applyQuick(this,'finance')"> Finance Only</button>
+                <button class="qp-btn"    onclick="applyQuick(this,'none')"> No Access</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module: Dashboard -->
+          <div class="perm-module">
+            <div class="perm-module-header" onclick="toggleModule(this)">
+              <div class="perm-module-name"> Dashboard &amp; Reports <span class="perm-module-count">(4 permissions)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="perm-toggle-btn" onclick="event.stopPropagation();toggleAll(this,'dash')">Toggle All</button>
+                <span class="chevron down">&#x203A;</span>
+              </div>
+            </div>
+            <div class="perm-rows" id="dash">
+              <div class="perm-header-row">
+                <div class="perm-header-col">Permission</div>
+                <div class="perm-header-col">View</div>
+                <div class="perm-header-col">Create</div>
+                <div class="perm-header-col">Edit</div>
+                <div class="perm-header-col">Delete</div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>School Dashboard</strong><span>Main stats overview page</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Generate Reports</strong><span>Download PDF/Excel reports</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Activity Logs</strong><span>View system audit trail</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module: Users -->
+          <div class="perm-module">
+            <div class="perm-module-header" onclick="toggleModule(this)">
+              <div class="perm-module-name"> User Management <span class="perm-module-count">(5 permissions)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="perm-toggle-btn" onclick="event.stopPropagation();toggleAll(this,'users-perm')">Toggle All</button>
+                <span class="chevron down">&#x203A;</span>
+              </div>
+            </div>
+            <div class="perm-rows" id="users-perm">
+              <div class="perm-header-row">
+                <div class="perm-header-col">Permission</div>
+                <div class="perm-header-col">View</div>
+                <div class="perm-header-col">Create</div>
+                <div class="perm-header-col">Edit</div>
+                <div class="perm-header-col">Delete</div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>View All Staff</strong><span>See list of teachers and staff</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Manage Staff Accounts</strong><span>Add, edit, deactivate users</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Manage Roles &amp; Permissions</strong><span>Edit role permissions</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Invite Users</strong><span>Send email/SMS invitations</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module: Academic -->
+          <div class="perm-module">
+            <div class="perm-module-header" onclick="toggleModule(this)">
+              <div class="perm-module-name"> Academics &amp; Classes <span class="perm-module-count">(6 permissions)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="perm-toggle-btn" onclick="event.stopPropagation();toggleAll(this,'acad-perm')">Toggle All</button>
+                <span class="chevron down">&#x203A;</span>
+              </div>
+            </div>
+            <div class="perm-rows" id="acad-perm">
+              <div class="perm-header-row">
+                <div class="perm-header-col">Permission</div>
+                <div class="perm-header-col">View</div>
+                <div class="perm-header-col">Create</div>
+                <div class="perm-header-col">Edit</div>
+                <div class="perm-header-col">Delete</div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Classes &amp; Sections</strong><span>Create/manage class structure</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Attendance</strong><span>Mark and view attendance records</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Exam &amp; Results</strong><span>Create exams, publish results</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Academic Year</strong><span>Create and switch sessions</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module: Finance -->
+          <div class="perm-module">
+            <div class="perm-module-header" onclick="toggleModule(this)">
+              <div class="perm-module-name"> Finance &amp; Fees <span class="perm-module-count">(5 permissions)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="perm-toggle-btn" onclick="event.stopPropagation();toggleAll(this,'finance-perm')">Toggle All</button>
+                <span class="chevron down">&#x203A;</span>
+              </div>
+            </div>
+            <div class="perm-rows" id="finance-perm">
+              <div class="perm-header-row">
+                <div class="perm-header-col">Permission</div>
+                <div class="perm-header-col">View</div>
+                <div class="perm-header-col">Create</div>
+                <div class="perm-header-col">Edit</div>
+                <div class="perm-header-col">Delete</div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Fee Structures</strong><span>Define fee categories and amounts</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Collect Payments</strong><span>Record and confirm fee payments</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>View Financial Reports</strong><span>Revenue, outstanding, collections</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>Issue Refunds</strong><span>Process fee refunds</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module: Settings -->
+          <div class="perm-module">
+            <div class="perm-module-header" onclick="toggleModule(this)">
+              <div class="perm-module-name">School Settings <span class="perm-module-count">(3 permissions)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="perm-toggle-btn" onclick="event.stopPropagation();toggleAll(this,'settings-perm')">Toggle All</button>
+                <span class="chevron down">&#x203A;</span>
+              </div>
+            </div>
+            <div class="perm-rows" id="settings-perm">
+              <div class="perm-header-row">
+                <div class="perm-header-col">Permission</div>
+                <div class="perm-header-col">View</div>
+                <div class="perm-header-col">Create</div>
+                <div class="perm-header-col">Edit</div>
+                <div class="perm-header-col">Delete</div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>School Profile &amp; Branding</strong><span>Change name, logo, theme</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+              <div class="perm-row">
+                <div class="perm-name"><strong>System Notifications</strong><span>Configure SMS/email alerts</span></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" checked></div>
+                <div class="perm-cell"><input type="checkbox" class="perm-check" disabled style="opacity:.3;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save footer -->
+          <div style="padding:16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:.78rem; color:var(--muted);">Last saved: Today at 9:12 AM by Abdur Rahman</div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Changes reverted')">Revert</button>
+              <button class="btn btn-primary btn-sm" onclick="savePerms()"> Save Permissions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- NEW ROLE MODAL -->
+<div class="modal-overlay" id="newRoleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create Custom Role</div>
+      <button class="modal-close" onclick="closeModal('newRoleModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Role Name *</label>
+        <input type="text" class="form-input" placeholder="e.g. Lab Assistant, Sports Coordinator">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-input" placeholder="Brief description of this role's responsibilities">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role Icon</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid var(--blue);background:var(--blue-pale);"></span>
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid transparent;" onclick="selectIcon(this)"></span>
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid transparent;" onclick="selectIcon(this)"></span>
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid transparent;" onclick="selectIcon(this)"></span>
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid transparent;" onclick="selectIcon(this)"></span>
+          <span style="font-size:1.4rem;cursor:pointer;padding:4px 6px;border-radius:6px;border:2px solid transparent;" onclick="selectIcon(this)"></span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start with permissions from</label>
+        <select class="form-select">
+          <option>No permissions (blank)</option>
+          <option>Clone from Teacher</option>
+          <option>Clone from Office Staff</option>
+          <option>Clone from Accountant</option>
+        </select>
+        <div class="form-hint">You can fine-tune permissions after creating the role.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('newRoleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createRole()">Create Role</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function toggleModule(header) {
+  const rows  = header.nextElementSibling;
+  const chev  = header.querySelector('.chevron');
+  const open  = rows.style.display !== 'none';
+  rows.style.display = open &middot; 'none' : '';
+  chev.classList.toggle('down', !open);
+}
+
+function toggleAll(btn, sectionId) {
+  const section  = document.getElementById(sectionId);
+  const checks   = section.querySelectorAll('.perm-check:not([disabled])');
+  const anyUnchecked = Array.from(checks).some(c => !c.checked);
+  checks.forEach(c => c.checked = anyUnchecked);
+  showToast(anyUnchecked ? 'All enabled' : 'All disabled');
+}
+
+function applyQuick(btn, type) {
+  document.querySelectorAll('.qp-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const all = document.querySelectorAll('.perm-check:not([disabled])');
+  all.forEach(c => c.checked = type === 'full');
+  if (type === 'none') all.forEach(c => c.checked = false);
+  if (type === 'view') {
+    document.querySelectorAll('.perm-cell:first-of-type .perm-check:not([disabled])').forEach(c => c.checked = true);
+  }
+  showToast(` Quick set applied: ${btn.textContent.trim()}`);
+}
+
+function selectRole(el, role) {
+  document.querySelectorAll('.role-card-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const names = {admin:'Admin', teacher:'Teacher', accountant:'Accountant', staff:'Office Staff', librarian:'Librarian', parent:'Parent'};
+  const metas = {admin:'2 users &middot; System role &middot; Full access',teacher:'68 users &middot; Academic access',accountant:'3 users &middot; Finance access',staff:'10 users &middot; Limited access',librarian:'2 users &middot; Custom role',parent:'1,248 users &middot; View only'};
+  document.getElementById('roleName').textContent = names[role] || role;
+  document.getElementById('roleMeta').textContent = metas[role] || '';
+  showToast(` Viewing permissions for ${names[role]}`);
+}
+
+function savePerms() { showToast(' Permissions saved successfully'); }
+function openNewRoleModal() { document.getElementById('newRoleModal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function createRole() { closeModal('newRoleModal'); showToast('Custom role created'); }
+
+function showToast(msg, icon='&#x2139;&#xFE0F;') {
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${msg}</span>`;
+  stack.appendChild(t);
+  setTimeout(() => t.style.opacity='0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

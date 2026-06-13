@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.att-filter{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:18px;background:var(--white);border:1px solid var(--border);border-radius:12px;}
+.att-filter select,.att-filter input{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;color:var(--ink-2);background:var(--white);}
+.att-filter label{font-size:.8rem;font-weight:600;color:var(--ink-3);margin-bottom:4px;display:block;}
+.att-filter-group{display:flex;flex-direction:column;}
+.student-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+.student-row:hover{background:var(--bg);}
+.student-row:last-child{border:none;}
+.stu-num{font-size:.75rem;color:var(--muted);width:28px;flex-shrink:0;font-family:'DM Mono',monospace;}
+.stu-avatar{width:36px;height:36px;border-radius:50%;background:var(--teacher-light);color:var(--teacher-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;}
+.stu-name{flex:1;font-size:.875rem;font-weight:600;color:var(--ink-2);}
+.stu-roll{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.att-btn{padding:5px 14px;border-radius:8px;border:1.5px solid;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.att-p{border-color:#22C55E;color:#16A34A;background:#F0FDF4;}
+.att-p.active,.att-p:hover{background:#22C55E;color:#fff;border-color:#22C55E;}
+.att-a{border-color:#EF4444;color:#DC2626;background:#FFF0F0;}
+.att-a.active,.att-a:hover{background:#EF4444;color:#fff;border-color:#EF4444;}
+.att-l{border-color:#F59E0B;color:#D97706;background:#FFFBEB;}
+.att-l.active,.att-l:hover{background:#F59E0B;color:#fff;border-color:#F59E0B;}
+.att-summary{display:flex;gap:16px;padding:14px 18px;background:var(--bg);border-top:1px solid var(--border);border-radius:0 0 12px 12px;}
+.att-sum-item{text-align:center;}
+.att-sum-num{font-size:1.2rem;font-weight:800;font-family:'Sora',sans-serif;}
+.att-sum-lbl{font-size:.72rem;color:var(--muted);}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">My Portal</div>
+        <div class="page-title">Mark Attendance</div>
+        <div class="page-sub">Take daily attendance for your classes.</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="att-filter">
+      <div class="att-filter-group">
+        <label>Class</label>
+        <select id="selClass" onchange="loadStudents()">
+          <option value="7a">Class 7 – A</option>
+          <option value="8a" selected>Class 8 – A</option>
+          <option value="8b">Class 8 – B</option>
+          <option value="9a">Class 9 – A</option>
+          <option value="9b">Class 9 – B</option>
+          <option value="10c">Class 10 – C</option>
+        </select>
+      </div>
+      <div class="att-filter-group">
+        <label>Date</label>
+        <input type="date" id="attDate" value="2025-02-25">
+      </div>
+      <div class="att-filter-group">
+        <label>Period</label>
+        <select>
+          <option>Period 1 (08:00)</option>
+          <option selected>Period 2 (09:00)</option>
+          <option>Period 3 (10:00)</option>
+          <option>Period 4 (11:00)</option>
+          <option>Period 5 (14:00)</option>
+          <option>Period 6 (15:00)</option>
+        </select>
+      </div>
+      <div class="att-filter-group" style="justify-content:flex-end;margin-left:auto;">
+        <label>&nbsp;</label>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm btn-secondary" onclick="markAll('P')">✅ All Present</button>
+          <button class="btn btn-sm btn-danger" onclick="markAll('A')">❌ All Absent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student List -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div class="card-title">Class 8 – A &nbsp;<span class="badge badge-blue">31 Students</span></div>
+        <div style="font-size:.82rem;color:var(--muted);">Tue, 25 Feb 2025</div>
+      </div>
+      <div id="studentList">
+        <div class="student-row"><div class="stu-num">01</div><div class="stu-avatar">RA</div><div><div class="stu-name">Rahim Ahmed</div><div class="stu-roll">Roll: 01 &nbsp;·&nbsp; ID: STU8A001</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p active">P</button><button class="att-btn att-a">A</button><button class="att-btn att-l">L</button></div></div>
+        <div class="student-row"><div class="stu-num">02</div><div class="stu-avatar">KB</div><div><div class="stu-name">Karim Bhuiyan</div><div class="stu-roll">Roll: 02 &nbsp;·&nbsp; ID: STU8A002</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p active">P</button><button class="att-btn att-a">A</button><button class="att-btn att-l">L</button></div></div>
+        <div class="student-row"><div class="stu-num">03</div><div class="stu-avatar">SB</div><div><div class="stu-name">Sadia Begum</div><div class="stu-roll">Roll: 03 &nbsp;·&nbsp; ID: STU8A003</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p">P</button><button class="att-btn att-a active">A</button><button class="att-btn att-l">L</button></div></div>
+        <div class="student-row"><div class="stu-num">04</div><div class="stu-avatar">MH</div><div><div class="stu-name">Mahfuz Hasan</div><div class="stu-roll">Roll: 04 &nbsp;·&nbsp; ID: STU8A004</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p active">P</button><button class="att-btn att-a">A</button><button class="att-btn att-l">L</button></div></div>
+        <div class="student-row"><div class="stu-num">05</div><div class="stu-avatar">NA</div><div><div class="stu-name">Nasrin Akter</div><div class="stu-roll">Roll: 05 &nbsp;·&nbsp; ID: STU8A005</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p active">P</button><button class="att-btn att-a">A</button><button class="att-btn att-l">L</button></div></div>
+        <div class="student-row"><div class="stu-num">06</div><div class="stu-avatar">RI</div><div><div class="stu-name">Rifat Islam</div><div class="stu-roll">Roll: 06 &nbsp;·&nbsp; ID: STU8A006</div></div><div style="display:flex;gap:6px;margin-left:auto;"><button class="att-btn att-p">P</button><button class="att-btn att-a">A</button><button class="att-btn att-l active">L</button></div></div>
+        <div style="padding:10px 18px;font-size:.8rem;color:var(--muted);font-style:italic;">... 25 more students</div>
+      </div>
+      <div class="att-summary">
+        <div class="att-sum-item"><div class="att-sum-num" style="color:#16A34A;">27</div><div class="att-sum-lbl">Present</div></div>
+        <div class="att-sum-item"><div class="att-sum-num" style="color:#DC2626;">2</div><div class="att-sum-lbl">Absent</div></div>
+        <div class="att-sum-item"><div class="att-sum-num" style="color:#D97706;">1</div><div class="att-sum-lbl">Late</div></div>
+        <div class="att-sum-item"><div class="att-sum-num" style="color:var(--muted);">1</div><div class="att-sum-lbl">Not Marked</div></div>
+        <div style="margin-left:auto;align-self:center;"><button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">💾 Save Attendance</button></div>
+      </div>
+    </div>
+
+    <script>
+    function markAll(status) {
+      document.querySelectorAll('.student-row').forEach(row => {
+        row.querySelectorAll('.att-btn').forEach(btn => btn.classList.remove('active'));
+        const target = status === 'P' ? row.querySelector('.att-p') : row.querySelector('.att-a');
+        if (target) target.classList.add('active');
+      });
+    }
+    document.querySelectorAll('.att-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('.student-row');
+        row.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    </script>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

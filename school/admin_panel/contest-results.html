@@ -1,0 +1,384 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Awards & Results — EduOS National Contest</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--con:#1D4ED8;--con-light:#DBEAFE;--con-pale:#EFF6FF;--con-dark:#1E3A8A;--gold:#F59E0B;--gold-light:#FEF3C7;--silver:#94A3B8;--bronze:#B45309;}
+.sidebar{background:linear-gradient(180deg,#0F1E4A 0%,#1E3A8A 100%);}
+.sb-link.active{background:rgba(29,78,216,.3);color:#93C5FD;}
+.sb-link.active .sb-icon{background:rgba(29,78,216,.4);color:#60A5FA;}
+.sb-link:hover{background:rgba(255,255,255,.08);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--gold);}
+
+/* Trophy banner */
+.trophy-banner{background:linear-gradient(135deg,#0F1E4A 0%,#1E3A8A 50%,#1D4ED8 100%);border-radius:18px;padding:28px 34px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;display:flex;align-items:center;gap:28px;}
+.trophy-banner::before{content:'🏆';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.1;pointer-events:none;}
+.tb-medals{display:flex;gap:16px;}
+.tb-medal-item{text-align:center;}
+.tb-medal-icon{font-size:2.2rem;display:block;margin-bottom:4px;}
+.tb-medal-num{font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace;display:block;line-height:1;}
+.tb-medal-lbl{font-size:.62rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.06em;}
+.tb-divider{width:1px;background:rgba(255,255,255,.2);align-self:stretch;}
+.tb-school-rank{text-align:center;}
+.tb-rank-num{font-size:2.4rem;font-weight:900;font-family:'DM Mono',monospace;color:#FDE68A;}
+.tb-rank-lbl{font-size:.72rem;opacity:.7;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
+
+/* Award card */
+.award-card{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;margin-bottom:16px;}
+.ac-head{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.ac-medal-icon{font-size:2rem;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ac-medal-gold{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FCD34D;}
+.ac-medal-silver{background:linear-gradient(135deg,#F8FAFC,#F1F5F9);border:1.5px solid var(--silver);}
+.ac-medal-bronze{background:linear-gradient(135deg,#FFF7ED,#FED7AA);border:1.5px solid #D97706;}
+.ac-medal-cert{background:var(--con-pale);border:1.5px solid var(--con-light);}
+.ac-name{font-size:.96rem;font-weight:900;color:var(--ink-2);margin-bottom:3px;}
+.ac-contest{font-size:.76rem;color:var(--muted);}
+.ac-year{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:6px;background:var(--bg);color:var(--muted);margin-left:auto;flex-shrink:0;}
+
+.ac-body{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border);}
+.ac-meta{padding:12px 16px;border-right:1px solid var(--border);}
+.ac-meta:last-child{border-right:none;}
+.ac-meta-lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px;}
+.ac-meta-val{font-size:.88rem;font-weight:800;color:var(--ink-2);}
+
+/* Student result rows */
+.stu-results{padding:14px 20px;}
+.sr-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.sr-row:last-child{border-bottom:none;}
+.sr-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:800;color:#fff;flex-shrink:0;}
+.sr-name{flex:1;}
+.sr-stu-name{font-size:.86rem;font-weight:800;color:var(--ink-2);}
+.sr-stu-class{font-size:.7rem;color:var(--muted);}
+.sr-rank-chip{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:8px;display:flex;align-items:center;gap:4px;}
+.sr-rank-chip.gold{background:var(--gold-light);color:#78350F;border:1px solid #FCD34D;}
+.sr-rank-chip.silver{background:#F1F5F9;color:#374151;border:1px solid var(--silver);}
+.sr-rank-chip.bronze{background:#FFF7ED;color:#78350F;border:1px solid #D97706;}
+.sr-rank-chip.cert{background:var(--con-pale);color:var(--con-dark);border:1px solid var(--con-light);}
+.sr-rank-chip.nq{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.sr-score{font-family:'DM Mono',monospace;font-size:.86rem;font-weight:900;color:var(--con);min-width:60px;text-align:right;}
+
+/* Certificate preview card */
+.cert-preview{border:2px solid #FCD34D;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .15s;background:var(--white);}
+.cert-preview:hover{box-shadow:0 6px 20px rgba(245,158,11,.2);transform:translateY(-2px);}
+.cp-head{background:linear-gradient(135deg,#0F1E4A,#1E3A8A);padding:20px 24px;color:#fff;text-align:center;position:relative;}
+.cp-seal{font-size:2.5rem;margin-bottom:6px;}
+.cp-title{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-bottom:4px;}
+.cp-contest{font-size:1rem;font-weight:900;}
+.cp-body{padding:16px 18px;text-align:center;}
+.cp-presented{font-size:.68rem;font-weight:600;color:var(--muted);margin-bottom:5px;}
+.cp-name{font-size:1.2rem;font-weight:900;color:var(--ink-2);}
+.cp-school{font-size:.82rem;color:var(--muted);margin-top:2px;}
+.cp-medal{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0;font-size:.84rem;font-weight:800;}
+.cp-foot{background:var(--bg);padding:10px 14px;display:flex;gap:8px;justify-content:center;border-top:1px solid var(--border);}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+.ft-pill{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.ft-pill:hover{border-color:var(--con);color:var(--con);}
+.ft-pill.on{background:var(--con);border-color:var(--con);color:#fff;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.trophy-banner{flex-direction:column;}.ac-body{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header anim-1">
+      <div>
+        <div class="page-eyebrow">🏆 Dhaka High School</div>
+        <div class="page-title">Awards &amp; Results</div>
+        <div class="page-sub">All contest results, medals, and downloadable certificates for your school.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Downloading all certificates…','📄')">📥 Download All Certificates</button>
+        <a href="contest-leaderboard.html" class="btn btn-primary" style="background:var(--con);border-color:var(--con);">📊 View Leaderboard</a>
+      </div>
+    </div>
+
+    <!-- Trophy banner -->
+    <div class="trophy-banner anim-1">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65;margin-bottom:6px;">🏫 Dhaka High School — All-time Record</div>
+        <div style="font-size:1.5rem;font-weight:900;margin-bottom:3px;">National Contest Achievements</div>
+        <div style="font-size:.82rem;opacity:.7;">Sessions 2020–21 to 2024–25</div>
+      </div>
+      <div class="tb-divider"></div>
+      <div class="tb-medals">
+        <div class="tb-medal-item">
+          <span class="tb-medal-icon">🥇</span>
+          <span class="tb-medal-num" style="color:#FDE68A;">2</span>
+          <span class="tb-medal-lbl">Gold</span>
+        </div>
+        <div class="tb-medal-item">
+          <span class="tb-medal-icon">🥈</span>
+          <span class="tb-medal-num" style="color:#CBD5E1;">4</span>
+          <span class="tb-medal-lbl">Silver</span>
+        </div>
+        <div class="tb-medal-item">
+          <span class="tb-medal-icon">🥉</span>
+          <span class="tb-medal-num" style="color:#FED7AA;">6</span>
+          <span class="tb-medal-lbl">Bronze</span>
+        </div>
+        <div class="tb-medal-item">
+          <span class="tb-medal-icon">📜</span>
+          <span class="tb-medal-num">18</span>
+          <span class="tb-medal-lbl">Certificates</span>
+        </div>
+      </div>
+      <div class="tb-divider"></div>
+      <div class="tb-school-rank">
+        <div class="tb-rank-num">#14</div>
+        <div class="tb-rank-lbl">🇧🇩 National Rank</div>
+        <div style="font-size:.7rem;opacity:.6;margin-top:4px;">#3 in Dhaka Division</div>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs anim-1">
+      <div class="ft-pill on" onclick="filterAwards('all',this)">All Awards</div>
+      <div class="ft-pill" onclick="filterAwards('gold',this)">🥇 Gold</div>
+      <div class="ft-pill" onclick="filterAwards('silver',this)">🥈 Silver</div>
+      <div class="ft-pill" onclick="filterAwards('bronze',this)">🥉 Bronze</div>
+      <div class="ft-pill" onclick="filterAwards('cert',this)">📜 Certificates</div>
+      <div class="ft-pill" onclick="filterAwards('2024',this)">2024–25</div>
+      <div class="ft-pill" onclick="filterAwards('2023',this)">2023–24</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+
+      <!-- Awards list -->
+      <div id="awardsList">
+
+        <!-- Award 1: Gold — Science Olympiad 2024 -->
+        <div class="award-card anim-1" data-medal="gold" data-year="2024">
+          <div class="ac-head">
+            <div class="ac-medal-icon ac-medal-gold">🥇</div>
+            <div>
+              <div class="ac-name">National Science Olympiad 2024</div>
+              <div class="ac-contest">Bangladesh Academy of Sciences · District Round</div>
+            </div>
+            <div class="ac-year">2023–24</div>
+          </div>
+          <div class="ac-body">
+            <div class="ac-meta"><div class="ac-meta-lbl">Medal</div><div class="ac-meta-val" style="color:var(--gold);">🥇 Gold</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Rank</div><div class="ac-meta-val">#1 District · #8 National</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Contest Date</div><div class="ac-meta-val">Apr 8, 2024</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Prize</div><div class="ac-meta-val" style="color:var(--gold);">৳ 80,000</div></div>
+          </div>
+          <div class="stu-results">
+            <div style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">🏅 Awarded Students</div>
+            <div class="sr-row">
+              <div class="sr-av" style="background:var(--gold);">KP</div>
+              <div class="sr-name"><div class="sr-stu-name">Khaleda Parvin</div><div class="sr-stu-class">Class X–A · Physics</div></div>
+              <span class="sr-rank-chip gold">🥇 District 1st</span>
+              <div class="sr-score">98.5</div>
+              <button class="btn btn-outline" style="font-size:.72rem;padding:4px 10px;" onclick="showToast('Downloading certificate for Khaleda…','📜')">📜 Certificate</button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--bg);display:flex;gap:8px;">
+            <button class="btn btn-primary" style="background:var(--gold);border-color:var(--gold);font-size:.78rem;" onclick="showToast('Downloading gold certificate…','🥇')">🥇 Download Certificate</button>
+            <button class="btn btn-outline" style="font-size:.78rem;" onclick="showToast('Downloading result sheet…','📄')">📄 Result Sheet</button>
+            <a href="contest-leaderboard.html" class="btn btn-outline" style="font-size:.78rem;text-decoration:none;">📊 Full Leaderboard</a>
+          </div>
+        </div>
+
+        <!-- Award 2: Silver — Math 2024 -->
+        <div class="award-card anim-2" data-medal="silver" data-year="2024">
+          <div class="ac-head">
+            <div class="ac-medal-icon ac-medal-silver">🥈</div>
+            <div>
+              <div class="ac-name">BDMath Challenge 2024</div>
+              <div class="ac-contest">Bangladesh Mathematical Society · National Round</div>
+            </div>
+            <div class="ac-year">2023–24</div>
+          </div>
+          <div class="ac-body">
+            <div class="ac-meta"><div class="ac-meta-lbl">Medal</div><div class="ac-meta-val" style="color:var(--silver);">🥈 Silver</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Rank</div><div class="ac-meta-val">#2 District · #22 National</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Contest Date</div><div class="ac-meta-val">May 12, 2024</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Prize</div><div class="ac-meta-val" style="color:var(--silver);">৳ 25,000</div></div>
+          </div>
+          <div class="stu-results">
+            <div style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">🏅 Awarded Students</div>
+            <div class="sr-row">
+              <div class="sr-av" style="background:var(--silver);">AF</div>
+              <div class="sr-name"><div class="sr-stu-name">Abir Faisal</div><div class="sr-stu-class">Class X–B · Mathematics</div></div>
+              <span class="sr-rank-chip silver">🥈 District 2nd</span>
+              <div class="sr-score">91.0</div>
+              <button class="btn btn-outline" style="font-size:.72rem;padding:4px 10px;" onclick="showToast('Downloading certificate for Abir…','📜')">📜 Certificate</button>
+            </div>
+            <div class="sr-row">
+              <div class="sr-av" style="background:#94A3B8;">ZA</div>
+              <div class="sr-name"><div class="sr-stu-name">Zareena Akter</div><div class="sr-stu-class">Class X–A · Mathematics</div></div>
+              <span class="sr-rank-chip cert">📜 Participation</span>
+              <div class="sr-score">74.5</div>
+              <button class="btn btn-outline" style="font-size:.72rem;padding:4px 10px;" onclick="showToast('Downloading certificate for Zareena…','📜')">📜 Certificate</button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--bg);display:flex;gap:8px;">
+            <button class="btn btn-primary" style="background:var(--silver);border-color:var(--silver);color:#1F2937;font-size:.78rem;" onclick="showToast('Downloading silver certificate…','🥈')">🥈 Download Certificates</button>
+            <button class="btn btn-outline" style="font-size:.78rem;" onclick="showToast('Downloading result sheet…','📄')">📄 Result Sheet</button>
+          </div>
+        </div>
+
+        <!-- Award 3: Bronze — Chemistry 2023 -->
+        <div class="award-card anim-3" data-medal="bronze" data-year="2023">
+          <div class="ac-head">
+            <div class="ac-medal-icon ac-medal-bronze">🥉</div>
+            <div>
+              <div class="ac-name">Chemistry Quiz Bangladesh 2023</div>
+              <div class="ac-contest">Bangladesh Chemical Society · District Round</div>
+            </div>
+            <div class="ac-year">2022–23</div>
+          </div>
+          <div class="ac-body">
+            <div class="ac-meta"><div class="ac-meta-lbl">Medal</div><div class="ac-meta-val" style="color:var(--bronze);">🥉 Bronze</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Rank</div><div class="ac-meta-val">#3 District</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Contest Date</div><div class="ac-meta-val">Jun 4, 2023</div></div>
+            <div class="ac-meta"><div class="ac-meta-lbl">Prize</div><div class="ac-meta-val" style="color:var(--bronze);">৳ 8,000</div></div>
+          </div>
+          <div class="stu-results">
+            <div style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">🏅 Awarded Students</div>
+            <div class="sr-row">
+              <div class="sr-av" style="background:var(--bronze);">MH</div>
+              <div class="sr-name"><div class="sr-stu-name">Mashrur Hossain</div><div class="sr-stu-class">Class IX–A · Chemistry</div></div>
+              <span class="sr-rank-chip bronze">🥉 District 3rd</span>
+              <div class="sr-score">87.0</div>
+              <button class="btn btn-outline" style="font-size:.72rem;padding:4px 10px;" onclick="showToast('Downloading certificate for Mashrur…','📜')">📜 Certificate</button>
+            </div>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--bg);display:flex;gap:8px;">
+            <button class="btn btn-primary" style="background:#B45309;border-color:#B45309;font-size:.78rem;" onclick="showToast('Downloading bronze certificate…','🥉')">🥉 Download Certificate</button>
+            <button class="btn btn-outline" style="font-size:.78rem;" onclick="showToast('Downloading result sheet…','📄')">📄 Result Sheet</button>
+          </div>
+        </div>
+
+        <!-- Participation certificates section -->
+        <div class="card anim-3" style="padding:20px 24px;margin-top:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div><div style="font-size:.92rem;font-weight:900;color:var(--ink);margin-bottom:3px;">📜 Participation Certificates</div><div style="font-size:.76rem;color:var(--muted);">All students who participated in national contests receive a certificate</div></div>
+            <button class="btn btn-outline" style="font-size:.76rem;" onclick="showToast('Downloading all participation certificates…','📥')">📥 Download All</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+            <div class="cert-preview" onclick="showToast('Opening certificate preview…','📜')">
+              <div class="cp-head"><div class="cp-seal">📜</div><div class="cp-title">Certificate of</div><div class="cp-contest">Participation</div></div>
+              <div class="cp-body"><div class="cp-presented">Presented to</div><div class="cp-name">Arif Hossain</div><div class="cp-school">National Science Olympiad 2024</div><div class="cp-medal"><span>📐</span>Physics · Class IX</div></div>
+              <div class="cp-foot"><button class="btn btn-outline" style="font-size:.68rem;padding:4px 10px;" onclick="event.stopPropagation();showToast('Downloading…','📥')">📥 Download</button></div>
+            </div>
+            <div class="cert-preview" onclick="showToast('Opening certificate preview…','📜')">
+              <div class="cp-head"><div class="cp-seal">📜</div><div class="cp-title">Certificate of</div><div class="cp-contest">Participation</div></div>
+              <div class="cp-body"><div class="cp-presented">Presented to</div><div class="cp-name">Sumaiya Begum</div><div class="cp-school">BDMath Challenge 2024</div><div class="cp-medal"><span>📐</span>Mathematics · Class IX</div></div>
+              <div class="cp-foot"><button class="btn btn-outline" style="font-size:.68rem;padding:4px 10px;" onclick="event.stopPropagation();showToast('Downloading…','📥')">📥 Download</button></div>
+            </div>
+            <div class="cert-preview" onclick="showToast('Opening certificate preview…','📜')">
+              <div class="cp-head"><div class="cp-seal">📜</div><div class="cp-title">Certificate of</div><div class="cp-contest">Participation</div></div>
+              <div class="cp-body"><div class="cp-presented">Presented to</div><div class="cp-name">Rakib Khan</div><div class="cp-school">National ICT Showcase 2023</div><div class="cp-medal"><span>💻</span>ICT · Class IX</div></div>
+              <div class="cp-foot"><button class="btn btn-outline" style="font-size:.68rem;padding:4px 10px;" onclick="event.stopPropagation();showToast('Downloading…','📥')">📥 Download</button></div>
+            </div>
+            <div class="cert-preview" onclick="showToast('Opening certificate…','📜')">
+              <div class="cp-head"><div class="cp-seal">📜</div><div class="cp-title">Certificate of</div><div class="cp-contest">Participation</div></div>
+              <div class="cp-body"><div class="cp-presented">Presented to</div><div class="cp-name">Nafisa Islam</div><div class="cp-school">National Art Biennale 2023</div><div class="cp-medal"><span>🎨</span>Art · Class X</div></div>
+              <div class="cp-foot"><button class="btn btn-outline" style="font-size:.68rem;padding:4px 10px;" onclick="event.stopPropagation();showToast('Downloading…','📥')">📥 Download</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /awards list -->
+
+      <!-- Right sidebar: Summary + points -->
+      <div>
+        <!-- Points tally -->
+        <div class="card anim-1" style="overflow:hidden;margin-bottom:14px;">
+          <div style="background:linear-gradient(135deg,#0F1E4A,#1E3A8A);padding:16px 18px;color:#fff;">
+            <div style="font-size:.72rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🏫 School Score</div>
+            <div style="font-size:2rem;font-weight:900;font-family:'DM Mono',monospace;color:#FDE68A;">1,480 pts</div>
+            <div style="font-size:.74rem;opacity:.7;margin-top:3px;">All-time national contest points</div>
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">🥇 Gold (×2)</span><span style="font-weight:800;color:var(--gold);">600 pts</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">🥈 Silver (×4)</span><span style="font-weight:800;color:var(--silver);">480 pts</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">🥉 Bronze (×6)</span><span style="font-weight:800;color:var(--bronze);">300 pts</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;"><span style="color:var(--muted);">📜 Participation (×18)</span><span style="font-weight:800;color:var(--muted);">90 pts</span></div>
+          </div>
+        </div>
+
+        <!-- Top performers -->
+        <div class="card anim-2" style="padding:16px 18px;margin-bottom:14px;">
+          <div style="font-size:.82rem;font-weight:800;color:var(--ink);margin-bottom:12px;">⭐ Top Student Performers</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;flex-shrink:0;">KP</div>
+              <div style="flex:1;"><div style="font-size:.84rem;font-weight:800;color:var(--ink-2);">Khaleda Parvin</div><div style="font-size:.7rem;color:var(--muted);">2 Gold · 1 Silver</div></div>
+              <div style="font-size:.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--gold);">680 pts</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--silver);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;flex-shrink:0;">AF</div>
+              <div style="flex:1;"><div style="font-size:.84rem;font-weight:800;color:var(--ink-2);">Abir Faisal</div><div style="font-size:.7rem;color:var(--muted);">1 Silver · 2 Bronze</div></div>
+              <div style="font-size:.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--silver);">320 pts</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--bronze);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;flex-shrink:0;">MH</div>
+              <div style="flex:1;"><div style="font-size:.84rem;font-weight:800;color:var(--ink-2);">Mashrur Hossain</div><div style="font-size:.7rem;color:var(--muted);">1 Bronze · 3 Participations</div></div>
+              <div style="font-size:.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--bronze);">165 pts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="card anim-3" style="padding:14px 18px;">
+          <div style="font-size:.8rem;font-weight:800;color:var(--ink);margin-bottom:10px;">⚡ Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="contest-listing.html" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:.82rem;font-weight:700;transition:all .12s;" onmouseover="this.style.borderColor='var(--con)'" onmouseout="this.style.borderColor='var(--border)'">🏆 Browse More Contests</a>
+            <a href="contest-my-registrations.html" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:.82rem;font-weight:700;transition:all .12s;" onmouseover="this.style.borderColor='var(--con)'" onmouseout="this.style.borderColor='var(--border)'">📋 My Registrations</a>
+            <a href="contest-leaderboard.html" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;text-decoration:none;color:var(--ink-2);font-size:.82rem;font-weight:700;transition:all .12s;" onmouseover="this.style.borderColor='var(--con)'" onmouseout="this.style.borderColor='var(--border)'">📊 National Leaderboard</a>
+            <button onclick="showToast('Generating school award report…','📄')" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;background:transparent;text-align:left;color:var(--ink-2);font-size:.82rem;font-weight:700;cursor:pointer;width:100%;transition:all .12s;" onmouseover="this.style.borderColor='var(--con)'" onmouseout="this.style.borderColor='var(--border)'">📥 Export Award Report</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function filterAwards(f,el){
+  document.querySelectorAll('.ft-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const cards=document.querySelectorAll('.award-card');
+  cards.forEach(c=>{
+    if(f==='all')c.style.display='block';
+    else if(['gold','silver','bronze','cert'].includes(f))c.style.display=c.dataset.medal===f?'block':'none';
+    else if(f==='2024')c.style.display=c.dataset.year==='2024'?'block':'none';
+    else if(f==='2023')c.style.display=c.dataset.year==='2023'?'block':'none';
+    else c.style.display='block';
+  });
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

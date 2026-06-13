@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Import Students &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- Import phases -- */
+.import-phase { display: none; }
+.import-phase.active { display: block; animation: fadeUp .3s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:none;} }
+
+/* -- Big upload zone -- */
+.big-drop-zone {
+  border: 2.5px dashed var(--border);
+  border-radius: 16px; padding: 56px 32px;
+  text-align: center; cursor: pointer;
+  transition: all .22s; background: var(--bg);
+}
+.big-drop-zone:hover, .big-drop-zone.drag-over {
+  border-color: var(--blue); background: var(--blue-pale);
+}
+.big-drop-zone.has-file { border-color: var(--green); background: var(--green-light); }
+.bdz-icon { font-size: 3rem; margin-bottom: 12px; }
+.bdz-title { font-size: 1.1rem; font-weight: 800; color: var(--ink-2); margin-bottom: 6px; }
+.bdz-sub   { font-size: .86rem; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+.bdz-formats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.format-tag { padding: 4px 12px; border-radius: 20px; background: var(--white); border: 1px solid var(--border); font-size: .76rem; font-weight: 700; color: var(--muted); }
+
+/* -- Column mapping -- */
+.col-map-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+}
+.col-map-row:last-child { border: none; }
+.cm-field  { font-size: .85rem; font-weight: 700; color: var(--ink-2); width: 170px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.cm-arrow  { font-size: .9rem; color: var(--muted); flex-shrink: 0; }
+.cm-select { flex: 1; }
+.cm-status { width: 80px; flex-shrink: 0; text-align: right; font-size: .72rem; font-weight: 700; }
+
+/* -- Preview table -- */
+.preview-row { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: .83rem; }
+.preview-row:last-child { border: none; }
+.pr-num   { width: 28px; flex-shrink: 0; font-family: 'DM Mono',monospace; font-size: .72rem; color: var(--muted); }
+.pr-name  { flex: 1; font-weight: 700; color: var(--ink-2); }
+.pr-class { width: 100px; flex-shrink: 0; }
+.pr-gender{ width: 70px; flex-shrink: 0; font-size: .8rem; color: var(--muted); }
+.pr-status{ width: 80px; flex-shrink: 0; }
+.pr-issue { flex: 1; font-size: .76rem; color: var(--red); }
+
+/* -- Error cell -- */
+.row-error { background: #FFF5F5; }
+.row-warn  { background: #FFFBEB; }
+
+/* -- Result summary -- */
+.import-result-card { border-radius: 14px; padding: 28px; text-align: center; }
+.irc-num  { font-size: 2.5rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.irc-lbl  { font-size: .82rem; font-weight: 600; }
+
+/* -- Progress bar (animated) -- */
+.import-progress-bar {
+  height: 8px; background: var(--border); border-radius: 4px;
+  overflow: hidden; margin: 16px 0;
+}
+.import-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--blue), var(--teal));
+  border-radius: 4px; transition: width .4s ease;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.15); }
+  100% { filter: brightness(1); }
+}
+
+/* -- Steps indicator (mini) -- */
+.mini-steps { display: flex; gap: 0; margin-bottom: 28px; }
+.ms-step { flex: 1; text-align: center; position: relative; }
+.ms-step::before { content:''; position:absolute; top:14px; left:-50%; right:50%; height:2px; background:var(--border); z-index:0; }
+.ms-step:first-child::before { display: none; }
+.ms-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; margin:0 auto 5px; border:2px solid var(--border); background:var(--white); color:var(--muted); position:relative; z-index:1; }
+.ms-step.done   .ms-dot { background:var(--green); border-color:var(--green); color:#fff; }
+.ms-step.done::before { background: var(--green); }
+.ms-step.active .ms-dot { background:var(--blue); border-color:var(--blue); color:#fff; }
+.ms-lbl { font-size:.68rem; font-weight:700; color:var(--muted); }
+.ms-step.active .ms-lbl { color:var(--blue); }
+.ms-step.done   .ms-lbl { color:var(--green); }
+
+/* Toast */
+.toast-stack { position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+.toast { background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s; }
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body" style="max-width:860px;">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Student Management</div>
+        <div class="page-title">Bulk Import Students</div>
+        <div class="page-sub">Upload an Excel or CSV file to admit many students at once. We'll guide you through mapping and validation.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="downloadTemplate()">Download Template</button>
+      </div>
+    </div>
+
+    <!-- Mini steps -->
+    <div class="mini-steps" id="miniSteps">
+      <div class="ms-step active" id="ms1"><div class="ms-dot">1</div><div class="ms-lbl">Upload File</div></div>
+      <div class="ms-step" id="ms2"><div class="ms-dot">2</div><div class="ms-lbl">Map Columns</div></div>
+      <div class="ms-step" id="ms3"><div class="ms-dot">3</div><div class="ms-lbl">Preview &amp; Validate</div></div>
+      <div class="ms-step" id="ms4"><div class="ms-dot">4</div><div class="ms-lbl">Import</div></div>
+      <div class="ms-step" id="ms5"><div class="ms-dot">5</div><div class="ms-lbl">Done</div></div>
+    </div>
+
+    <!-- -- PHASE 1: Upload -- -->
+    <div class="import-phase active card" id="phase1">
+      <div class="card-body" style="padding:28px;">
+        <div class="big-drop-zone" id="dropZone"
+          onclick="simulateUpload()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDrop(event)">
+          <div class="bdz-icon" id="dzIcon"></div>
+          <div class="bdz-title" id="dzTitle">Click to upload or drag &amp; drop</div>
+          <div class="bdz-sub" id="dzSub">Upload your student list spreadsheet. We'll handle the rest.<br>Max file size: 10 MB</div>
+          <div class="bdz-formats">
+            <span class="format-tag">.xlsx</span>
+            <span class="format-tag">.xls</span>
+            <span class="format-tag">.csv</span>
+          </div>
+          <button class="btn btn-primary" onclick="event.stopPropagation();simulateUpload()">Browse File</button>
+        </div>
+
+        <!-- Tips -->
+        <div style="margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:10px;padding:14px;">
+            <div style="font-size:.82rem;font-weight:800;color:var(--blue-dark);margin-bottom:6px;"> Recommended Columns</div>
+            <div style="font-size:.78rem;color:var(--muted);line-height:1.8;">
+              name_en, name_bn, dob, gender, class,<br>section, father_name, father_mobile,<br>religion, blood_group, address
+            </div>
+          </div>
+          <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:14px;">
+            <div style="font-size:.82rem;font-weight:800;color:#065F46;margin-bottom:6px;">Tips for a clean import</div>
+            <div style="font-size:.78rem;color:var(--muted);line-height:1.8;">
+              &middot; Row 1 should be column headers<br>
+              &middot; Dates in DD/MM/YYYY format<br>
+              &middot; Remove merged cells<br>
+              &middot; Use UTF-8 encoding for Bengali
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- PHASE 2: Column Mapping -- -->
+    <div class="import-phase card" id="phase2">
+      <div class="card-header" style="padding:20px 24px 0;">
+        <div>
+          <div class="card-title"> Map Columns &middot; students_batch_2025.xlsx</div>
+          <div class="card-sub">We detected 68 rows and 12 columns. Match your spreadsheet columns to our fields.</div>
+        </div>
+        <span class="badge badge-green">68 rows detected</span>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div style="padding:10px 14px;background:var(--bg);border-bottom:2px solid var(--border);display:flex;gap:12px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">
+          <div style="width:170px;flex-shrink:0;">System Field</div>
+          <div style="width:16px;flex-shrink:0;"></div>
+          <div style="flex:1;">Your Column</div>
+          <div style="width:80px;flex-shrink:0;">Status</div>
+        </div>
+        <div id="mappingRows"></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-outline" onclick="goPhase(1)">Back</button>
+        <div class="page-actions">
+          <span style="font-size:.8rem;color:var(--green);font-weight:600;">10 of 11 fields mapped</span>
+          <button class="btn btn-primary" onclick="goPhase(3)">Preview Data &middot;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- PHASE 3: Preview & Validate -- -->
+    <div class="import-phase card" id="phase3">
+      <div class="card-header" style="padding:20px 24px 0;">
+        <div>
+          <div class="card-title"> Preview &amp; Validation &middot; 68 Records</div>
+          <div class="card-sub">Showing first 10 rows. Fix errors before importing.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span class="badge badge-green">62 Valid</span>
+          <span class="badge badge-amber">4 Warnings</span>
+          <span class="badge badge-red">2 Errors</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div style="display:flex;gap:12px;padding:10px 14px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">
+          <div class="pr-num">#</div>
+          <div class="pr-name">Name</div>
+          <div class="pr-class">Class</div>
+          <div class="pr-gender">Gender</div>
+          <div class="pr-status">Status</div>
+          <div class="pr-issue">Issue</div>
+        </div>
+        <div id="previewRows"></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-outline" onclick="goPhase(2)">Back</button>
+        <div class="page-actions">
+          <button class="btn btn-outline" onclick="showToast('Downloading error report&middot;','&#x2705;')">Download Error Report</button>
+          <button class="btn btn-primary" onclick="goPhase(4)">Import 62 Valid Records &middot;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- PHASE 4: Importing -- -->
+    <div class="import-phase card" id="phase4">
+      <div class="card-body" style="padding:40px;text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:16px;" id="importingIcon"></div>
+        <div style="font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:6px;" id="importingTitle">Importing 62 Student Records&middot;</div>
+        <div style="font-size:.84rem;color:var(--muted);margin-bottom:20px;" id="importingSub">Creating accounts, assigning roll numbers, setting up parent portals&middot;</div>
+        <div class="import-progress-bar">
+          <div class="import-progress-fill" id="importFill" style="width:0%;"></div>
+        </div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--blue);" id="importPct">0 / 62 imported</div>
+      </div>
+    </div>
+
+    <!-- -- PHASE 5: Done -- -->
+    <div class="import-phase" id="phase5">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+        <div class="import-result-card" style="background:var(--green-light);border:1px solid #A7F3D0;">
+          <div class="irc-num" style="color:var(--green);">62</div>
+          <div class="irc-lbl" style="color:#065F46;">Successfully Imported</div>
+        </div>
+        <div class="import-result-card" style="background:var(--amber-light);border:1px solid #FDE68A;">
+          <div class="irc-num" style="color:var(--amber);">4</div>
+          <div class="irc-lbl" style="color:#92400E;">Skipped (Warnings)</div>
+        </div>
+        <div class="import-result-card" style="background:var(--red-light);border:1px solid #FECACA;">
+          <div class="irc-num" style="color:var(--red);">2</div>
+          <div class="irc-lbl" style="color:#991B1B;">Failed (Errors)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:32px;">
+          <div style="font-size:2.5rem;margin-bottom:14px;">&#x26A0;&#xFE0F;</div>
+          <div style="font-size:1.2rem;font-weight:800;color:var(--ink);margin-bottom:8px;">Import Complete!</div>
+          <div style="font-size:.88rem;color:var(--muted);line-height:1.65;margin-bottom:24px;">
+            62 students have been admitted to Dhaka High School for Session 2024&#x2013;25.<br>
+            Login credentials have been emailed to all guardian email addresses.<br>
+            <strong>4 records were skipped</strong> due to missing data &middot; you can add them manually.
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a href="admin-students.html" class="btn btn-primary"> View Student List</a>
+            <button class="btn btn-outline" onclick="showToast('Downloading import report&middot;','&#x2705;')">Download Import Report</button>
+            <button class="btn btn-ghost" onclick="resetImport()">Import Another File</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let currentPhase = 1;
+
+// Column mapping data
+const systemFields = [
+  {field:'Full Name (English)',  key:'name_en',  required:true,  matched:'Name'},
+  {field:'Full Name (Bengali)',  key:'name_bn',  required:false, matched:' '},
+  {field:'Date of Birth',        key:'dob',      required:true,  matched:'DOB'},
+  {field:'Gender',               key:'gender',   required:true,  matched:'Gender'},
+  {field:'Class',                key:'class',    required:true,  matched:'Class'},
+  {field:'Section',              key:'section',  required:false, matched:'Section'},
+  {field:'Father\'s Name',       key:'father',   required:true,  matched:'Father Name'},
+  {field:'Father\'s Mobile',     key:'mob',      required:true,  matched:'Mobile'},
+  {field:'Blood Group',          key:'blood',    required:false, matched:''},
+  {field:'Religion',             key:'religion', required:false, matched:'Religion'},
+  {field:'Present Address',      key:'address',  required:false, matched:'Address'},
+];
+
+const csvCols = ['Name',' ','DOB','Gender','Class','Section','Father Name','Mobile','Religion','Address','Remarks'];
+
+function buildMapping(){
+  const cont = document.getElementById('mappingRows');
+  cont.innerHTML = systemFields.map(f=>{
+    const opts = ['-- Not mapped --',...csvCols].map(o=>`<option${o===f.matched?' selected':''}>${o}</option>`).join('');
+    const mapped = f.matched !== '';
+    return `<div class="col-map-row">
+      <div class="cm-field">
+        ${f.required?'<span style="color:var(--red);font-size:.8rem;">*</span>':'<span style="font-size:.8rem;opacity:.4;"></span>'}
+        ${f.field}
+      </div>
+      <div class="cm-arrow">&#x203A;</div>
+      <div class="cm-select"><select class="form-select" style="font-size:.83rem;padding:7px 10px;">${opts}</select></div>
+      <div class="cm-status">
+        ${mapped?'<span class="badge badge-green" style="font-size:.68rem;">Mapped</span>':'<span class="badge badge-amber" style="font-size:.68rem;">&middot; None</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Preview data
+const previewData = [
+  {n:'Rahela Islam',    cls:'Class IX&middot;A', gender:'Female', ok:true,  issue:''},
+  {n:'Farhan Ahmed',    cls:'Class X&middot;B',  gender:'Male',   ok:true,  issue:''},
+  {n:'Tasnim Khatun',   cls:'Class I&middot;A',  gender:'Female', ok:true,  issue:''},
+  {n:'Imran Hossain',   cls:'Class VI&middot;C', gender:'Male',   ok:true,  issue:''},
+  {n:'Sanjida Rahman',  cls:'Class XI&middot;A', gender:'Female', ok:true,  issue:''},
+  {n:'Nilufar Begum',   cls:'Class IX&middot;B', gender:'Female', ok:true,  issue:''},
+  {n:'(Row 7)',         cls:'Class X&middot;A',  gender:'&middot;',      warn:true, issue:'Missing DOB &middot; will import without it'},
+  {n:'Riyaz Khan',      cls:'&middot;',          gender:'Male',   err:true,  issue:'Class not found: "Class 10" &middot; use "Class X"'},
+  {n:'Saif Uddin',      cls:'Class XII',  gender:'Male',   ok:true,  issue:''},
+  {n:'Mahmud Alam',     cls:'Class V&middot;B',  gender:'Male',   err:true,  issue:'Duplicate: Roll 022 already exists in Class V&middot;B'},
+];
+
+function buildPreview(){
+  const cont = document.getElementById('previewRows');
+  cont.innerHTML = previewData.map((r,i)=>`
+    <div class="preview-row ${r.err?'row-error':r.warn?'row-warn':''}">
+      <div class="pr-num">${i+1}</div>
+      <div class="pr-name">${r.n}</div>
+      <div class="pr-class"><span class="badge badge-blue" style="font-size:.68rem;">${r.cls||'&middot;'}</span></div>
+      <div class="pr-gender">${r.gender}</div>
+      <div class="pr-status">
+        ${r.ok   &middot;'<span class="badge badge-green" style="font-size:.68rem;">Valid</span>':''}
+        ${r.warn  &middot;'<span class="badge badge-amber" style="font-size:.68rem;">Warning</span>':''}
+        ${r.err  &middot;'<span class="badge badge-red"   style="font-size:.68rem;">Error</span>':''}
+      </div>
+      <div class="pr-issue">${r.issue}</div>
+    </div>`).join('');
+}
+
+function goPhase(n){
+  document.getElementById('phase'+currentPhase).classList.remove('active');
+  currentPhase = n;
+  document.getElementById('phase'+n).classList.add('active');
+
+  // Update mini steps
+  for(let i=1;i<=5;i++){
+    const el = document.getElementById('ms'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  }
+
+  if(n===2) buildMapping();
+  if(n===3) buildPreview();
+  if(n===4) startImporting();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function simulateUpload(){
+  const dz = document.getElementById('dropZone');
+  dz.classList.add('has-file');
+  document.getElementById('dzIcon').textContent = '&#x2705;';
+  document.getElementById('dzTitle').textContent = 'students_batch_2025.xlsx uploaded';
+  document.getElementById('dzSub').textContent = '68 rows detected &middot; 12 columns &middot; 142 KB';
+  setTimeout(()=>goPhase(2), 600);
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  simulateUpload();
+}
+
+let importInterval;
+function startImporting(){
+  let pct = 0;
+  const fill = document.getElementById('importFill');
+  const lbl  = document.getElementById('importPct');
+  const msgs = ['Creating student records&middot;','Assigning roll numbers&middot;','Setting up parent portals&middot;','Sending login credentials&middot;','Finalizing&middot;'];
+  let msgIdx = 0;
+  importInterval = setInterval(()=>{
+    pct += Math.random()*8+4;
+    if(pct >= 100){ pct=100; clearInterval(importInterval); setTimeout(()=>goPhase(5),600); }
+    fill.style.width = pct+'%';
+    lbl.textContent = Math.round(pct*0.62)+' / 62 imported';
+    if(pct > msgIdx*25 && msgIdx < msgs.length){
+      document.getElementById('importingSub').textContent = msgs[msgIdx++];
+    }
+  }, 180);
+}
+
+function resetImport(){
+  clearInterval(importInterval);
+  goPhase(1);
+  document.getElementById('dropZone').classList.remove('has-file');
+  document.getElementById('dzIcon').textContent = '';
+  document.getElementById('dzTitle').textContent = 'Click to upload or drag & drop';
+  document.getElementById('dzSub').textContent = 'Upload your student list spreadsheet. We\'ll handle the rest.\nMax file size: 10 MB';
+}
+
+function downloadTemplate(){ showToast('Downloading template&middot;','&#x2705;'); }
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

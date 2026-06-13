@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=login.html">
+  <title>Redirecting…</title>
+  <script>
+    // If already logged in → go straight to dashboard
+    // If not → go to login
+    var session = null;
+    try { session = JSON.parse(localStorage.getItem('eduos_admin_session')); } catch(e) {}
+    var dest = (session && session.user) ? 'super-dashboard.html' : 'login.html';
+    window.location.replace(dest);
+  </script>
+</head>
+<body></body>
+</html>

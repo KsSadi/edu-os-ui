@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Child Progress Report — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Child switcher bar */
+.child-bar{display:flex;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);}
+.cb-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;transition:all .15s;font-size:.84rem;font-weight:700;color:var(--muted);}
+.cb-btn:hover,.cb-btn.on{border-color:var(--par);background:var(--par-pale);color:var(--par-dark);}
+.cb-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:800;color:#fff;flex-shrink:0;}
+
+/* GPA timeline */
+.gpa-timeline{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 6px;border-bottom:2px solid var(--border);position:relative;}
+.gpt-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.gpt-val{font-size:.72rem;font-weight:900;font-family:'DM Mono',monospace;}
+.gpt-bar{width:100%;border-radius:6px 6px 0 0;transition:height .6s ease;cursor:pointer;min-width:24px;}
+.gpt-lbl{font-size:.66rem;color:var(--muted);font-weight:600;text-align:center;}
+
+/* Subject row */
+.subj-progress-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);}
+.subj-progress-row:last-child{border-bottom:none;}
+.spr-name{font-size:.86rem;font-weight:700;color:var(--ink-2);min-width:180px;flex-shrink:0;}
+.spr-teacher{font-size:.72rem;color:var(--muted);}
+.spr-bars{flex:1;display:flex;flex-direction:column;gap:3px;}
+.spr-bar-row{display:flex;align-items:center;gap:6px;}
+.spr-exam-lbl{font-size:.62rem;color:var(--muted);min-width:40px;}
+.spr-bar-out{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.spr-bar-in{height:100%;border-radius:3px;}
+.spr-score{font-family:'DM Mono',monospace;font-weight:800;font-size:.76rem;min-width:28px;text-align:right;}
+.spr-grade-badge{width:26px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;flex-shrink:0;}
+.spr-trend{font-size:.72rem;flex-shrink:0;min-width:20px;text-align:center;}
+
+/* Radar/spider chart -->
+.radar-wrap{position:relative;width:200px;height:200px;margin:0 auto;}
+
+/* Teacher remarks */
+.remark-card{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--white);margin-bottom:10px;}
+.rc-teacher{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.rc-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0;}
+.rc-name{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.rc-subject{font-size:.7rem;color:var(--muted);}
+.rc-text{font-size:.82rem;color:var(--ink-2);line-height:1.6;font-style:italic;}
+.rc-date{font-size:.68rem;color:var(--muted);margin-top:6px;}
+
+/* Improvement area */
+.improve-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.improve-row:last-child{border-bottom:none;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <!-- Child switcher -->
+  <div class="child-bar">
+    <div class="cb-btn on" id="cb-farhan" onclick="switchChild('farhan',this)">
+      <div class="cb-av" style="background:#7C3AED;">FI</div>Farhan Islam · IX–A
+    </div>
+    <div class="cb-btn" id="cb-tasnim" onclick="switchChild('tasnim',this)">
+      <div class="cb-av" style="background:#0891B2;">TI</div>Tasnim Islam · VI–A
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-outline btn-sm" onclick="showToast('Downloading PDF report…','📄')">📄 PDF Report</button>
+      <button class="btn btn-sm" style="background:var(--par);color:#fff;border:none;" onclick="showToast('Sharing report with teacher…','📧')">📧 Share with Teacher</button>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- Child header card -->
+    <div class="card anim-1" style="padding:0;margin-bottom:22px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#1C0A00,#B45309);padding:20px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;border:2.5px solid rgba(255,255,255,.4);" id="childAvatar" style="background:#7C3AED;">FI</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;" id="childNameBig">Farhan Islam</div>
+            <div style="font-size:.78rem;opacity:.75;" id="childMetaBig">Class IX–A (Science) · Roll 001 · STU-2024-001 · Session 2026–27</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:18px;background:rgba(0,0,0,.2);border-radius:12px;padding:12px 18px;">
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;" id="bigGpa">5.00</div><div style="font-size:.65rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">GPA</div></div>
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;" id="bigGrade">A+</div><div style="font-size:.65rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Grade</div></div>
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;" id="bigRank">#1</div><div style="font-size:.65rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Rank</div></div>
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;" id="bigAtt">94%</div><div style="font-size:.65rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Attendance</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;margin-bottom:18px;">
+
+      <!-- Subject progress -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📚 Subject-wise Progress</div><div class="card-sub">Scores across all exams · Session 2026–27</div></div>
+          <div style="display:flex;gap:8px;font-size:.72rem;color:var(--muted);align-items:center;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);"></div>HY-24
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);"></div>Annual-24
+          </div>
+        </div>
+        <div id="subjectProgressList"></div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- GPA chart -->
+        <div class="card anim-1">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">📈 GPA History</div><div class="card-sub" style="font-size:.72rem;">Session 2026–27</div></div>
+          <div style="padding:14px 16px;">
+            <div class="gpa-timeline" id="gpaTimeline"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;" id="gpaLabels"></div>
+          </div>
+        </div>
+
+        <!-- Strongest / weakest -->
+        <div class="card anim-2" style="padding:14px 16px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">💪 Strengths &amp; Improvement</div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="strengthList"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Teacher remarks + Trend comparison -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">💬 Teacher Remarks</div><div class="card-sub">Latest comments from subject teachers</div></div>
+        <div style="padding:14px 16px;" id="remarksList"></div>
+      </div>
+
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">📊 Half-Yearly vs Annual — Comparison</div><div class="card-sub">Subject-by-subject improvement</div></div>
+        <div style="padding:14px 18px;" id="comparisonList"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const CHILDREN={
+  farhan:{
+    name:'Farhan Islam',cls:'IX–A',roll:'001',id:'STU-2024-001',color:'#7C3AED',
+    gpa:5.00,grade:'A+',rank:'#1',att:'94%',
+    gpaHistory:[{l:'UT-1',v:4.20},{l:'HY',v:4.80},{l:'UT-2',v:4.60},{l:'Annual',v:5.00}],
+    subjects:[
+      {name:'Bangla 1st Paper',teacher:'Ms. Fatema',hy:88,annual:92},
+      {name:'Bangla 2nd Paper',teacher:'Ms. Fatema',hy:90,annual:94},
+      {name:'English 1st Paper',teacher:'Ms. Roksana',hy:84,annual:91},
+      {name:'English 2nd Paper',teacher:'Ms. Roksana',hy:92,annual:96},
+      {name:'Mathematics',teacher:'Dr. Karim',hy:96,annual:98},
+      {name:'Physics',teacher:'Ms. Nasrin',hy:94,annual:95},
+      {name:'Chemistry',teacher:'Mr. Shahed',hy:88,annual:93},
+      {name:'Biology',teacher:'Mr. Tanvir',hy:86,annual:90},
+    ],
+    remarks:[
+      {teacher:'Dr. Karim Hossain',subject:'Mathematics',text:'Farhan shows exceptional mathematical aptitude. His problem-solving approach is methodical and creative. Consistently top of class.',date:'Feb 20',col:'#7C3AED'},
+      {teacher:'Ms. Nasrin Khatun',subject:'Physics',text:'Excellent understanding of concepts. Lab work is thorough and precise. Should consider participating in the Science Olympiad.',date:'Feb 18',col:'#0891B2'},
+      {teacher:'Ms. Roksana Parvin',subject:'English',text:'Strong written expression and reading comprehension. Could improve spoken fluency — encourage daily reading aloud.',date:'Feb 15',col:'#D97706'},
+    ],
+  },
+  tasnim:{
+    name:'Tasnim Islam',cls:'VI–A',roll:'007',id:'STU-2024-089',color:'#0891B2',
+    gpa:4.50,grade:'A',rank:'#5',att:'98%',
+    gpaHistory:[{l:'UT-1',v:4.00},{l:'HY',v:4.20},{l:'UT-2',v:4.40},{l:'Annual',v:4.50}],
+    subjects:[
+      {name:'Bangla',teacher:'Ms. Fatema',hy:82,annual:88},
+      {name:'English',teacher:'Ms. Roksana',hy:78,annual:85},
+      {name:'Mathematics',teacher:'Mr. Alam',hy:90,annual:92},
+      {name:'General Science',teacher:'Mr. Tanvir',hy:76,annual:84},
+    ],
+    remarks:[
+      {teacher:'Ms. Fatema Begum',subject:'Bangla',text:'Tasnim is a diligent student with improving Bangla writing skills. More practice with creative writing is recommended.',date:'Feb 21',col:'#059669'},
+      {teacher:'Mr. Alam',subject:'Mathematics',text:'Excellent performance in Mathematics. Very quick to grasp new concepts and helps classmates during group activities.',date:'Feb 19',col:'#0891B2'},
+    ],
+  },
+};
+let active='farhan';
+
+function switchChild(id,el){
+  active=id;
+  document.querySelectorAll('.cb-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function getGrade(s){if(s>=80)return{g:'A+',col:'var(--green)'};if(s>=70)return{g:'A',col:'var(--blue)'};if(s>=60)return{g:'A−',col:'var(--purple)'};if(s>=50)return{g:'B',col:'var(--amber)'};return{g:'F',col:'var(--red)'};}
+
+function render(){
+  const c=CHILDREN[active];
+  // Header
+  document.getElementById('childAvatar').textContent=c.name[0]+(c.name.split(' ')[1]?.[0]||'');
+  document.getElementById('childAvatar').style.background=c.color;
+  document.getElementById('childNameBig').textContent=c.name;
+  document.getElementById('childMetaBig').textContent=`Class ${c.cls} · Roll ${c.roll} · ${c.id} · Session 2026–27`;
+  document.getElementById('bigGpa').textContent=c.gpa.toFixed(2);
+  document.getElementById('bigGrade').textContent=c.grade;
+  document.getElementById('bigRank').textContent=c.rank;
+  document.getElementById('bigAtt').textContent=c.att;
+
+  // GPA chart
+  const maxGpa=5.0;
+  document.getElementById('gpaTimeline').innerHTML=c.gpaHistory.map((g,i)=>{
+    const h=Math.round(g.v/maxGpa*110);
+    const isCur=i===c.gpaHistory.length-1;
+    const col=g.v>=5?'var(--green)':g.v>=4.5?'var(--par)':'var(--blue)';
+    return`<div class="gpt-col"><div class="gpt-val" style="color:${col};">${g.v}</div><div class="gpt-bar" style="height:${h}px;background:${isCur?'var(--par)':col};opacity:${isCur?1:.65};"></div></div>`;
+  }).join('');
+  document.getElementById('gpaLabels').innerHTML=c.gpaHistory.map(g=>`<div style="flex:1;text-align:center;font-size:.68rem;color:var(--muted);font-weight:600;">${g.l}</div>`).join('');
+
+  // Subject progress bars
+  document.getElementById('subjectProgressList').innerHTML=c.subjects.map(s=>{
+    const hyG=getGrade(s.hy),annG=getGrade(s.annual);
+    const trend=s.annual>s.hy?'↑':s.annual===s.hy?'→':'↓';
+    const trendCol=s.annual>s.hy?'var(--green)':s.annual===s.hy?'var(--muted)':'var(--red)';
+    return`<div class="subj-progress-row">
+      <div style="min-width:180px;flex-shrink:0;">
+        <div class="spr-name">${s.name}</div>
+        <div class="spr-teacher">${s.teacher}</div>
+      </div>
+      <div class="spr-bars">
+        <div class="spr-bar-row">
+          <span class="spr-exam-lbl">HY-24</span>
+          <div class="spr-bar-out"><div class="spr-bar-in" style="width:${s.hy}%;background:var(--blue);"></div></div>
+          <div class="spr-score" style="color:var(--blue);">${s.hy}</div>
+          <div class="spr-grade-badge" style="background:#EFF6FF;color:#1D4ED8;">${hyG.g}</div>
+        </div>
+        <div class="spr-bar-row">
+          <span class="spr-exam-lbl">Annual</span>
+          <div class="spr-bar-out"><div class="spr-bar-in" style="width:${s.annual}%;background:var(--green);"></div></div>
+          <div class="spr-score" style="color:var(--green);">${s.annual}</div>
+          <div class="spr-grade-badge" style="background:#ECFDF5;color:#065F46;">${annG.g}</div>
+        </div>
+      </div>
+      <div class="spr-trend" style="color:${trendCol};font-weight:900;font-size:.9rem;">${trend}</div>
+    </div>`;
+  }).join('');
+
+  // Strengths
+  const sorted=[...c.subjects].sort((a,b)=>b.annual-a.annual);
+  const top=sorted.slice(0,2),low=sorted.slice(-2);
+  document.getElementById('strengthList').innerHTML=
+    top.map(s=>`<div class="improve-row"><span style="font-size:.9rem;">💪</span><span style="font-size:.82rem;font-weight:700;color:var(--green);">${s.name}</span><span style="font-size:.76rem;color:var(--muted);margin-left:auto;">${s.annual}/100</span></div>`).join('')+
+    '<div style="padding:4px 0;border-bottom:1px solid var(--border);"><div style="font-size:.7rem;color:var(--muted);font-weight:700;padding:4px 0;">Needs attention</div></div>'+
+    low.map(s=>`<div class="improve-row"><span style="font-size:.9rem;">📌</span><span style="font-size:.82rem;font-weight:700;color:var(--amber);">${s.name}</span><span style="font-size:.76rem;color:var(--muted);margin-left:auto;">${s.annual}/100</span></div>`).join('');
+
+  // Remarks
+  document.getElementById('remarksList').innerHTML=c.remarks.map(r=>`
+    <div class="remark-card">
+      <div class="rc-teacher"><div class="rc-av" style="background:${r.col};">${r.teacher[0]}</div><div><div class="rc-name">${r.teacher}</div><div class="rc-subject">${r.subject}</div></div></div>
+      <div class="rc-text">"${r.text}"</div>
+      <div class="rc-date">${r.date}, 2025</div>
+    </div>`).join('');
+
+  // Comparison
+  document.getElementById('comparisonList').innerHTML=c.subjects.map(s=>{
+    const diff=s.annual-s.hy;
+    const col=diff>0?'var(--green)':diff<0?'var(--red)':'var(--muted)';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2);">${s.name}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.76rem;color:var(--blue);">${s.hy}</span>
+      <span style="color:var(--muted);font-size:.8rem;">→</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.76rem;color:var(--green);">${s.annual}</span>
+      <span style="font-size:.78rem;font-weight:900;color:${col};min-width:28px;text-align:right;">${diff>0?'+':''}${diff}</span>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg,icon='✅'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+render();
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Settings Layout */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start;}
+.settings-nav{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;position:sticky;top:20px;}
+.sn-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:.84rem;font-weight:600;color:var(--ink-2);cursor:pointer;border-left:3px solid transparent;transition:background .12s;}
+.sn-item:hover{background:var(--par-pale);}
+.sn-item.on{background:var(--par-pale);color:var(--par-dark);border-left-color:var(--par);}
+.sn-item .sn-icon{font-size:1rem;}
+.settings-panel{display:none;}
+.settings-panel.on{display:block;}
+.settings-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;}
+.sc-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);}
+.sc-title{font-size:.9rem;font-weight:800;color:var(--ink);}
+.sc-sub{font-size:.76rem;color:var(--muted);margin-top:2px;}
+.sc-body{padding:18px 20px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-row.full{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:.76rem;font-weight:700;color:var(--ink-2);}
+
+/* Profile avatar area */
+.profile-avatar-area{display:flex;align-items:center;gap:18px;margin-bottom:20px;}
+.pa-avatar{width:72px;height:72px;border-radius:50%;background:var(--par);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;flex-shrink:0;}
+.pa-info{font-size:.82rem;color:var(--muted);}
+.pa-name{font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:2px;}
+
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info{flex:1;}
+.toggle-label{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.toggle-sub{font-size:.73rem;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#CBD5E1;border-radius:24px;cursor:pointer;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked + .toggle-slider{background:var(--par);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px);}
+
+/* Child section */
+.child-info-card{display:flex;align-items:center;gap:14px;padding:14px;background:var(--par-pale);border-radius:10px;border:1px solid var(--par-light);margin-bottom:12px;}
+.ci-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.ci-name{font-size:.88rem;font-weight:800;color:var(--ink-2);}
+.ci-sub{font-size:.73rem;color:var(--muted);margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">⚙️ Preferences</div>
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Manage your profile, notifications, and security settings.</div>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <!-- Left Nav -->
+      <div class="settings-nav">
+        <div class="sn-item on" onclick="switchTab('profile')"><span class="sn-icon">👤</span> Profile</div>
+        <div class="sn-item" onclick="switchTab('children')"><span class="sn-icon">👨‍👧</span> My Children</div>
+        <div class="sn-item" onclick="switchTab('notifications')"><span class="sn-icon">🔔</span> Notifications</div>
+        <div class="sn-item" onclick="switchTab('security')"><span class="sn-icon">🔒</span> Security</div>
+      </div>
+
+      <!-- Panels -->
+      <div>
+
+        <!-- Profile Panel -->
+        <div class="settings-panel on" id="panel-profile">
+          <div class="settings-card">
+            <div class="sc-head">
+              <div class="sc-title">Personal Information</div>
+              <div class="sc-sub">Your name and contact details visible to teachers</div>
+            </div>
+            <div class="sc-body">
+              <div class="profile-avatar-area">
+                <div class="pa-avatar">MI</div>
+                <div>
+                  <div class="pa-name">Mohammad Islam</div>
+                  <div class="pa-info">Parent · Dhaka High School</div>
+                  <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="showToast('Photo upload coming soon','📸')">Change Photo</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" value="Mohammad">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" value="Islam">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" class="form-input" value="m.islam@email.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  <input type="tel" class="form-input" value="+880 1711-000000">
+                </div>
+              </div>
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label">Home Address</label>
+                  <input type="text" class="form-input" value="House 12, Road 5, Dhanmondi, Dhaka">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Occupation</label>
+                  <input type="text" class="form-input" value="Business Owner">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Relationship to Student</label>
+                  <select class="form-select">
+                    <option selected>Father</option>
+                    <option>Mother</option>
+                    <option>Guardian</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:4px;">
+                <button class="btn" style="background:var(--par);color:#fff;border-color:var(--par);" onclick="showToast('Profile updated successfully','✅')">Save Changes</button>
+                <button class="btn btn-outline" onclick="showToast('Changes discarded','↩')">Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Children Panel -->
+        <div class="settings-panel" id="panel-children">
+          <div class="settings-card">
+            <div class="sc-head">
+              <div class="sc-title">Linked Children</div>
+              <div class="sc-sub">Children registered under your parent account</div>
+            </div>
+            <div class="sc-body">
+              <div class="child-info-card">
+                <div class="ci-avatar" style="background:#7C3AED;">FI</div>
+                <div style="flex:1;">
+                  <div class="ci-name">Farhan Islam</div>
+                  <div class="ci-sub">Class IX–A &nbsp;·&nbsp; Roll: 05 &nbsp;·&nbsp; Student ID: DHS-2025-091</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Viewing Farhan\'s profile','👦')">View Profile</button>
+              </div>
+              <div class="child-info-card">
+                <div class="ci-avatar" style="background:#0891B2;">TI</div>
+                <div style="flex:1;">
+                  <div class="ci-name">Tasnim Islam</div>
+                  <div class="ci-sub">Class VI–A &nbsp;·&nbsp; Roll: 11 &nbsp;·&nbsp; Student ID: DHS-2025-142</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Viewing Tasnim\'s profile','👧')">View Profile</button>
+              </div>
+              <div style="margin-top:8px;">
+                <button class="btn btn-outline" onclick="showToast('Contact school administration to add a child','ℹ️')">+ Link Another Child</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Panel -->
+        <div class="settings-panel" id="panel-notifications">
+          <div class="settings-card">
+            <div class="sc-head">
+              <div class="sc-title">Notification Preferences</div>
+              <div class="sc-sub">Choose what alerts you want to receive</div>
+            </div>
+            <div class="sc-body">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Attendance Alerts</div>
+                  <div class="toggle-sub">Notified when your child is absent or late</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Exam & Result Updates</div>
+                  <div class="toggle-sub">Schedule announcements and result publishing</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Fee Reminders</div>
+                  <div class="toggle-sub">Monthly fee due dates and payment confirmations</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">School Notices</div>
+                  <div class="toggle-sub">Events, holidays, and general announcements</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Teacher Messages</div>
+                  <div class="toggle-sub">New messages from your child's teachers</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">SMS Notifications</div>
+                  <div class="toggle-sub">Receive alerts via SMS to your phone number</div>
+                </div>
+                <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" style="background:var(--par);color:#fff;border-color:var(--par);" onclick="showToast('Notification preferences saved','✅')">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- Security Panel -->
+        <div class="settings-panel" id="panel-security">
+          <div class="settings-card">
+            <div class="sc-head">
+              <div class="sc-title">Change Password</div>
+              <div class="sc-sub">Keep your account secure with a strong password</div>
+            </div>
+            <div class="sc-body">
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-input" placeholder="Enter current password">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-input" placeholder="Min. 8 characters">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-input" placeholder="Repeat new password">
+                </div>
+              </div>
+              <button class="btn" style="background:var(--par);color:#fff;border-color:var(--par);margin-top:4px;" onclick="showToast('Password updated successfully','🔒')">Update Password</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="sc-head">
+              <div class="sc-title">Active Sessions</div>
+              <div class="sc-sub">Devices currently logged in to your account</div>
+            </div>
+            <div class="sc-body">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">🖥️ Windows PC — Chrome</div>
+                  <div class="toggle-sub">Last active: Today, 10:45 AM · Dhaka, Bangladesh</div>
+                </div>
+                <span style="font-size:.72rem;background:#D1FAE5;color:#065F46;padding:3px 8px;border-radius:20px;font-weight:700;">Current</span>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">📱 Android — Mobile App</div>
+                  <div class="toggle-sub">Last active: Yesterday, 8:12 PM · Dhaka, Bangladesh</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showToast('Session revoked','🔒')">Revoke</button>
+              </div>
+            </div>
+          </div>
+          <div class="settings-card" style="border-color:#FCA5A5;">
+            <div class="sc-head" style="background:#FFF5F5;">
+              <div class="sc-title" style="color:#DC2626;">Danger Zone</div>
+              <div class="sc-sub">Irreversible actions for your account</div>
+            </div>
+            <div class="sc-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div>
+                <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">Deactivate Account</div>
+                <div style="font-size:.76rem;color:var(--muted);">You will lose access to the parent portal. Contact school to reactivate.</div>
+              </div>
+              <button class="btn" style="background:#DC2626;color:#fff;border-color:#DC2626;" onclick="showToast('Please contact school administration to deactivate','⚠️')">Deactivate</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panels -->
+    </div><!-- /settings-grid -->
+
+  </div><!-- /page-body -->
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.sn-item').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.settings-panel').forEach(el => el.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+  document.getElementById('panel-' + tab).classList.add('on');
+}
+
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(), 300); }, 3000);
+}
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

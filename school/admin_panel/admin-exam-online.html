@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Exam (MCQ) &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* -- View switcher -- */
+.main-tabs{display:flex;border-bottom:1.5px solid var(--border);padding:0 18px;background:var(--white);}
+.mt{padding:11px 16px;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;font-size:.84rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.mt.on{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* -- Exam card grid -- */
+.online-exam-card{border:1.5px solid var(--border);border-radius:12px;background:var(--white);overflow:hidden;transition:box-shadow .15s;}
+.online-exam-card:hover{box-shadow:var(--shadow);}
+.oec-head{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.oec-body{padding:14px 16px;}
+.oec-foot{padding:9px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
+.oec-stat{font-size:.72rem;color:var(--muted);}
+
+/* Status pill */
+.exam-pill{font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:700;}
+.ep-live{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.ep-scheduled{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
+.ep-draft{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ep-ended{background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;}
+
+/* -- Question builder -- */
+.qb-question{border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;transition:border-color .12s;background:var(--white);}
+.qb-question:hover{border-color:var(--blue);}
+.qb-question.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(14,165,233,.08);}
+.qb-q-num{font-size:.72rem;font-weight:800;color:var(--blue);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.qb-q-text{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:10px;line-height:1.5;}
+.qb-options{display:flex;flex-direction:column;gap:5px;}
+.qb-opt{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;font-size:.84rem;}
+.qb-opt.correct{background:#ECFDF5;border:1px solid #A7F3D0;}
+.qb-opt.wrong{background:var(--bg);}
+.qb-opt-mark{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;}
+.qb-opt.correct .qb-opt-mark{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* -- Live exam monitor -- */
+.student-monitor-card{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);}
+.student-monitor-card:last-child{border-bottom:none;}
+.smc-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0;}
+.smc-name{flex:1;font-size:.83rem;font-weight:700;color:var(--ink-2);}
+.smc-progress{width:100px;flex-shrink:0;}
+.smc-pct{font-size:.78rem;font-weight:800;font-family:'DM Mono',monospace;}
+.smc-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.smc-status-dot.live{background:var(--green);animation:pulse-dot 1.5s infinite;}
+.smc-status-dot.idle{background:var(--amber);}
+.smc-status-dot.done{background:var(--blue);}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* -- Stats grid -- */
+.online-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.os-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.os-num{font-size:1.5rem;font-weight:800;}
+.os-lbl{font-size:.74rem;color:var(--muted);font-weight:600;margin-top:3px;}
+
+/* Timer display */
+.exam-timer{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:900;color:var(--red);background:#FFF5F5;border:1.5px solid #FECACA;border-radius:8px;padding:6px 14px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:660px;max-width:95vw;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+.modal-body{padding:24px;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.online-stats{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Online Exam</div>
+        <div class="page-title">Create &amp; Launch Online Tests</div>
+        <div class="page-sub">Build MCQ exams with question bank, auto-grading, and real-time student monitoring.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openModal('createExamModal')">+ Create Online Exam</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="online-stats anim-1">
+      <div class="os-card"><div class="os-num" style="color:var(--green);">1</div><div class="os-lbl">Live Right Now</div></div>
+      <div class="os-card"><div class="os-num" style="color:var(--blue);">3</div><div class="os-lbl">Scheduled</div></div>
+      <div class="os-card"><div class="os-num" style="color:var(--purple);">12</div><div class="os-lbl">Completed</div></div>
+      <div class="os-card"><div class="os-num" style="color:var(--ink);">284</div><div class="os-lbl">Questions in Bank</div></div>
+    </div>
+
+    <!-- View tabs -->
+    <div class="card anim-2" style="padding:0;">
+      <div class="main-tabs">
+        <div class="mt on" onclick="switchTab(this,'all')"> All Exams</div>
+        <div class="mt" onclick="switchTab(this,'builder')"> Question Builder</div>
+        <div class="mt" onclick="switchTab(this,'live')"> Live Monitor</div>
+        <div class="mt" onclick="switchTab(this,'results')">&#x1F4CA; Results</div>
+      </div>
+
+      <!-- ALL EXAMS tab -->
+      <div id="tab-all" class="tab-content">
+        <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;" id="examCardsGrid"></div>
+      </div>
+
+      <!-- QUESTION BUILDER tab -->
+      <div id="tab-builder" class="tab-content" style="display:none;">
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <select class="form-select" style="width:200px;padding:7px 12px;">
+            <option>Math MCQ &middot; Class IX (Feb)</option>
+            <option>English MCQ Test</option>
+          </select>
+          <span style="font-size:.82rem;color:var(--muted);">15 questions &middot; 30 marks</span>
+          <div style="margin-left:auto;" class="page-actions">
+            <button class="btn btn-sm btn-outline" onclick="addQuestion()">+ Add Question</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Importing from question bank&middot;','&#x2705;')"> Import from Bank</button>
+            <button class="btn btn-sm btn-primary" onclick="showToast('Exam saved!','&#x2705;')"> Save</button>
+          </div>
+        </div>
+        <div style="padding:16px;" id="questionsContainer"></div>
+        <div style="padding:14px 18px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:flex-end;gap:10px;">
+          <button class="btn btn-outline" onclick="showToast('Preview launched in new tab','&#x2705;')"> Preview Exam</button>
+          <button class="btn btn-primary" onclick="showToast('Exam published! Students can now see it.','&#x2705;')"> Publish &amp; Launch</button>
+        </div>
+      </div>
+
+      <!-- LIVE MONITOR tab -->
+      <div id="tab-live" class="tab-content" style="display:none;">
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:.92rem;font-weight:800;color:var(--ink);"> Math MCQ &middot; Class IX-A</div>
+            <div style="font-size:.78rem;color:var(--muted);">Started 2:00 PM &middot; 30 questions &middot; 45 min</div>
+          </div>
+          <div class="exam-timer" id="timerDisplay">22:14</div>
+          <div style="margin-left:auto;" class="page-actions">
+            <button class="btn btn-sm btn-outline" style="border-color:var(--red);color:var(--red);" onclick="showToast('Exam terminated!','&#x2705;')">End Exam</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('2-minute warning sent','&#x2705;')"> Warn Students</button>
+          </div>
+        </div>
+        <!-- Live stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);">
+          <div style="background:var(--white);padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--green);">32</div><div style="font-size:.72rem;color:var(--muted);font-weight:600;">Active</div></div>
+          <div style="background:var(--white);padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--blue);">5</div><div style="font-size:.72rem;color:var(--muted);font-weight:600;">Submitted</div></div>
+          <div style="background:var(--white);padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--amber);">3</div><div style="font-size:.72rem;color:var(--muted);font-weight:600;">Not Joined</div></div>
+          <div style="background:var(--white);padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--red);">2</div><div style="font-size:.72rem;color:var(--muted);font-weight:600;">Suspicious</div></div>
+        </div>
+        <div id="liveMonitorList" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- RESULTS tab -->
+      <div id="tab-results" class="tab-content" style="display:none;">
+        <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <select class="form-select" style="width:220px;padding:7px 12px;">
+            <option>Math MCQ &middot; Class IX-A (Feb 10)</option>
+            <option>English MCQ (Feb 3)</option>
+          </select>
+          <span style="font-size:.82rem;color:var(--muted);">42 students &middot; Avg: 22/30</span>
+          <button class="btn btn-sm btn-outline" style="margin-left:auto;" onclick="showToast('Results exported','&#x2705;')">Export</button>
+        </div>
+        <div style="overflow-x:auto;max-height:500px;overflow-y:auto;">
+          <table style="border-collapse:collapse;width:100%;font-size:.83rem;">
+            <thead>
+              <tr>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:left;">Rank</th>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:left;">Student</th>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;">Score /30</th>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;">%</th>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;">Time Taken</th>
+                <th style="padding:8px 12px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Create Exam Modal -->
+<div class="modal-overlay" id="createExamModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title"> Create Online MCQ Exam</div>
+      <button class="modal-close" onclick="closeModal('createExamModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Exam Title *</label>
+          <input type="text" class="form-input" placeholder="e.g. Mathematics MCQ &middot; Class IX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <select class="form-select">
+            <option>Mathematics</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>English</option><option>Bangla</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Class</label>
+          <select class="form-select"><option>Class IX&middot;A</option><option>Class IX&middot;B</option><option>Class X&middot;A</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Questions</label>
+          <input type="number" class="form-input" value="30" min="5" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (minutes)</label>
+          <input type="number" class="form-input" value="45" min="10" max="180">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Marks per Question</label>
+          <input type="number" class="form-input" value="1" min="1" max="5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Negative Marking</label>
+          <select class="form-select"><option>None</option><option>-0.25</option><option>-0.5</option><option>-1</option></select>
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Schedule</label>
+          <div style="display:flex;gap:8px;">
+            <input type="date" class="form-input" value="2025-03-10">
+            <input type="time" class="form-input" value="10:00">
+            <span style="display:flex;align-items:center;color:var(--muted);font-size:.84rem;">to</span>
+            <input type="time" class="form-input" value="10:45">
+          </div>
+        </div>
+        <div class="form-group span-2">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.84rem;">Shuffle question order</span></label>
+            <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.84rem;">Shuffle answer options</span></label>
+            <label class="toggle-wrap"><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label><span style="font-size:.84rem;">Show result immediately after submission</span></label>
+            <label class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span style="font-size:.84rem;">Block tab switching (anti-cheat)</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('createExamModal')">Cancel</button>
+      <button class="btn btn-outline" onclick="closeModal('createExamModal');showToast('Saved as draft','&#x2705;');switchTab(document.querySelectorAll('.mt')[1],'builder')">Save as Draft &middot;</button>
+      <button class="btn btn-primary" onclick="closeModal('createExamModal');showToast('Exam created! Add questions now.','&#x2705;');switchTab(document.querySelectorAll('.mt')[1],'builder')">Create &amp; Add Questions &middot;</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Tahsin','Mahmud','Sumaiya','Nafisa','Tanvir','Roksana','Sabbir'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan'];
+
+// Exam cards data
+const exams=[
+  {title:'Mathematics MCQ &middot; Half-Yearly',cls:'Class IX&middot;A',subj:'Math',q:30,dur:45,status:'live',started:'2:00 PM',students:42,submitted:5},
+  {title:'Physics MCQ Test',cls:'Class X&middot;A',subj:'Physics',q:25,dur:30,status:'scheduled',date:'Mar 1, 2025',students:38},
+  {title:'English Grammar MCQ',cls:'Class IX&middot;A B',subj:'English',q:20,dur:25,status:'scheduled',date:'Mar 3, 2025',students:82},
+  {title:'Chemistry Unit Test',cls:'Class XI&middot;A',subj:'Chemistry',q:30,dur:40,status:'scheduled',date:'Mar 10, 2025',students:35},
+  {title:'Bangla MCQ &middot; Annual 2024',cls:'All Classes',subj:'Bangla',q:30,dur:30,status:'ended',date:'Dec 5, 2024',students:1248,avg:22},
+  {title:'Biology Practical MCQ',cls:'Class XII&middot;A',subj:'Biology',q:20,dur:30,status:'draft'},
+];
+
+function buildExamCards(){
+  const statusMap={live:'ep-live',scheduled:'ep-scheduled',draft:'ep-draft',ended:'ep-ended'};
+  const statusLabel={live:'Live Now',scheduled:'Scheduled',draft:'Draft',ended:'Ended'};
+  document.getElementById('examCardsGrid').innerHTML=exams.map(e=>`
+    <div class="online-exam-card">
+      <div class="oec-head">
+        <div style="font-size:1.5rem;">${{Math:'',Physics:'',Chemistry:'',Biology:'',English:'',Bangla:''}[e.subj]||''}</div>
+        <div style="flex:1;"><div style="font-size:.88rem;font-weight:800;color:var(--ink);">${e.title}</div><div style="font-size:.74rem;color:var(--muted);">${e.cls}</div></div>
+        <span class="exam-pill ${statusMap[e.status]}">${statusLabel[e.status]}</span>
+      </div>
+      <div class="oec-body">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;">
+          ${e.q?`<span style="color:var(--muted);"> <strong style="color:var(--ink-2);">${e.q}</strong> questions</span>`:''}
+          ${e.dur?`<span style="color:var(--muted);"><strong style="color:var(--ink-2);">${e.dur}</strong> min</span>`:''}
+          ${e.students?`<span style="color:var(--muted);"> <strong style="color:var(--ink-2);">${e.students}</strong> students</span>`:''}
+          ${e.avg!==undefined?`<span style="color:var(--muted);">Avg: <strong style="color:var(--green);">${e.avg}/${e.q}</strong></span>`:''}
+          ${e.date?`<span style="color:var(--muted);"> <strong style="color:var(--ink-2);">${e.date}</strong></span>`:''}
+          ${e.started?`<span style="color:var(--green);font-weight:700;">${e.submitted||0}/${e.students} submitted</span>`:''}
+        </div>
+      </div>
+      <div class="oec-foot">
+        <span class="oec-stat">${e.q?`${e.q} MCQ &middot; ${e.dur} min`:''}</span>
+        <div class="page-actions" style="gap:5px;">
+          ${e.status==='live'?`<button class="btn btn-sm btn-outline" onclick="switchTab(document.querySelectorAll('.mt')[2],'live')"> Monitor</button>`:''}
+          ${e.status==='scheduled'?`<button class="btn btn-sm btn-ghost" onclick="showToast('Editing exam&middot;','&#x2705;')">&#x270F;&#xFE0F; Edit</button><button class="btn btn-sm btn-outline" onclick="showToast('Exam launched!','&#x2705;')"> Launch Now</button>`:''}
+          ${e.status==='draft'?`<button class="btn btn-sm btn-ghost" onclick="switchTab(document.querySelectorAll('.mt')[1],'builder')"> Build</button>`:''}
+          ${e.status==='ended'?`<button class="btn btn-sm btn-outline" onclick="switchTab(document.querySelectorAll('.mt')[3],'results')">&#x1F4CA; Results</button>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// Question builder
+const questions=[
+  {text:'Which of the following is a prime number?',opts:['12','15','17','21'],correct:2},
+  {text:'If a = 5 and b = 3, what is the value of a&middot; - b&middot;?',opts:['8','16','25','34'],correct:1},
+  {text:'What is the square root of 144?',opts:['10','11','12','14'],correct:2},
+  {text:'Which formula represents the area of a circle?',opts:['2pr','pr&middot;','pd','2pr&middot;'],correct:1},
+  {text:'Solve for x: 2x + 6 = 18',opts:['x = 4','x = 5','x = 6','x = 7'],correct:2},
+];
+
+function buildQuestionBuilder(){
+  document.getElementById('questionsContainer').innerHTML=questions.map((q,qi)=>`
+    <div class="qb-question" onclick="this.classList.toggle('active')">
+      <div class="qb-q-num">Question ${qi+1} &middot; 1 mark</div>
+      <div class="qb-q-text">${q.text}</div>
+      <div class="qb-options">
+        ${q.opts.map((o,oi)=>`
+          <div class="qb-opt ${oi===q.correct?'correct':'wrong'}">
+            <div class="qb-opt-mark">${oi===q.correct?'&#x2705;':String.fromCharCode(65+oi)}</div>
+            <span style="font-size:.84rem;">${o}</span>
+            ${oi===q.correct?'<span style="margin-left:auto;font-size:.7rem;color:var(--green);font-weight:700;">Correct Answer</span>':''}
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-sm btn-ghost" style="font-size:.72rem;" onclick="event.stopPropagation();showToast('Editing Q${qi+1}','&#x2705;')">&#x270F;&#xFE0F; Edit</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:.72rem;color:var(--red);" onclick="event.stopPropagation();showToast('Question removed','&#x2705;')"> Remove</button>
+        <button class="btn btn-sm btn-ghost" style="font-size:.72rem;" onclick="event.stopPropagation();showToast('Duplicated','&#x2705;')"> Duplicate</button>
+      </div>
+    </div>`).join('')+'<button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:4px;" onclick="addQuestion()">+ Add Another Question</button>';
+}
+
+function addQuestion(){
+  showToast('New question added at bottom','+');
+  questions.push({text:'(New question &middot; click to edit)',opts:['Option A','Option B','Option C','Option D'],correct:0});
+  buildQuestionBuilder();
+}
+
+// Live monitor
+function buildLiveMonitor(){
+  const studentData=Array.from({length:12},(_,i)=>{
+    const fn=FIRST[i%FIRST.length],ln=LAST[i%LAST.length];
+    const pct=Math.floor(20+Math.random()*80);
+    const status=i<5?'done':i<10?'live':'idle';
+    const score=status==='done'?Math.floor(15+Math.random()*15):null;
+    return{fn,ln,color:COLORS[i%COLORS.length],pct,status,score};
+  });
+  document.getElementById('liveMonitorList').innerHTML=studentData.map(s=>`
+    <div class="student-monitor-card">
+      <div class="smc-avatar" style="background:${s.color};">${s.fn[0]}${s.ln[0]}</div>
+      <div class="smc-name">${s.fn} ${s.ln}${s.status==='done'?` <span class="badge badge-blue" style="font-size:.62rem;">Submitted &middot; ${s.score}/30</span>`:''}</div>
+      <div class="smc-progress">
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${s.pct}%;background:${s.status==='done'?'var(--blue)':s.status==='live'?'var(--green)':'var(--amber)'};border-radius:3px;"></div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">${s.pct}% done</div>
+      </div>
+      <span style="font-size:.76rem;font-weight:600;color:${s.status==='live'?'var(--green)':s.status==='idle'?'var(--amber)':'var(--blue)'};">${s.status==='live'?'Active':s.status==='idle'?'Idle':'Submitted'}</span>
+      <div class="smc-status-dot ${s.status}"></div>
+    </div>`).join('');
+}
+
+// Results table
+function buildResultsTable(){
+  const rows=Array.from({length:15},(_,i)=>{
+    const fn=FIRST[i%FIRST.length],ln=LAST[i%LAST.length];
+    const score=30-Math.floor(i*1.5);
+    const pct=Math.round(score/30*100);
+    const mins=Math.floor(25+Math.random()*20);
+    return{fn,ln,score,pct,mins,rank:i+1,color:COLORS[i%COLORS.length]};
+  });
+  document.getElementById('resultsTableBody').innerHTML=rows.map(r=>`
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);">${r.rank<=3?['','',''][r.rank-1]:r.rank}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:24px;height:24px;border-radius:50%;background:${r.color};display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;">${r.fn[0]}${r.ln[0]}</div>
+          <span style="font-weight:700;color:var(--ink-2);">${r.fn} ${r.ln}</span>
+        </div>
+      </td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-weight:800;color:${r.score>=20?'var(--green)':'var(--amber)'};">${r.score}/30</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;font-weight:700;color:${r.pct>=70?'var(--green)':r.pct>=50?'var(--amber)':'var(--red)'};">${r.pct}%</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;color:var(--muted);font-size:.8rem;">${r.mins}m ${Math.floor(Math.random()*60)}s</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;"><span class="badge ${r.score>=10?'badge-green':'badge-amber'}" style="font-size:.67rem;">${r.score>=10?'Passed':'Failed'}</span></td>
+    </tr>`).join('');
+}
+
+// Timer
+let timerSec=22*60+14;
+setInterval(()=>{
+  if(timerSec>0)timerSec--;
+  const m=Math.floor(timerSec/60),s=timerSec%60;
+  const el=document.getElementById('timerDisplay');
+  if(el){el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;el.style.color=timerSec<300?'var(--red)':'var(--blue)';}
+},1000);
+
+function switchTab(btn,name){
+  document.querySelectorAll('.mt').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='';
+  if(name==='builder')buildQuestionBuilder();
+  if(name==='live')buildLiveMonitor();
+  if(name==='results')buildResultsTable();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildExamCards();buildQuestionBuilder();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.welcome-card{background:linear-gradient(135deg,#0D9488 0%,#0F766E 100%);border-radius:16px;padding:28px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.welcome-emoji{font-size:3.5rem;line-height:1;}
+.welcome-title{font-size:1.35rem;font-weight:800;margin-bottom:4px;}
+.welcome-sub{font-size:.88rem;opacity:.85;}
+.schedule-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.schedule-item:last-child{border:none;}
+.sched-time{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--muted);width:80px;flex-shrink:0;}
+.sched-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sched-class{font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.sched-sub{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.sched-room{font-size:.75rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.task-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.task-row:last-child{border:none;}
+.task-chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;transition:all .15s;background:none;}
+.task-chk:hover{border-color:var(--teacher);}
+.task-txt{flex:1;font-size:.85rem;color:var(--ink-3);}
+.task-pri{font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:8px;}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-card">
+      <div>
+        <div class="welcome-title">Good morning, Mr. Khan! 👋</div>
+        <div class="welcome-sub">Tuesday, 25 February 2025 &nbsp;·&nbsp; Session 2026–27 &nbsp;·&nbsp; Term 2</div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="teacher-attendance.html" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);">✅ Mark Attendance</a>
+          <a href="teacher-assignments.html" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);">📝 New Assignment</a>
+        </div>
+      </div>
+      <div class="welcome-emoji">📖</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4 mb-6">
+      <div class="stat-card sc-blue">
+        <div class="stat-icon-box">📚</div>
+        <div class="stat-num">6</div>
+        <div class="stat-label">Classes Today</div>
+        <div class="stat-delta delta-neu">3 periods done</div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-icon-box">👥</div>
+        <div class="stat-num">184</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-delta delta-up">↑ Across 6 classes</div>
+      </div>
+      <div class="stat-card sc-amber">
+        <div class="stat-icon-box">📝</div>
+        <div class="stat-num">8</div>
+        <div class="stat-label">Pending Assignments</div>
+        <div class="stat-delta delta-down">↓ 3 overdue</div>
+      </div>
+      <div class="stat-card sc-teal" style="--sc-bg:var(--teacher-pale);--sc-col:var(--teacher);">
+        <div class="stat-icon-box" style="background:var(--teacher-light);color:var(--teacher-dark);">📊</div>
+        <div class="stat-num">87%</div>
+        <div class="stat-label">Avg Attendance Today</div>
+        <div class="stat-delta delta-up">↑ +2% vs yesterday</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <!-- Today's Schedule -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 Today's Schedule</div>
+          <a href="teacher-classes.html" class="btn btn-xs btn-secondary">View All</a>
+        </div>
+        <div class="card-body">
+          <div class="schedule-item">
+            <div class="sched-time">08:00</div>
+            <div class="sched-dot" style="background:#0D9488;"></div>
+            <div>
+              <div class="sched-class">Class 8-A &nbsp;<span class="badge badge-green">Done</span></div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 201</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-time">09:00</div>
+            <div class="sched-dot" style="background:#0D9488;"></div>
+            <div>
+              <div class="sched-class">Class 9-B &nbsp;<span class="badge badge-green">Done</span></div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 305</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-time">10:00</div>
+            <div class="sched-dot" style="background:#F59E0B;"></div>
+            <div>
+              <div class="sched-class">Class 10-C &nbsp;<span class="badge badge-amber">Now</span></div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 401</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-time">11:00</div>
+            <div class="sched-dot" style="background:var(--border);"></div>
+            <div>
+              <div class="sched-class">Class 7-A</div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 102</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-time">14:00</div>
+            <div class="sched-dot" style="background:var(--border);"></div>
+            <div>
+              <div class="sched-class">Class 8-B</div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 201</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-time">15:00</div>
+            <div class="sched-dot" style="background:var(--border);"></div>
+            <div>
+              <div class="sched-class">Class 9-A</div>
+              <div class="sched-sub">Mathematics</div>
+            </div>
+            <div class="sched-room ml-auto">Room 305</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Tasks -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">✅ Pending Tasks</div>
+          <a href="teacher-assignments.html" class="btn btn-xs btn-secondary">All Assignments</a>
+        </div>
+        <div class="card-body">
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Grade Class 9-B Mid-Term Papers</div>
+            <span class="task-pri" style="background:#FEE2E2;color:#B91C1C;">High</span>
+          </div>
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Mark Attendance – Class 10-C</div>
+            <span class="task-pri" style="background:#FEF3C7;color:#92400E;">Med</span>
+          </div>
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Upload Algebra Notes (Chapter 5)</div>
+            <span class="task-pri" style="background:#DCFCE7;color:#15803D;">Low</span>
+          </div>
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Create Assignment – Class 8-A Fractions</div>
+            <span class="task-pri" style="background:#FEF3C7;color:#92400E;">Med</span>
+          </div>
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Review AI-generated questions for quiz</div>
+            <span class="task-pri" style="background:#DCFCE7;color:#15803D;">Low</span>
+          </div>
+          <div class="task-row">
+            <input type="checkbox" class="task-chk">
+            <div class="task-txt">Respond to parent message – Mrs. Akter</div>
+            <span class="task-pri" style="background:#FEE2E2;color:#B91C1C;">High</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

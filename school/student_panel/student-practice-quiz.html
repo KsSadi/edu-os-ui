@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Quiz · AI — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+
+.page-header{align-items:flex-end;gap:16px;}
+.hero-shell{display:grid;grid-template-columns:1.35fr .95fr;gap:16px;margin-bottom:18px;}
+.hero-card{background:linear-gradient(135deg,#1E0A3C,#2D1B69 60%,#4C1D95);border:1.5px solid rgba(124,58,237,.3);border-radius:18px;padding:24px;color:#fff;box-shadow:0 20px 40px rgba(30,10,60,.16);position:relative;overflow:hidden;}
+.hero-card:after{content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),rgba(255,255,255,0) 68%);pointer-events:none;}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:999px;color:#DDD6FE;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+.hero-title{font-size:1.75rem;line-height:1.15;font-weight:900;margin-bottom:10px;max-width:560px;}
+.hero-sub{font-size:.9rem;line-height:1.65;color:rgba(255,255,255,.72);max-width:660px;}
+.hero-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;position:relative;z-index:1;}
+.metric-chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;}
+.metric-val{font-size:1.35rem;font-weight:900;font-family:'DM Mono',monospace;line-height:1;color:#fff;}
+.metric-lbl{font-size:.68rem;color:rgba(255,255,255,.55);margin-top:4px;}
+.hero-side{display:flex;flex-direction:column;gap:16px;}
+.quick-card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);}
+.quick-title{font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+.quick-list{display:flex;flex-direction:column;gap:10px;}
+.quick-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.quick-item strong{font-size:.86rem;color:var(--ink);}
+.quick-item span{font-size:.74rem;color:var(--muted);}
+.setup-shell{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-bottom:18px;align-items:start;}
+.setup-panel,.preview-panel{background:var(--white);border:1.5px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;}
+.setup-panel{padding:20px;}
+.setup-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:6px;}
+.setup-sub{font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:16px;}
+.topic-strip{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.topic-card{border:1.5px solid var(--border);border-radius:14px;padding:12px 13px;background:var(--bg);cursor:pointer;transition:all .15s;text-align:left;}
+.topic-card:hover,.topic-card.active{border-color:var(--stu);background:var(--stu-pale);transform:translateY(-1px);}
+.topic-card .topic-name{font-size:.86rem;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.topic-card .topic-meta{font-size:.72rem;color:var(--muted);line-height:1.45;}
+.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
+.cfg-box{border:1.5px solid var(--border);border-radius:14px;background:var(--bg);padding:12px;}
+.cfg-lbl{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.cfg-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.seg-btn{padding:8px 12px;border-radius:999px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:800;color:var(--ink);cursor:pointer;transition:all .15s;}
+.seg-btn.active,.seg-btn:hover{background:var(--stu-pale);border-color:var(--stu);color:var(--stu);}
+.range-box{display:flex;align-items:center;gap:10px;}
+.range-box input{width:100%;accent-color:var(--stu);}
+.range-pct{font-size:.78rem;font-weight:800;color:var(--stu);min-width:34px;text-align:right;}
+.preview-panel{padding:20px;}
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.preview-title{font-size:.9rem;font-weight:900;color:var(--ink);}
+.preview-note{font-size:.76rem;color:var(--muted);}
+.preview-box{background:linear-gradient(180deg,#FAFAFF,#F7F5FF);border:1.5px solid var(--stu-light);border-radius:14px;padding:14px;}
+.preview-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(124,58,237,.08);}
+.preview-row:last-child{border-bottom:none;}
+.preview-row strong{font-size:.82rem;color:var(--ink);}
+.preview-row span{font-size:.78rem;color:var(--muted);}
+.setup-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.topic-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:.76rem;font-weight:800;border:1.5px solid transparent;}
+.topic-pill.bad{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.18);color:#B91C1C;}
+.topic-pill.warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.18);color:#B45309;}
+.topic-pill.good{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.18);color:#047857;}
+.focus-board{margin-top:18px;background:linear-gradient(180deg,#fff,#FCFBFF);border:1.5px solid rgba(124,58,237,.12);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;}
+.focus-board-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(124,58,237,.08);background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(124,58,237,.02));}
+.focus-board-title{display:flex;align-items:center;gap:10px;font-size:.98rem;font-weight:900;color:var(--ink);}
+.focus-board-icon{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--stu-pale);color:var(--stu-dark);flex-shrink:0;}
+.focus-board-note{font-size:.78rem;color:var(--muted);line-height:1.55;max-width:58ch;}
+.focus-board-body{display:grid;grid-template-columns:.85fr 1.15fr;gap:0;}
+.focus-summary{padding:16px 18px;border-right:1px solid rgba(124,58,237,.08);background:linear-gradient(180deg,rgba(124,58,237,.03),rgba(124,58,237,0));}
+.focus-summary-kicker{font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.focus-summary-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px dashed rgba(124,58,237,.12);}
+.focus-summary-item:last-child{border-bottom:none;}
+.focus-summary-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;background:var(--stu);box-shadow:0 0 0 4px rgba(124,58,237,.12);}
+.focus-summary-item strong{display:block;font-size:.84rem;color:var(--ink);margin-bottom:2px;}
+.focus-summary-item span{font-size:.74rem;color:var(--muted);line-height:1.45;}
+.focus-groups{padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+.focus-group-label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.focus-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.focus-pill{padding:9px 12px;border-radius:999px;font-size:.76rem;font-weight:800;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px;}
+.focus-pill.bad{background:rgba(239,68,68,.09);border-color:rgba(239,68,68,.18);color:#B91C1C;}
+.focus-pill.warn{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.18);color:#B45309;}
+.focus-pill.good{background:rgba(16,185,129,.09);border-color:rgba(16,185,129,.18);color:#047857;}
+
+@media (max-width: 1080px){
+  .hero-shell,.setup-shell{grid-template-columns:1fr;}
+  .focus-board-body{grid-template-columns:1fr;}
+  .focus-summary{border-right:none;border-bottom:1px solid rgba(124,58,237,.08);}
+}
+
+@media (max-width: 720px){
+  .hero-title{font-size:1.4rem;}
+  .hero-metrics,.setup-grid{grid-template-columns:1fr;}
+}
+
+/* AI badge banner */
+.ai-banner{background:linear-gradient(135deg,#1E0A3C,#2D1B69,#4C1D95);border:1.5px solid rgba(124,58,237,.35);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.ai-banner-icon{font-size:2rem;flex-shrink:0;}
+.ai-banner-title{font-size:.95rem;font-weight:800;color:#C4B5FD;margin-bottom:3px;}
+.ai-banner-sub{font-size:.78rem;color:rgba(255,255,255,.45);}
+.badge-ai{background:rgba(99,102,241,.3);color:#A5B4FC;font-size:.68rem;font-weight:800;padding:2px 9px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;}
+
+/* weak area chips */
+.weak-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:10px;font-size:.77rem;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .15s;}
+.weak-chip.red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#FCA5A5;}
+.weak-chip.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);color:#FCD34D;}
+.weak-chip.green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2);color:#6EE7B7;}
+
+/* Subject picker */
+.subj-btn{padding:8px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink);}
+.subj-btn.active,.subj-btn:hover{background:var(--stu-pale);border-color:var(--stu);color:var(--stu);}
+
+/* Quiz card */
+.quiz-wrap{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+.quiz-head{background:linear-gradient(135deg,#1E0A3C,#4C1D95);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;}
+.quiz-head-title{font-size:.92rem;font-weight:800;color:#C4B5FD;}
+.quiz-timer{font-family:'DM Mono',monospace;font-size:1.05rem;font-weight:800;color:#FCD34D;background:rgba(0,0,0,.25);padding:4px 12px;border-radius:8px;}
+.quiz-progress{height:5px;background:rgba(255,255,255,.08);}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,#7C3AED,#A78BFA);transition:width .35s;}
+.quiz-body{padding:26px 28px;}
+.q-num{font-size:.72rem;font-weight:800;color:var(--stu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.q-text{font-size:1rem;font-weight:700;color:var(--ink);line-height:1.55;margin-bottom:20px;}
+.opt-btn{width:100%;text-align:left;padding:13px 16px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:.88rem;color:var(--ink);cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.opt-btn:hover:not(:disabled){border-color:var(--stu);background:var(--stu-pale);}
+.opt-btn.correct{background:#ECFDF5;border-color:#6EE7B7 !important;color:#065F46;font-weight:700;}
+.opt-btn.wrong{background:#FEF2F2;border-color:#FCA5A5 !important;color:#991B1B;}
+.opt-btn:disabled{cursor:default;}
+.opt-letter{width:26px;height:26px;border-radius:7px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;}
+.opt-btn.correct .opt-letter{background:#D1FAE5;color:#065F46;}
+.opt-btn.wrong .opt-letter{background:#FEE2E2;color:#991B1B;}
+.explain-box{background:#F0FDF4;border:1.5px solid #A7F3D0;border-radius:10px;padding:13px 15px;font-size:.82rem;color:#065F46;line-height:1.55;margin-top:12px;display:none;}
+.explain-box.show{display:block;}
+.quiz-foot{padding:16px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+
+/* results panel */
+.result-wrap{background:linear-gradient(135deg,#1E0A3C,#2D1B69);border-radius:16px;padding:32px;text-align:center;display:none;}
+.result-wrap.show{display:block;}
+.result-score{font-size:3rem;font-weight:900;color:#C4B5FD;font-family:'DM Mono',monospace;line-height:1;}
+.result-grade{font-size:.85rem;color:rgba(255,255,255,.5);margin-top:6px;}
+.result-row{display:flex;justify-content:center;gap:28px;margin:20px 0;}
+.result-stat{text-align:center;}
+.result-stat-val{font-size:1.3rem;font-weight:800;font-family:'DM Mono',monospace;color:#fff;}
+.result-stat-lbl{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:3px;}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">🎯 AI Tools</div>
+        <div class="page-title">Smart Practice Quiz</div>
+        <div class="page-sub">Choose a subject, focus on specific chapters, and tune the quiz length before you begin.</div>
+      </div>
+    </div>
+
+    <div class="hero-shell">
+      <div class="hero-card">
+        <div class="hero-kicker">AI Practice Studio · Adaptive Mode</div>
+        <div class="hero-title">Build a practice session around the exact topics you need to improve.</div>
+        <div class="hero-sub">This version lets you control the subject, topic, question count, and time limit before starting. It is designed for exam prep, not random practice.</div>
+        <div class="hero-metrics">
+          <div class="metric-chip"><div class="metric-val" id="heroQuestionCount">10</div><div class="metric-lbl">Questions</div></div>
+          <div class="metric-chip"><div class="metric-val" id="heroDuration">10m</div><div class="metric-lbl">Time limit</div></div>
+          <div class="metric-chip"><div class="metric-val" id="heroFocus">Algebra</div><div class="metric-lbl">Current topic</div></div>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="quick-card">
+          <div class="quick-title">Today’s Focus</div>
+          <div class="quick-list">
+            <div class="quick-item"><div><strong>Math</strong><br><span>Algebra + Fractions</span></div><span>Weak</span></div>
+            <div class="quick-item"><div><strong>English</strong><br><span>Grammar + Writing</span></div><span>Needs work</span></div>
+            <div class="quick-item"><div><strong>Science</strong><br><span>Chemical equations</span></div><span>Practice</span></div>
+          </div>
+        </div>
+        <div class="ai-banner" style="margin-bottom:0;">
+          <div class="ai-banner-icon">🧠</div>
+          <div>
+            <div class="ai-banner-title">AI Detected Your Weak Areas <span class="badge-ai">Live Analysis</span></div>
+            <div class="ai-banner-sub">Based on your last 12 tests and exam scores · Updated Jun 1, 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-shell">
+      <div class="setup-panel">
+        <div class="setup-title">1. Pick a subject and chapter focus</div>
+        <div class="setup-sub">Start with one subject, then narrow it down to the chapter you want to test. This makes the quiz feel like a real revision session.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;" id="subjPicker">
+          <button class="subj-btn active" onclick="setSub(this,'math')">📐 Mathematics</button>
+          <button class="subj-btn" onclick="setSub(this,'english')">✍️ English</button>
+          <button class="subj-btn" onclick="setSub(this,'science')">⚗️ Science</button>
+          <button class="subj-btn" onclick="setSub(this,'bangla')">📖 Bangla</button>
+          <button class="subj-btn" onclick="setSub(this,'bio')">🔬 Biology</button>
+        </div>
+        <div class="topic-strip" id="topicStrip"></div>
+        <div class="setup-grid">
+          <div class="cfg-box">
+            <div class="cfg-lbl">Question Count</div>
+            <div class="cfg-row" id="countBtns"></div>
+          </div>
+          <div class="cfg-box">
+            <div class="cfg-lbl">Difficulty</div>
+            <div class="cfg-row" id="difficultyBtns"></div>
+          </div>
+          <div class="cfg-box">
+            <div class="cfg-lbl">Time Limit</div>
+            <div class="range-box">
+              <input type="range" id="timeRange" min="5" max="30" value="10" step="1" oninput="setTime(this.value)">
+              <div class="range-pct" id="timeValue">10m</div>
+            </div>
+          </div>
+          <div class="cfg-box">
+            <div class="cfg-lbl">Mode</div>
+            <div class="cfg-row" id="modeBtns"></div>
+          </div>
+        </div>
+        <div class="setup-actions">
+          <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);padding:12px 24px;" onclick="startQuiz()">Start Custom Quiz →</button>
+          <button class="btn btn-outline" onclick="randomizeSetup()">Randomize Practice</button>
+          <button class="btn btn-outline" onclick="focusWeakest()">Focus Weakest Topics</button>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-head">
+          <div>
+            <div class="preview-title">Quiz Preview</div>
+            <div class="preview-note">See what you will practice before you begin.</div>
+          </div>
+          <span class="badge-ai">AI Ready</span>
+        </div>
+        <div class="preview-box">
+          <div class="preview-row"><strong>Subject</strong><span id="previewSubject">Mathematics</span></div>
+          <div class="preview-row"><strong>Topic</strong><span id="previewTopic">Algebra</span></div>
+          <div class="preview-row"><strong>Questions</strong><span id="previewCount">10</span></div>
+          <div class="preview-row"><strong>Difficulty</strong><span id="previewDifficulty">Mixed</span></div>
+          <div class="preview-row"><strong>Time Limit</strong><span id="previewTime">10 minutes</span></div>
+          <div class="preview-row"><strong>Target</strong><span id="previewTarget">Strengthen weak chapters with instant feedback</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz area -->
+    <div id="quizArea">
+      <!-- Quiz card shown during quiz -->
+      <div class="quiz-wrap" id="quizCard" style="display:none;">
+        <div class="quiz-head">
+          <div class="quiz-head-title" id="qSubjTitle">Mathematics — Algebra</div>
+          <div class="quiz-timer" id="qTimer">08:00</div>
+        </div>
+        <div class="quiz-progress"><div class="quiz-progress-fill" id="qProgress" style="width:10%;"></div></div>
+        <div class="quiz-body">
+          <div class="q-num" id="qNum">Question 1 of 10</div>
+          <div class="q-text" id="qText"></div>
+          <div id="qOpts"></div>
+          <div class="explain-box" id="qExplain"></div>
+        </div>
+        <div class="quiz-foot">
+          <div style="font-size:.78rem;color:var(--muted);" id="qScore">0 correct · 0 wrong</div>
+          <button class="btn btn-sm" id="qNextBtn" style="display:none;" onclick="nextQ()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Start prompt (default) -->
+      <div class="card" id="startCard" style="text-align:center;padding:40px 24px;">
+        <div style="font-size:3rem;margin-bottom:12px;">🎯</div>
+        <div style="font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:8px;">Ready to practice?</div>
+        <div style="font-size:.84rem;color:var(--muted);max-width:400px;margin:0 auto 20px;">10 adaptive questions · AI picks your weakest chapters · Instant explanations after each answer</div>
+        <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);padding:12px 32px;font-size:.92rem;" onclick="startQuiz()">Start Quiz →</button>
+      </div>
+
+      <!-- Results card -->
+      <div class="result-wrap" id="resultCard">
+        <div style="font-size:1.4rem;margin-bottom:14px;">🎉</div>
+        <div class="result-score" id="rScore">8/10</div>
+        <div class="result-grade" id="rGrade">Excellent! Score: 80%</div>
+        <div class="result-row">
+          <div class="result-stat"><div class="result-stat-val" id="rCorrect">8</div><div class="result-stat-lbl">Correct</div></div>
+          <div class="result-stat"><div class="result-stat-val" id="rWrong">2</div><div class="result-stat-lbl">Wrong</div></div>
+          <div class="result-stat"><div class="result-stat-val" id="rTime">4:22</div><div class="result-stat-lbl">Time Used</div></div>
+        </div>
+        <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:22px;" id="rMsg">Great work! Keep practicing Algebra to strengthen your skills.</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);" onclick="startQuiz()">🔄 Try Again</button>
+          <button class="btn btn-outline" style="color:#C4B5FD;border-color:rgba(124,58,237,.4);" onclick="showStart()">📚 Change Subject</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="focus-board">
+      <div class="focus-board-head">
+        <div class="focus-board-title"><span class="focus-board-icon">📍</span> Topic Focus</div>
+        <div class="focus-board-note">These are the chapters AI thinks deserve the next revision cycle. Weak topics are grouped separately so you can act on them faster.</div>
+      </div>
+      <div class="focus-board-body">
+        <div class="focus-summary">
+          <div class="focus-summary-kicker">Priority summary</div>
+          <div class="focus-summary-item">
+            <div class="focus-summary-dot"></div>
+            <div><strong>Weak chapters</strong><span>Algebra and Fractions need the most attention right now.</span></div>
+          </div>
+          <div class="focus-summary-item">
+            <div class="focus-summary-dot" style="background:#F59E0B;box-shadow:0 0 0 4px rgba(245,158,11,.12);"></div>
+            <div><strong>Needs work</strong><span>Grammar and Chemical Equations are close, but still inconsistent.</span></div>
+          </div>
+          <div class="focus-summary-item">
+            <div class="focus-summary-dot" style="background:#10B981;box-shadow:0 0 0 4px rgba(16,185,129,.12);"></div>
+            <div><strong>Strong topics</strong><span>Geometry and Photosynthesis are stable and can be reviewed less often.</span></div>
+          </div>
+        </div>
+        <div class="focus-groups">
+          <div>
+            <div class="focus-group-label"><span>Weak Topics</span><span>2</span></div>
+            <div class="focus-grid" style="margin-top:10px;">
+              <span class="focus-pill bad">⚠ Algebra — Weak</span>
+              <span class="focus-pill bad">⚠ Fractions — Weak</span>
+            </div>
+          </div>
+          <div>
+            <div class="focus-group-label"><span>Needs Work</span><span>2</span></div>
+            <div class="focus-grid" style="margin-top:10px;">
+              <span class="focus-pill warn">~ Grammar — Needs Work</span>
+              <span class="focus-pill warn">~ Chemical Equations — Needs Work</span>
+            </div>
+          </div>
+          <div>
+            <div class="focus-group-label"><span>Strong Topics</span><span>2</span></div>
+            <div class="focus-grid" style="margin-top:10px;">
+              <span class="focus-pill good">✓ Geometry — Strong</span>
+              <span class="focus-pill good">✓ Photosynthesis — Strong</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;">
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu);">12</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Quizzes Taken</div>
+      </div>
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:#059669;">87%</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Average Score</div>
+      </div>
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:#F59E0B;">+14%</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:3px;">Improvement This Month</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+// ── QUESTION BANKS ────────────────────────────────────────────────
+const BANKS = {
+  math: {
+    title: 'Mathematics — Algebra & Fractions',
+    questions: [
+      { q: 'If 3x + 7 = 22, what is the value of x?', opts: ['3','5','7','15'], ans: 1, explain: '3x = 22 − 7 = 15, so x = 5. ✓' },
+      { q: 'Simplify: 2x + 3x − x', opts: ['4x','5x','6x','3x'], ans: 0, explain: '2x + 3x − x = 4x. Combine like terms.' },
+      { q: 'What is ½ + ⅓?', opts: ['2/5','5/6','3/5','1/3'], ans: 1, explain: 'LCD is 6. ½ = 3/6, ⅓ = 2/6. Sum = 5/6.' },
+      { q: 'Solve for y: 2y − 4 = 10', opts: ['3','5','7','8'], ans: 2, explain: '2y = 14, y = 7.' },
+      { q: 'Which expression is equivalent to 4(x + 3)?', opts: ['4x + 3','4x + 12','x + 12','4x + 7'], ans: 1, explain: 'Distribute: 4·x + 4·3 = 4x + 12.' },
+      { q: 'What is ¾ of 40?', opts: ['20','25','30','35'], ans: 2, explain: '¾ × 40 = 30.' },
+      { q: 'If a = 3 and b = 4, find a² + b²', opts: ['7','12','25','49'], ans: 2, explain: '9 + 16 = 25.' },
+      { q: 'Factor: x² − 9', opts: ['(x−3)²','(x+3)(x−3)','(x+9)(x−1)','(x−9)²'], ans: 1, explain: 'Difference of squares: (x+3)(x−3).' },
+      { q: 'Solve: x/4 = 5', opts: ['1','10','20','25'], ans: 2, explain: 'x = 5 × 4 = 20.' },
+      { q: 'Expand: (x + 2)²', opts: ['x² + 4','x² + 4x + 4','x² + 2x + 4','2x + 4'], ans: 1, explain: '(x+2)² = x² + 2·x·2 + 4 = x² + 4x + 4.' },
+    ]
+  },
+  english: {
+    title: 'English — Grammar & Comprehension',
+    questions: [
+      { q: 'Choose the correct form: "She ___ to school every day."', opts: ['go','goes','going','gone'], ans: 1, explain: 'Third person singular → goes.' },
+      { q: 'Which sentence is in the passive voice?', opts: ['The cat ate the fish.','The fish was eaten by the cat.','She is eating.','He will eat.'], ans: 1, explain: '"was eaten" is past passive. The subject receives the action.' },
+      { q: '"Synonym" means a word that is…', opts: ['Opposite in meaning','Similar in meaning','Spelled the same','Sounds the same'], ans: 1, explain: 'A synonym has a similar or same meaning.' },
+      { q: 'Identify the adjective: "The tall boy ran fast."', opts: ['boy','ran','tall','fast'], ans: 2, explain: '"tall" describes the noun "boy" — it is an adjective.' },
+      { q: 'Which punctuation ends a question?', opts: ['.','!','?',','], ans: 2, explain: 'A question mark (?) ends an interrogative sentence.' },
+      { q: '"She has been studying for three hours." This is in which tense?', opts: ['Simple past','Past continuous','Present perfect continuous','Future perfect'], ans: 2, explain: 'Has been + -ing = present perfect continuous.' },
+      { q: 'The plural of "child" is:', opts: ['childs','children','childes','childrens'], ans: 1, explain: '"children" is the irregular plural of "child".' },
+      { q: 'Choose the correct preposition: "She is good ___ painting."', opts: ['in','at','on','by'], ans: 1, explain: '"good at" — correct collocation.' },
+      { q: 'Which is a compound sentence?', opts: ['She ran.','He is tall.','She ran and he walked.','The dog barked loudly.'], ans: 2, explain: 'Two independent clauses joined by "and" = compound sentence.' },
+      { q: 'Antonym of "generous" is:', opts: ['kind','selfish','brave','honest'], ans: 1, explain: '"selfish" is the opposite of "generous".' },
+    ]
+  },
+  science: {
+    title: 'Science — Chemical Equations',
+    questions: [
+      { q: 'What is the chemical symbol for water?', opts: ['H₂O₂','HO','H₂O','OH'], ans: 2, explain: 'Water is H₂O — 2 hydrogen + 1 oxygen.' },
+      { q: 'Which gas is produced when HCl reacts with zinc?', opts: ['O₂','CO₂','H₂','N₂'], ans: 2, explain: 'Zn + 2HCl → ZnCl₂ + H₂ ↑ (hydrogen gas).' },
+      { q: 'What does "balanced" mean in a chemical equation?', opts: ['Same colour on both sides','Equal number of atoms on both sides','Same mass on both sides','Same temperature'], ans: 1, explain: 'Law of conservation of mass — atoms cannot be created or destroyed.' },
+      { q: 'Photosynthesis overall equation produces:', opts: ['CO₂ and H₂O','Glucose and O₂','NaCl and H₂','None of these'], ans: 1, explain: '6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂.' },
+      { q: 'NaCl is the formula for:', opts: ['Sugar','Baking soda','Table salt','Vinegar'], ans: 2, explain: 'NaCl — sodium chloride = table salt.' },
+      { q: 'What type of reaction: CaCO₃ → CaO + CO₂?', opts: ['Combination','Decomposition','Displacement','Double displacement'], ans: 1, explain: 'One compound breaks into two — decomposition reaction.' },
+      { q: 'Acid + Base →', opts: ['Acid + Water','Salt + Water','Salt only','Water only'], ans: 1, explain: 'Neutralisation: Acid + Base → Salt + Water.' },
+      { q: 'The symbol for iron is:', opts: ['Ir','Fe','I','In'], ans: 1, explain: 'Fe from Latin "Ferrum" = Iron.' },
+      { q: 'What is the pH of pure water?', opts: ['5','6','7','8'], ans: 2, explain: 'Pure water is neutral — pH 7.' },
+      { q: 'Rusting of iron is an example of:', opts: ['Physical change','Decomposition','Oxidation','Sublimation'], ans: 2, explain: 'Fe + O₂ + H₂O → Fe₂O₃·H₂O — oxidation reaction.' },
+    ]
+  },
+  bangla: {
+    title: 'বাংলা — ব্যাকরণ ও রচনা',
+    questions: [
+      { q: '"সূর্য" শব্দের প্রতিশব্দ কোনটি?', opts: ['চাঁদ','রবি','তারা','গগন'], ans: 1, explain: '"রবি" সূর্যের প্রতিশব্দ।' },
+      { q: 'বিপরীত শব্দ: "আলো" এর বিপরীত কোনটি?', opts: ['আঁধার','দিন','রাত','সূর্য'], ans: 0, explain: '"আলো" এর বিপরীত "আঁধার" বা "অন্ধকার"।' },
+      { q: '"স্কুল" শব্দটি কোন ভাষা থেকে এসেছে?', opts: ['ফারসি','আরবি','ইংরেজি','পর্তুগিজ'], ans: 2, explain: '"স্কুল" ইংরেজি "school" থেকে আগত।' },
+      { q: 'বাংলা বর্ণমালায় স্বরবর্ণ কতটি?', opts: ['১০','১১','১২','৯'], ans: 1, explain: 'বাংলায় ১১টি স্বরবর্ণ আছে।' },
+      { q: '"গরু" শব্দের বহুবচন কোনটি?', opts: ['গরুগুলো','গরুরা','গরুসব','গাভী'], ans: 0, explain: 'বাংলায় "গরুগুলো" বহুবচন।' },
+      { q: 'কোনটি তৎসম শব্দ?', opts: ['কলম','আলু','সূর্য','চাকু'], ans: 2, explain: '"সূর্য" সংস্কৃত থেকে আগত — তৎসম শব্দ।' },
+      { q: '"মেঘ না চাইতে বৃষ্টি" এটি কোন ধরনের বাগধারা?', opts: ['আক্ষরিক অর্থে','আলঙ্কারিক অর্থে','প্রবাদ','বিপরীত শব্দ'], ans: 2, explain: 'এটি একটি বাংলা প্রবাদ।' },
+      { q: '"রবীন্দ্রনাথ ঠাকুর" কোন বিষয়ে নোবেল পুরস্কার পান?', opts: ['পদার্থবিজ্ঞান','সাহিত্য','শান্তি','অর্থনীতি'], ans: 1, explain: '১৯১৩ সালে সাহিত্যে নোবেল।' },
+      { q: '"ছেলেটি দৌড়াচ্ছে" — এটি কোন কাল?', opts: ['সাধারণ বর্তমান','ঘটমান বর্তমান','অতীত','ভবিষ্যৎ'], ans: 1, explain: 'ঘটমান বর্তমান — এখন ঘটছে।' },
+      { q: '"পদ্মা নদী" কোন দেশে অবস্থিত?', opts: ['ভারত','মিয়ানমার','বাংলাদেশ','ভুটান'], ans: 2, explain: 'পদ্মা বাংলাদেশের প্রধান নদী।' },
+    ]
+  },
+  bio: {
+    title: 'Biology — Cell Structure & Life Processes',
+    questions: [
+      { q: 'The basic unit of life is:', opts: ['Atom','Molecule','Cell','Tissue'], ans: 2, explain: 'The cell is the fundamental unit of all living organisms.' },
+      { q: 'Which organelle is called the "powerhouse of the cell"?', opts: ['Nucleus','Ribosome','Mitochondria','Lysosome'], ans: 2, explain: 'Mitochondria produce ATP (energy) — hence "powerhouse".' },
+      { q: 'Photosynthesis takes place in:', opts: ['Mitochondria','Nucleus','Chloroplasts','Ribosomes'], ans: 2, explain: 'Chloroplasts contain chlorophyll needed for photosynthesis.' },
+      { q: 'Cell wall is found in:', opts: ['Animal cells only','Plant cells only','Both','Neither'], ans: 1, explain: 'Only plant cells have a rigid cell wall (cellulose).' },
+      { q: 'DNA is found in the:', opts: ['Cytoplasm','Cell membrane','Nucleus','Ribosome'], ans: 2, explain: 'Genetic material (DNA) is stored in the nucleus.' },
+      { q: 'What does the cell membrane do?', opts: ['Makes proteins','Controls what enters/exits','Produces energy','Stores DNA'], ans: 1, explain: 'The semi-permeable membrane controls substance movement.' },
+      { q: 'Which type of cell has no nucleus?', opts: ['Plant cell','Animal cell','Prokaryotic cell','Eukaryotic cell'], ans: 2, explain: 'Prokaryotic cells (bacteria) have no membrane-bound nucleus.' },
+      { q: 'Osmosis is the movement of:', opts: ['Solute molecules','Water molecules','Oxygen','Glucose'], ans: 1, explain: 'Osmosis = water moving across a semi-permeable membrane.' },
+      { q: 'Respiration releases:', opts: ['Light','Sound','Energy (ATP)','Glucose'], ans: 2, explain: 'C₆H₁₂O₆ + O₂ → CO₂ + H₂O + Energy (ATP).' },
+      { q: 'Chlorophyll gives plants their:', opts: ['Red colour','Blue colour','Green colour','Yellow colour'], ans: 2, explain: 'Chlorophyll absorbs red/blue light and reflects green.' },
+    ]
+  }
+};
+
+const QUIZ_CONFIG = {
+  counts: [5, 10, 15],
+  difficulties: ['Easy', 'Mixed', 'Hard'],
+  modes: [
+    { key: 'adaptive', label: 'Adaptive' },
+    { key: 'revision', label: 'Revision' },
+    { key: 'mock', label: 'Mini Mock' },
+  ],
+  topics: {
+    math: [
+      { id: 'algebra', label: 'Algebra', hint: 'Equations, expressions, factoring' },
+      { id: 'fractions', label: 'Fractions', hint: 'Operations, ratios, simplification' },
+      { id: 'geometry', label: 'Geometry', hint: 'Area and shape basics' },
+      { id: 'mixed', label: 'Mixed Practice', hint: 'Balanced chapter revision' },
+    ],
+    english: [
+      { id: 'grammar', label: 'Grammar', hint: 'Tense, preposition, sentence form' },
+      { id: 'vocab', label: 'Vocabulary', hint: 'Synonym, antonym, word choice' },
+      { id: 'comprehension', label: 'Comprehension', hint: 'Short passage and meaning' },
+      { id: 'mixed', label: 'Mixed Practice', hint: 'Reading + grammar review' },
+    ],
+    science: [
+      { id: 'equations', label: 'Chemical Equations', hint: 'Reactions, balancing, formulas' },
+      { id: 'reactions', label: 'Reactions', hint: 'Acid-base, decomposition, rusting' },
+      { id: 'mixed', label: 'Mixed Practice', hint: 'Balanced science set' },
+    ],
+    bangla: [
+      { id: 'grammar', label: 'Grammar', hint: 'Borno, shobdo, bakkyo' },
+      { id: 'literature', label: 'Literature', hint: 'Poet, proverb, meaning' },
+      { id: 'mixed', label: 'Mixed Practice', hint: 'Balanced Bangla revision' },
+    ],
+    bio: [
+      { id: 'cell', label: 'Cell Structure', hint: 'Cell organelles and membrane' },
+      { id: 'processes', label: 'Life Processes', hint: 'Osmosis, respiration, photosynthesis' },
+      { id: 'mixed', label: 'Mixed Practice', hint: 'Full biology revision' },
+    ],
+  }
+};
+
+let currentSub = 'math';
+let currentTopic = 'algebra';
+let currentMode = 'adaptive';
+let currentDifficulty = 'Mixed';
+let currentCount = 10;
+let currentMinutes = 10;
+let currentQ = 0;
+let correct = 0, wrong = 0;
+let answered = false;
+let timerInterval = null;
+let secondsLeft = 0;
+let startSeconds = 0;
+
+function getTopicList() {
+  return QUIZ_CONFIG.topics[currentSub] || [];
+}
+
+function getTopic() {
+  return getTopicList().find(t => t.id === currentTopic) || getTopicList()[0];
+}
+
+function renderSetupControls() {
+  const countWrap = document.getElementById('countBtns');
+  const diffWrap = document.getElementById('difficultyBtns');
+  const modeWrap = document.getElementById('modeBtns');
+  const topicWrap = document.getElementById('topicStrip');
+
+  if (countWrap) {
+    countWrap.innerHTML = '';
+    QUIZ_CONFIG.counts.forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'seg-btn' + (currentCount === n ? ' active' : '');
+      btn.textContent = `${n} Q`;
+      btn.onclick = () => { currentCount = n; syncSetup(); };
+      countWrap.appendChild(btn);
+    });
+  }
+
+  if (diffWrap) {
+    diffWrap.innerHTML = '';
+    QUIZ_CONFIG.difficulties.forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'seg-btn' + (currentDifficulty === label ? ' active' : '');
+      btn.textContent = label;
+      btn.onclick = () => { currentDifficulty = label; syncSetup(); };
+      diffWrap.appendChild(btn);
+    });
+  }
+
+  if (modeWrap) {
+    modeWrap.innerHTML = '';
+    QUIZ_CONFIG.modes.forEach(mode => {
+      const btn = document.createElement('button');
+      btn.className = 'seg-btn' + (currentMode === mode.key ? ' active' : '');
+      btn.textContent = mode.label;
+      btn.onclick = () => { currentMode = mode.key; syncSetup(); };
+      modeWrap.appendChild(btn);
+    });
+  }
+
+  if (topicWrap) {
+    topicWrap.innerHTML = '';
+    getTopicList().forEach(topic => {
+      const card = document.createElement('button');
+      card.className = 'topic-card' + (currentTopic === topic.id ? ' active' : '');
+      card.innerHTML = `<div class="topic-name">${topic.label}</div><div class="topic-meta">${topic.hint}</div>`;
+      card.onclick = () => { currentTopic = topic.id; syncSetup(); };
+      topicWrap.appendChild(card);
+    });
+  }
+}
+
+function syncSetup() {
+  const topic = getTopic();
+  if (!topic) return;
+  const subjectName = BANKS[currentSub].title.split(' — ')[0];
+  const previewSubject = document.getElementById('previewSubject');
+  const previewTopic = document.getElementById('previewTopic');
+  const previewCount = document.getElementById('previewCount');
+  const previewDifficulty = document.getElementById('previewDifficulty');
+  const previewTime = document.getElementById('previewTime');
+  const previewTarget = document.getElementById('previewTarget');
+  const heroQuestionCount = document.getElementById('heroQuestionCount');
+  const heroDuration = document.getElementById('heroDuration');
+  const heroFocus = document.getElementById('heroFocus');
+  const timeRange = document.getElementById('timeRange');
+  const timeValue = document.getElementById('timeValue');
+
+  if (previewSubject) previewSubject.textContent = subjectName;
+  if (previewTopic) previewTopic.textContent = topic.label;
+  if (previewCount) previewCount.textContent = currentCount;
+  if (previewDifficulty) previewDifficulty.textContent = currentDifficulty;
+  if (previewTime) previewTime.textContent = `${currentMinutes} minutes`;
+  if (previewTarget) {
+    previewTarget.textContent = currentMode === 'adaptive'
+      ? 'AI prioritises weak areas and review chapters'
+      : currentMode === 'revision'
+        ? 'Focused revision with short explanation after each answer'
+        : 'Exam-style practice with timed pressure';
+  }
+  if (heroQuestionCount) heroQuestionCount.textContent = currentCount;
+  if (heroDuration) heroDuration.textContent = `${currentMinutes}m`;
+  if (heroFocus) heroFocus.textContent = topic.label;
+  if (timeRange) timeRange.value = currentMinutes;
+  if (timeValue) timeValue.textContent = `${currentMinutes}m`;
+  renderSetupControls();
+}
+
+function setTime(value) {
+  currentMinutes = parseInt(value, 10);
+  syncSetup();
+}
+
+function randomizeSetup() {
+  const topics = getTopicList();
+  if (topics.length) currentTopic = topics[Math.floor(Math.random() * topics.length)].id;
+  currentCount = QUIZ_CONFIG.counts[Math.floor(Math.random() * QUIZ_CONFIG.counts.length)];
+  currentDifficulty = QUIZ_CONFIG.difficulties[Math.floor(Math.random() * QUIZ_CONFIG.difficulties.length)];
+  currentMode = QUIZ_CONFIG.modes[Math.floor(Math.random() * QUIZ_CONFIG.modes.length)].key;
+  currentMinutes = Math.max(5, Math.min(30, currentCount + 2));
+  syncSetup();
+}
+
+function focusWeakest() {
+  const weakMap = { math: 'algebra', english: 'grammar', science: 'equations', bangla: 'grammar', bio: 'cell' };
+  currentTopic = weakMap[currentSub] || getTopicList()[0]?.id || 'mixed';
+  currentMode = 'adaptive';
+  currentDifficulty = 'Hard';
+  currentCount = 10;
+  currentMinutes = 12;
+  syncSetup();
+}
+
+function getQuestionSet() {
+  const bank = BANKS[currentSub];
+  const topic = getTopic();
+  if (!topic || topic.id === 'mixed') return bank.questions;
+  const topicMap = {
+    algebra: [0, 1, 4, 9],
+    fractions: [2, 5, 8],
+    geometry: [6],
+    grammar: [0, 1, 3, 5, 7],
+    vocab: [2, 6, 9],
+    comprehension: [8],
+    equations: [1, 2, 5, 7, 8, 9],
+    reactions: [1, 5, 6, 9],
+    cell: [0, 1, 3, 4, 5, 6],
+    processes: [2, 7, 8, 9],
+    literature: [0, 1, 6, 7],
+  };
+  const indices = topicMap[topic.id];
+  if (!indices) return bank.questions;
+  return indices.map(i => bank.questions[i]).filter(Boolean);
+}
+
+function setSub(btn, sub) {
+  document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentSub = sub;
+  currentTopic = getTopicList()[0] ? getTopicList()[0].id : 'mixed';
+  currentMode = 'adaptive';
+  currentDifficulty = 'Mixed';
+  showStart();
+  syncSetup();
+}
+
+function showStart() {
+  document.getElementById('startCard').style.display = 'none';
+  document.getElementById('quizCard').style.display = 'none';
+  document.getElementById('resultCard').classList.remove('show');
+  clearInterval(timerInterval);
+}
+
+function startQuiz() {
+  currentQ = 0; correct = 0; wrong = 0;
+  document.getElementById('startCard').style.display = 'none';
+  document.getElementById('quizCard').style.display = '';
+  document.getElementById('resultCard').classList.remove('show');
+  const pool = getQuestionSet();
+  const total = Math.min(currentCount, pool.length || BANKS[currentSub].questions.length);
+  secondsLeft = currentMinutes * 60;
+  startSeconds = secondsLeft;
+  document.getElementById('qSubjTitle').textContent = `${BANKS[currentSub].title.split(' — ')[0]} — ${getTopic()?.label || 'Mixed Practice'}`;
+  document.getElementById('qTimer').textContent = `${String(currentMinutes).padStart(2,'0')}:00`;
+  renderQ();
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
+    document.getElementById('qTimer').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    if (secondsLeft <= 0) { clearInterval(timerInterval); finishQuiz(); }
+  }, 1000);
+}
+
+function renderQ() {
+  const bank = BANKS[currentSub];
+  const pool = getQuestionSet();
+  const total = Math.min(currentCount, pool.length || bank.questions.length);
+  const q = pool[currentQ] || bank.questions[currentQ];
+
+  document.getElementById('qSubjTitle').textContent = `${bank.title} · ${getTopic()?.label || 'Mixed Practice'}`;
+  document.getElementById('qNum').textContent = `Question ${currentQ + 1} of ${total}`;
+  document.getElementById('qProgress').style.width = `${((currentQ + 1) / total) * 100}%`;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qScore').textContent = `${correct} correct · ${wrong} wrong`;
+  const quizMeta = document.getElementById('quizMeta');
+  if (quizMeta) {
+    quizMeta.innerHTML = `
+      <span class="quiz-meta-pill">${BANKS[currentSub].emoji} ${BANKS[currentSub].subjectsLabel}</span>
+      <span class="quiz-meta-pill">Topic: ${q.topic}</span>
+      <span class="quiz-meta-pill">Mode: ${currentMode}</span>
+    `;
+  }
+  document.getElementById('qExplain').textContent = '';
+  document.getElementById('qExplain').classList.remove('show');
+  document.getElementById('qNextBtn').style.display = 'none';
+  answered = false;
+
+  const letters = ['A','B','C','D'];
+  const optsEl = document.getElementById('qOpts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => answer(i);
+    optsEl.appendChild(btn);
+  });
+}
+
+function answer(i) {
+  if (answered) return;
+  answered = true;
+  const q = getQuestionSet()[currentQ] || BANKS[currentSub].questions[currentQ];
+  const opts = document.querySelectorAll('.opt-btn');
+  opts.forEach(b => b.disabled = true);
+  if (i === q.ans) {
+    opts[i].classList.add('correct');
+    correct++;
+  } else {
+    opts[i].classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    wrong++;
+  }
+  const explain = document.getElementById('qExplain');
+  explain.textContent = q.explain;
+  explain.classList.add('show');
+  document.getElementById('qScore').textContent = `${correct} correct · ${wrong} wrong`;
+  document.getElementById('qNextBtn').style.display = '';
+  document.getElementById('qNextBtn').textContent = currentQ + 1 < BANKS[currentSub].questions.length ? 'Next →' : 'Finish ✓';
+}
+
+function nextQ() {
+  currentQ++;
+  const pool = getQuestionSet();
+  const total = Math.min(currentCount, pool.length || BANKS[currentSub].questions.length);
+  if (currentQ >= total) { finishQuiz(); return; }
+  renderQ();
+}
+
+function finishQuiz() {
+  clearInterval(timerInterval);
+  const total = Math.min(currentCount, getQuestionSet().length || BANKS[currentSub].questions.length);
+  const timeUsed = startSeconds - secondsLeft;
+  const m = Math.floor(timeUsed / 60), s = timeUsed % 60;
+  const pct = Math.round((correct / total) * 100);
+  const grade = pct >= 90 ? 'Excellent! 🌟' : pct >= 70 ? 'Good work! 👍' : pct >= 50 ? 'Keep practicing! 💪' : 'Review these topics. 📚';
+
+  document.getElementById('quizCard').style.display = 'none';
+  const rc = document.getElementById('resultCard');
+  rc.classList.add('show');
+  document.getElementById('rScore').textContent = `${correct}/${total}`;
+  document.getElementById('rGrade').textContent = `${grade} Score: ${pct}%`;
+  document.getElementById('rCorrect').textContent = correct;
+  document.getElementById('rWrong').textContent = wrong;
+  document.getElementById('rTime').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  document.getElementById('rMsg').textContent = pct < 60
+    ? `You need more practice on ${BANKS[currentSub].title}. AI recommends revisiting the selected topics.`
+    : `Great work! Your score improved. Keep practicing to reach 90%+.`;
+}
+
+renderSetupControls();
+syncSetup();
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

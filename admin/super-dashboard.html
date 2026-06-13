@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin Dashboard � EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;
+  --sup-grad:linear-gradient(135deg,#0A0F1E 0%,#1A1F35 50%,#2D1B3D 100%);
+}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+/* Hero */
+.sup-hero{background:var(--sup-grad);border-radius:18px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.sup-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(190,18,60,.12);}
+.sup-hero::after{content:'';position:absolute;left:38%;bottom:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.03);}
+.sh-eyebrow{font-size:.68rem;font-weight:800;opacity:.55;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.sh-title{font-size:1.6rem;font-weight:900;line-height:1.2;margin-bottom:6px;}
+.sh-sub{font-size:.82rem;opacity:.65;margin-bottom:20px;}
+.sh-kpi-row{display:flex;gap:0;background:rgba(0,0,0,.3);border-radius:12px;overflow:hidden;}
+.sh-kpi{flex:1;padding:14px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.08);}
+.sh-kpi:last-child{border-right:none;}
+.sh-kpi-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;}
+.sh-kpi-lbl{font-size:.62rem;opacity:.55;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+.sh-kpi-delta{font-size:.68rem;font-weight:700;margin-top:3px;}
+
+/* Metric card */
+.met-card{border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;background:var(--white);position:relative;overflow:hidden;}
+.met-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.met-card.red::before{background:var(--sup);}
+.met-card.green::before{background:var(--green);}
+.met-card.amber::before{background:var(--amber);}
+.met-card.blue::before{background:var(--blue);}
+.met-card.purple::before{background:var(--purple);}
+.met-num{font-size:1.7rem;font-weight:900;font-family:'DM Mono',monospace;line-height:1.1;}
+.met-lbl{font-size:.74rem;color:var(--muted);font-weight:600;margin-top:3px;}
+.met-delta{font-size:.72rem;font-weight:700;margin-top:5px;display:flex;align-items:center;gap:4px;}
+.met-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:2rem;opacity:.12;}
+
+/* Sparkline bar chart */
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:40px;}
+.spark-bar{flex:1;border-radius:3px 3px 0 0;min-width:6px;transition:opacity .12s;cursor:pointer;}
+.spark-bar:hover{opacity:.75;}
+
+/* Recent activity */
+.act-row{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.act-row:last-child{border-bottom:none;}
+.act-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.act-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.act-meta{font-size:.71rem;color:var(--muted);margin-top:1px;}
+.act-time{font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;min-width:64px;text-align:right;flex-shrink:0;}
+
+/* Mini map Bangladesh */
+.bd-map{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:12px;height:200px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.7;}
+.map-bubble{position:absolute;border-radius:50%;background:var(--sup);opacity:.65;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.55rem;font-weight:900;cursor:pointer;transition:transform .15s;}
+.map-bubble:hover{transform:scale(1.25);opacity:1;}
+
+/* Revenue chart bars */
+.rev-bar-group{display:flex;align-items:flex-end;gap:6px;flex:1;}
+.rev-bar{flex:1;border-radius:4px 4px 0 0;cursor:pointer;transition:opacity .12s;}
+.rev-bar:hover{opacity:.75;}
+
+/* Alert row */
+.alert-row{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--border);}
+.alert-row:last-child{border-bottom:none;}
+.ar-icon{font-size:1.1rem;flex-shrink:0;}
+.ar-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.ar-meta{font-size:.71rem;color:var(--muted);margin-top:1px;}
+.ar-badge{font-size:.64rem;font-weight:900;padding:2px 8px;border-radius:8px;display:inline-block;margin-top:4px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.metrics-grid{grid-template-columns:1fr 1fr!important;}}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link active"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <a href="#" class="sb-link"><span class="sb-icon">??</span> Deployments</a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+    <a href="#" class="sb-link"><span class="sb-icon">??</span> API Docs</a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Anthropic</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Platform Dashboard</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>Live � <span id="liveClk" style="font-family:'DM Mono',monospace;">10:24</span></div>
+      <button class="topbar-icon-btn" onclick="showToast('3 critical alerts','??')">??<span class="notif-dot"></span></button>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="sup-hero anim-1">
+      <div class="sh-eyebrow">? EduOS � Platform Control Centre</div>
+      <div class="sh-title">Super Admin Dashboard</div>
+      <div class="sh-sub">Real-time visibility across all tenants, revenue, and system health. Last updated: <span id="lastUpdated">just now</span></div>
+      <div class="sh-kpi-row">
+        <div class="sh-kpi"><div class="sh-kpi-num">12,847</div><div class="sh-kpi-lbl">Active Schools</div><div class="sh-kpi-delta" style="color:#86EFAC;">? +248 this month</div></div>
+        <div class="sh-kpi"><div class="sh-kpi-num" style="color:#FDE68A;">? 3.84Cr</div><div class="sh-kpi-lbl">MRR</div><div class="sh-kpi-delta" style="color:#86EFAC;">? +18.4% YoY</div></div>
+        <div class="sh-kpi"><div class="sh-kpi-num">4.2M</div><div class="sh-kpi-lbl">Students</div><div class="sh-kpi-delta" style="color:#86EFAC;">? +91K this month</div></div>
+        <div class="sh-kpi"><div class="sh-kpi-num" style="color:#86EFAC;">99.94%</div><div class="sh-kpi-lbl">Platform Uptime</div><div class="sh-kpi-delta" style="color:#86EFAC;">SLA: 99.9% ?</div></div>
+        <div class="sh-kpi"><div class="sh-kpi-num">2,841</div><div class="sh-kpi-lbl">Active Now</div><div class="sh-kpi-delta" style="color:#FCA5A5;">Peak: 4,120</div></div>
+      </div>
+    </div>
+
+    <!-- Metrics grid -->
+    <div class="metrics-grid anim-1" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;">
+      <div class="met-card red"><div class="met-icon">??</div><div class="met-num" style="color:var(--sup);">12,847</div><div class="met-lbl">Total Tenants</div><div class="met-delta" style="color:var(--green);">? 248 <span style="color:var(--muted);font-weight:500;">vs last month</span></div></div>
+      <div class="met-card green"><div class="met-icon">??</div><div class="met-num" style="color:var(--green);">? 3.84Cr</div><div class="met-lbl">Monthly Revenue</div><div class="met-delta" style="color:var(--green);">? 18.4% <span style="color:var(--muted);font-weight:500;">YoY</span></div></div>
+      <div class="met-card blue"><div class="met-icon">??</div><div class="met-num" style="color:var(--blue);">4.21M</div><div class="met-lbl">Total Users</div><div class="met-delta" style="color:var(--green);">? 91K <span style="color:var(--muted);font-weight:500;">this month</span></div></div>
+      <div class="met-card amber"><div class="met-icon">??</div><div class="met-num" style="color:var(--amber);">2,841</div><div class="met-lbl">Active Sessions</div><div class="met-delta" style="color:var(--muted);">Peak today: 4,120</div></div>
+      <div class="met-card purple"><div class="met-icon">??</div><div class="met-num" style="color:var(--red);">3</div><div class="met-lbl">Open Alerts</div><div class="met-delta" style="color:var(--red);">2 critical � 1 warn</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Monthly Revenue chart -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Monthly Revenue (? Crore)</div><div class="card-sub">Last 12 months � All tenants</div></div>
+          <span class="badge badge-green" style="font-size:.7rem;">+18.4% YoY</span>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:120px;border-bottom:2px solid var(--border);padding-bottom:4px;" id="revChart"></div>
+          <div style="display:flex;gap:6px;margin-top:6px;" id="revLabels"></div>
+        </div>
+      </div>
+
+      <!-- New tenants + sessions chart -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? New Tenant Signups</div><div class="card-sub">Last 12 months � School onboarding</div></div>
+          <span class="badge" style="background:var(--con-pale,#EFF6FF);color:var(--blue);border:1px solid #BFDBFE;font-size:.7rem;">+22% growth</span>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:120px;border-bottom:2px solid var(--border);padding-bottom:4px;" id="tenantChart"></div>
+          <div style="display:flex;gap:6px;margin-top:6px;" id="tenantLabels"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 300px;gap:18px;margin-bottom:18px;">
+
+      <!-- Recent activity -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">? Platform Activity</div><div class="card-sub">Last 30 minutes � Live feed</div></div>
+        <div id="activityFeed"></div>
+        <div class="card-footer"><button class="btn btn-ghost btn-sm" onclick="showToast('Loading full audit log�','??')">View full audit log ?</button></div>
+      </div>
+
+      <!-- Critical alerts -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Active Alerts</div><div class="card-sub">Requires attention</div></div>
+          <span class="sb-badge" style="background:var(--sup);color:#fff;font-size:.7rem;">3</span>
+        </div>
+        <div id="alertList"></div>
+        <div class="card-footer"><a href="#" style="font-size:.8rem;color:var(--sup);font-weight:700;text-decoration:none;">All system alerts ?</a></div>
+      </div>
+
+      <!-- System health -->
+      <div class="card anim-2" style="padding:16px 18px;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px;">?? System Health</div>
+        <div style="display:flex;flex-direction:column;gap:12px;" id="healthPanel"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;">
+
+      <!-- Top tenants table -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Top Tenants by Revenue</div><div class="card-sub">This month � Active plans</div></div>
+          <a href="super-tenants.html" style="font-size:.78rem;color:var(--sup);font-weight:700;text-decoration:none;">All tenants ?</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+              <th style="padding:8px 14px;text-align:left;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);white-space:nowrap;">#</th>
+              <th style="padding:8px 14px;text-align:left;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);">School</th>
+              <th style="padding:8px 14px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);">Plan</th>
+              <th style="padding:8px 14px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);">Students</th>
+              <th style="padding:8px 14px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);">MRR</th>
+              <th style="padding:8px 14px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);">Status</th>
+            </tr></thead>
+            <tbody id="topTenantsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Division coverage map -->
+      <div class="card anim-2" style="padding:14px 16px;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">?? Division Coverage</div>
+        <div style="display:flex;flex-direction:column;gap:7px;" id="divCoverage"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Clock
+function tick(){const n=new Date(),h=n.getHours(),m=n.getMinutes();document.getElementById('liveClk').textContent=`${String(h%12||12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`;}
+tick();setInterval(tick,30000);
+
+// Revenue chart
+const revData=[{l:'Mar',v:2.1},{l:'Apr',v:2.3},{l:'May',v:2.5},{l:'Jun',v:2.4},{l:'Jul',v:2.7},{l:'Aug',v:2.9},{l:'Sep',v:3.0},{l:'Oct',v:3.1},{l:'Nov',v:3.3},{l:'Dec',v:3.5},{l:'Jan',v:3.7},{l:'Feb',v:3.84}];
+const maxRev=Math.max(...revData.map(d=>d.v));
+document.getElementById('revChart').innerHTML=revData.map((d,i)=>{
+  const h=Math.round(d.v/maxRev*110);
+  const isCur=i===revData.length-1;
+  return`<div class="rev-bar" style="height:${h}px;background:${isCur?'var(--sup)':'#FBCFE8'};flex:1;" title="${d.l}: ?${d.v}Cr" onclick="showToast('${d.l}: ? ${d.v} Crore','??')"></div>`;}).join('');
+document.getElementById('revLabels').innerHTML=revData.map(d=>`<div style="flex:1;text-align:center;font-size:.58rem;color:var(--muted);font-weight:600;">${d.l}</div>`).join('');
+
+// Tenant chart
+const tnData=[{l:'Mar',v:820},{l:'Apr',v:890},{l:'May',v:940},{l:'Jun',v:880},{l:'Jul',v:960},{l:'Aug',v:1040},{l:'Sep',v:1100},{l:'Oct',v:1060},{l:'Nov',v:1140},{l:'Dec',v:1200},{l:'Jan',v:1160},{l:'Feb',v:1248}];
+const maxTn=Math.max(...tnData.map(d=>d.v));
+document.getElementById('tenantChart').innerHTML=tnData.map((d,i)=>{
+  const h=Math.round(d.v/maxTn*110);
+  const isCur=i===tnData.length-1;
+  return`<div class="rev-bar" style="height:${h}px;background:${isCur?'var(--blue)':'#BFDBFE'};flex:1;" title="${d.l}: ${d.v}" onclick="showToast('${d.l}: ${d.v} new signups','??')"></div>`;}).join('');
+document.getElementById('tenantLabels').innerHTML=tnData.map(d=>`<div style="flex:1;text-align:center;font-size:.58rem;color:var(--muted);font-weight:600;">${d.l}</div>`).join('');
+
+// Activity feed
+const activities=[
+  {dot:'var(--green)',title:'New school onboarded','meta':'Mirpur Model High School � EIIN 210934 � Dhaka','time':'2 min ago'},
+  {dot:'var(--blue)',title:'Subscription upgraded','meta':'Sylhet International School ? Enterprise plan','time':'8 min ago'},
+  {dot:'var(--amber)',title:'High memory usage detected','meta':'App server ap-southeast-1b � 91% RAM','time':'12 min ago'},
+  {dot:'var(--sup)',title:'Failed login attempts (5)','meta':'admin@khulna-school.edu.bd � IP: 103.x.x.x','time':'18 min ago'},
+  {dot:'var(--green)',title:'Bulk import completed','meta':'Rajshahi Collegiate � 1,847 students imported','time':'24 min ago'},
+  {dot:'var(--blue)',title:'Payment received','meta':'Dhaka High School � ? 12,000 � bKash','time':'28 min ago'},
+  {dot:'var(--red)',title:'Tenant suspended (non-payment)','meta':'Gaibandha Model School � 3 months overdue','time':'31 min ago'},
+];
+document.getElementById('activityFeed').innerHTML=activities.map(a=>`
+  <div class="act-row">
+    <div class="act-dot" style="background:${a.dot};"></div>
+    <div style="flex:1;"><div class="act-title">${a.title}</div><div class="act-meta">${a.meta}</div></div>
+    <div class="act-time">${a.time}</div>
+  </div>`).join('');
+
+// Alerts
+const alerts=[
+  {icon:'??',title:'DB Replica lag: 4.2 seconds',meta:'MySQL replica ap-southeast-1 � Threshold: 2s',badge:'CRITICAL',bg:'#FFF5F5',col:'var(--red)'},
+  {icon:'??',title:'3 tenants with expired SSL certs',meta:'Auto-renew failed � Certs expire in 48h',badge:'CRITICAL',bg:'#FFF5F5',col:'var(--red)'},
+  {icon:'??',title:'Memory pressure on app server b',meta:'91% RAM � 8 cores � Swap: 2.1 GB',badge:'WARNING',bg:'#FFFBEB',col:'var(--amber)'},
+];
+document.getElementById('alertList').innerHTML=alerts.map(a=>`
+  <div class="alert-row">
+    <div class="ar-icon">${a.icon}</div>
+    <div><div class="ar-title">${a.title}</div><div class="ar-meta">${a.meta}</div>
+    <span class="ar-badge" style="background:${a.bg};color:${a.col};border:1px solid ${a.col}40;">${a.badge}</span></div>
+  </div>`).join('');
+
+// System health
+const health=[
+  {name:'Web Servers (3)',pct:68,col:'var(--green)',txt:'68% CPU'},
+  {name:'App Server A',pct:45,col:'var(--green)',txt:'45% CPU'},
+  {name:'App Server B',pct:91,col:'var(--red)',txt:'91% RAM ?'},
+  {name:'MySQL Primary',pct:34,col:'var(--green)',txt:'34% � 12ms'},
+  {name:'MySQL Replica',pct:78,col:'var(--amber)',txt:'78% � 4.2s lag'},
+  {name:'Redis Cache',pct:52,col:'var(--green)',txt:'52% � Hit 94%'},
+  {name:'S3 Storage',pct:41,col:'var(--green)',txt:'41% of 10TB'},
+];
+document.getElementById('healthPanel').innerHTML=health.map(h=>`
+  <div>
+    <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:3px;"><span style="font-weight:700;color:var(--ink-2);">${h.name}</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:${h.col};">${h.txt}</span></div>
+    <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${h.pct}%;background:${h.col};border-radius:3px;"></div></div>
+  </div>`).join('');
+
+// Top tenants
+const topTenants=[
+  {rank:1,name:'Rajshahi Collegiate School',plan:'Enterprise',students:2840,mrr:28000,status:'active'},
+  {rank:2,name:'Viqarunnisa Noon School',plan:'Enterprise',students:4200,mrr:42000,status:'active'},
+  {rank:3,name:'BAF Shaheen College',plan:'Pro',students:1850,mrr:14400,status:'active'},
+  {rank:4,name:'RAJUK Uttara Model',plan:'Pro',students:2100,mrr:16200,status:'active'},
+  {rank:5,name:'Notre Dame High School',plan:'Pro',students:1620,mrr:12400,status:'active'},
+  {rank:6,name:'Dhaka High School',plan:'Basic',students:890,mrr:4800,status:'active'},
+  {rank:7,name:'Mymensingh Zilla School',plan:'Basic',students:1240,mrr:6400,status:'trial'},
+  {rank:8,name:'Gaibandha Model School',plan:'Basic',students:420,mrr:0,status:'suspended'},
+];
+const planCol={Enterprise:'#5B21B6',Pro:'#1D4ED8',Basic:'#059669'};
+const statCol={active:'var(--green)',trial:'var(--amber)',suspended:'var(--red)'};
+document.getElementById('topTenantsBody').innerHTML=topTenants.map(t=>`
+  <tr style="cursor:pointer;" onclick="window.location='super-tenants.html'">
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);font-size:.8rem;color:var(--muted);font-weight:700;">${t.rank}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);"><div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">${t.name}</div></td>
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:.66rem;font-weight:900;padding:2px 8px;border-radius:8px;background:${planCol[t.plan]}18;color:${planCol[t.plan]};border:1px solid ${planCol[t.plan]}30;">${t.plan}</span></td>
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:.8rem;font-weight:700;">${t.students.toLocaleString()}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:800;font-size:.82rem;color:${t.mrr>0?'var(--green)':'var(--red)'};">${t.mrr>0?'?'+t.mrr.toLocaleString():'Suspended'}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid var(--border);"><span style="font-size:.68rem;font-weight:800;color:${statCol[t.status]};">${t.status.toUpperCase()}</span></td>
+  </tr>`).join('');
+
+// Division coverage
+const divs=[
+  {name:'Dhaka Division',schools:3420,pct:100,col:'var(--sup)'},
+  {name:'Chattogram Div.',schools:2180,pct:64,col:'var(--blue)'},
+  {name:'Sylhet Division',schools:1540,pct:45,col:'var(--purple)'},
+  {name:'Rajshahi Div.',schools:1890,pct:55,col:'var(--green)'},
+  {name:'Khulna Division',schools:1240,pct:36,col:'var(--amber)'},
+  {name:'Barishal Div.',schools:980,pct:29,col:'var(--blue)'},
+  {name:'Mymensingh Div.',schools:860,pct:25,col:'var(--muted)'},
+  {name:'Rangpur Div.',schools:737,pct:22,col:'var(--muted)'},
+];
+document.getElementById('divCoverage').innerHTML=divs.map(d=>`
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:.72rem;font-weight:700;color:var(--ink-2);min-width:100px;">${d.name}</span>
+    <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${d.pct}%;background:${d.col};border-radius:3px;"></div></div>
+    <span style="font-size:.7rem;font-weight:800;color:${d.col};min-width:36px;text-align:right;">${d.schools.toLocaleString()}</span>
+  </div>`).join('');
+
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

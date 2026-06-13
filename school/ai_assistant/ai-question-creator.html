@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Question Creator — EduOS AI</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* ── HERO ── */
+.qc-hero{
+  background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#110A33 65%,#0A1F3A 100%);
+  border-radius:20px;padding:26px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px;
+}
+.qc-hero::before{content:'🤖';position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:7rem;opacity:.06;pointer-events:none;}
+.qc-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);color:#67E8F9;border-radius:20px;padding:4px 14px;font-size:.67rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;}
+.qc-badge .dot{width:6px;height:6px;border-radius:50%;background:#06B6D4;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.qc-title{font-size:1.55rem;font-weight:900;margin-bottom:5px;}
+.qc-sub{font-size:.84rem;opacity:.65;line-height:1.65;max-width:560px;}
+.qc-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.qc-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);}
+
+/* ── LAYOUT ── */
+.qc-layout{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start;}
+
+/* ── CONFIG PANEL ── */
+.config-panel{background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;position:sticky;top:80px;}
+.cp-head{padding:13px 18px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.cp-title{font-size:.86rem;font-weight:900;color:var(--ink);}
+.cp-body{padding:16px 18px;display:flex;flex-direction:column;gap:13px;}
+
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.field select,.field input,.field textarea{
+  width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:.83rem;font-family:inherit;color:var(--ink);background:var(--bg);outline:none;transition:border-color .15s;
+}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--ai);}
+.field textarea{resize:vertical;min-height:60px;line-height:1.6;}
+
+.count-sel{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg);}
+.cs-btn{width:36px;height:36px;border:none;background:transparent;font-size:1.1rem;font-weight:700;color:var(--muted);cursor:pointer;flex-shrink:0;}
+.cs-btn:hover{background:var(--border);color:var(--ink);}
+.cs-val{flex:1;text-align:center;font-size:.95rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;}
+
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.type-chip{padding:6px 8px;border:1.5px solid var(--border);border-radius:9px;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .12s;background:var(--bg);}
+.type-chip.on{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+
+.diff-row{display:flex;gap:6px;}
+.diff-btn{flex:1;padding:7px 4px;border:1.5px solid var(--border);border-radius:9px;font-size:.72rem;font-weight:800;text-align:center;cursor:pointer;transition:all .12s;background:var(--bg);color:var(--muted);}
+.diff-btn.on-easy{border-color:#059669;background:#F0FDF4;color:#065F46;}
+.diff-btn.on-medium{border-color:#D97706;background:#FFFBEB;color:#92400E;}
+.diff-btn.on-hard{border-color:#DC2626;background:#FEF2F2;color:#991B1B;}
+
+.gen-btn{width:100%;padding:13px;background:var(--ai-soft);border:none;color:#fff;font-size:.88rem;font-weight:800;border-radius:12px;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+.gen-btn:hover{opacity:.87;}
+.gen-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:16px;}
+
+/* Progress */
+.gen-progress{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:44px 24px;text-align:center;display:none;}
+.gp-spinner{width:50px;height:50px;border-radius:50%;border:4px solid rgba(139,92,246,.2);border-top-color:var(--ai-violet);animation:spin 1s linear infinite;margin:0 auto 18px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.gp-steps{display:flex;flex-direction:column;gap:8px;max-width:260px;margin:0 auto;text-align:left;}
+.gp-step{display:flex;align-items:center;gap:10px;font-size:.79rem;color:var(--muted);padding:6px 10px;border-radius:8px;transition:all .3s;}
+.gp-step.active{background:rgba(6,182,212,.08);color:var(--ai-dark);font-weight:700;}
+.gp-step.done{color:#059669;}
+.gp-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s;}
+.gp-step.active .gp-dot{background:var(--ai);}
+.gp-step.done .gp-dot{background:#059669;}
+
+/* Empty state */
+.empty-state{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:54px 24px;text-align:center;}
+.es-icon{font-size:4rem;display:block;margin-bottom:16px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.es-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:8px;}
+.es-sub{font-size:.8rem;color:var(--muted);line-height:1.7;max-width:360px;margin:0 auto 20px;}
+.es-demos{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.es-demo-btn{padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.77rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;background:var(--bg);}
+.es-demo-btn:hover{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+
+/* Toolbar */
+.q-toolbar{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:11px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.qt-label{font-size:.78rem;font-weight:800;color:var(--ink-2);flex:1;}
+.filter-btn{font-size:.74rem;font-weight:700;padding:5px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;transition:all .12s;}
+.filter-btn:hover,.filter-btn.on{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+.regen-btn{padding:5px 12px;border:1.5px solid rgba(139,92,246,.35);border-radius:8px;font-size:.74rem;font-weight:700;color:var(--ai-violet);background:rgba(139,92,246,.05);cursor:pointer;transition:all .12s;}
+.regen-btn:hover{background:rgba(139,92,246,.1);}
+
+/* Question cards */
+.qbank{display:flex;flex-direction:column;gap:12px;}
+.qcard{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow .15s;}
+.qcard:hover{box-shadow:0 4px 18px rgba(6,182,212,.1);}
+.qcard-head{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--border);}
+.qcard-num{width:27px;height:27px;border-radius:8px;background:var(--ai-soft);color:#fff;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.type-badge{font-size:.64rem;font-weight:800;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;}
+.tb-mcq{background:#EDE9FE;color:#6D28D9;}
+.tb-short{background:#DCFCE7;color:#166534;}
+.tb-long{background:#FEF3C7;color:#92400E;}
+.tb-tf{background:#CFFAFE;color:#0E7490;}
+.tb-fill{background:#FCE7F3;color:#9D174D;}
+.diff-badge{font-size:.64rem;font-weight:800;padding:2px 8px;border-radius:6px;}
+.db-easy{background:#DCFCE7;color:#166534;}
+.db-medium{background:#FEF3C7;color:#92400E;}
+.db-hard{background:#FEE2E2;color:#991B1B;}
+.marks-badge{font-size:.68rem;font-weight:800;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:6px;margin-left:auto;}
+.blooms-lbl{font-size:.63rem;font-weight:700;color:var(--muted);}
+
+.qcard-body{padding:14px 16px;}
+.qcard-q{font-size:.87rem;font-weight:700;color:var(--ink);line-height:1.65;margin-bottom:10px;}
+.qcard-opts{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.opt{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;border-radius:8px;font-size:.79rem;color:var(--ink-2);border:1px solid var(--border);background:var(--bg);}
+.opt.correct{border-color:#059669;background:#F0FDF4;color:#065F46;font-weight:700;}
+.opt-lbl{font-weight:800;min-width:14px;flex-shrink:0;}
+
+.answer-box{background:var(--ai-pale);border:1px solid rgba(6,182,212,.3);border-radius:8px;padding:8px 12px;font-size:.78rem;color:var(--ai-dark);line-height:1.65;display:none;}
+.answer-box strong{font-weight:800;}
+.hint-box{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:7px 11px;font-size:.74rem;color:#6D28D9;margin-top:6px;line-height:1.6;display:none;}
+
+.qcard-foot{display:flex;align-items:center;gap:6px;padding:9px 16px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.qact{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:.71rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;background:var(--bg);}
+.qact:hover{border-color:var(--ai);color:var(--ai-dark);background:var(--ai-pale);}
+.qact.danger:hover{border-color:#DC2626;color:#DC2626;background:#FEF2F2;}
+.qact.primary{background:var(--ai-soft);border:none;color:#fff;font-size:.72rem;}
+.qact.primary:hover{opacity:.85;}
+
+.edit-area{display:none;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);}
+.edit-area textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:.83rem;color:var(--ink);outline:none;line-height:1.65;resize:vertical;min-height:70px;}
+.edit-area textarea:focus{border-color:var(--ai);}
+.edit-actions{display:flex;gap:8px;margin-top:8px;}
+.edit-save{padding:6px 16px;background:var(--ai-soft);border:none;color:#fff;border-radius:8px;font-size:.75rem;font-weight:800;cursor:pointer;}
+.edit-cancel{padding:6px 14px;background:var(--bg);border:1.5px solid var(--border);color:var(--muted);border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;}
+
+/* Export panel */
+.export-panel{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:18px;display:none;}
+.ep-title{font-size:.88rem;font-weight:900;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:8px;}
+.ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ep-btn{display:flex;align-items:center;gap:8px;padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:.77rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;background:var(--bg);}
+.ep-btn:hover{border-color:var(--ai);color:var(--ai-dark);background:var(--ai-pale);}
+.ep-icon{font-size:1.05rem;}
+
+/* Anims & toast */
+.anim-1{animation:fadeUp .35s ease both;}
+.anim-2{animation:fadeUp .35s .07s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:1100px){.qc-layout{grid-template-columns:1fr;}.config-panel{position:static;}}
+@media(max-width:640px){.ep-grid{grid-template-columns:1fr;}.type-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar"></aside>
+      <div><div class="sb-user-name">Farhan Islam</div><div class="sb-user-role">Class IX–A</div></div>
+      <span class="sb-logout">⏏</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-breadcrumb"><span>AI Tools</span><span class="breadcrumb-sep">›</span><span class="current">AI Question Creator</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>AI Powered · Live</div>
+      <div class="topbar-avatar" style="background:linear-gradient(135deg,#06B6D4,#8B5CF6);">FI</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="qc-hero anim-1">
+      <div class="qc-badge"><div class="dot"></div> AI Question Creator</div>
+      <div class="qc-title">Generate Practice Questions Instantly</div>
+      <div class="qc-sub">Pick a subject and topic — AI generates ready-to-use practice questions with answer keys, hints and difficulty tags. Use them to self-test, revise or prepare for exams.</div>
+      <div class="qc-pills">
+        <span class="qc-pill">📐 MCQ · Short · Essay</span>
+        <span class="qc-pill">🎯 Easy → Hard</span>
+        <span class="qc-pill">🧠 Bloom's Taxonomy</span>
+        <span class="qc-pill">🔑 Answer Keys</span>
+        <span class="qc-pill">📄 Export / Save</span>
+      </div>
+    </div>
+
+    <div class="qc-layout">
+
+      <!-- ── Config ── -->
+      <div class="config-panel anim-1">
+        <div class="cp-head"><span>⚙️</span><span class="cp-title">Configure Questions</span></div>
+        <div class="cp-body">
+
+          <div class="field">
+            <label>Subject</label>
+            <select id="subject" onchange="onSubjectChange()">
+              <option value="">— Select Subject —</option>
+              <option value="Mathematics">📐 Mathematics</option>
+              <option value="Physics">⚡ Physics</option>
+              <option value="Chemistry">🧪 Chemistry</option>
+              <option value="Biology">🌱 Biology</option>
+              <option value="English">📖 English</option>
+              <option value="History">🌍 History</option>
+              <option value="Geography">🗺️ Geography</option>
+              <option value="ICT">💻 ICT / Computer Science</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Topic / Chapter</label>
+            <input type="text" id="topic" placeholder="e.g. Quadratic Equations, Photosynthesis…">
+          </div>
+
+          <div class="field">
+            <label>Class Level</label>
+            <select id="classLevel">
+              <option value="Class VI">Class VI</option>
+              <option value="Class VII">Class VII</option>
+              <option value="Class VIII">Class VIII</option>
+              <option value="Class IX" selected>Class IX</option>
+              <option value="Class X">Class X (SSC)</option>
+              <option value="Class XI">Class XI</option>
+              <option value="Class XII">Class XII (HSC)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Number of Questions</label>
+            <div class="count-sel">
+              <button class="cs-btn" onclick="adjustCount(-1)">−</button>
+              <span class="cs-val" id="countVal">8</span>
+              <button class="cs-btn" onclick="adjustCount(1)">+</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Question Types</label>
+            <div class="type-grid">
+              <div class="type-chip on" id="t-mcq" onclick="toggleType('mcq',this)">☑️ MCQ</div>
+              <div class="type-chip on" id="t-short" onclick="toggleType('short',this)">✏️ Short Answer</div>
+              <div class="type-chip" id="t-long" onclick="toggleType('long',this)">📝 Long / Essay</div>
+              <div class="type-chip" id="t-tf" onclick="toggleType('tf',this)">✔ True / False</div>
+              <div class="type-chip" id="t-fill" onclick="toggleType('fill',this)">___ Fill Blank</div>
+              <div class="type-chip" id="t-diag" onclick="toggleType('diag',this)">🖊️ Diagram</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Difficulty</label>
+            <div class="diff-row">
+              <div class="diff-btn" id="d-easy" onclick="setDiff('easy')">🟢 Easy</div>
+              <div class="diff-btn on-medium" id="d-medium" onclick="setDiff('medium')">🟡 Mixed</div>
+              <div class="diff-btn" id="d-hard" onclick="setDiff('hard')">🔴 Hard</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Bloom's Level</label>
+            <select id="blooms">
+              <option value="mixed">All Levels (Mixed)</option>
+              <option value="remember">Remember</option>
+              <option value="understand">Understand</option>
+              <option value="apply">Apply</option>
+              <option value="analyse">Analyse</option>
+              <option value="evaluate">Evaluate</option>
+              <option value="create">Create</option>
+            </select>
+          </div>
+
+          <button class="gen-btn" id="genBtn" onclick="generateQuestions()">🤖 Generate Questions</button>
+        </div>
+      </div>
+
+      <!-- ── Right panel ── -->
+      <div class="right-panel anim-2">
+
+        <!-- Generating -->
+        <div class="gen-progress" id="genProgress">
+          <div class="gp-spinner"></div>
+          <p style="font-size:.9rem;font-weight:800;color:var(--ink);margin-bottom:5px;">AI is generating your questions…</p>
+          <p style="font-size:.75rem;color:var(--muted);margin-bottom:20px;">Just a moment</p>
+          <div class="gp-steps">
+            <div class="gp-step" id="gs1"><div class="gp-dot"></div>Analysing topic & curriculum</div>
+            <div class="gp-step" id="gs2"><div class="gp-dot"></div>Generating question content</div>
+            <div class="gp-step" id="gs3"><div class="gp-dot"></div>Writing answer keys & hints</div>
+            <div class="gp-step" id="gs4"><div class="gp-dot"></div>Tagging difficulty & Bloom's</div>
+            <div class="gp-step" id="gs5"><div class="gp-dot"></div>Finalising question set</div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <span class="es-icon">🤖</span>
+          <div class="es-title">Create your practice set</div>
+          <div class="es-sub">Select a subject and topic, then click Generate — AI will build a complete question set with answers and hints tailored for your class level.</div>
+          <div class="es-demos">
+            <div class="es-demo-btn" onclick="quickDemo('Mathematics','Quadratic Equations')">📐 Math — Quadratic Eqs</div>
+            <div class="es-demo-btn" onclick="quickDemo('Physics','Newton\'s Laws')">⚡ Physics — Newton's Laws</div>
+            <div class="es-demo-btn" onclick="quickDemo('Biology','Photosynthesis')">🌱 Biology — Photosynthesis</div>
+            <div class="es-demo-btn" onclick="quickDemo('English','Essay Writing')">📖 English — Essay Writing</div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="q-toolbar" id="qToolbar" style="display:none;">
+          <span class="qt-label" id="qtLabel">0 questions</span>
+          <button class="filter-btn on" onclick="filterQ('all',this)">All</button>
+          <button class="filter-btn" onclick="filterQ('MCQ',this)">MCQ</button>
+          <button class="filter-btn" onclick="filterQ('Short',this)">Short</button>
+          <button class="filter-btn" onclick="filterQ('Long',this)">Essay</button>
+          <button class="regen-btn" onclick="regenerateAll()">🔄 Regenerate</button>
+        </div>
+
+        <!-- Questions -->
+        <div class="qbank" id="qbank"></div>
+
+        <!-- Export -->
+        <div class="export-panel" id="exportPanel">
+          <div class="ep-title">📤 Save or Export</div>
+          <div class="ep-grid">
+            <button class="ep-btn" onclick="exportAct('Flashcards')"><span class="ep-icon">🃏</span> Save as Flashcards</button>
+            <button class="ep-btn" onclick="exportAct('Practice')"><span class="ep-icon">📝</span> Start Practice Session</button>
+            <button class="ep-btn" onclick="exportAct('PDF')"><span class="ep-icon">📄</span> Export as PDF</button>
+            <button class="ep-btn" onclick="exportAct('Print')"><span class="ep-icon">🖨️</span> Print</button>
+            <button class="ep-btn" onclick="exportAct('StudyPlan')"><span class="ep-icon">🗓️</span> Add to Study Plan</button>
+            <button class="ep-btn" onclick="exportAct('QBank')"><span class="ep-icon">🗂️</span> Save to My Bank</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ══ DATA ══ */
+const QB = {
+  'Mathematics': {
+    'Quadratic Equations': [
+      { type:'MCQ', diff:'Easy', marks:1, blooms:'Remember',
+        q:'Which of the following is a quadratic equation?',
+        opts:['x + 3 = 0','x² + 5x + 6 = 0','x³ − 2 = 0','√x = 4'], correct:1,
+        hint:'A quadratic equation has degree 2 — the highest power of the variable is 2.' },
+      { type:'MCQ', diff:'Medium', marks:1, blooms:'Apply',
+        q:'The roots of the equation x² − 5x + 6 = 0 are:',
+        opts:['x = 2 and x = 3','x = −2 and x = −3','x = 1 and x = 6','x = −1 and x = 6'], correct:0,
+        hint:'Factorise: (x − 2)(x − 3) = 0' },
+      { type:'MCQ', diff:'Hard', marks:1, blooms:'Analyse',
+        q:'If one root of x² − kx + 12 = 0 is 3, the value of k is:',
+        opts:['3','7','4','12'], correct:1,
+        hint:'Substitute x = 3 and use Vieta\'s formulas.' },
+      { type:'Short', diff:'Easy', marks:2, blooms:'Understand',
+        q:'Define a quadratic equation and write its standard form.',
+        answer:'A polynomial equation of degree 2: ax² + bx + c = 0, where a ≠ 0.' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Apply',
+        q:'Solve by factorisation: 2x² − 7x + 3 = 0',
+        answer:'(2x − 1)(x − 3) = 0 → x = ½ or x = 3' },
+      { type:'Short', diff:'Hard', marks:4, blooms:'Evaluate',
+        q:'Find the value of k so that x² − 6x + k = 0 has equal roots.',
+        answer:'Discriminant = 0 → 36 − 4k = 0 → k = 9' },
+      { type:'Long', diff:'Medium', marks:6, blooms:'Apply',
+        q:'A train travels 360 km at uniform speed. If speed were 5 km/h more, it would take 1 hour less. Find the original speed. [Use quadratic equations.]',
+        answer:'Let speed = x km/h\n360/x − 360/(x+5) = 1\n→ x² + 5x − 1800 = 0\n→ (x − 40)(x + 45) = 0\nSpeed = 40 km/h' },
+      { type:'TF', diff:'Easy', marks:1, blooms:'Remember',
+        q:'True or False: The equation x² = 0 has two distinct real roots.',
+        answer:'False — It has one repeated root: x = 0.' },
+      { type:'Fill', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The discriminant of ax² + bx + c = 0 is ______.',
+        answer:'b² − 4ac' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Apply',
+        q:'Using the quadratic formula, solve: x² + 4x − 5 = 0',
+        answer:'x = (−4 ± √36)/2 = (−4 ± 6)/2 → x = 1 or x = −5' },
+    ]
+  },
+  'Physics': {
+    "Newton's Laws": [
+      { type:'MCQ', diff:'Easy', marks:1, blooms:'Remember',
+        q:"Newton's First Law is also known as the Law of:",
+        opts:['Gravitation','Inertia','Action-Reaction','Momentum'], correct:1,
+        hint:'The first law describes resistance to change in motion.' },
+      { type:'MCQ', diff:'Medium', marks:1, blooms:'Apply',
+        q:'A body of mass 5 kg is acted on by 20 N. The acceleration is:',
+        opts:['2 m/s²','4 m/s²','10 m/s²','100 m/s²'], correct:1,
+        hint:'F = ma → a = F/m' },
+      { type:'MCQ', diff:'Hard', marks:1, blooms:'Analyse',
+        q:'A rocket ejects gas backwards to move forward. Which law explains this?',
+        opts:['First Law','Second Law','Third Law','Law of Gravitation'], correct:2,
+        hint:'For every action there is an equal and opposite reaction.' },
+      { type:'Short', diff:'Easy', marks:2, blooms:'Understand',
+        q:"State Newton's Second Law and write its formula.",
+        answer:'The net force on a body equals its mass × acceleration. F = ma' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Apply',
+        q:'A car (1200 kg) accelerates from 0 to 20 m/s in 8 s. Find the net force.',
+        answer:'a = 20/8 = 2.5 m/s²; F = 1200 × 2.5 = 3000 N' },
+      { type:'Long', diff:'Hard', marks:6, blooms:'Evaluate',
+        q:'A 70 kg person stands on a scale in a lift. Find the scale reading when (a) lift accelerates upward at 2 m/s², (b) downward at 2 m/s², (c) in free fall. [g = 10 m/s²]',
+        answer:'(a) R = 70×12 = 840 N\n(b) R = 70×8 = 560 N\n(c) R = 0 N (weightlessness)' },
+      { type:'TF', diff:'Easy', marks:1, blooms:'Remember',
+        q:"True or False: Action and reaction forces in Newton's Third Law act on the same body.",
+        answer:'False — They act on DIFFERENT bodies.' },
+      { type:'Fill', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The SI unit of force is ______.',
+        answer:'Newton (N)' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Apply',
+        q:'A 0.15 kg ball at 40 m/s is hit back at 60 m/s in 0.01 s. Find the force.',
+        answer:'Δp = 0.15×100 = 15 kg·m/s; F = 15/0.01 = 1500 N' },
+    ]
+  },
+  'Biology': {
+    'Photosynthesis': [
+      { type:'MCQ', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The green pigment responsible for photosynthesis is:',
+        opts:['Carotene','Xanthophyll','Chlorophyll','Anthocyanin'], correct:2,
+        hint:'It gives leaves their green colour.' },
+      { type:'MCQ', diff:'Medium', marks:1, blooms:'Understand',
+        q:'Photosynthesis takes place in which organelle?',
+        opts:['Mitochondria','Nucleus','Chloroplast','Vacuole'], correct:2,
+        hint:'Contains chlorophyll.' },
+      { type:'Short', diff:'Easy', marks:2, blooms:'Remember',
+        q:'Write the balanced equation for photosynthesis.',
+        answer:'6CO₂ + 6H₂O + Light → C₆H₁₂O₆ + 6O₂' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Understand',
+        q:'Why do leaves appear green?',
+        answer:'Chlorophyll absorbs red & blue light but reflects green wavelengths, so we see green.' },
+      { type:'Long', diff:'Hard', marks:6, blooms:'Evaluate',
+        q:'A student places Elodea in bright light (30 bubbles/min) then moves it 1 m further (12 bubbles/min). Explain and name TWO other limiting factors.',
+        answer:'Bubbles = O₂ from photosynthesis. Less light intensity → slower light reactions → less O₂.\nOther factors: (1) CO₂ concentration, (2) Temperature.' },
+      { type:'TF', diff:'Medium', marks:1, blooms:'Understand',
+        q:'True or False: Plants photosynthesise during the day and only respire at night.',
+        answer:'False — Both occur during the day; only respiration at night.' },
+      { type:'Fill', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The two stages of photosynthesis are ______ reactions and the ______.',
+        answer:'Light-dependent; Calvin Cycle' },
+      { type:'Short', diff:'Hard', marks:4, blooms:'Analyse',
+        q:'Compare light-dependent and light-independent reactions.',
+        answer:'Light-dependent: thylakoid membrane, needs light, makes ATP/NADPH/O₂, splits water.\nLight-independent (Calvin): stroma, no direct light needed, uses ATP/NADPH, fixes CO₂ into glucose.' },
+    ]
+  },
+  'English': {
+    'Essay Writing': [
+      { type:'MCQ', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The introduction of an essay should:',
+        opts:['State the conclusion','Hook reader and state thesis','List evidence','Summarise paragraphs'], correct:1,
+        hint:'A good intro grabs attention and states the main argument.' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Understand',
+        q:"What is the difference between a 'topic sentence' and a 'thesis statement'?",
+        answer:'Thesis: central argument for the whole essay (in intro).\nTopic sentence: introduces one paragraph\'s idea, links to the thesis.' },
+      { type:'Short', diff:'Medium', marks:3, blooms:'Apply',
+        q:'Write a thesis statement for: "Social media does more harm than good to teenagers."',
+        answer:'Sample: "Although social media enables connectivity, its addictive design, cyberbullying exposure and distorted self-image make it predominantly harmful to teenagers."' },
+      { type:'Long', diff:'Hard', marks:10, blooms:'Create',
+        q:'Write a well-structured argumentative essay (250 words) on: "Online learning is more effective than classroom learning."',
+        answer:'Structure: Intro (hook + thesis) → Para 1 (flexibility, global resources) → Para 2 (tech engagement) → Para 3 (counter-argument + refutation) → Conclusion.' },
+      { type:'TF', diff:'Easy', marks:1, blooms:'Remember',
+        q:'True or False: A paragraph can have more than one topic sentence.',
+        answer:'False — One topic sentence per paragraph.' },
+      { type:'Fill', diff:'Easy', marks:1, blooms:'Remember',
+        q:'The three main parts of a basic essay are: Introduction, ______, and Conclusion.',
+        answer:'Body (Body paragraphs)' },
+    ]
+  }
+};
+
+function fallbackQ(subject, topic, count) {
+  const types = ['MCQ','Short','Long','TF','Fill'];
+  const diffs = ['Easy','Medium','Hard'];
+  const blooms = ['Remember','Understand','Apply','Analyse','Evaluate'];
+  return Array.from({length:count},(_, i)=>({
+    type:types[i%types.length], diff:diffs[i%3],
+    marks:types[i%types.length]==='MCQ'||types[i%types.length]==='TF'||types[i%types.length]==='Fill'?1:types[i%types.length]==='Short'?3:6,
+    blooms:blooms[i%blooms.length],
+    q:`[${subject} · ${topic}] Practice Question ${i+1}: Explain the key concepts of this topic.`,
+    opts:types[i%types.length]==='MCQ'?['Option A','Option B','Option C','Option D']:undefined,
+    correct:types[i%types.length]==='MCQ'?0:undefined,
+    answer:`Model answer for Q${i+1}: Discuss the core principles of ${topic} with relevant examples.`,
+    hint:`Refer to your ${subject} textbook.`
+  }));
+}
+
+/* ── State ── */
+let count=8, difficulty='medium';
+let selectedTypes=new Set(['mcq','short']);
+let generatedQ=[], curSubject='', curTopic='';
+
+function adjustCount(d){count=Math.max(1,Math.min(20,count+d));document.getElementById('countVal').textContent=count;}
+
+function toggleType(t,el){
+  if(selectedTypes.has(t)&&selectedTypes.size===1){showToast('Select at least one type','⚠️');return;}
+  selectedTypes.has(t)?selectedTypes.delete(t):selectedTypes.add(t);
+  el.classList.toggle('on');
+}
+
+function setDiff(d){
+  difficulty=d;
+  ['easy','medium','hard'].forEach(k=>document.getElementById('d-'+k).classList.remove('on-easy','on-medium','on-hard'));
+  document.getElementById('d-'+d).classList.add('on-'+d);
+}
+
+function onSubjectChange(){
+  const placeholders={Mathematics:'e.g. Quadratic Equations, Trigonometry…',Physics:'e.g. Newton\'s Laws, Electricity…',Chemistry:'e.g. Chemical Bonding, Acids & Bases…',Biology:'e.g. Photosynthesis, Cell Division…',English:'e.g. Essay Writing, Poetry Analysis…',History:'e.g. World War II, Liberation War 1971…',Geography:'e.g. Water Cycle, Climate Zones…',ICT:'e.g. Algorithms, Databases…'};
+  document.getElementById('topic').placeholder=placeholders[document.getElementById('subject').value]||'Enter topic…';
+}
+
+function quickDemo(subj,topic){
+  document.getElementById('subject').value=subj;
+  document.getElementById('topic').value=topic;
+  onSubjectChange();
+  generateQuestions();
+}
+
+function generateQuestions(){
+  const subject=document.getElementById('subject').value;
+  const topic=document.getElementById('topic').value.trim();
+  if(!subject){showToast('Please select a subject','⚠️');return;}
+  if(!topic){showToast('Please enter a topic','⚠️');return;}
+  curSubject=subject; curTopic=topic;
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('qbank').innerHTML='';
+  document.getElementById('qToolbar').style.display='none';
+  document.getElementById('exportPanel').style.display='none';
+  document.getElementById('qbank').style.display='none';
+  const prog=document.getElementById('genProgress');
+  prog.style.display='block';
+
+  const steps=['gs1','gs2','gs3','gs4','gs5'];
+  let s=0;
+  const iv=setInterval(()=>{
+    if(s>0) document.getElementById(steps[s-1]).className='gp-step done';
+    if(s<steps.length){document.getElementById(steps[s]).className='gp-step active';s++;}
+    else clearInterval(iv);
+  },370);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    steps.forEach(id=>document.getElementById(id).className='gp-step done');
+    let pool=(QB[subject]&&QB[subject][topic])?QB[subject][topic]:fallbackQ(subject,topic,count);
+    pool=[...pool].sort(()=>Math.random()-.5).slice(0,count);
+    generatedQ=pool;
+    setTimeout(()=>{
+      prog.style.display='none';
+      btn.disabled=false;
+      renderQuestions(pool);
+      document.getElementById('qToolbar').style.display='flex';
+      document.getElementById('qbank').style.display='flex';
+      document.getElementById('exportPanel').style.display='block';
+      document.getElementById('qtLabel').textContent=`${pool.length} questions · ${subject} · ${topic}`;
+      showToast(`${pool.length} questions ready ! 🎉`,'✅');
+    },280);
+  },1950);
+}
+
+function renderQuestions(questions){
+  const c=document.getElementById('qbank');c.innerHTML='';
+  questions.forEach((q,i)=>c.appendChild(buildCard(q,i)));
+}
+
+function buildCard(q,i){
+  const div=document.createElement('div');div.className='qcard';div.dataset.qtype=q.type;
+  const tc={MCQ:'tb-mcq',Short:'tb-short',Long:'tb-long',TF:'tb-tf',Fill:'tb-fill'}[q.type]||'tb-short';
+  const dc={Easy:'db-easy',Medium:'db-medium',Hard:'db-hard'}[q.diff]||'db-medium';
+  const de={Easy:'🟢',Medium:'🟡',Hard:'🔴'}[q.diff]||'🟡';
+
+  const optHTML=q.opts?`<div class="qcard-opts">${q.opts.map((o,oi)=>`<div class="opt ${oi===q.correct?'correct':''}"><span class="opt-lbl">${['A','B','C','D'][oi]}.</span>${o}</div>`).join('')}</div>`:'';
+  const ansHTML=q.answer?`<div class="answer-box" id="ans-${i}"><strong>✅ Answer:</strong> ${q.answer.replace(/\n/g,'<br>')}</div>`:'';
+  const hintHTML=q.hint?`<div class="hint-box" id="hint-${i}">💡 <strong>Hint:</strong> ${q.hint}</div>`:'';
+
+  div.innerHTML=`
+    <div class="qcard-head">
+      <div class="qcard-num">Q${i+1}</div>
+      <span class="type-badge ${tc}">${q.type}</span>
+      <span class="diff-badge ${dc}">${de} ${q.diff}</span>
+      <span class="marks-badge">${q.marks} mark${q.marks>1?'s':''}</span>
+      <span class="blooms-lbl">${q.blooms||''}</span>
+    </div>
+    <div class="qcard-body">
+      <div class="qcard-q">${i+1}. ${q.q}</div>
+      ${optHTML}${ansHTML}${hintHTML}
+    </div>
+    <div class="qcard-foot">
+      <button class="qact" onclick="toggleAns(this,${i})">👁️ Show Answer</button>
+      <button class="qact" onclick="toggleHint(this,${i})">💡 Hint</button>
+      <button class="qact" onclick="openEdit(${i})">✏️ Edit</button>
+      <button class="qact danger" onclick="removeCard(this)">🗑️</button>
+      <button class="qact primary" onclick="saveToFlashcard(${i})">🃏 Flashcard</button>
+    </div>
+    <div class="edit-area" id="edit-${i}">
+      <textarea rows="3" id="eta-${i}">${q.q}</textarea>
+      <div class="edit-actions"><button class="edit-save" onclick="saveEdit(${i})">💾 Save</button><button class="edit-cancel" onclick="closeEdit(${i})">Cancel</button></div>
+    </div>`;
+  return div;
+}
+
+function toggleAns(btn,i){
+  const box=document.getElementById('ans-'+i);if(!box)return;
+  const show=box.style.display!=='block';
+  box.style.display=show?'block':'none';
+  btn.textContent=show?'👁️ Hide Answer':'👁️ Show Answer';
+}
+function toggleHint(btn,i){
+  const box=document.getElementById('hint-'+i);if(!box)return;
+  const show=box.style.display!=='block';
+  box.style.display=show?'block':'none';
+  btn.textContent=show?'💡 Hide Hint':'💡 Hint';
+}
+function openEdit(i){const ea=document.getElementById('edit-'+i);ea.style.display=ea.style.display==='block'?'none':'block';}
+function saveEdit(i){
+  const ta=document.getElementById('eta-'+i);
+  ta.closest('.qcard').querySelector('.qcard-q').textContent=`${i+1}. ${ta.value}`;
+  generatedQ[i].q=ta.value;closeEdit(i);showToast('Updated','✅');
+}
+function closeEdit(i){document.getElementById('edit-'+i).style.display='none';}
+function removeCard(btn){
+  const c=btn.closest('.qcard');
+  c.style.transition='all .22s ease';c.style.opacity='0';c.style.transform='translateX(10px)';
+  setTimeout(()=>{c.remove();updateLabel();},230);
+}
+function updateLabel(){
+  const n=document.getElementById('qbank').querySelectorAll('.qcard').length;
+  document.getElementById('qtLabel').textContent=`${n} questions · ${curSubject} · ${curTopic}`;
+}
+function saveToFlashcard(i){showToast(`Q${i+1} saved as Flashcard 🃏`,'✅');}
+
+function filterQ(type,el){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.qcard').forEach(c=>{
+    c.style.display=(type==='all'||c.dataset.qtype===type)?'block':'none';
+  });
+}
+
+function regenerateAll(){if(!curSubject||!curTopic){showToast('Generate a set first','⚠️');return;}generateQuestions();}
+
+function exportAct(type){
+  const msgs={Flashcards:'Saved as Flashcards — go to Flashcard Generator 🃏',Practice:'Starting Practice Session 📝',PDF:'Exported as PDF 📄',Print:'Opening print dialog… 🖨️',StudyPlan:'Added to Study Plan 🗓️',QBank:'Saved to your Question Bank 🗂️'};
+  if(type==='Print')window.print();
+  showToast(msgs[type]||'Done','✅');
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

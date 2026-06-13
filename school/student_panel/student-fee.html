@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Fee Ledger — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Balance hero */
+.balance-hero{background:linear-gradient(135deg,#1E0A3C 0%,#4C1D95 50%,#6D28D9 100%);border-radius:16px;padding:24px 28px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:22px;position:relative;overflow:hidden;}
+.balance-hero::before{content:'';position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05);}
+.bh-label{font-size:.72rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.bh-amount{font-size:2rem;font-weight:900;font-family:'DM Mono',monospace;}
+.bh-sub{font-size:.8rem;opacity:.7;margin-top:3px;}
+.bh-cards{display:flex;gap:12px;flex-wrap:wrap;}
+.bh-stat-card{background:rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;min-width:110px;}
+.bh-stat-num{font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;}
+.bh-stat-lbl{font-size:.66rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* Month ledger row */
+.ledger-month{border-bottom:1.5px solid var(--border);}
+.ledger-month:last-child{border-bottom:none;}
+.lm-header{display:flex;align-items:center;gap:12px;padding:11px 18px;cursor:pointer;transition:background .1s;user-select:none;}
+.lm-header:hover{background:var(--bg);}
+.lm-month{font-size:.88rem;font-weight:800;color:var(--ink-2);flex:1;}
+.lm-total{font-family:'DM Mono',monospace;font-weight:800;font-size:.88rem;}
+.lm-status{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;}
+.lm-status.paid{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.lm-status.due{background:#FFF5F5;color:#991B1B;border:1px solid #FECACA;}
+.lm-status.partial{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
+.lm-chevron{color:var(--muted);transition:transform .2s;font-size:.8rem;}
+.lm-chevron.open{transform:rotate(90deg);}
+.lm-body{display:none;background:var(--bg);border-top:1px solid var(--border);}
+.lm-body.open{display:block;}
+.lm-item{display:flex;align-items:center;gap:12px;padding:10px 24px;border-bottom:1px solid var(--border);}
+.lm-item:last-child{border-bottom:none;}
+.lm-item-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.lm-item-name{flex:1;font-size:.83rem;font-weight:700;color:var(--ink-2);}
+.lm-item-period{font-size:.71rem;color:var(--muted);}
+.lm-item-amt{font-family:'DM Mono',monospace;font-weight:800;font-size:.86rem;}
+.lm-item-rct{font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* Payment method chips */
+.pay-method-chip{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid var(--border);}
+
+/* Due alert bar */
+.due-alert{background:linear-gradient(135deg,#FFF5F5,#FFF1F2);border:1.5px solid #FECACA;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.da-icon{font-size:1.4rem;flex-shrink:0;}
+.da-title{font-size:.9rem;font-weight:800;color:var(--red);}
+.da-sub{font-size:.77rem;color:#991B1B;margin-top:2px;}
+
+/* Pay now modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:440px;max-width:95vw;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);}
+.modal-body{padding:24px;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* Payment method selector */
+.pay-method-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.pm-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;text-align:center;background:var(--white);}
+.pm-card:hover,.pm-card.sel{border-color:var(--stu);background:var(--stu-pale);}
+.pm-icon{font-size:1.3rem;margin-bottom:3px;}
+.pm-name{font-size:.78rem;font-weight:700;color:var(--ink-2);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">💳 Finance</div>
+        <div class="page-title">My Fee Ledger</div>
+        <div class="page-sub">Complete payment history, outstanding dues, and receipts. Session 2026–27.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Downloading statement PDF…','📄')">📄 Download Statement</button>
+        <button class="btn btn-primary" onclick="openModal('payModal')">💳 Pay Fee</button>
+      </div>
+    </div>
+
+    <!-- Balance hero -->
+    <div class="balance-hero anim-1">
+      <div>
+        <div class="bh-label">Outstanding Balance</div>
+        <div class="bh-amount" style="color:#FCA5A5;">৳ 800</div>
+        <div class="bh-sub">February 2025 tuition · Due by Feb 10 · Late fine: ৳ 140 accrued</div>
+      </div>
+      <div class="bh-cards">
+        <div class="bh-stat-card">
+          <div class="bh-stat-num" style="color:#86EFAC;">৳ 11,400</div>
+          <div class="bh-stat-lbl">Total Paid (YTD)</div>
+        </div>
+        <div class="bh-stat-card">
+          <div class="bh-stat-num">7</div>
+          <div class="bh-stat-lbl">Payments Made</div>
+        </div>
+        <div class="bh-stat-card" style="cursor:pointer;" onclick="openModal('payModal')">
+          <div class="bh-stat-num" style="color:#FCA5A5;">৳ 800</div>
+          <div class="bh-stat-lbl">Pay Now →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Due alert -->
+    <div class="due-alert anim-1">
+      <div class="da-icon">⚠️</div>
+      <div style="flex:1;">
+        <div class="da-title">February Tuition Overdue</div>
+        <div class="da-sub">৳ 800 was due on Feb 10, 2025. A late fine of ৳ 10/day is being added. Current fine: ৳ 140 (14 days late). Total payable now: <strong>৳ 940</strong>.</div>
+      </div>
+      <button class="btn btn-sm" style="background:var(--red);color:#fff;border:none;font-size:.78rem;flex-shrink:0;" onclick="openModal('payModal')">Pay Now</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+
+      <!-- Ledger -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📋 Payment Ledger</div><div class="card-sub">Session 2026–27 · All transactions</div></div>
+          <select class="form-select" style="width:130px;padding:6px 10px;font-size:.78rem;">
+            <option>All (2024–25)</option>
+            <option>Paid Only</option>
+            <option>Due / Overdue</option>
+          </select>
+        </div>
+        <div id="ledgerBody"></div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Quick pay -->
+        <div class="card anim-1" style="border-color:var(--stu);background:var(--stu-pale);padding:18px;">
+          <div style="font-size:.82rem;font-weight:800;color:var(--stu-dark);margin-bottom:4px;">💳 Pay February Fee</div>
+          <div style="font-size:.76rem;color:var(--stu);margin-bottom:14px;">Tuition ৳ 800 + Late fine ৳ 140</div>
+          <div style="font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu-dark);margin-bottom:14px;">৳ 940</div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;background:var(--stu);border-color:var(--stu);" onclick="openModal('payModal')">Pay Now →</button>
+          <div style="font-size:.7rem;color:var(--stu);margin-top:8px;text-align:center;">bKash · Nagad · Cash · Bank Transfer</div>
+        </div>
+
+        <!-- Annual breakdown chart -->
+        <div class="card anim-2" style="padding:16px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">📊 Monthly Summary</div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="monthlySummary"></div>
+        </div>
+
+        <!-- Contact -->
+        <div class="card anim-2" style="padding:16px;background:var(--bg);">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Need Help?</div>
+          <div style="font-size:.8rem;color:var(--ink-2);margin-bottom:10px;line-height:1.6;">For fee disputes or receipts, contact the school accounts office.</div>
+          <a href="#" class="btn btn-sm btn-outline" style="width:100%;justify-content:center;font-size:.76rem;">📞 Contact Accounts</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Pay Modal -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title">💳 Pay February Fee</div>
+      <button class="modal-close" onclick="closeModal('payModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:6px;"><span style="color:var(--muted);">February Tuition</span><span style="font-weight:700;">৳ 800</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:6px;"><span style="color:var(--muted);">Late Fine (14 days × ৳10)</span><span style="font-weight:700;color:var(--red);">৳ 140</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.96rem;font-weight:900;padding-top:8px;border-top:1px solid var(--border);"><span>Total Payable</span><span style="color:var(--stu);font-family:'DM Mono',monospace;">৳ 940</span></div>
+      </div>
+      <div style="font-size:.8rem;font-weight:700;color:var(--ink-2);margin-bottom:10px;">Choose Payment Method</div>
+      <div class="pay-method-grid">
+        <div class="pm-card sel" id="pm-cash" onclick="selPM('cash')"><div class="pm-icon">💵</div><div class="pm-name">Cash</div></div>
+        <div class="pm-card" id="pm-bkash" onclick="selPM('bkash')"><div class="pm-icon">🟣</div><div class="pm-name">bKash</div></div>
+        <div class="pm-card" id="pm-nagad" onclick="selPM('nagad')"><div class="pm-icon">🔴</div><div class="pm-name">Nagad</div></div>
+        <div class="pm-card" id="pm-bank" onclick="selPM('bank')"><div class="pm-icon">🏦</div><div class="pm-name">Bank Transfer</div></div>
+      </div>
+      <div id="txnRefWrap" style="display:none;">
+        <label class="form-label">Transaction / Reference No.</label>
+        <input type="text" class="form-input" placeholder="e.g. bKash TrxID: 8N1234AB56">
+      </div>
+      <div class="alert alert-blue" style="padding:10px 12px;margin-top:12px;font-size:.78rem;">
+        <span>ℹ</span> An SMS receipt will be sent to your parent's phone after payment.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('payModal')">Cancel</button>
+      <button class="btn btn-primary" style="background:var(--stu);border-color:var(--stu);" onclick="processPayment()">Confirm Payment ৳ 940</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <div class="modal-body" style="padding:32px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:12px;">✅</div>
+      <div style="font-size:1.2rem;font-weight:800;color:var(--ink);margin-bottom:6px;">Payment Successful!</div>
+      <div style="font-size:.88rem;color:var(--muted);margin-bottom:16px;">৳ 940 paid for February 2025 tuition</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.8rem;background:var(--bg);border-radius:8px;padding:10px;margin-bottom:18px;">
+        Receipt: <strong>RCT-2025-1901</strong>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button class="btn btn-outline" onclick="closeModal('successModal');window.location='../admin_panel/admin-fee-receipt.html'">🧾 View Receipt</button>
+        <button class="btn btn-primary" style="background:var(--stu);border-color:var(--stu);" onclick="closeModal('successModal')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Ledger data
+const ledger=[
+  {month:'February 2025',status:'due',items:[
+    {name:'Monthly Tuition',period:'Feb 2025',amount:800,fine:140,paid:false,method:null,rctNo:null,icon:'📚',bg:'#EFF6FF',fg:'#1D4ED8'},
+  ]},
+  {month:'January 2025',status:'paid',items:[
+    {name:'Monthly Tuition',period:'Jan 2025',amount:800,fine:0,paid:true,method:'bKash',rctNo:'RCT-2025-1847',icon:'📚',bg:'#EFF6FF',fg:'#1D4ED8'},
+    {name:'Science Lab Fee',period:'Jan 2025',amount:150,fine:0,paid:true,method:'bKash',rctNo:'RCT-2025-1847',icon:'🔬',bg:'#ECFDF5',fg:'#065F46'},
+  ]},
+  {month:'December 2024',status:'paid',items:[
+    {name:'Monthly Tuition',period:'Dec 2024',amount:800,fine:0,paid:true,method:'Cash',rctNo:'RCT-2024-1802',icon:'📚',bg:'#EFF6FF',fg:'#1D4ED8'},
+    {name:'Science Lab Fee',period:'Dec 2024',amount:150,fine:0,paid:true,method:'Cash',rctNo:'RCT-2024-1802',icon:'🔬',bg:'#ECFDF5',fg:'#065F46'},
+    {name:'Exam Fee',period:'Annual 2024',amount:300,fine:0,paid:true,method:'Cash',rctNo:'RCT-2024-1802',icon:'📝',bg:'#FFFBEB',fg:'#92400E'},
+  ]},
+  {month:'November 2024',status:'paid',items:[
+    {name:'Monthly Tuition',period:'Nov 2024',amount:800,fine:0,paid:true,method:'Nagad',rctNo:'RCT-2024-1765',icon:'📚',bg:'#EFF6FF',fg:'#1D4ED8'},
+    {name:'Science Lab Fee',period:'Nov 2024',amount:150,fine:0,paid:true,method:'Nagad',rctNo:'RCT-2024-1765',icon:'🔬',bg:'#ECFDF5',fg:'#065F46'},
+  ]},
+  {month:'October 2024',status:'paid',items:[
+    {name:'Monthly Tuition',period:'Oct 2024',amount:800,fine:0,paid:true,method:'bKash',rctNo:'RCT-2024-1710',icon:'📚',bg:'#EFF6FF',fg:'#1D4ED8'},
+    {name:'Science Lab Fee',period:'Oct 2024',amount:150,fine:0,paid:true,method:'bKash',rctNo:'RCT-2024-1710',icon:'🔬',bg:'#ECFDF5',fg:'#065F46'},
+  ]},
+  {month:'August 2024',status:'paid',items:[
+    {name:'Session Fee 2024–25',period:'Annual',amount:1200,fine:0,paid:true,method:'Bank Transfer',rctNo:'RCT-2024-1601',icon:'📅',bg:'#F5F3FF',fg:'#5B21B6'},
+    {name:'Admission / Re-admission',period:'Session Start',amount:500,fine:0,paid:true,method:'Cash',rctNo:'RCT-2024-1601',icon:'🏫',bg:'#ECFDF5',fg:'#065F46'},
+  ]},
+];
+
+const methodColors={'bKash':'#7C3AED','Nagad':'#E11D48','Cash':'#059669','Bank Transfer':'#2563EB'};
+
+function buildLedger(){
+  document.getElementById('ledgerBody').innerHTML=ledger.map((m,mi)=>{
+    const total=m.items.reduce((a,it)=>a+it.amount+(it.fine||0),0);
+    const statusCls=m.status;
+    return`<div class="ledger-month">
+      <div class="lm-header" onclick="toggleMonth(${mi})">
+        <div class="lm-month">${m.month}</div>
+        <span class="lm-status ${statusCls}">${statusCls==='paid'?'✓ Paid':statusCls==='due'?'⚠ Due':'◑ Partial'}</span>
+        <div class="lm-total" style="color:${statusCls==='paid'?'var(--green)':'var(--red)'};">৳ ${total.toLocaleString()}</div>
+        <div class="lm-chevron" id="chev-${mi}">›</div>
+      </div>
+      <div class="lm-body ${mi===0?'open':''}" id="body-${mi}">
+        ${m.items.map(it=>`
+        <div class="lm-item">
+          <div class="lm-item-icon" style="background:${it.bg};color:${it.fg};">${it.icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="lm-item-name">${it.name}</div>
+            <div class="lm-item-period">${it.period}</div>
+          </div>
+          ${it.fine?`<div style="font-size:.72rem;color:var(--red);">+৳${it.fine} fine</div>`:''}
+          <div class="lm-item-amt" style="color:${it.paid?'var(--green)':'var(--red)'};">৳ ${(it.amount+(it.fine||0)).toLocaleString()}</div>
+          ${it.paid
+            ?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+                <span class="pay-method-chip" style="background:${methodColors[it.method]}18;color:${methodColors[it.method]};border-color:${methodColors[it.method]}40;">${it.method}</span>
+                <button class="btn btn-sm btn-ghost" style="font-size:.66rem;padding:2px 6px;" onclick="showToast('Receipt ${it.rctNo}','🧾')">🧾 ${it.rctNo}</button>
+              </div>`
+            :`<button class="btn btn-sm btn-primary" style="font-size:.72rem;background:var(--stu);border-color:var(--stu);" onclick="openModal('payModal')">Pay</button>`
+          }
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  // Open first chevron
+  const c=document.getElementById('chev-0');
+  if(c)c.classList.add('open');
+}
+
+function toggleMonth(i){
+  const body=document.getElementById('body-'+i);
+  const chev=document.getElementById('chev-'+i);
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+}
+
+// Monthly summary bars
+const months=['Aug','Sep','Oct','Nov','Dec','Jan','Feb'];
+const paid=[1700,950,950,950,1250,950,0];
+const due=[0,0,0,0,0,0,940];
+document.getElementById('monthlySummary').innerHTML=months.map((m,i)=>`
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:.72rem;font-weight:700;color:var(--muted);min-width:26px;">${m}</span>
+    <div style="flex:1;height:7px;background:var(--border);border-radius:3px;overflow:hidden;">
+      <div style="height:100%;width:${paid[i]>0?Math.round(paid[i]/1700*100):0}%;background:${due[i]>0?'var(--red)':'var(--green)'};border-radius:3px;"></div>
+    </div>
+    <span style="font-size:.7rem;font-weight:800;color:${due[i]>0?'var(--red)':'var(--green)'};min-width:50px;text-align:right;">${due[i]>0?'৳'+due[i]+' due':'৳'+paid[i]}</span>
+  </div>`).join('');
+
+let selectedPM='cash';
+function selPM(id){
+  selectedPM=id;
+  document.querySelectorAll('.pm-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pm-'+id)?.classList.add('sel');
+  document.getElementById('txnRefWrap').style.display=id==='cash'?'none':'block';
+}
+
+function processPayment(){
+  closeModal('payModal');
+  setTimeout(()=>document.getElementById('successModal').classList.add('open'),200);
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildLedger();
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

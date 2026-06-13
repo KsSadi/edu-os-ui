@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start static server",
+			"type": "shell",
+			"command": "node -e \"const http=require('http'),fs=require('fs'),path=require('path');http.createServer((req,res)=>{let p=req.url.split('?')[0];let f=path.join(process.cwd(),decodeURIComponent(p));fs.readFile(f,(e,d)=>{if(e){res.writeHead(404);res.end('NF');return;}const t={'.html':'text/html','.js':'application/javascript','.css':'text/css'}[path.extname(f).toLowerCase()]||'text/plain';res.writeHead(200,{'Content-Type':t});res.end(d);});}).listen(8780,()=>console.log('LISTEN 8780'));\"",
+			"isBackground": true
+		}
+	]
+}

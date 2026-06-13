@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alerts � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+.alert-card{border-radius:14px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;}
+.alert-card.crit{background:#FFF1F2;border:1.5px solid #FCA5A5;}
+.alert-card.warn{background:#FFFBEB;border:1.5px solid #FCD34D;}
+.alert-card.info{background:#EFF6FF;border:1.5px solid #93C5FD;}
+.alert-sev-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.alert-sev-dot.crit{background:var(--red);}
+.alert-sev-dot.warn{background:var(--amber);}
+.alert-sev-dot.info{background:var(--blue);}
+.alert-card-title{font-size:.89rem;font-weight:800;color:var(--ink);margin-bottom:3px;}
+.alert-card-body{font-size:.79rem;color:var(--ink-2);line-height:1.5;}
+.alert-card-meta{font-size:.7rem;color:var(--muted);margin-top:5px;display:flex;gap:12px;flex-wrap:wrap;}
+.alert-card-actions{margin-left:auto;display:flex;gap:8px;flex-shrink:0;}
+.hist-row{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--border);}
+.hist-row:last-child{border:none;}
+.hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hist-title{font-size:.82rem;font-weight:600;color:var(--ink-2);flex:1;}
+.hist-time{font-size:.72rem;color:var(--muted);}
+.threshold-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.threshold-row:last-child{border:none;}
+.threshold-label{font-size:.83rem;font-weight:600;color:var(--ink-2);}
+.threshold-hint{font-size:.71rem;color:var(--muted);}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link active"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Alerts</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>3 Active Alerts</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Platform</div>
+        <div class="page-title">System Alerts</div>
+        <div class="page-sub">Active platform-wide alerts requiring attention. Configure thresholds and notification channels below.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('All alerts acknowledged','??')">? Acknowledge All</button>
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="document.getElementById('cfgModal').showModal()">? Configure Thresholds</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:20px;">
+      <!-- Active alerts -->
+      <div>
+        <div class="section-title mb-3">?? Active Alerts <span class="badge-red" style="margin-left:6px;">3</span></div>
+
+        <div class="alert-card crit anim-1">
+          <div class="alert-sev-dot crit"></div>
+          <div style="flex:1;">
+            <div class="alert-card-title">SSL Certificate Expiry � 4 Tenants</div>
+            <div class="alert-card-body">SSL certificates for <strong>greenfield-hs.edu.bd</strong>, <strong>sunrise-intl.edu.bd</strong>, <strong>dhaka-model.edu.bd</strong>, and <strong>ctg-royal.edu.bd</strong> expire within 7 days. Auto-renewal failed due to DNS propagation delay.</div>
+            <div class="alert-card-meta"><span>?? Triggered 2h ago</span><span>?? Critical</span><span>Platform / SSL</span></div>
+          </div>
+          <div class="alert-card-actions">
+            <button class="btn btn-outline btn-sm" onclick="showToast('SSL renewal triggered for 4 tenants','??')">Renew Now</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Alert dismissed','?')">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="alert-card warn anim-2">
+          <div class="alert-sev-dot warn"></div>
+          <div style="flex:1;">
+            <div class="alert-card-title">High Memory Usage � DB Node 02</div>
+            <div class="alert-card-body">Database node <strong>db-node-02 (Singapore)</strong> memory utilisation is at <strong>89%</strong>. This exceeds the warning threshold of 80%. Queries may begin to slow if memory reaches 95%.</div>
+            <div class="alert-card-meta"><span>?? Triggered 4h 15m ago</span><span>?? Warning</span><span>Platform / Database</span></div>
+          </div>
+          <div class="alert-card-actions">
+            <button class="btn btn-outline btn-sm" onclick="showToast('Opening DB Monitor�','???')">View DB</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Alert snoozed for 1h','??')">Snooze 1h</button>
+          </div>
+        </div>
+
+        <div class="alert-card warn anim-3">
+          <div class="alert-sev-dot warn"></div>
+          <div style="flex:1;">
+            <div class="alert-card-title">Brute Force Attempt � IP Range 182.168.x.x</div>
+            <div class="alert-card-body">Automated login attempts detected from the CIDR block <strong>182.168.0.0/16</strong>. 312 failed attempts across 8 distinct tenant portals in the last 30 minutes. IP range has been auto-blocked.</div>
+            <div class="alert-card-meta"><span>?? Triggered 31m ago</span><span>?? Warning</span><span>Security / Auth</span></div>
+          </div>
+          <div class="alert-card-actions">
+            <button class="btn btn-outline btn-sm" onclick="showToast('Opening Security Audit�','??')">View Security</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Alert acknowledged','?')">Ack</button>
+          </div>
+        </div>
+
+        <div class="section-title mb-3" style="margin-top:24px;">?? Alert History (Last 7 Days)</div>
+        <div class="card" style="padding:14px 18px;">
+          <div class="hist-row"><div class="hist-dot" style="background:var(--green);"></div><div class="hist-title">Payment gateway timeout resolved � Bkash API recovered</div><span class="badge-green" style="font-size:.7rem;">Resolved</span><div class="hist-time">Yesterday</div></div>
+          <div class="hist-row"><div class="hist-dot" style="background:var(--green);"></div><div class="hist-title">DB replication lag spike (&gt;200ms) � resolved after index rebuild</div><span class="badge-green" style="font-size:.7rem;">Resolved</span><div class="hist-time">2d ago</div></div>
+          <div class="hist-row"><div class="hist-dot" style="background:var(--green);"></div><div class="hist-title">SMS quota reached � 50k limit hit, quota auto-extended</div><span class="badge-green" style="font-size:.7rem;">Resolved</span><div class="hist-time">3d ago</div></div>
+          <div class="hist-row"><div class="hist-dot" style="background:var(--green);"></div><div class="hist-title">CPU spike on app-server-03 � load balancer redistributed traffic</div><span class="badge-green" style="font-size:.7rem;">Resolved</span><div class="hist-time">5d ago</div></div>
+          <div class="hist-row"><div class="hist-dot" style="background:var(--green);"></div><div class="hist-title">Tenant creation failure � DB constraint bug, hotfix deployed</div><span class="badge-green" style="font-size:.7rem;">Resolved</span><div class="hist-time">6d ago</div></div>
+        </div>
+      </div>
+
+      <!-- Notification channels + Threshold overview -->
+      <div>
+        <div class="section-title mb-3">?? Notification Channels</div>
+        <div class="card" style="padding:16px;margin-bottom:20px;">
+          <div class="threshold-row">
+            <div><div class="threshold-label">?? Email Alerts</div><div class="threshold-hint">devops@prathomik.com, cto@prathomik.com</div></div>
+            <label class="toggle"><input type="checkbox" checked onchange="showToast('Email alerts toggled','??')"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="threshold-row">
+            <div><div class="threshold-label">?? Slack Webhook</div><div class="threshold-hint">#platform-alerts � workspace: EduOS Eng</div></div>
+            <label class="toggle"><input type="checkbox" checked onchange="showToast('Slack alerts toggled','??')"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="threshold-row">
+            <div><div class="threshold-label">?? SMS (On-Call)</div><div class="threshold-hint">Critical severity only � +880-1xxx-xxxxxx</div></div>
+            <label class="toggle"><input type="checkbox" checked onchange="showToast('SMS alerts toggled','??')"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="threshold-row">
+            <div><div class="threshold-label">?? PagerDuty</div><div class="threshold-hint">Production incidents only</div></div>
+            <label class="toggle"><input type="checkbox" onchange="showToast('PagerDuty toggled','??')"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="section-title mb-3">? Alert Summary by Category</div>
+        <div class="card" style="padding:16px;">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:.83rem;font-weight:700;">?? Security</div><span class="badge-amber">1 active</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:.83rem;font-weight:700;">??? Database</div><span class="badge-amber">1 active</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:.83rem;font-weight:700;">?? SSL / TLS</div><span class="badge-red">1 active</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:.83rem;font-weight:700;">?? Billing / Payments</div><span class="badge-green">All clear</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+              <div style="font-size:.83rem;font-weight:700;">?? App Servers</div><span class="badge-green">All clear</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+              <div style="font-size:.83rem;font-weight:700;">?? SMS / Email Gateway</div><span class="badge-green">All clear</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Configure Thresholds Modal -->
+<dialog id="cfgModal" style="border:none;border-radius:16px;padding:0;max-width:540px;width:95vw;box-shadow:0 25px 60px rgba(0,0,0,.18);">
+  <div class="modal-head"><div class="modal-title">Configure Alert Thresholds</div><div class="modal-sub">Set trigger values for automated system alerts</div><button class="modal-close" onclick="document.getElementById('cfgModal').close()">?</button></div>
+  <div class="modal-body" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+    <div class="form-group"><label class="form-label required">CPU Warning Threshold (%)</label><input type="number" class="form-input" value="70"></div>
+    <div class="form-group"><label class="form-label required">Memory Warning Threshold (%)</label><input type="number" class="form-input" value="80"></div>
+    <div class="form-group"><label class="form-label">DB Replication Lag Warning (ms)</label><input type="number" class="form-input" value="100"></div>
+    <div class="form-group"><label class="form-label">SSL Expiry Alert (days before)</label><input type="number" class="form-input" value="7"></div>
+    <div class="form-group"><label class="form-label">Brute Force Threshold (failed logins / 30min)</label><input type="number" class="form-input" value="100"></div>
+  </div>
+  <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+    <button class="btn btn-outline" onclick="document.getElementById('cfgModal').close()">Cancel</button>
+    <button class="btn btn-primary" style="background:var(--sup);" onclick="document.getElementById('cfgModal').close();showToast('Thresholds saved','?')">Save Thresholds</button>
+  </div>
+</dialog>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result Lookup — Dhaka High School</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="school.css">
+<style>
+/* Search card */
+.search-card {
+  background:#fff; border-radius:20px;
+  border:1px solid var(--border); box-shadow:var(--card-shadow);
+  padding:40px 44px; max-width:680px; margin:0 auto;
+}
+.search-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:28px; background:var(--bg); border-radius:11px; padding:4px; border:1px solid var(--border); }
+.stab { padding:10px; border-radius:8px; border:none; background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:600; color:var(--muted); transition:all .18s; }
+.stab.on { background:#fff; color:var(--navy); box-shadow:0 1px 8px rgba(12,27,69,.1); }
+
+.search-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.search-btn { width:100%; padding:13px; background:var(--navy); color:#fff; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.96rem; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(12,27,69,.26); transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px; }
+.search-btn:hover { background:var(--navy-light); transform:translateY(-1px); }
+.spin { display:none; width:15px; height:15px; border-radius:50%; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; animation:spin .65s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* Result card */
+.result-section { display:none; max-width:780px; margin:32px auto 0; animation:fadeUp .45s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+.result-header { background:linear-gradient(145deg,var(--navy),#162E8A); border-radius:16px 16px 0 0; padding:28px 32px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; }
+.result-school { }
+.result-school-name { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:rgba(255,255,255,.7); margin-bottom:4px; }
+.result-exam-title { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:#fff; }
+.result-student { text-align:right; }
+.result-name { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:800; color:#fff; }
+.result-meta-small { font-size:.78rem; color:rgba(255,255,255,.6); margin-top:4px; }
+.result-roll { font-family:'JetBrains Mono',monospace; font-size:.82rem; color:rgba(255,255,255,.5); }
+
+.result-body { background:#fff; border:1px solid var(--border); border-top:none; border-radius:0 0 16px 16px; overflow:hidden; box-shadow:var(--card-shadow); }
+
+/* GPA banner */
+.gpa-banner { padding:24px 32px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.gpa-circle { width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg,var(--gold),#E8A820); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 18px rgba(201,146,42,.3); flex-shrink:0; }
+.gpa-num { font-family:'Playfair Display',serif; font-size:1.7rem; font-weight:800; color:#fff; line-height:1; }
+.gpa-lbl { font-size:.55rem; font-weight:700; color:rgba(255,255,255,.85); text-transform:uppercase; letter-spacing:.05em; }
+.gpa-info { flex:1; }
+.gpa-grade { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:800; color:var(--navy); margin-bottom:4px; }
+.gpa-status { font-size:.88rem; font-weight:700; }
+.pass { color:var(--green); } .fail { color:var(--red); }
+.gpa-detail { font-size:.8rem; color:var(--muted); margin-top:4px; }
+.result-actions { margin-left:auto; display:flex; flex-direction:column; gap:8px; }
+
+/* Subjects table */
+.subj-table { width:100%; border-collapse:collapse; }
+.subj-table th { background:var(--bg); padding:11px 18px; text-align:left; font-family:'DM Sans',sans-serif; font-weight:700; font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; border-bottom:2px solid var(--border); }
+.subj-table td { padding:12px 18px; border-bottom:1px solid var(--border); font-size:.9rem; color:var(--ink-3); }
+.subj-table tr:last-child td { border:none; }
+.subj-table tr:hover td { background:var(--bg); }
+.subj-name { font-weight:600; color:var(--ink-2); }
+.grade-badge { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:.82rem; font-weight:700; }
+.g-aplus { background:#D1FAE5; color:#065F46; }
+.g-a    { background:#DBEAFE; color:#1E40AF; }
+.g-aminus { background:#EDE9FE; color:#5B21B6; }
+.g-b    { background:#FEF3C7; color:#92400E; }
+.g-c    { background:#FFE4E6; color:#9F1239; }
+.g-f    { background:#FEE2E2; color:#991B1B; }
+.marks-bar-wrap { display:flex; align-items:center; gap:8px; }
+.marks-bar-bg { flex:1; height:6px; background:var(--border); border-radius:3px; max-width:100px; }
+.marks-bar { height:6px; border-radius:3px; background:var(--gold); }
+
+/* Exam selector */
+.exam-selector { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+.exam-pill { padding:8px 18px; border-radius:20px; border:1.5px solid var(--border); background:#fff; font-family:'DM Sans',sans-serif; font-size:.83rem; font-weight:600; color:var(--muted); cursor:pointer; transition:all .18s; }
+.exam-pill.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+.exam-pill:hover:not(.on) { border-color:var(--navy); color:var(--navy); }
+
+/* Stats strip */
+.result-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border-top:1px solid var(--border); }
+.rs-block { padding:18px 20px; text-align:center; background:#fff; }
+.rs-num { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:var(--navy); }
+.rs-lbl { font-size:.73rem; color:var(--muted); margin-top:3px; }
+
+/* Not found */
+.not-found { text-align:center; padding:48px 24px; }
+.not-found-icon { font-size:3rem; margin-bottom:14px; }
+.not-found-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--navy); margin-bottom:8px; }
+.not-found-msg { font-size:.88rem; color:var(--muted); line-height:1.6; }
+
+/* Past results summary */
+.past-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.past-card { padding:22px; text-align:center; }
+.past-year { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+.past-rate { font-family:'Playfair Display',serif; font-size:2rem; font-weight:800; color:var(--gold); }
+.past-label { font-size:.75rem; color:var(--muted); margin-top:4px; }
+
+@media(max-width:640px) {
+  .search-card{padding:24px 20px;}
+  .search-row{grid-template-columns:1fr;}
+  .result-header{flex-direction:column;}
+  .result-student{text-align:left;}
+  .result-stats{grid-template-columns:repeat(2,1fr);}
+  .past-grid{grid-template-columns:1fr 1fr;}
+  .gpa-banner{flex-direction:column;}
+  .result-actions{flex-direction:row;margin-left:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left"><span class="top-bar-item">📞 +880 2-9876543</span><span class="top-bar-item">✉ info@dhakahigh.edu.bd</span></div>
+  <div class="top-bar-right"><a href="school-notices.html">Notices</a><a href="school-admission.html">Admissions</a><button class="lang-btn">বাংলা</button></div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="school-identity">
+      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <div class="school-name-wrap">
+        <div class="school-name">Dhaka High School</div>
+        <div class="school-tagline">Excellence in Education Since 1962</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="school-about.html"      class="nav-link">About</a>
+      <a href="school-notices.html"    class="nav-link">Notices</a>
+      <a href="school-admission.html"  class="nav-link">Admission</a>
+      <a href="school-results.html"    class="nav-link active">Results</a>
+      <a href="school-contact.html"    class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
+      <a href="auth/login.html" class="btn-portal">🔐 Student Portal</a>
+    </div>
+    <button class="ham-btn" onclick="toggleMobileNav()">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="school-home.html">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <span style="color:rgba(255,255,255,.8);">Result Lookup</span>
+    </div>
+    <div class="page-hero-badge">📝 Public Result Lookup</div>
+    <h1>Student Result Checker</h1>
+    <p>Look up results for any examination — half-yearly, annual, or board exams — using your Roll Number or Registration ID.</p>
+  </div>
+</div>
+
+<!-- SEARCH SECTION -->
+<section class="section" style="background:var(--bg);">
+  <div class="container">
+
+    <!-- Exam selector -->
+    <div style="text-align:center; margin-bottom:28px;">
+      <div class="s-badge" style="justify-content:center; margin-bottom:12px;">📋 Select Examination</div>
+      <div class="exam-selector" style="justify-content:center;">
+        <button class="exam-pill on" onclick="selectExam(this,'half')">Half-Yearly 2024</button>
+        <button class="exam-pill" onclick="selectExam(this,'annual')">Annual 2024</button>
+        <button class="exam-pill" onclick="selectExam(this,'test')">Test Exam 2025</button>
+        <button class="exam-pill" onclick="selectExam(this,'ssc')">SSC 2024 (Board)</button>
+        <button class="exam-pill" onclick="selectExam(this,'hsc')">HSC 2024 (Board)</button>
+      </div>
+    </div>
+
+    <!-- Search card -->
+    <div class="search-card">
+      <div class="search-tabs">
+        <button class="stab on" onclick="switchTab(this,'roll')">🔢 By Roll Number</button>
+        <button class="stab" onclick="switchTab(this,'reg')">🪪 By Registration ID</button>
+      </div>
+
+      <div id="rollForm">
+        <div class="search-row">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Roll Number *</label>
+            <input type="text" class="form-input" id="rollInput" placeholder="e.g. 2024-9-042" style="font-family:'JetBrains Mono',monospace;">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Class *</label>
+            <select class="form-select" id="classInput">
+              <option value="">Select Class</option>
+              <option>Class VI</option><option>Class VII</option><option>Class VIII</option>
+              <option value="nine">Class IX</option><option>Class X</option>
+              <option>Class XI</option><option>Class XII</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="regForm" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Student Registration ID *</label>
+          <input type="text" class="form-input" id="regInput" placeholder="e.g. DHS-2024-00842" style="font-family:'JetBrains Mono',monospace;">
+        </div>
+      </div>
+
+      <button class="search-btn" onclick="lookupResult()">
+        <span id="btnTxt">🔍 Search Result</span>
+        <div class="spin" id="btnSpin"></div>
+      </button>
+
+      <p style="text-align:center; font-size:.78rem; color:var(--muted); margin-top:12px;">
+        ℹ️ For board exam results (SSC/HSC), this shows internal exam marks only. Official board results are at <a href="#" style="color:var(--navy);font-weight:600;">educationboardresults.gov.bd</a>
+      </p>
+    </div>
+
+    <!-- RESULT OUTPUT -->
+    <div class="result-section" id="resultSection">
+
+      <!-- Student result card -->
+      <div class="result-header">
+        <div class="result-school">
+          <div class="result-school-name">Dhaka High School</div>
+          <div class="result-exam-title">Half-Yearly Examination 2024</div>
+          <div class="result-roll">Academic Year: 2024 &nbsp;·&nbsp; Class: IX-A</div>
+        </div>
+        <div class="result-student">
+          <div class="result-name">Md. Rafiqul Islam</div>
+          <div class="result-meta-small">Roll: <span style="font-family:'JetBrains Mono',monospace;">2024-9-042</span></div>
+          <div class="result-meta-small">Reg: <span style="font-family:'JetBrains Mono',monospace;">DHS-2024-00842</span></div>
+        </div>
+      </div>
+
+      <div class="result-body">
+
+        <!-- GPA Banner -->
+        <div class="gpa-banner">
+          <div class="gpa-circle">
+            <div class="gpa-num">4.83</div>
+            <div class="gpa-lbl">GPA</div>
+          </div>
+          <div class="gpa-info">
+            <div class="gpa-grade">Grade: A+</div>
+            <div class="gpa-status pass">✅ PASSED — Excellent Performance</div>
+            <div class="gpa-detail">Total Marks: 542 / 600 &nbsp;·&nbsp; Position in Class: 2nd &nbsp;·&nbsp; Section: A</div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-navy" onclick="window.print()" style="font-size:.82rem;padding:8px 16px;">🖨 Print</button>
+            <button class="btn btn-outline-navy" style="font-size:.82rem;padding:8px 16px;">📄 PDF</button>
+          </div>
+        </div>
+
+        <!-- Subject marks -->
+        <table class="subj-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Written</th>
+              <th>MCQ</th>
+              <th>Practical</th>
+              <th>Total / 100</th>
+              <th>Grade</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="subj-name">Bangla (1st Paper)</td>
+              <td>62</td><td>22</td><td>—</td>
+              <td><strong>84</strong></td>
+              <td><span class="grade-badge g-aplus">A+</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:84%;background:var(--green);"></div></div><span style="font-size:.72rem;color:var(--muted);">84%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">Bangla (2nd Paper)</td>
+              <td>58</td><td>—</td><td>—</td>
+              <td><strong>58</strong></td>
+              <td><span class="grade-badge g-aminus">A−</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:58%;background:var(--amber);"></div></div><span style="font-size:.72rem;color:var(--muted);">58%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">English (1st Paper)</td>
+              <td>70</td><td>—</td><td>—</td>
+              <td><strong>70</strong></td>
+              <td><span class="grade-badge g-a">A</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:70%;background:var(--gold);"></div></div><span style="font-size:.72rem;color:var(--muted);">70%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">English (2nd Paper)</td>
+              <td>72</td><td>—</td><td>—</td>
+              <td><strong>72</strong></td>
+              <td><span class="grade-badge g-a">A</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:72%;background:var(--gold);"></div></div><span style="font-size:.72rem;color:var(--muted);">72%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">Mathematics</td>
+              <td>74</td><td>22</td><td>—</td>
+              <td><strong>96</strong></td>
+              <td><span class="grade-badge g-aplus">A+</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:96%;background:var(--green);"></div></div><span style="font-size:.72rem;color:var(--muted);">96%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">Science / Physics</td>
+              <td>60</td><td>18</td><td>15</td>
+              <td><strong>93</strong></td>
+              <td><span class="grade-badge g-aplus">A+</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:93%;background:var(--green);"></div></div><span style="font-size:.72rem;color:var(--muted);">93%</span></div></td>
+            </tr>
+            <tr>
+              <td class="subj-name">Bangladesh &amp; World Studies</td>
+              <td>55</td><td>14</td><td>—</td>
+              <td><strong>69</strong></td>
+              <td><span class="grade-badge g-a">A</span></td>
+              <td><div class="marks-bar-wrap"><div class="marks-bar-bg"><div class="marks-bar" style="width:69%;background:var(--gold);"></div></div><span style="font-size:.72rem;color:var(--muted);">69%</span></div></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Summary stats -->
+        <div class="result-stats">
+          <div class="rs-block">
+            <div class="rs-num">542</div>
+            <div class="rs-lbl">Total Marks</div>
+          </div>
+          <div class="rs-block">
+            <div class="rs-num">4.83</div>
+            <div class="rs-lbl">GPA (out of 5.00)</div>
+          </div>
+          <div class="rs-block">
+            <div class="rs-num">2nd</div>
+            <div class="rs-lbl">Class Position</div>
+          </div>
+          <div class="rs-block">
+            <div class="rs-num">90.3%</div>
+            <div class="rs-lbl">Percentage</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NOT FOUND (hidden initially) -->
+    <div class="not-found" id="notFound" style="display:none;">
+      <div class="not-found-icon">📭</div>
+      <div class="not-found-title">No Result Found</div>
+      <div class="not-found-msg">We couldn't find a result matching that Roll Number and Class.<br>Please double-check and try again, or contact the school office.</div>
+      <a href="school-contact.html" class="btn btn-navy mt-6" style="display:inline-flex;margin-top:20px;">📞 Contact School</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- PAST RESULTS SUMMARY -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">📊 Track Record</div>
+      <h2 class="s-title">School Result Summary</h2>
+      <p class="s-sub" style="margin:0 auto 36px;">Dhaka High School's consistent academic performance in public examinations.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-bottom:40px;">
+      <!-- SSC -->
+      <div class="card" style="overflow:hidden;">
+        <div style="background:linear-gradient(135deg,var(--navy),#162E8A); padding:18px 24px;">
+          <div style="font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:rgba(255,255,255,.7); margin-bottom:4px;">SSC Results</div>
+          <div style="font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:#fff;">Dhaka Education Board</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="subj-table">
+            <thead><tr><th>Year</th><th>Appeared</th><th>Passed</th><th>Pass Rate</th><th>GPA 5.00</th></tr></thead>
+            <tbody>
+              <tr><td>2024</td><td>124</td><td>122</td><td><strong style="color:var(--green);">98.4%</strong></td><td>12</td></tr>
+              <tr><td>2023</td><td>118</td><td>115</td><td><strong style="color:var(--green);">97.5%</strong></td><td>9</td></tr>
+              <tr><td>2022</td><td>110</td><td>107</td><td><strong style="color:var(--green);">97.3%</strong></td><td>8</td></tr>
+              <tr><td>2021</td><td>105</td><td>101</td><td><strong style="color:var(--amber);">96.2%</strong></td><td>6</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- HSC -->
+      <div class="card" style="overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#064E3B,#059669); padding:18px 24px;">
+          <div style="font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:rgba(255,255,255,.7); margin-bottom:4px;">HSC Results</div>
+          <div style="font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:#fff;">Dhaka Education Board</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="subj-table">
+            <thead><tr><th>Year</th><th>Appeared</th><th>Passed</th><th>Pass Rate</th><th>GPA 5.00</th></tr></thead>
+            <tbody>
+              <tr><td>2024</td><td>98</td><td>95</td><td><strong style="color:var(--green);">96.9%</strong></td><td>8</td></tr>
+              <tr><td>2023</td><td>92</td><td>88</td><td><strong style="color:var(--green);">95.7%</strong></td><td>6</td></tr>
+              <tr><td>2022</td><td>88</td><td>85</td><td><strong style="color:var(--green);">96.6%</strong></td><td>5</td></tr>
+              <tr><td>2021</td><td>84</td><td>80</td><td><strong style="color:var(--amber);">95.2%</strong></td><td>4</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="past-grid">
+      <div class="card past-card">
+        <div class="past-year">SSC 2024</div>
+        <div class="past-rate">98.4%</div>
+        <div class="past-label">Pass Rate — 12 GPA 5.00</div>
+      </div>
+      <div class="card past-card">
+        <div class="past-year">HSC 2024</div>
+        <div class="past-rate">96.9%</div>
+        <div class="past-label">Pass Rate — 8 GPA 5.00</div>
+      </div>
+      <div class="card past-card">
+        <div class="past-year">Board Rank</div>
+        <div class="past-rate">2nd</div>
+        <div class="past-label">In Dhaka District 2024</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-school">
+      <div class="footer-logo-row">
+        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div class="footer-school-name">Dhaka High School</div>
+      </div>
+      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
+      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="school-about.html">About School</a>
+      <a href="school-notices.html">Notice Board</a>
+      <a href="school-admission.html">Admission</a>
+      <a href="school-results.html">Results</a>
+      <a href="school-contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Portals</h4>
+      <a href="auth/login.html">Student Portal</a>
+      <a href="auth/login.html">Teacher Portal</a>
+      <a href="auth/login.html">Parent Portal</a>
+      <a href="auth/login.html">Admin Login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+88029876543">+880 2-9876543</a>
+      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
+      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
+      <a href="#">EIIN: 108765</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Dhaka High School. All rights reserved.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+let currentTab = 'roll';
+
+function switchTab(btn, tab) {
+  currentTab = tab;
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('rollForm').style.display = tab === 'roll' ? 'block' : 'none';
+  document.getElementById('regForm').style.display  = tab === 'reg'  ? 'block' : 'none';
+}
+
+function selectExam(btn, type) {
+  document.querySelectorAll('.exam-pill').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('notFound').style.display = 'none';
+}
+
+function lookupResult() {
+  const val = currentTab === 'roll'
+    ? document.getElementById('rollInput').value.trim()
+    : document.getElementById('regInput').value.trim();
+
+  if (!val) {
+    alert('Please enter a Roll Number or Registration ID.');
+    return;
+  }
+
+  // Simulate loading
+  document.getElementById('btnTxt').style.display = 'none';
+  document.getElementById('btnSpin').style.display = 'block';
+  document.getElementById('notFound').style.display = 'none';
+  document.getElementById('resultSection').style.display = 'none';
+
+  setTimeout(() => {
+    document.getElementById('btnTxt').style.display = 'inline';
+    document.getElementById('btnSpin').style.display = 'none';
+
+    // Demo: any input starting with "999" shows not found
+    if (val.startsWith('999')) {
+      document.getElementById('notFound').style.display = 'block';
+      document.getElementById('notFound').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      document.getElementById('resultSection').style.display = 'block';
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 1000);
+}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>
+

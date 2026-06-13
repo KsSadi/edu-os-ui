@@ -1,0 +1,415 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — EduOS Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; font-family:"DM Sans",sans-serif; -webkit-font-smoothing:antialiased; }
+
+/* LAYOUT */
+.login-wrap { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+@media(max-width:860px){ .login-wrap{ grid-template-columns:1fr; } .panel-left{ display:none; } }
+
+/* LEFT PANEL */
+.panel-left {
+  background:linear-gradient(145deg,#0A0F1E 0%,#111827 50%,#0F1A3E 100%);
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+  padding:10px 56px;
+}
+.panel-left::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 30% 30%,rgba(22,71,212,.22) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 75%,rgba(8,145,178,.13) 0%,transparent 65%);
+}
+.panel-left-grid {
+  position:absolute; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.panel-content { position:relative; z-index:1; }
+
+.pl-logo { display:flex; align-items:center; gap:10px; margin-bottom:48px; }
+.pl-logo img { height:40px; width:auto; filter:brightness(0) invert(1); }
+
+.pl-badge {
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(22,71,212,.22); border:1px solid rgba(22,71,212,.4);
+  color:#93C5FD; font-size:.72rem; font-weight:700;
+  letter-spacing:.07em; text-transform:uppercase;
+  padding:5px 12px; border-radius:20px; margin-bottom:20px;
+}
+.pl-badge::before { content:"●"; font-size:.4rem; animation:pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+.pl-title {
+  font-family:"Sora",sans-serif;
+  font-size:clamp(1.7rem,2.8vw,2.4rem);
+  font-weight:800; line-height:1.2; color:#fff; margin-bottom:14px;
+}
+.pl-title span {
+  background:linear-gradient(90deg,#60A5FA,#38BDF8);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.pl-desc { font-size:.95rem; color:rgba(255,255,255,.45); line-height:1.7; margin-bottom:40px; max-width:380px; }
+
+.pl-stats { display:flex; gap:28px; flex-wrap:wrap; }
+.pl-stat-num { font-family:"Sora",sans-serif; font-size:1.5rem; font-weight:800; color:#fff; }
+.pl-stat-lbl { font-size:.72rem; color:rgba(255,255,255,.3); margin-top:2px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+
+.pl-mock {
+  margin-top:48px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  border-radius:16px; padding:20px; max-width:380px;
+}
+.pl-mock-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.pl-mock-row:last-child { border-bottom:none; }
+.pl-mock-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.pl-mock-label { font-size:.78rem; color:rgba(255,255,255,.4); flex:1; }
+.pl-mock-val { font-size:.8rem; font-weight:700; }
+.pl-mock-tag { font-size:.64rem; font-weight:800; padding:2px 9px; border-radius:10px; }
+
+/* RIGHT PANEL */
+.panel-right {
+  background:#F7F9FE;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  padding:48px 40px; position:relative;
+}
+.panel-right::before {
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(ellipse 60% 50% at 80% 20%,rgba(22,71,212,.06) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+.login-box {
+  width:100%; max-width:420px; position:relative; z-index:1;
+  animation:box-in .4s cubic-bezier(.22,.68,0,1.15) both;
+}
+@keyframes box-in { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:none;} }
+
+.box-logo { display:flex; justify-content:center; margin-bottom:28px; }
+.box-logo img { height:36px; width:auto; }
+.mobile-logo { display:none; }
+@media(max-width:860px){ .mobile-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;} .mobile-logo img{height:36px;} }
+
+.login-heading { font-family:"Sora",sans-serif; font-size:1.75rem; font-weight:800; color:#0A0F1E; margin-bottom:6px; }
+.login-sub { font-size:.9rem; color:#6B7A99; margin-bottom:28px; line-height:1.55; }
+
+/* Demo credentials */
+.demo-block {
+  margin-bottom:22px;
+}
+.demo-label {
+  display:flex; align-items:center; gap:7px;
+  font-size:.68rem; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+  color:#6B7A99; margin-bottom:10px;
+}
+.demo-label::before,.demo-label::after { content:""; flex:1; height:1px; background:#E2E8F4; }
+.demo-cards { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.demo-card {
+  background:#fff; border:1.5px solid #E2E8F4;
+  border-radius:13px; padding:13px 14px;
+  cursor:pointer; transition:all .18s;
+  position:relative; overflow:hidden;
+}
+.demo-card:hover { border-color:#1647D4; box-shadow:0 4px 16px rgba(22,71,212,.1); transform:translateY(-1px); }
+.demo-card:hover .demo-card-fill { opacity:1; }
+.demo-card-fill {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(22,71,212,.04),rgba(37,99,235,.02));
+  opacity:0; transition:opacity .18s; pointer-events:none;
+}
+.demo-card-top { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+.demo-card-av {
+  width:32px; height:32px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.8rem; font-weight:800; color:#fff;
+}
+.demo-card-name { font-size:.78rem; font-weight:700; color:#0A0F1E; line-height:1.2; }
+.demo-card-role { font-size:.65rem; color:#6B7A99; margin-top:2px; }
+.demo-card-cred {
+  font-size:.68rem; color:#6B7A99; line-height:1.7;
+  font-family:"JetBrains Mono",monospace;
+}
+.demo-card-cred span { color:#1647D4; font-weight:600; }
+.demo-card-btn {
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  width:100%; margin-top:10px; padding:6px 10px;
+  background:linear-gradient(135deg,#1647D4,#2563EB);
+  border:none; border-radius:8px; color:#fff;
+  font-size:.72rem; font-weight:700; cursor:pointer;
+  transition:filter .15s; letter-spacing:.01em;
+}
+.demo-card-btn:hover { filter:brightness(1.1); }
+
+/* Error */
+.error-msg {
+  background:#FEF2F2; border:1px solid #FECACA;
+  border-radius:10px; padding:10px 14px; margin-bottom:16px;
+  font-size:.82rem; color:#DC2626; font-weight:600;
+  display:none; align-items:center; gap:7px;
+}
+.error-msg.show { display:flex; }
+
+/* Form */
+.form-group { margin-bottom:18px; }
+.form-label { display:block; font-size:.8rem; font-weight:700; color:#374163; margin-bottom:7px; letter-spacing:.01em; }
+.input-wrap { position:relative; }
+.input-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:.95rem; pointer-events:none; opacity:.45; }
+input[type=email],input[type=password],input[type=text] {
+  width:100%; padding:12px 14px 12px 42px;
+  background:#fff; border:1.5px solid #E2E8F4;
+  border-radius:11px; color:#0A0F1E;
+  font-family:"DM Sans",sans-serif; font-size:.93rem;
+  outline:none; transition:border-color .18s,box-shadow .18s;
+}
+input:focus { border-color:#1647D4; box-shadow:0 0 0 3px rgba(22,71,212,.12); }
+input.invalid { border-color:#EF4444; box-shadow:0 0 0 3px rgba(239,68,68,.1); }
+.pw-toggle {
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; font-size:.95rem; opacity:.4;
+  transition:opacity .12s; padding:0; color:#374163;
+}
+.pw-toggle:hover { opacity:.8; }
+
+/* Button */
+.btn-login {
+  width:100%; padding:13px;
+  background:linear-gradient(135deg,#1647D4,#2563EB);
+  border:none; border-radius:11px; color:#fff;
+  font-family:"DM Sans",sans-serif; font-size:.96rem; font-weight:700;
+  cursor:pointer; letter-spacing:.01em;
+  transition:transform .12s,box-shadow .12s,filter .12s;
+  box-shadow:0 4px 20px rgba(22,71,212,.35);
+  position:relative; overflow:hidden;
+}
+.btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 28px rgba(22,71,212,.45); filter:brightness(1.06); }
+.btn-login:active { transform:translateY(0); filter:brightness(.96); }
+.btn-login:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+.btn-login .spinner {
+  display:none; width:18px; height:18px;
+  border:2.5px solid rgba(255,255,255,.3); border-top-color:#fff;
+  border-radius:50%; animation:spin .7s linear infinite; margin:0 auto;
+}
+@keyframes spin { to{transform:rotate(360deg);} }
+.btn-login.loading .btn-txt { display:none; }
+.btn-login.loading .spinner { display:block; }
+
+.divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.divider::before,.divider::after { content:""; flex:1; height:1px; background:#E2E8F4; }
+.divider span { font-size:.72rem; color:#6B7A99; font-weight:600; white-space:nowrap; }
+
+.alt-user-btn {
+  width:100%; padding:11px;
+  background:#fff; border:1.5px solid #E2E8F4;
+  border-radius:11px; color:#374163; font-family:"DM Sans",sans-serif; font-size:.84rem; font-weight:600;
+  cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.alt-user-btn:hover { border-color:#1647D4; color:#1647D4; background:#EEF3FF; }
+
+.bottom-note { margin-top:22px; text-align:center; font-size:.76rem; color:#6B7A99; line-height:1.7; }
+.bottom-note a { color:#1647D4; text-decoration:none; font-weight:600; }
+.bottom-note a:hover { text-decoration:underline; }
+
+.login-footer {
+  position:fixed; bottom:14px; left:0; right:0;
+  text-align:center; font-size:.7rem; color:#94A3B8; z-index:1;
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <div class="panel-left-grid"></div>
+    <div class="panel-content">
+
+      <div class="pl-badge">Admin Control Centre</div>
+
+      <div class="pl-title">
+        Manage every institution<br>with <span>AI-powered</span> tools
+      </div>
+      <div class="pl-desc">
+        The EduOS super admin panel gives you full visibility across tenants, users, billing, and AI activity &#8212; all from one dashboard.
+      </div>
+
+      <div class="pl-stats">
+        <div class="pl-stat">
+          <div class="pl-stat-num">240+</div>
+          <div class="pl-stat-lbl">Institutions onboard</div>
+        </div>
+        <div class="pl-stat">
+          <div class="pl-stat-num">1.2M</div>
+          <div class="pl-stat-lbl">Students managed</div>
+        </div>
+        <div class="pl-stat">
+          <div class="pl-stat-num">99.9%</div>
+          <div class="pl-stat-lbl">Uptime</div>
+        </div>
+      </div>
+
+      <div class="pl-mock">
+        <div class="pl-mock-row">
+          <div class="pl-mock-dot" style="background:#22C55E;"></div>
+          <div class="pl-mock-label">Platform status</div>
+          <div class="pl-mock-val" style="color:#6EE7B7;">All systems operational</div>
+        </div>
+        <div class="pl-mock-row">
+          <div class="pl-mock-dot" style="background:#60A5FA;"></div>
+          <div class="pl-mock-label">Active sessions today</div>
+          <div class="pl-mock-val" style="color:#93C5FD;">8,432</div>
+        </div>
+        <div class="pl-mock-row">
+          <div class="pl-mock-dot" style="background:#FCD34D;"></div>
+          <div class="pl-mock-label">AI queries this week</div>
+          <div class="pl-mock-val" style="color:#FDE68A;">2,840+</div>
+        </div>
+        <div class="pl-mock-row">
+          <div class="pl-mock-dot" style="background:#F9A8D4;"></div>
+          <div class="pl-mock-label">Open support tickets</div>
+          <div class="pl-mock-tag" style="background:rgba(239,68,68,.15);color:#FCA5A5;">3 urgent</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="login-box">
+
+      <div class="box-logo"><img src="../assets/img/logo.png" alt="EduOS"></div>
+
+      <div class="login-heading" style="text-align:center;">Welcome back</div>
+      <div class="login-sub" style="text-align:center;">Sign in to the EduOS Admin Panel</div>
+
+      <div class="demo-block">
+        <div class="demo-label">Demo credentials</div>
+        <div class="demo-cards" style="grid-template-columns:1fr;">
+          <div class="demo-card" onclick="fillDemo('admin')">
+            <div class="demo-card-fill"></div>
+            <div class="demo-card-top">
+              <div class="demo-card-av" style="background:linear-gradient(135deg,#1647D4,#2563EB);">SA</div>
+              <div><div class="demo-card-name">System Admin</div><div class="demo-card-role">Super Admin</div></div>
+            </div>
+            <div class="demo-card-cred"><span>admin@edulos.com</span><br>Admin@1234</div>
+            <button class="demo-card-btn" onclick="event.stopPropagation();fillDemo('admin')">&#9889; Auto-fill &amp; sign in</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-msg" id="errorMsg">
+        <span>&#9888;&#65039;</span><span id="errorText"></span>
+      </div>
+
+      <form id="loginForm" novalidate onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="emailInput">Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">&#9993;&#65039;</span>
+            <input type="email" id="emailInput" placeholder="admin@edulos.com" autocomplete="username" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="passwordInput">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">&#128274;</span>
+            <input type="password" id="passwordInput" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw()" title="Show/hide">&#128065;</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span class="btn-txt">Sign In &#8594;</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+      <div class="bottom-note">
+        Protected area &#8212; authorised personnel only.<br>
+        <a href="../index.html">&#8592; Back to EduOS homepage</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+
+<script src="auth.js"></script>
+<script>
+if (AdminAuth.isLoggedIn()) {
+  var p = new URLSearchParams(window.location.search);
+  var nxt = p.get('next');
+  window.location.replace(nxt && nxt.includes('admin') ? nxt : 'super-dashboard.html');
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  document.getElementById('errorText').textContent = msg;
+  el.classList.add('show');
+  document.getElementById('emailInput').classList.add('invalid');
+  document.getElementById('passwordInput').classList.add('invalid');
+}
+function hideError() {
+  document.getElementById('errorMsg').classList.remove('show');
+  ['emailInput','passwordInput'].forEach(function(id){ document.getElementById(id).classList.remove('invalid'); });
+}
+function setLoading(on) {
+  var btn = document.getElementById('loginBtn');
+  btn.classList.toggle('loading', on);
+  btn.disabled = on;
+}
+function handleLogin(e) {
+  e.preventDefault();
+  hideError();
+  var email    = document.getElementById('emailInput').value.trim();
+  var password = document.getElementById('passwordInput').value;
+  if (!email || !password) { showError('Please enter your email and password.'); return; }
+  setLoading(true);
+  setTimeout(function() {
+    var result = AdminAuth.login(email, password);
+    setLoading(false);
+    if (result.ok) {
+      var btn = document.getElementById('loginBtn');
+      btn.textContent = '\u2705 Signed in! Redirecting\u2026';
+      btn.style.background = 'linear-gradient(135deg,#065F46,#10B981)';
+      btn.style.boxShadow  = '0 4px 20px rgba(16,185,129,.35)';
+      setTimeout(function() {
+        var p2 = new URLSearchParams(window.location.search);
+        var nxt2 = p2.get('next');
+        window.location.href = nxt2 && nxt2.includes('admin') ? nxt2 : 'super-dashboard.html';
+      }, 700);
+    } else {
+      showError(result.error);
+    }
+  }, 600);
+}
+function fillDemo(type) {
+  hideError();
+  var creds = { admin:{email:'admin@edulos.com',pw:'Admin@1234'}, ops:{email:'ops@edulos.com',pw:'Ops@1234'} };
+  var c = creds[type];
+  document.getElementById('emailInput').value    = c.email;
+  document.getElementById('passwordInput').value = c.pw;
+  if (type === 'admin') {
+    setTimeout(function(){ document.getElementById('loginForm').dispatchEvent(new Event('submit',{cancelable:true,bubbles:true})); }, 400);
+  }
+}
+function togglePw() {
+  var inp = document.getElementById('passwordInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing & Revenue � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+.rev-hero{background:linear-gradient(135deg,#0A0F1E,#1A0F2E);border-radius:16px;padding:28px 32px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden;}
+.rev-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(190,18,60,.12);}
+.kpi-strip{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+.kpi-card{flex:1;min-width:160px;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.kpi-card.green::before{background:var(--green);}
+.kpi-card.blue::before{background:var(--blue);}
+.kpi-card.amber::before{background:var(--amber);}
+.kpi-card.red::before{background:var(--sup);}
+.kpi-num{font-size:1.6rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;}
+.kpi-lbl{font-size:.74rem;color:var(--muted);font-weight:600;margin-top:3px;}
+.kpi-delta{font-size:.72rem;font-weight:700;margin-top:6px;}
+.up{color:var(--green);}
+.dn{color:var(--red);}
+
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-bottom:24px;position:relative;}
+.chart-bars::after{content:'';position:absolute;bottom:24px;left:0;right:0;height:1px;background:var(--border);}
+.cb-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.cb-fill{width:100%;border-radius:5px 5px 0 0;transition:opacity .15s;cursor:pointer;}
+.cb-fill:hover{opacity:.75;}
+.cb-lbl{font-size:.64rem;color:var(--muted);position:absolute;bottom:4px;}
+
+.invoice-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.invoice-row:last-child{border:none;}
+.inv-school{flex:1;font-size:.85rem;font-weight:700;color:var(--ink-2);}
+.inv-plan .badge{font-size:.68rem;}
+.inv-amt{font-size:.88rem;font-weight:800;color:var(--ink);font-family:'DM Mono',monospace;width:90px;text-align:right;}
+.inv-date{font-size:.73rem;color:var(--muted);width:80px;text-align:right;}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link active"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Billing &amp; Revenue</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>Live Revenue</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Finance</div>
+        <div class="page-title">Billing &amp; Revenue</div>
+        <div class="page-sub">Track MRR, ARR, invoices, subscription plans and payment health across all tenants.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Downloading revenue report�','??')">?? Export Report</button>
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="showToast('Invoice run started','??')">?? Run Invoice Batch</button>
+      </div>
+    </div>
+
+    <!-- KPI Strip -->
+    <div class="kpi-strip anim-1">
+      <div class="kpi-card green">
+        <div class="kpi-num">?1.84Cr</div>
+        <div class="kpi-lbl">Monthly Recurring Revenue (MRR)</div>
+        <div class="kpi-delta up">? 12.4% vs last month</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-num">?22.1Cr</div>
+        <div class="kpi-lbl">Annual Recurring Revenue (ARR)</div>
+        <div class="kpi-delta up">? 18.7% YoY</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-num">?3.2L</div>
+        <div class="kpi-lbl">Outstanding Invoices</div>
+        <div class="kpi-delta dn">? 48 overdue</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-num">2.1%</div>
+        <div class="kpi-lbl">Churn Rate (Monthly)</div>
+        <div class="kpi-delta up">? 0.3% improved</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:20px;">
+      <!-- MRR Chart -->
+      <div class="card anim-1">
+        <div class="card-header"><div class="card-title">?? MRR Trend (12 months)</div><button class="btn btn-ghost btn-sm">View Details</button></div>
+        <div class="card-body">
+          <div class="chart-bars">
+            <div class="cb-col"><div class="cb-fill" style="height:55%;background:var(--sup);opacity:.5;"></div><div class="cb-lbl">Mar</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:60%;background:var(--sup);opacity:.55;"></div><div class="cb-lbl">Apr</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:62%;background:var(--sup);opacity:.6;"></div><div class="cb-lbl">May</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:65%;background:var(--sup);opacity:.65;"></div><div class="cb-lbl">Jun</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:68%;background:var(--sup);opacity:.7;"></div><div class="cb-lbl">Jul</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:72%;background:var(--sup);opacity:.75;"></div><div class="cb-lbl">Aug</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:75%;background:var(--sup);opacity:.8;"></div><div class="cb-lbl">Sep</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:78%;background:var(--sup);opacity:.85;"></div><div class="cb-lbl">Oct</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:80%;background:var(--sup);opacity:.88;"></div><div class="cb-lbl">Nov</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:83%;background:var(--sup);opacity:.92;"></div><div class="cb-lbl">Dec</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:90%;background:var(--sup);opacity:.96;"></div><div class="cb-lbl">Jan</div></div>
+            <div class="cb-col"><div class="cb-fill" style="height:100%;background:var(--sup);"></div><div class="cb-lbl">Feb</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan breakdown -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Revenue by Plan</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.82rem;"><span style="font-weight:700;">Enterprise</span><span class="fw-700" style="font-family:'DM Mono',monospace;">?84.2L <span style="color:var(--muted);font-weight:400;">(45.7%)</span></span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:45.7%;background:var(--purple);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.82rem;"><span style="font-weight:700;">Pro</span><span class="fw-700" style="font-family:'DM Mono',monospace;">?60.1L <span style="color:var(--muted);font-weight:400;">(32.6%)</span></span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:32.6%;background:var(--blue);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.82rem;"><span style="font-weight:700;">Basic</span><span class="fw-700" style="font-family:'DM Mono',monospace;">?36.5L <span style="color:var(--muted);font-weight:400;">(19.8%)</span></span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:19.8%;background:var(--green);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.82rem;"><span style="font-weight:700;">Trial (convering)</span><span class="fw-700" style="font-family:'DM Mono',monospace;">?3.6L <span style="color:var(--muted);font-weight:400;">(1.9%)</span></span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:1.9%;background:var(--amber);"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:var(--muted);">Avg revenue per tenant</span><span style="font-weight:800;font-family:'DM Mono',monospace;">?1,432/mo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent invoices -->
+      <div class="card anim-2" style="grid-column:1/-1;">
+        <div class="card-header">
+          <div><div class="card-title">?? Recent Invoices</div><div class="card-sub">Last 30 days � Auto-generated on 1st of each month</div></div>
+          <div style="display:flex;gap:8px;">
+            <select class="form-select" style="font-size:.78rem;padding:6px 10px;width:130px;"><option>All Plans</option><option>Enterprise</option><option>Pro</option><option>Basic</option></select>
+            <select class="form-select" style="font-size:.78rem;padding:6px 10px;width:130px;"><option>All Status</option><option>Paid</option><option>Pending</option><option>Overdue</option></select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0 22px;">
+          <div class="invoice-row">
+            <div class="inv-school">Viqarunnisa Noon School<div style="font-size:.71rem;color:var(--muted);margin-top:1px;">INV-2025-00184 � Enterprise</div></div>
+            <span class="badge badge-purple" style="font-size:.68rem;">Enterprise</span>
+            <div class="inv-amt">?84,000</div>
+            <span class="badge badge-green">Paid</span>
+            <div class="inv-date">01 Feb 2025</div>
+          </div>
+          <div class="invoice-row">
+            <div class="inv-school">Rajshahi Collegiate School<div style="font-size:.71rem;color:var(--muted);margin-top:1px;">INV-2025-00185 � Enterprise</div></div>
+            <span class="badge badge-purple" style="font-size:.68rem;">Enterprise</span>
+            <div class="inv-amt">?64,000</div>
+            <span class="badge badge-green">Paid</span>
+            <div class="inv-date">01 Feb 2025</div>
+          </div>
+          <div class="invoice-row">
+            <div class="inv-school">BAF Shaheen College Dhaka<div style="font-size:.71rem;color:var(--muted);margin-top:1px;">INV-2025-00186 � Pro</div></div>
+            <span class="badge badge-blue" style="font-size:.68rem;">Pro</span>
+            <div class="inv-amt">?18,000</div>
+            <span class="badge badge-amber">Pending</span>
+            <div class="inv-date">01 Feb 2025</div>
+          </div>
+          <div class="invoice-row">
+            <div class="inv-school">Notre Dame High School<div style="font-size:.71rem;color:var(--muted);margin-top:1px;">INV-2025-00187 � Pro</div></div>
+            <span class="badge badge-blue" style="font-size:.68rem;">Pro</span>
+            <div class="inv-amt">?14,400</div>
+            <span class="badge badge-green">Paid</span>
+            <div class="inv-date">01 Feb 2025</div>
+          </div>
+          <div class="invoice-row">
+            <div class="inv-school">Jashore Zilla School<div style="font-size:.71rem;color:var(--muted);margin-top:1px;">INV-2025-00188 � Basic</div></div>
+            <span class="badge badge-green" style="font-size:.68rem;">Basic</span>
+            <div class="inv-amt">?4,800</div>
+            <span class="badge badge-red">Overdue</span>
+            <div class="inv-date">01 Jan 2025</div>
+          </div>
+        </div>
+        <div class="card-footer"><span class="text-sm text-muted">Showing 5 of 12,847 invoices</span><div class="pagination"><button class="pg-btn on">1</button><button class="pg-btn">2</button><button class="pg-btn">3</button></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

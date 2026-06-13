@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Announcements � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+.ann-item{padding:16px 0;border-bottom:1px solid var(--border);}
+.ann-item:last-child{border:none;}
+.ann-title{font-size:.88rem;font-weight:800;color:var(--ink-2);margin-bottom:4px;}
+.ann-meta{font-size:.73rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.ann-preview{font-size:.8rem;color:var(--ink-3);line-height:1.6;}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link active"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Announcements</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>Platform-wide</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Communications</div>
+        <div class="page-title">Platform Announcements</div>
+        <div class="page-sub">Send announcements to all tenants, specific plans, or individual schools. Delivered via in-app banner and email.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="openModal('composeModal')">?? Compose Announcement</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:20px;grid-template-columns:1fr 320px;">
+      <!-- Sent announcements -->
+      <div class="card anim-1">
+        <div class="card-header"><div class="card-title">?? Sent Announcements</div><span class="badge badge-gray">8 total</span></div>
+        <div class="card-body" style="padding:0 22px;">
+          <div class="ann-item">
+            <div class="ann-title">?? EduOS v3.2 Released � New Report Engine &amp; AI Grading Beta</div>
+            <div class="ann-meta">
+              <span class="badge badge-green">All Tenants</span>
+              <span>?? 25 Feb 2025</span>
+              <span>?? 12,831 seen</span>
+              <span style="color:var(--green);">? Delivered</span>
+            </div>
+            <div class="ann-preview">We're excited to announce EduOS v3.2 with a completely revamped Report Engine, AI-powered grading (beta for Enterprise), and 40+ bug fixes�</div>
+          </div>
+          <div class="ann-item">
+            <div class="ann-title">?? Scheduled Maintenance � 2 March 2025, 2:00�4:00 AM BDT</div>
+            <div class="ann-meta">
+              <span class="badge badge-red">Urgent</span>
+              <span class="badge badge-gray">All Tenants</span>
+              <span>?? 20 Feb 2025</span>
+              <span>?? 12,812 seen</span>
+            </div>
+            <div class="ann-preview">Scheduled downtime for database migration and infrastructure upgrade. All services will be unavailable for approximately 2 hours�</div>
+          </div>
+          <div class="ann-item">
+            <div class="ann-title">?? New Payment Gateway � Nagad Integration Now Live</div>
+            <div class="ann-meta">
+              <span class="badge badge-blue">Pro &amp; Enterprise</span>
+              <span>?? 10 Feb 2025</span>
+              <span>?? 5,041 seen</span>
+            </div>
+            <div class="ann-preview">Parents and students can now pay fees using Nagad in addition to bKash, Rocket, and card payments. Enable from School Settings ? Payment Gateways�</div>
+          </div>
+          <div class="ann-item">
+            <div class="ann-title">?? New Feature � Online Exam Module Available for Pro Plan</div>
+            <div class="ann-meta">
+              <span class="badge badge-blue">Pro+</span>
+              <span>?? 01 Feb 2025</span>
+              <span>?? 4,198 seen</span>
+            </div>
+            <div class="ann-preview">The Online Exam module (MCQ + descriptive) is now available for Pro and Enterprise tenants. Create, schedule and auto-grade online exams�</div>
+          </div>
+        </div>
+        <div class="card-footer"><span class="text-sm text-muted">Showing 4 of 8</span><button class="btn btn-ghost btn-sm">Load More</button></div>
+      </div>
+
+      <!-- Right panel -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card anim-2" style="padding:16px 18px;">
+          <div class="card-title mb-4">?? Reach Stats</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Total tenants reached</span><strong>12,847</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Avg open rate</span><strong style="color:var(--green);">94.2%</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Email delivered</span><strong>12,810</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Bounced</span><strong style="color:var(--red);">37</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Last announcement</span><strong>25 Feb 2025</strong></div>
+          </div>
+        </div>
+        <div class="card anim-2" style="padding:16px 18px;">
+          <div class="card-title mb-4">?? Target Audience</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="cf-item on" style="border-radius:8px;padding:8px 10px;background:var(--sup-pale);color:var(--sup);font-weight:700;font-size:.82rem;">All Tenants (12,847)</div>
+            <div style="padding:8px 10px;font-size:.82rem;color:var(--ink-3);">Enterprise only (842)</div>
+            <div style="padding:8px 10px;font-size:.82rem;color:var(--ink-3);">Pro &amp; Enterprise (5,052)</div>
+            <div style="padding:8px 10px;font-size:.82rem;color:var(--ink-3);">Trial tenants (1,198)</div>
+            <div style="padding:8px 10px;font-size:.82rem;color:var(--ink-3);">Specific division</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,var(--sup),#9F1239);border-radius:14px;padding:18px;color:#fff;">
+          <div style="font-size:1.1rem;margin-bottom:8px;">??</div>
+          <div style="font-size:.92rem;font-weight:800;margin-bottom:4px;">Quick Blast</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.65);margin-bottom:14px;">Send urgent notice to all tenants instantly</div>
+          <button class="btn btn-sm" style="width:100%;justify-content:center;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;" onclick="openModal('composeModal')">?? Send Urgent Alert</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Compose Modal -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal-box" style="max-width:560px;">
+    <div class="modal-head"><div style="font-size:.96rem;font-weight:800;color:var(--ink);">?? Compose Announcement</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);" onclick="closeModal('composeModal')">?</button></div>
+    <div class="modal-body">
+      <div class="form-group mb-4"><label class="form-label">Title <span class="required">*</span></label><input type="text" class="form-input" placeholder="e.g. EduOS v3.3 Released"></div>
+      <div class="form-grid form-grid-2 mb-4">
+        <div class="form-group"><label class="form-label">Target Audience</label><select class="form-select"><option>All Tenants</option><option>Enterprise only</option><option>Pro &amp; Enterprise</option><option>Trial tenants</option></select></div>
+        <div class="form-group"><label class="form-label">Priority</label><select class="form-select"><option>Normal</option><option>Important</option><option>Urgent</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Message <span class="required">*</span></label><textarea class="form-input" rows="4" placeholder="Write your announcement�" style="resize:vertical;min-height:100px;"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" onclick="closeModal('composeModal')">Cancel</button><button class="btn btn-outline" onclick="showToast('Draft saved','??');closeModal('composeModal')">Save Draft</button><button class="btn btn-primary" style="background:var(--sup);" onclick="showToast('Announcement sent to all tenants','??');closeModal('composeModal')">?? Send Now</button></div>
+  </div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

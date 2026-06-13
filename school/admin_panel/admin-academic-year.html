@@ -1,0 +1,703 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Year - Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Year cards */
+.year-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+.year-card {
+  border-radius:14px; border:2px solid var(--border);
+  background:var(--white); padding:22px; cursor:pointer;
+  transition:all .2s; position:relative; overflow:hidden;
+}
+.year-card:hover { border-color:var(--blue); box-shadow:var(--shadow); transform:translateY(-2px); }
+.year-card.active { border-color:var(--blue); background:var(--blue-pale); }
+.year-card.active::before {
+  content:'Active'; position:absolute; top:14px; right:14px;
+  background:var(--blue); color:#fff; font-size:.65rem; font-weight:800;
+  padding:3px 9px; border-radius:10px; letter-spacing:.05em; text-transform:uppercase;
+}
+.year-card.archived { opacity:.65; }
+.year-card.archived::before {
+  content:'Archived'; position:absolute; top:14px; right:14px;
+  background:var(--border-mid); color:var(--muted); font-size:.65rem; font-weight:800;
+  padding:3px 9px; border-radius:10px; letter-spacing:.05em; text-transform:uppercase;
+}
+.yc-year { font-family:'Sora',sans-serif; font-size:1.4rem; font-weight:800; color:var(--ink); margin-bottom:4px; }
+.yc-label { font-size:.78rem; color:var(--muted); margin-bottom:14px; }
+.yc-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.yc-stat { background:var(--bg); border-radius:8px; padding:10px 12px; }
+.yc-stat-num { font-family:'Sora',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink-2); }
+.yc-stat-lbl { font-size:.68rem; color:var(--muted); }
+
+/* Timeline */
+.timeline-card { }
+.term-timeline {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:0; background:var(--border); border-radius:10px; overflow:hidden;
+  margin-bottom:20px; border:1px solid var(--border);
+}
+.term-block { background:var(--white); padding:16px 14px; border-right:1px solid var(--border); }
+.term-block:last-child { border:none; }
+.term-block.active-term { background:var(--blue-pale); border-color:var(--blue-light); }
+.tb-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:4px; }
+.tb-name  { font-family:'Sora',sans-serif; font-size:.9rem; font-weight:800; color:var(--ink); margin-bottom:6px; }
+.tb-dates { font-size:.73rem; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+.tb-status { margin-top:8px; }
+.term-progress { height:4px; background:var(--border); border-radius:2px; margin-top:10px; }
+.term-fill     { height:4px; background:var(--blue); border-radius:2px; }
+
+/* Gantt-style bar */
+.gantt-wrap { overflow-x:auto; }
+.gantt { min-width:640px; }
+.gantt-months { display:grid; grid-template-columns:repeat(12,1fr); gap:0; margin-bottom:6px; }
+.gantt-month { font-size:.65rem; font-weight:700; color:var(--muted); text-align:center; text-transform:uppercase; }
+.gantt-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.gantt-label { font-size:.78rem; font-weight:600; color:var(--ink-3); min-width:80px; flex-shrink:0; }
+.gantt-bar-wrap { flex:1; position:relative; height:28px; }
+.gantt-grid {
+  position:absolute; inset:0;
+  display:grid; grid-template-columns:repeat(12,1fr);
+  pointer-events:none;
+}
+.gantt-grid-line { border-left:1px dashed var(--border); }
+.gantt-bar {
+  position:absolute; top:4px; bottom:4px; border-radius:5px;
+  display:flex; align-items:center; padding:0 8px;
+  font-size:.68rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden;
+}
+
+/* Transfer data section */
+.transfer-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.transfer-item {
+  display:flex; align-items:center; gap:12px; padding:13px 14px;
+  border:1.5px solid var(--border); border-radius:10px; background:var(--white);
+}
+.transfer-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.transfer-name { font-size:.845rem; font-weight:600; color:var(--ink-2); margin-bottom:2px; }
+.transfer-desc { font-size:.73rem; color:var(--muted); }
+.transfer-check { margin-left:auto; flex-shrink:0; width:18px; height:18px; accent-color:var(--blue); }
+
+/* Step wizard */
+.wizard-steps { display:flex; gap:0; margin-bottom:24px; }
+.wstep {
+  flex:1; display:flex; align-items:center; gap:0;
+}
+.wstep-dot {
+  width:28px; height:28px; border-radius:50%; border:2px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.78rem; font-weight:800; color:var(--muted); flex-shrink:0;
+  background:var(--white); transition:all .2s; z-index:1;
+}
+.wstep.done .wstep-dot  { background:var(--blue); border-color:var(--blue); color:#fff; }
+.wstep.active .wstep-dot{ border-color:var(--blue); color:var(--blue); }
+.wstep-line { flex:1; height:2px; background:var(--border); margin:0 -1px; }
+.wstep.done .wstep-line  { background:var(--blue); }
+.wstep-label { font-size:.7rem; color:var(--muted); margin-top:6px; text-align:center; display:block; }
+.wstep.done .wstep-label, .wstep.active .wstep-label { color:var(--blue); font-weight:700; }
+.wstep-inner { display:flex; flex-direction:column; align-items:center; }
+
+@media(max-width:900px) { .year-cards{grid-template-columns:1fr 1fr;} .term-timeline{grid-template-columns:repeat(2,1fr);} .transfer-grid{grid-template-columns:1fr;} }
+@media(max-width:560px) { .year-cards{grid-template-columns:1fr;} .term-timeline{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Academic Year Setup</div>
+        <div class="page-sub">Manage academic sessions, terms, and switch the active year.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openModal('archiveModal')"> Archive Old Year</button>
+        <button class="btn btn-primary btn-sm"   onclick="openModal('newYearModal')">+ Create New Year</button>
+      </div>
+    </div>
+
+    <!-- YEAR CARDS -->
+    <div class="year-cards">
+      <div class="year-card active">
+        <div class="yc-year">2024-25</div>
+        <div class="yc-label">January 2024  December 2025  Term 2 ongoing</div>
+        <div class="yc-stats">
+          <div class="yc-stat"><div class="yc-stat-num">1,248</div><div class="yc-stat-lbl">Students enrolled</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">32</div><div class="yc-stat-lbl">Active classes</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">4</div><div class="yc-stat-lbl">Terms defined</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">18</div><div class="yc-stat-lbl">Exams conducted</div></div>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button class="btn btn-primary btn-xs" onclick="showToast('Already active year')">Current Active</button>
+          <button class="btn btn-secondary btn-xs" onclick="openModal('editYearModal')">&#x270F;&#xFE0F; Edit</button>
+        </div>
+      </div>
+
+      <div class="year-card archived">
+        <div class="yc-year">2023-24</div>
+        <div class="yc-label">January 2023  December 2024  Completed</div>
+        <div class="yc-stats">
+          <div class="yc-stat"><div class="yc-stat-num">1,186</div><div class="yc-stat-lbl">Students enrolled</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">30</div><div class="yc-stat-lbl">Classes</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">4</div><div class="yc-stat-lbl">Terms</div></div>
+          <div class="yc-stat"><div class="yc-stat-num">22</div><div class="yc-stat-lbl">Exams</div></div>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button class="btn btn-secondary btn-xs" onclick="switchYear('2023-24')">Switch to This Year</button>
+          <button class="btn btn-secondary btn-xs">&#x1F4CA; View Reports</button>
+        </div>
+      </div>
+
+      <div class="year-card" style="border-style:dashed; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; color:var(--muted);" onclick="openModal('newYearModal')">
+        <div style="font-size:2rem; margin-bottom:10px;"></div>
+        <div style="font-family:'Sora',sans-serif; font-size:.95rem; font-weight:700; color:var(--ink-2);">Create 2024&#x2013;25</div>
+        <div style="font-size:.78rem; color:var(--muted); margin-top:4px; text-align:center;">Set up next academic year and import class structure</div>
+      </div>
+    </div>
+
+    <!-- ACTIVE YEAR DETAIL -->
+    <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+      <div>
+
+        <!-- Terms & Timeline -->
+        <div class="card card-pad mb-6">
+          <div class="flex-between mb-4">
+            <div>
+              <div class="card-title">Terms - Academic Year 2024-25</div>
+              <div class="card-sub-title">4 terms - Term 2 currently active (25 Feb 2025)</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="openModal('addTermModal')">+ Add Term</button>
+          </div>
+
+          <!-- Term timeline blocks -->
+          <div class="term-timeline">
+            <div class="term-block">
+              <div class="tb-label">Term 1</div>
+              <div class="tb-name">First Term</div>
+              <div class="tb-dates">Jan 5 - Mar 31, 2024</div>
+              <div class="tb-status"><span class="badge bg-green">Completed</span></div>
+              <div class="term-progress"><div class="term-fill" style="width:100%;"></div></div>
+            </div>
+            <div class="term-block active-term">
+              <div class="tb-label">Term 2 - <span style="color:var(--blue);font-weight:800;">ACTIVE</span></div>
+              <div class="tb-name">Second Term</div>
+              <div class="tb-dates">Jan 5 - Apr 30, 2025</div>
+              <div class="tb-status"><span class="badge bg-blue">In Progress</span></div>
+              <div class="term-progress"><div class="term-fill" style="width:55%;"></div></div>
+            </div>
+            <div class="term-block">
+              <div class="tb-label">Term 3</div>
+              <div class="tb-name">Third Term</div>
+              <div class="tb-dates">May 5 &middot; Aug 31, 2025</div>
+              <div class="tb-status"><span class="badge bg-slate">Upcoming</span></div>
+              <div class="term-progress"><div class="term-fill" style="width:0%;"></div></div>
+            </div>
+            <div class="term-block">
+              <div class="tb-label">Term 4</div>
+              <div class="tb-name">Final Term</div>
+              <div class="tb-dates">Sep 5 - Dec 20, 2025</div>
+              <div class="tb-status"><span class="badge bg-slate">Upcoming</span></div>
+              <div class="term-progress"><div class="term-fill" style="width:0%;"></div></div>
+            </div>
+          </div>
+
+          <!-- Gantt view -->
+          <div style="margin-top:16px;">
+            <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Year Timeline View</div>
+            <div class="gantt-wrap">
+              <div class="gantt">
+                <div class="gantt-months">
+                  <div class="gantt-month">Jan</div><div class="gantt-month">Feb</div>
+                  <div class="gantt-month">Mar</div><div class="gantt-month">Apr</div>
+                  <div class="gantt-month">May</div><div class="gantt-month">Jun</div>
+                  <div class="gantt-month">Jul</div><div class="gantt-month">Aug</div>
+                  <div class="gantt-month">Sep</div><div class="gantt-month">Oct</div>
+                  <div class="gantt-month">Nov</div><div class="gantt-month">Dec</div>
+                </div>
+                <!-- Term 1 -->
+                <div class="gantt-row">
+                  <div class="gantt-label">Term 1</div>
+                  <div class="gantt-bar-wrap">
+                    <div class="gantt-grid">
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                    </div>
+                    <div class="gantt-bar" style="left:0%;width:25%;background:var(--green);">Term 1</div>
+                  </div>
+                </div>
+                <!-- Term 2 -->
+                <div class="gantt-row">
+                  <div class="gantt-label">Term 2 &middot;</div>
+                  <div class="gantt-bar-wrap">
+                    <div class="gantt-grid">
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                    </div>
+                    <div class="gantt-bar" style="left:0%;width:33%;background:var(--blue);">Term 2 (Active)</div>
+                  </div>
+                </div>
+                <!-- Term 3 -->
+                <div class="gantt-row">
+                  <div class="gantt-label">Term 3</div>
+                  <div class="gantt-bar-wrap">
+                    <div class="gantt-grid">
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                    </div>
+                    <div class="gantt-bar" style="left:33%;width:33%;background:var(--border-mid);color:var(--muted);">Term 3</div>
+                  </div>
+                </div>
+                <!-- Term 4 -->
+                <div class="gantt-row">
+                  <div class="gantt-label">Term 4</div>
+                  <div class="gantt-bar-wrap">
+                    <div class="gantt-grid">
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                    </div>
+                    <div class="gantt-bar" style="left:66%;width:34%;background:var(--border-mid);color:var(--muted);">Term 4</div>
+                  </div>
+                </div>
+                <!-- Holidays -->
+                <div class="gantt-row">
+                  <div class="gantt-label" style="color:var(--red);font-size:.72rem;"> Holidays</div>
+                  <div class="gantt-bar-wrap">
+                    <div class="gantt-grid">
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                      <div class="gantt-grid-line"></div><div class="gantt-grid-line"></div><div class="gantt-grid-line"></div>
+                    </div>
+                    <div class="gantt-bar" style="left:21%;width:7%;background:#FEE2E2;color:var(--red);font-size:.6rem;">Eid</div>
+                    <div class="gantt-bar" style="left:41%;width:5%;background:#FEE2E2;color:var(--red);font-size:.6rem;">Qurbani</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exam schedule within year -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div class="card-title">Examinations  2024-25</div>
+            <button class="btn btn-secondary btn-sm">+ Schedule Exam</button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Exam Name</th><th>Term</th><th>Date</th><th>Classes</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-name">Half-Yearly Examination</td>
+                <td><span class="badge bg-green">Term 1</span></td>
+                <td class="td-mono">Jun 15-30, 2024</td>
+                <td>Class 6-12</td>
+                <td><span class="badge bg-green">Completed</span></td>
+                <td><button class="btn btn-xs btn-secondary">Results</button></td>
+              </tr>
+              <tr>
+                <td class="td-name">Annual Examination</td>
+                <td><span class="badge bg-blue">Term 2</span></td>
+                <td class="td-mono">Mar 10-25, 2025</td>
+                <td>Class 6-12</td>
+                <td><span class="badge bg-amber">Upcoming</span></td>
+                <td><button class="btn btn-xs btn-secondary" onclick="showToast('&#x1F4DD; Exam details')">View</button></td>
+              </tr>
+              <tr>
+                <td class="td-name">SSC Board Exam</td>
+                <td><span class="badge bg-blue">Term 2</span></td>
+                <td class="td-mono">Mar 20 - Apr 15, 2025</td>
+                <td>Class 10</td>
+                <td><span class="badge bg-amber">Upcoming</span></td>
+                <td><button class="btn btn-xs btn-secondary">View</button></td>
+              </tr>
+              <tr>
+                <td class="td-name">HSC Board Exam</td>
+                <td><span class="badge bg-slate">Term 3</span></td>
+                <td class="td-mono">Jun 10 - Jul 05, 2025</td>
+                <td>Class 12</td>
+                <td><span class="badge bg-slate">Planned</span></td>
+                <td><button class="btn btn-xs btn-secondary">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <!-- Switch year -->
+        <div class="card card-pad" style="border:2px solid var(--amber-light); background:var(--amber-light);">
+          <div style="font-family:'Sora',sans-serif;font-size:.9rem;font-weight:800;color:#92400E;margin-bottom:6px;">Switch Active Year</div>
+          <div style="font-size:.8rem;color:#92400E;margin-bottom:14px;line-height:1.6;">Switching resets the active context for attendance, fees, and results. All historical data is preserved.</div>
+          <select class="form-select" style="margin-bottom:10px;">
+            <option>2024-25 (Current)</option>
+            <option>2023-24 (Archived)</option>
+          </select>
+          <button class="btn btn-sm" style="width:100%;justify-content:center;background:#92400E;color:#fff;border:none;" onclick="switchYear('selected')">Switch Academic Year</button>
+        </div>
+
+        <!-- Year stats -->
+        <div class="card card-pad">
+          <div class="card-title mb-4">Year 2024-25 Summary</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="progress-wrap">
+              <div class="progress-header"><span class="progress-label">Year Completion</span><span class="progress-val">55%</span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:55%;background:var(--blue);"></div></div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-header"><span class="progress-label">Fee Collection</span><span class="progress-val">68%</span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:68%;background:var(--green);"></div></div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-header"><span class="progress-label">Avg. Attendance</span><span class="progress-val">89%</span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:89%;background:var(--teal);"></div></div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-header"><span class="progress-label">Exams Completed</span><span class="progress-val">1 / 4</span></div>
+              <div class="progress-bar-bg"><div class="progress-bar" style="width:25%;background:var(--amber);"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="card card-pad">
+          <div class="card-title mb-4">Year Actions</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="showToast(' Report generating...')">&#x1F4E5; Download Year Report</button>
+            <button class="btn btn-secondary btn-sm" onclick="openModal('promotionModal')">&#x1F393; Promote All Students</button>
+            <button class="btn btn-secondary btn-sm" onclick="showToast(' Calendar exported')"> Export Academic Calendar</button>
+            <button class="btn btn-secondary btn-sm" onclick="showToast(' Printing...')"> Print Year Overview</button>
+          </div>
+        </div>
+
+        <!-- Holiday list -->
+        <div class="card card-pad">
+          <div class="flex-between mb-4">
+            <div class="card-title">Public Holidays 2025</div>
+            <button class="btn btn-xs btn-secondary" onclick="showToast('+ Holiday added')">+ Add</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.82rem;">
+              <span style="color:var(--ink-3);">Eid-ul-Fitr</span>
+              <span class="td-mono">28 Mar - 6 Apr</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.82rem;">
+              <span style="color:var(--ink-3);">Eid-ul-Adha</span>
+              <span class="td-mono">5 - 9 Jun</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.82rem;">
+              <span style="color:var(--ink-3);">Independence Day</span>
+              <span class="td-mono">26 Mar</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:.82rem;">
+              <span style="color:var(--ink-3);">Victory Day</span>
+              <span class="td-mono">16 Dec</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- ARCHIVE YEAR MODAL -->
+<div class="modal-overlay" id="archiveModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title"> Archive Academic Year</div>
+      <button class="modal-close" onclick="closeModal('archiveModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-amber">
+        <span class="alert-icon">!</span>
+        <div>
+          <div class="alert-title">Archive 2023-24?</div>
+          <div class="alert-msg">Archived years are read-only. All records (students, exams, fees) will be preserved but no further edits are allowed.</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Select Year to Archive</label>
+        <select class="form-select">
+          <option selected>2023-24 (Completed)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason for Archiving</label>
+        <textarea class="form-textarea" rows="2" placeholder="e.g. Year completed, moving to next session"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('archiveModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('archiveModal');showToast(' 2024&#x2013;25 archived successfully')">Archive Year</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT YEAR MODAL -->
+<div class="modal-overlay" id="editYearModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">&#x270F;&#xFE0F; Edit Academic Year - 2024-25</div>
+      <button class="modal-close" onclick="closeModal('editYearModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Year Label</label>
+          <input type="text" class="form-input" value="2024-25">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Terms</label>
+          <select class="form-select">
+            <option>2 Terms (Half-Yearly)</option>
+            <option selected>4 Terms (Quarterly)</option>
+            <option>3 Terms</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-input" value="2024-01-05">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-input" value="2025-12-31">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description / Note</label>
+        <input type="text" class="form-input" value="Term 2 ongoing" placeholder="Optional note">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editYearModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('editYearModal');showToast('Academic year updated')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TERM MODAL -->
+<div class="modal-overlay" id="addTermModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">+ Add Term - 2024-25</div>
+      <button class="modal-close" onclick="closeModal('addTermModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Term Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. Fifth Term">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Term Number</label>
+          <input type="number" class="form-input" value="5" min="1" max="12">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Date *</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date *</label>
+          <input type="date" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Term Type</label>
+        <select class="form-select">
+          <option>Regular Term</option>
+          <option>Exam Period</option>
+          <option>Summer Term</option>
+          <option>Revision Period</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addTermModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addTermModal');showToast('&middot; Term added successfully')">Add Term</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE NEW YEAR MODAL -->
+<div class="modal-overlay" id="newYearModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div class="modal-title">Create Academic Year 2025-26</div>
+      <button class="modal-close" onclick="closeModal('newYearModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Wizard steps -->
+      <div class="wizard-steps mb-6">
+        <div class="wstep done">
+          <div class="wstep-inner"><div class="wstep-dot"></div><span class="wstep-label">Year Info</span></div>
+          <div class="wstep-line"></div>
+        </div>
+        <div class="wstep active">
+          <div class="wstep-inner"><div class="wstep-dot">2</div><span class="wstep-label">Terms</span></div>
+          <div class="wstep-line"></div>
+        </div>
+        <div class="wstep">
+          <div class="wstep-inner"><div class="wstep-dot">3</div><span class="wstep-label">Import Data</span></div>
+          <div class="wstep-line"></div>
+        </div>
+        <div class="wstep">
+          <div class="wstep-inner"><div class="wstep-dot">4</div><span class="wstep-label">Confirm</span></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Academic Year Label *</label>
+          <input type="text" class="form-input" value="2025-26" placeholder="e.g. 2025-26">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Terms</label>
+          <select class="form-select">
+            <option>2 Terms (Half-Yearly)</option>
+            <option selected>4 Terms (Quarterly)</option>
+            <option>3 Terms</option>
+            <option>Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Start Date *</label>
+          <input type="date" class="form-input" value="2025-01-05">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date *</label>
+          <input type="date" class="form-input" value="2025-12-20">
+        </div>
+      </div>
+
+      <div style="font-size:.78rem;font-weight:700;color:var(--ink-2);margin-bottom:12px;margin-top:4px;">Import from 2024&#x2013;25</div>
+      <div class="transfer-grid">
+        <div class="transfer-item">
+          <div class="transfer-icon" style="background:var(--blue-light);"></div>
+          <div><div class="transfer-name">Class Structure</div><div class="transfer-desc">Copy all classes and sections</div></div>
+          <input type="checkbox" class="transfer-check" checked>
+        </div>
+        <div class="transfer-item">
+          <div class="transfer-icon" style="background:var(--green-light);"></div>
+          <div><div class="transfer-name">Staff Roster</div><div class="transfer-desc">Copy teacher assignments</div></div>
+          <input type="checkbox" class="transfer-check" checked>
+        </div>
+        <div class="transfer-item">
+          <div class="transfer-icon" style="background:var(--amber-light);"></div>
+          <div><div class="transfer-name">Fee Structure</div><div class="transfer-desc">Copy fee categories & amounts</div></div>
+          <input type="checkbox" class="transfer-check" checked>
+        </div>
+        <div class="transfer-item">
+          <div class="transfer-icon" style="background:var(--purple-light);"></div>
+          <div><div class="transfer-name">Holiday Calendar</div><div class="transfer-desc">Copy public holiday list</div></div>
+          <input type="checkbox" class="transfer-check">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('newYearModal')">Cancel</button>
+      <button class="btn btn-secondary">Back</button>
+      <button class="btn btn-primary" onclick="createYear()">Create Year &middot;</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMOTE STUDENTS MODAL -->
+<div class="modal-overlay" id="promotionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"> Promote Students to Next Class</div>
+      <button class="modal-close" onclick="closeModal('promotionModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-amber">
+        <span class="alert-icon">!</span>
+        <div><div class="alert-title">This will promote all eligible students</div><div class="alert-msg">Students who passed will be moved to the next class. Students with failing results will remain. This can be undone within 48 hours.</div></div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Promote based on</label>
+        <select class="form-select">
+          <option>Annual Exam Results (Recommended)</option>
+          <option>Half-Yearly Results</option>
+          <option>Manually (Select students)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Minimum GPA to promote</label>
+        <input type="number" class="form-input" value="2.00" min="0" max="5" step="0.01">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('promotionModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('promotionModal');showToast(' 1,248 students promoted')">Run Promotion</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function switchYear(yr) {
+  if (!confirm('Switch active academic year? All views will update to reflect the selected year.')) return;
+  showToast(`Switched to ${yr === 'selected' ? '2023-24' : yr}`);
+}
+function createYear() {
+  closeModal('newYearModal');
+  showToast('Academic Year 2025-26 created');
+}
+
+function showToast(msg) {
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${msg}</span>`;
+  stack.appendChild(t);
+  setTimeout(() => t.style.opacity='0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

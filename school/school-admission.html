@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admission 2025 — Dhaka High School</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="school.css">
+<style>
+/* Admission layout */
+.adm-layout { display:grid; grid-template-columns:1fr 360px; gap:32px; }
+
+/* Steps */
+.steps-row { display:grid; grid-template-columns:repeat(4,1fr); gap:0; background:var(--white); border-radius:16px; border:1px solid var(--border); overflow:hidden; box-shadow:var(--card-shadow); margin-bottom:32px; }
+.step-block { padding:24px 18px; text-align:center; border-right:1px solid var(--border); position:relative; }
+.step-block:last-child { border:none; }
+.step-block::after { content:attr(data-num); position:absolute; top:16px; right:-10px; width:20px; height:20px; background:var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; color:var(--muted); z-index:1; }
+.step-block:last-child::after { display:none; }
+.step-n { width:40px; height:40px; border-radius:50%; background:var(--navy); color:#fff; font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; }
+.step-title2 { font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:700; color:var(--navy); margin-bottom:5px; }
+.step-desc2  { font-size:.75rem; color:var(--muted); line-height:1.5; }
+
+/* Class cards */
+.class-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.class-card { padding:20px; text-align:center; cursor:pointer; border-top:3px solid transparent; transition:all .2s; }
+.class-card:hover, .class-card.selected { border-top-color:var(--gold); transform:translateY(-2px); }
+.class-num { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:800; color:var(--navy); }
+.class-name { font-size:.78rem; color:var(--muted); margin-top:4px; }
+.class-seats { font-size:.72rem; font-weight:700; margin-top:8px; }
+.seats-ok  { color:var(--green); }
+.seats-few { color:var(--amber); }
+.seats-full { color:var(--red); }
+
+/* Requirements */
+.req-list li { display:flex; gap:10px; font-size:.88rem; color:var(--ink-3); margin-bottom:10px; line-height:1.55; }
+.req-list li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+.req-list { list-style:none; }
+
+/* Application form card */
+.app-card { background:#fff; border-radius:16px; border:1.5px solid var(--border); box-shadow:var(--card-shadow); overflow:hidden; position:sticky; top:90px; }
+.app-card-header { background:linear-gradient(135deg,var(--navy),var(--navy-mid)); padding:22px 24px; }
+.app-card-title { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:4px; }
+.app-card-sub { font-size:.78rem; color:rgba(255,255,255,.6); }
+.app-card-body { padding:24px; }
+.deadline-banner { background:var(--gold-light); border:1px solid rgba(201,146,42,.25); border-radius:9px; padding:10px 14px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-size:.82rem; }
+.deadline-icon { font-size:1rem; }
+.deadline-txt { color:#92400E; font-weight:600; }
+
+/* Fee table */
+.fee-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+.fee-table th { background:var(--bg); padding:10px 14px; text-align:left; font-family:'DM Sans',sans-serif; font-weight:700; color:var(--ink-2); border-bottom:2px solid var(--border); font-size:.8rem; }
+.fee-table td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--ink-3); }
+.fee-table tr:last-child td { border:none; font-weight:700; color:var(--navy); }
+
+/* Success modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.show { display:flex; }
+.modal-box { background:#fff; border-radius:20px; padding:40px; max-width:440px; width:90%; text-align:center; animation:pop .4s cubic-bezier(.175,.885,.32,1.275) both; }
+@keyframes pop { from{transform:scale(.85);opacity:0;} to{transform:scale(1);opacity:1;} }
+.modal-icon { font-size:3rem; margin-bottom:16px; }
+.modal-title { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:800; color:var(--navy); margin-bottom:8px; }
+.modal-msg { font-size:.9rem; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.ref-num { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--navy); background:var(--navy-pale); padding:8px 20px; border-radius:8px; display:inline-block; margin-bottom:20px; }
+
+@media(max-width:960px){ .adm-layout{grid-template-columns:1fr;} .app-card{position:static;} .steps-row{grid-template-columns:repeat(2,1fr);} .class-grid{grid-template-columns:repeat(3,1fr);} }
+@media(max-width:560px){ .class-grid{grid-template-columns:repeat(2,1fr);} .steps-row{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left"><span class="top-bar-item">📞 +880 2-9876543</span><span class="top-bar-item">✉ admission@dhakahigh.edu.bd</span></div>
+  <div class="top-bar-right"><a href="school-results.html">Results</a><a href="school-notices.html">Notices</a><button class="lang-btn">বাংলা</button></div>
+</div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="school-identity">
+      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <div class="school-name-wrap"><div class="school-name">Dhaka High School</div><div class="school-tagline">Excellence in Education Since 1962</div></div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="school-about.html"      class="nav-link">About</a>
+      <a href="school-notices.html"    class="nav-link">Notices</a>
+      <a href="school-admission.html"  class="nav-link active">Admission</a>
+      <a href="school-results.html"    class="nav-link">Results</a>
+      <a href="school-contact.html"    class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
+      <a href="auth/login.html" class="btn-portal">🔐 Student Portal</a>
+    </div>
+    <button class="ham-btn" onclick="toggleMobileNav()">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb"><a href="school-home.html">Home</a><span class="breadcrumb-sep">›</span><span style="color:rgba(255,255,255,.8);">Admission</span></div>
+    <div class="page-hero-badge">📋 Admission Open · Session 2025–26</div>
+    <h1>Admission 2025–26</h1>
+    <p>Apply for your child's admission to Dhaka High School. Applications are open for Classes I–XII for the 2025-26 academic session. Seats are limited.</p>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:var(--bg);">
+  <div class="container">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">📋 Process</div>
+      <h2 class="s-title">How to Apply</h2>
+    </div>
+    <div class="steps-row">
+      <div class="step-block" data-num="→">
+        <div class="step-n">1</div>
+        <div class="step-title2">Fill Application</div>
+        <div class="step-desc2">Complete the online form below or collect a physical form from school.</div>
+      </div>
+      <div class="step-block" data-num="→">
+        <div class="step-n">2</div>
+        <div class="step-title2">Pay Application Fee</div>
+        <div class="step-desc2">Pay ৳300 via bKash, Nagad, or at the school counter.</div>
+      </div>
+      <div class="step-block" data-num="→">
+        <div class="step-n">3</div>
+        <div class="step-title2">Admission Test</div>
+        <div class="step-desc2">Written test in Bangla, English, and Math. Date: 22 March.</div>
+      </div>
+      <div class="step-block">
+        <div class="step-n">4</div>
+        <div class="step-title2">Result &amp; Enrollment</div>
+        <div class="step-desc2">Selected students notified by 29 March. Complete enrollment by 5 April.</div>
+      </div>
+    </div>
+
+    <div class="adm-layout">
+      <!-- LEFT: Info -->
+      <div>
+        <!-- Available classes -->
+        <div class="s-badge">📚 Available Classes</div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--navy);margin:10px 0 20px;">Select a class to apply</h3>
+        <div class="class-grid mb-8">
+          <div class="card class-card selected" onclick="selectClass(this,'Class I','Seats: 40 / Available: 18')">
+            <div class="class-num">I</div>
+            <div class="class-name">Class One</div>
+            <div class="class-seats seats-few">18 seats left</div>
+          </div>
+          <div class="card class-card" onclick="selectClass(this,'Class II','Seats: 40 / Available: 22')">
+            <div class="class-num">II</div><div class="class-name">Class Two</div>
+            <div class="class-seats seats-ok">22 seats left</div>
+          </div>
+          <div class="card class-card" onclick="selectClass(this,'Class III','Seats: 40 / Available: 15')">
+            <div class="class-num">III</div><div class="class-name">Class Three</div>
+            <div class="class-seats seats-few">15 seats left</div>
+          </div>
+          <div class="card class-card" onclick="selectClass(this,'Class IV','Seats: 40 / Available: 0')">
+            <div class="class-num">IV</div><div class="class-name">Class Four</div>
+            <div class="class-seats seats-full">Full — Waitlist</div>
+          </div>
+          <div class="card class-card" onclick="selectClass(this,'Class VI','Seats: 80 / Available: 35')">
+            <div class="class-num">VI</div><div class="class-name">Class Six</div>
+            <div class="class-seats seats-ok">35 seats left</div>
+          </div>
+          <div class="card class-card" onclick="selectClass(this,'Class IX','Seats: 120 / Available: 45')">
+            <div class="class-num">IX</div><div class="class-name">Class Nine</div>
+            <div class="class-seats seats-ok">45 seats left</div>
+          </div>
+        </div>
+
+        <!-- Requirements -->
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--navy);margin-bottom:16px;">📋 Required Documents</h3>
+        <div class="card" style="padding:24px;margin-bottom:28px;">
+          <ul class="req-list">
+            <li>Birth Certificate (original + photocopy)</li>
+            <li>Previous class result / marksheet (Classes II and above)</li>
+            <li>2 passport-size recent photographs of the student</li>
+            <li>National ID / Birth Registration of parent/guardian</li>
+            <li>Transfer Certificate (if transferring from another school)</li>
+            <li>Application fee receipt (৳300)</li>
+          </ul>
+        </div>
+
+        <!-- Fee structure -->
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--navy);margin-bottom:16px;">💰 Fee Structure (Annual)</h3>
+        <div class="card" style="overflow:hidden;margin-bottom:28px;">
+          <table class="fee-table">
+            <thead><tr><th>Fee Type</th><th>Class I–V</th><th>Class VI–X</th><th>Class XI–XII</th></tr></thead>
+            <tbody>
+              <tr><td>Admission Fee (one-time)</td><td>৳5,000</td><td>৳7,500</td><td>৳10,000</td></tr>
+              <tr><td>Monthly Tuition</td><td>৳1,200</td><td>৳1,800</td><td>৳2,500</td></tr>
+              <tr><td>Session Fee (annual)</td><td>৳2,000</td><td>৳3,000</td><td>৳4,000</td></tr>
+              <tr><td>Exam Fee (per term)</td><td>৳500</td><td>৳800</td><td>৳1,000</td></tr>
+              <tr><td style="font-weight:700;">Total (First Year Approx.)</td><td>৳24,500</td><td>৳35,300</td><td>৳47,000</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Important dates -->
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--navy);margin-bottom:16px;">📅 Important Dates</h3>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);">
+            <div style="background:var(--navy);color:#fff;border-radius:8px;padding:6px 12px;text-align:center;min-width:52px;flex-shrink:0;"><div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;">20</div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;opacity:.7;">Feb</div></div>
+            <div><div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">Application Opens</div><div style="font-size:.78rem;color:var(--muted);">Online & offline forms available</div></div>
+            <span class="badge badge-green" style="margin-left:auto;">Open</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);">
+            <div style="background:var(--gold);color:#fff;border-radius:8px;padding:6px 12px;text-align:center;min-width:52px;flex-shrink:0;"><div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;">15</div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;opacity:.7;">Mar</div></div>
+            <div><div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">Application Deadline</div><div style="font-size:.78rem;color:var(--muted);">Last date to submit forms</div></div>
+            <span class="badge badge-gold" style="margin-left:auto;">18 days</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);">
+            <div style="background:var(--navy);color:#fff;border-radius:8px;padding:6px 12px;text-align:center;min-width:52px;flex-shrink:0;"><div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;">22</div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;opacity:.7;">Mar</div></div>
+            <div><div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">Admission Test</div><div style="font-size:.78rem;color:var(--muted);">Bangla, English &amp; Math · 9:00 AM</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;">
+            <div style="background:var(--navy);color:#fff;border-radius:8px;padding:6px 12px;text-align:center;min-width:52px;flex-shrink:0;"><div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:800;">29</div><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;opacity:.7;">Mar</div></div>
+            <div><div style="font-weight:700;font-size:.9rem;color:var(--ink-2);">Result Published</div><div style="font-size:.78rem;color:var(--muted);">On school website &amp; SMS</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Application form -->
+      <div>
+        <div class="app-card">
+          <div class="app-card-header">
+            <div class="app-card-title">📋 Online Application</div>
+            <div class="app-card-sub">2025–26 Academic Session</div>
+          </div>
+          <div class="app-card-body">
+            <div class="deadline-banner">
+              <span class="deadline-icon">⏰</span>
+              <span class="deadline-txt">Deadline: 15 March 2025 (18 days left)</span>
+            </div>
+            <form onsubmit="submitAdmission(event)">
+              <div class="form-group">
+                <label class="form-label">Student Full Name *</label>
+                <input type="text" class="form-input" placeholder="As per birth certificate">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date of Birth *</label>
+                <input type="date" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Applying for Class *</label>
+                <select class="form-select" id="classSelect">
+                  <option value="">Select class...</option>
+                  <option>Class I</option><option>Class II</option><option>Class III</option>
+                  <option>Class VI</option><option>Class VII</option><option>Class IX</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Father's Name *</label>
+                <input type="text" class="form-input" placeholder="Full name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mother's Name *</label>
+                <input type="text" class="form-input" placeholder="Full name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mobile Number *</label>
+                <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" placeholder="parent@email.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Previous School (if any)</label>
+                <input type="text" class="form-input" placeholder="School name and class passed">
+              </div>
+              <button type="submit" class="btn btn-navy btn-lg" style="width:100%;justify-content:center;margin-top:4px;">
+                Submit Application →
+              </button>
+              <p style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px;">You'll receive a confirmation SMS with your reference number.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon">🎉</div>
+    <div class="modal-title">Application Submitted!</div>
+    <div class="modal-msg">Your application has been received successfully. We'll contact you within 3 working days to confirm your admission test date.</div>
+    <div class="ref-num">REF: DHS-2025-00847</div>
+    <div class="modal-msg">A confirmation SMS has been sent to your registered mobile number.</div>
+    <button class="btn btn-navy btn-lg" style="width:100%;justify-content:center;" onclick="document.getElementById('modal').classList.remove('show')">Close</button>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-school">
+      <div class="footer-logo-row">
+        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div class="footer-school-name">Dhaka High School</div>
+      </div>
+      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
+      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="school-about.html">About School</a>
+      <a href="school-notices.html">Notice Board</a>
+      <a href="school-admission.html">Admission</a>
+      <a href="school-results.html">Results</a>
+      <a href="school-contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Portals</h4>
+      <a href="auth/login.html">Student Portal</a>
+      <a href="auth/login.html">Teacher Portal</a>
+      <a href="auth/login.html">Parent Portal</a>
+      <a href="auth/login.html">Admin Login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+88029876543">+880 2-9876543</a>
+      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
+      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
+      <a href="#">EIIN: 108765</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Dhaka High School. All rights reserved.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function selectClass(el, name, seats) {
+  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('classSelect').value = name;
+}
+function submitAdmission(e) {
+  e.preventDefault();
+  document.getElementById('modal').classList.add('show');
+}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>
+

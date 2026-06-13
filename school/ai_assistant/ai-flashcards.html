@@ -1,0 +1,509 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Flashcard Generator — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Hero */
+.fc-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.fc-hero::before{content:'🃏';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.fch-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.fch-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.fch-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* Layout */
+.fc-layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+
+/* Config panel */
+.fc-config{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:80px;}
+.fcc-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+.fcc-title{font-size:.9rem;font-weight:900;color:var(--ink);}
+.fcc-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.fcc-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+.fcc-label{font-size:.74rem;font-weight:800;color:var(--ink-2);margin-bottom:4px;}
+.fcc-select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;color:var(--ink-2);background:var(--white);outline:none;cursor:pointer;}
+.fcc-select:focus{border-color:var(--ai);}
+.fcc-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;color:var(--ink-2);outline:none;box-sizing:border-box;}
+.fcc-input:focus{border-color:var(--ai);}
+.fcc-input::placeholder{color:var(--muted);}
+.count-btns{display:flex;gap:6px;}
+.cnt-btn{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-size:.8rem;font-weight:800;color:var(--ink-2);cursor:pointer;text-align:center;transition:all .12s;}
+.cnt-btn:hover{border-color:var(--ai);color:var(--ai);}
+.cnt-btn.on{background:var(--ai-pale);border-color:var(--ai);color:var(--ai-dark);}
+.generate-btn{width:100%;padding:13px;background:var(--ai-soft);border:none;color:#fff;font-size:.9rem;font-weight:800;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+.generate-btn:hover{opacity:.88;}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Stats bar */
+.fc-stats{display:flex;gap:10px;margin-bottom:18px;}
+.fcs-item{flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+.fcs-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.fcs-num{font-size:1.2rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;}
+.fcs-label{font-size:.68rem;color:var(--muted);font-weight:700;}
+
+/* Study mode controls */
+.study-controls{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sc-progress{flex:1;display:flex;align-items:center;gap:10px;}
+.sc-bar-track{flex:1;height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+.sc-bar-fill{height:100%;border-radius:3px;background:var(--ai-soft);transition:width .3s;}
+.sc-count{font-size:.78rem;font-weight:800;color:var(--ink-2);font-family:'DM Mono',monospace;}
+.sc-btn{padding:7px 16px;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-size:.76rem;font-weight:800;color:var(--ink-2);cursor:pointer;transition:all .12s;}
+.sc-btn:hover{border-color:var(--ai);color:var(--ai);}
+.sc-btn.active{background:var(--ai-pale);border-color:var(--ai);color:var(--ai-dark);}
+
+/* Flashcard area */
+.fc-study-area{display:flex;flex-direction:column;align-items:center;gap:20px;}
+
+/* Single card study mode */
+.flashcard-stage{width:100%;max-width:560px;perspective:1200px;margin:0 auto;}
+.flashcard-3d{width:100%;min-height:320px;position:relative;transition:transform .6s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;cursor:pointer;}
+.flashcard-3d.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;}
+.fc-front{background:linear-gradient(135deg,#050314 0%,#0D0828 50%,#1A1040 100%);color:#fff;border:2px solid rgba(6,182,212,.3);box-shadow:0 8px 40px rgba(6,182,212,.12);}
+.fc-back{background:var(--white);border:2px solid var(--ai);box-shadow:0 8px 40px rgba(6,182,212,.15);transform:rotateY(180deg);}
+.fc-face-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.5;margin-bottom:14px;}
+.fc-front .fc-face-label{color:#67E8F9;}
+.fc-back .fc-face-label{color:var(--ai);}
+.fc-face-text{font-size:1.15rem;font-weight:700;line-height:1.7;}
+.fc-front .fc-face-text{color:#E0F2FE;}
+.fc-back .fc-face-text{color:var(--ink);}
+.fc-face-hint{font-size:.76rem;opacity:.4;margin-top:16px;}
+.fc-subject-chip{position:absolute;top:16px;right:16px;padding:4px 10px;border-radius:8px;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.fc-front .fc-subject-chip{background:rgba(6,182,212,.2);color:#67E8F9;}
+.fc-back .fc-subject-chip{background:var(--ai-pale);color:var(--ai-dark);}
+.fc-num-badge{position:absolute;top:16px;left:16px;font-size:.72rem;font-weight:800;font-family:'DM Mono',monospace;opacity:.45;}
+
+/* Navigation */
+.fc-nav{display:flex;align-items:center;gap:14px;}
+.fc-nav-btn{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:var(--white);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .14s;}
+.fc-nav-btn:hover{border-color:var(--ai);background:var(--ai-pale);}
+.fc-nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* Confidence buttons */
+.confidence-row{display:flex;gap:8px;width:100%;max-width:560px;}
+.conf-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.76rem;font-weight:800;cursor:pointer;transition:all .12s;text-align:center;}
+.conf-btn:hover{transform:translateY(-1px);}
+.conf-btn.hard{border-color:#FCA5A5;color:#DC2626;}
+.conf-btn.hard:hover{background:#FEE2E2;}
+.conf-btn.medium{border-color:#FCD34D;color:#D97706;}
+.conf-btn.medium:hover{background:#FEF3C7;}
+.conf-btn.easy{border-color:#86EFAC;color:#16A34A;}
+.conf-btn.easy:hover{background:#DCFCE7;}
+
+/* Grid view */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;width:100%;}
+.fc-grid-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;min-height:140px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.fc-grid-card:hover{border-color:var(--ai);box-shadow:0 4px 20px rgba(6,182,212,.1);transform:translateY(-2px);}
+.fc-grid-card.revealed{background:var(--ai-pale);border-color:var(--ai);}
+.fcg-num{font-size:.65rem;font-weight:800;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:8px;}
+.fcg-q{font-size:.84rem;font-weight:700;color:var(--ink);line-height:1.6;margin-bottom:8px;}
+.fcg-a{font-size:.78rem;color:var(--ai-dark);line-height:1.6;padding-top:8px;border-top:1px solid var(--ai);display:none;}
+.fc-grid-card.revealed .fcg-a{display:block;}
+.fcg-tap{font-size:.68rem;color:var(--muted);font-weight:700;position:absolute;bottom:12px;right:14px;}
+.fc-grid-card.revealed .fcg-tap{display:none;}
+
+/* Empty state */
+.fc-empty{text-align:center;padding:60px 24px;background:var(--white);border:1.5px solid var(--border);border-radius:16px;}
+.fce-icon{font-size:4rem;margin-bottom:16px;}
+.fce-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.fce-sub{font-size:.8rem;color:var(--muted);line-height:1.65;max-width:320px;margin:0 auto;}
+
+/* Deck list */
+.deck-list{margin-top:14px;border-top:1px solid var(--border);padding-top:12px;}
+.deck-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.deck-item:hover{background:var(--bg);margin:0 -20px;padding:8px 20px;}
+.dk-icon{font-size:1.1rem;}
+.dk-name{font-size:.8rem;font-weight:700;color:var(--ink-2);flex:1;}
+.dk-count{font-size:.7rem;font-weight:800;color:var(--ai);font-family:'DM Mono',monospace;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.fc-layout{grid-template-columns:1fr;}.fc-config{position:static;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="fc-hero anim-1">
+      <div class="fch-badge">🃏 AI Flashcards</div>
+      <div class="fch-title">AI Flashcard Generator</div>
+      <div class="fch-sub">Pick a topic and let AI create spaced-repetition flashcards. Flip, rate your confidence, and master any subject for SSC/HSC exams.</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="fc-stats anim-1">
+      <div class="fcs-item">
+        <div class="fcs-icon" style="background:var(--ai-pale);color:var(--ai-dark);">🃏</div>
+        <div><div class="fcs-num" id="totalCards">0</div><div class="fcs-label">Cards Generated</div></div>
+      </div>
+      <div class="fcs-item">
+        <div class="fcs-icon" style="background:#DCFCE7;color:#16A34A;">✅</div>
+        <div><div class="fcs-num" id="masteredCount">0</div><div class="fcs-label">Mastered</div></div>
+      </div>
+      <div class="fcs-item">
+        <div class="fcs-icon" style="background:#FEF3C7;color:#D97706;">🔄</div>
+        <div><div class="fcs-num" id="reviewCount">0</div><div class="fcs-label">Need Review</div></div>
+      </div>
+      <div class="fcs-item">
+        <div class="fcs-icon" style="background:#F3E8FF;color:#7C3AED;">🔥</div>
+        <div><div class="fcs-num">5</div><div class="fcs-label">Day Streak</div></div>
+      </div>
+    </div>
+
+    <div class="fc-layout">
+
+      <!-- Config panel -->
+      <div class="fc-config">
+        <div class="fcc-head">
+          <div class="fcc-title">⚙️ Generate Flashcards</div>
+          <div class="fcc-sub">AI creates cards from any topic instantly</div>
+        </div>
+        <div class="fcc-body">
+          <div>
+            <div class="fcc-label">Subject</div>
+            <select class="fcc-select" id="fcSubject">
+              <option value="Mathematics">📐 Mathematics</option>
+              <option value="Physics">⚡ Physics</option>
+              <option value="Chemistry">🧪 Chemistry</option>
+              <option value="Biology">🌱 Biology</option>
+              <option value="English">📖 English</option>
+              <option value="Bangla">✍️ Bangla</option>
+              <option value="ICT">💻 ICT</option>
+            </select>
+          </div>
+          <div>
+            <div class="fcc-label">Topic / Chapter</div>
+            <input class="fcc-input" id="fcTopic" placeholder="e.g. Quadratic Equations, Newton's Laws…">
+          </div>
+          <div>
+            <div class="fcc-label">Number of Cards</div>
+            <div class="count-btns">
+              <button class="cnt-btn" onclick="setCount(5)">5</button>
+              <button class="cnt-btn on" onclick="setCount(10)">10</button>
+              <button class="cnt-btn" onclick="setCount(15)">15</button>
+              <button class="cnt-btn" onclick="setCount(20)">20</button>
+            </div>
+          </div>
+          <div>
+            <div class="fcc-label">Difficulty</div>
+            <select class="fcc-select" id="fcDifficulty">
+              <option value="Easy">Easy — Basic recall</option>
+              <option value="Medium" selected>Medium — Understanding</option>
+              <option value="Hard">Hard — Application & Analysis</option>
+            </select>
+          </div>
+          <button class="generate-btn" id="genBtn" onclick="generateCards()">
+            ✨ Generate Flashcards
+          </button>
+
+          <!-- Saved decks -->
+          <div class="deck-list">
+            <div class="fcc-label" style="margin-bottom:6px;">📂 Recent Decks</div>
+            <div class="deck-item" onclick="loadDeck('quad')"><span class="dk-icon">📐</span><span class="dk-name">Quadratic Equations</span><span class="dk-count">10</span></div>
+            <div class="deck-item" onclick="loadDeck('newton')"><span class="dk-icon">⚡</span><span class="dk-name">Newton's Laws</span><span class="dk-count">8</span></div>
+            <div class="deck-item" onclick="loadDeck('periodic')"><span class="dk-icon">🧪</span><span class="dk-name">Periodic Table Groups</span><span class="dk-count">12</span></div>
+            <div class="deck-item" onclick="loadDeck('cell')"><span class="dk-icon">🌱</span><span class="dk-name">Cell Division</span><span class="dk-count">10</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flashcard area -->
+      <div>
+        <!-- Study controls - hidden until cards exist -->
+        <div id="studyControls" style="display:none;">
+          <div class="study-controls">
+            <div class="sc-progress">
+              <div class="sc-bar-track"><div class="sc-bar-fill" id="progressBar" style="width:0%;"></div></div>
+              <span class="sc-count" id="progressLabel">0 / 0</span>
+            </div>
+            <button class="sc-btn active" id="btnStudy" onclick="setView('study')">🃏 Study</button>
+            <button class="sc-btn" id="btnGrid" onclick="setView('grid')">▦ Grid</button>
+            <button class="sc-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+          </div>
+        </div>
+
+        <!-- Study view -->
+        <div class="fc-study-area" id="studyView">
+          <!-- Empty state -->
+          <div class="fc-empty" id="emptyState">
+            <div class="fce-icon">🃏</div>
+            <div class="fce-title">No Flashcards Yet</div>
+            <div class="fce-sub">Choose a subject and topic, then click <strong>"Generate Flashcards"</strong> to create AI-powered study cards with spaced repetition.</div>
+          </div>
+        </div>
+
+        <!-- Grid view -->
+        <div class="fc-grid" id="gridView" style="display:none;"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let cards = [];
+let currentIdx = 0;
+let cardCount = 10;
+let viewMode = 'study';
+let mastered = 0;
+let needsReview = 0;
+
+function setCount(n) {
+  cardCount = n;
+  document.querySelectorAll('.cnt-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+}
+
+function setView(mode) {
+  viewMode = mode;
+  document.getElementById('btnStudy').classList.toggle('active', mode === 'study');
+  document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+  document.getElementById('studyView').style.display = mode === 'study' ? 'flex' : 'none';
+  document.getElementById('gridView').style.display = mode === 'grid' ? 'grid' : 'none';
+  if (mode === 'study') renderStudyCard();
+  if (mode === 'grid') renderGrid();
+}
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  currentIdx = 0;
+  renderStudyCard();
+  renderGrid();
+  showToast('Cards shuffled!', '🔀');
+}
+
+async function generateCards() {
+  const subject = document.getElementById('fcSubject').value;
+  const topic = document.getElementById('fcTopic').value.trim();
+  if (!topic) { showToast('Please enter a topic', '⚠️'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="thinking-anim">⏳</span> Generating…';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: `Generate exactly ${cardCount} flashcards for a Class IX Bangladeshi student studying ${subject}. Topic: "${topic}". Difficulty: ${document.getElementById('fcDifficulty').value}. Return ONLY a JSON array where each object has "front" (question/term) and "back" (answer/definition). Keep answers concise (1-3 sentences). No markdown, just the JSON array.`,
+        messages: [{ role: 'user', content: `Generate ${cardCount} flashcards about ${topic} in ${subject}.` }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) cards = JSON.parse(match[0]);
+    else throw new Error('Parse failed');
+  } catch (e) {
+    cards = getDemoCards(document.getElementById('fcSubject').value, topic);
+  }
+
+  currentIdx = 0;
+  mastered = 0;
+  needsReview = 0;
+  document.getElementById('totalCards').textContent = cards.length;
+  document.getElementById('masteredCount').textContent = 0;
+  document.getElementById('reviewCount').textContent = 0;
+  document.getElementById('emptyState')?.remove();
+  document.getElementById('studyControls').style.display = 'block';
+  updateProgress();
+  renderStudyCard();
+  renderGrid();
+  btn.disabled = false;
+  btn.innerHTML = '✨ Generate Flashcards';
+  showToast(`${cards.length} flashcards created!`, '🃏');
+}
+
+function getDemoCards(subject, topic) {
+  const demos = {
+    Mathematics: [
+      { front: "What is the quadratic formula?", back: "x = (-b ± √(b²-4ac)) / 2a, where ax² + bx + c = 0" },
+      { front: "What is the discriminant?", back: "The discriminant is b² - 4ac. It determines the nature of roots: positive = 2 real, zero = 1 repeated, negative = no real roots." },
+      { front: "If x² - 5x + 6 = 0, what are the roots?", back: "x = 2 and x = 3 (factoring: (x-2)(x-3) = 0)" },
+      { front: "What does 'completing the square' mean?", back: "A method to rewrite ax² + bx + c in the form a(x-h)² + k by adding and subtracting (b/2a)²." },
+      { front: "What is the sum of roots of ax² + bx + c = 0?", back: "Sum of roots = -b/a" },
+      { front: "What is the product of roots of ax² + bx + c = 0?", back: "Product of roots = c/a" },
+      { front: "When does a quadratic have equal roots?", back: "When the discriminant b² - 4ac = 0" },
+      { front: "What is the vertex of a parabola y = ax² + bx + c?", back: "Vertex is at (-b/2a, f(-b/2a)), which is the maximum or minimum point." },
+      { front: "How do you solve x² = 9?", back: "x = ±3 (take square root of both sides)" },
+      { front: "What shape does a quadratic equation graph?", back: "A parabola — opens upward if a > 0, downward if a < 0." }
+    ],
+    Physics: [
+      { front: "State Newton's First Law of Motion.", back: "An object at rest stays at rest, and an object in motion stays in motion at constant velocity, unless acted upon by an unbalanced force." },
+      { front: "What is the formula for force?", back: "F = ma (Force = mass × acceleration)" },
+      { front: "What is Newton's Third Law?", back: "For every action, there is an equal and opposite reaction." },
+      { front: "What is the SI unit of force?", back: "Newton (N), where 1 N = 1 kg·m/s²" },
+      { front: "What is inertia?", back: "The tendency of an object to resist changes in its state of motion. Heavier objects have more inertia." },
+      { front: "What is momentum?", back: "p = mv (momentum = mass × velocity). Its SI unit is kg·m/s." },
+      { front: "What is acceleration due to gravity (g)?", back: "g ≈ 9.8 m/s² (approximately 10 m/s² for calculations)" },
+      { front: "What is the difference between mass and weight?", back: "Mass is the amount of matter (kg), weight is gravitational force on mass (W = mg, measured in N)." },
+      { front: "What is friction?", back: "A force that opposes the relative motion between two surfaces in contact." },
+      { front: "What is free fall?", back: "Motion of an object under gravity alone, with no air resistance. All objects fall at the same rate regardless of mass." }
+    ],
+    Chemistry: [
+      { front: "What is an atom?", back: "The smallest unit of an element that retains chemical properties. Made of protons, neutrons, and electrons." },
+      { front: "What is the periodic table?", back: "A table of elements organized by atomic number, showing patterns in properties repeated periodically." },
+      { front: "What is a covalent bond?", back: "A bond formed by sharing electrons between two non-metal atoms." },
+      { front: "What is an ionic bond?", back: "A bond formed by transfer of electrons from a metal to a non-metal, creating oppositely charged ions." },
+      { front: "What is pH?", back: "A scale from 0-14 measuring acidity/basicity. pH < 7 = acid, pH = 7 = neutral, pH > 7 = base." },
+      { front: "What is oxidation?", back: "Loss of electrons, or gain of oxygen, or loss of hydrogen in a chemical reaction." },
+      { front: "What is reduction?", back: "Gain of electrons, or loss of oxygen, or gain of hydrogen in a chemical reaction." },
+      { front: "What is a catalyst?", back: "A substance that speeds up a reaction without being consumed. It lowers activation energy." },
+      { front: "What is valency?", back: "The combining capacity of an atom, determined by the number of electrons it can lose, gain, or share." },
+      { front: "What is an exothermic reaction?", back: "A reaction that releases heat energy to the surroundings. Example: combustion." }
+    ],
+    Biology: [
+      { front: "What is photosynthesis?", back: "Process by which plants use sunlight, CO₂, and water to produce glucose and oxygen. 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂" },
+      { front: "What is mitosis?", back: "Cell division producing 2 identical daughter cells with the same chromosome number. Used for growth and repair." },
+      { front: "What is meiosis?", back: "Cell division producing 4 genetically different cells with half the chromosome number. Used for gamete formation." },
+      { front: "What are the parts of a cell?", back: "Cell membrane, cytoplasm, nucleus, mitochondria, ribosomes. Plant cells also have cell wall, chloroplast, vacuole." },
+      { front: "What is DNA?", back: "Deoxyribonucleic acid — a double helix molecule carrying genetic instructions for all living organisms." },
+      { front: "What is osmosis?", back: "Movement of water molecules from a dilute solution to a concentrated solution through a semi-permeable membrane." },
+      { front: "What is an enzyme?", back: "A biological catalyst (protein) that speeds up chemical reactions in living organisms. They are specific to substrates." },
+      { front: "What is respiration?", back: "Process of breaking down glucose to release energy. C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + Energy (ATP)" },
+      { front: "What is the function of red blood cells?", back: "Transport oxygen from lungs to body tissues using hemoglobin. They have no nucleus to carry more hemoglobin." },
+      { front: "What is a gene?", back: "A segment of DNA that codes for a specific protein or trait. Genes are located on chromosomes." }
+    ]
+  };
+  const subjectCards = demos[subject] || demos.Mathematics;
+  return subjectCards.slice(0, cardCount);
+}
+
+function loadDeck(id) {
+  const decks = {
+    quad: { subject: 'Mathematics', topic: 'Quadratic Equations' },
+    newton: { subject: 'Physics', topic: "Newton's Laws" },
+    periodic: { subject: 'Chemistry', topic: 'Periodic Table Groups' },
+    cell: { subject: 'Biology', topic: 'Cell Division' }
+  };
+  const d = decks[id];
+  if (d) {
+    document.getElementById('fcSubject').value = d.subject;
+    document.getElementById('fcTopic').value = d.topic;
+    generateCards();
+  }
+}
+
+function updateProgress() {
+  const pct = cards.length ? ((currentIdx + 1) / cards.length * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${currentIdx + 1} / ${cards.length}`;
+}
+
+function renderStudyCard() {
+  if (!cards.length) return;
+  const area = document.getElementById('studyView');
+  const c = cards[currentIdx];
+  updateProgress();
+  area.innerHTML = `
+    <div class="flashcard-stage">
+      <div class="flashcard-3d" id="card3d" onclick="this.classList.toggle('flipped')">
+        <div class="fc-face fc-front">
+          <div class="fc-num-badge">${currentIdx + 1}/${cards.length}</div>
+          <div class="fc-subject-chip">${document.getElementById('fcSubject').value}</div>
+          <div class="fc-face-label">Question</div>
+          <div class="fc-face-text">${c.front}</div>
+          <div class="fc-face-hint">Click to flip</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-num-badge" style="color:var(--ai);">${currentIdx + 1}/${cards.length}</div>
+          <div class="fc-subject-chip">${document.getElementById('fcSubject').value}</div>
+          <div class="fc-face-label">Answer</div>
+          <div class="fc-face-text">${c.back}</div>
+          <div class="fc-face-hint" style="color:var(--muted);">Click to flip back</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button class="fc-nav-btn" onclick="prevCard()" ${currentIdx === 0 ? 'disabled' : ''}>◀</button>
+      <button class="fc-nav-btn" onclick="nextCard()" ${currentIdx === cards.length - 1 ? 'disabled' : ''}>▶</button>
+    </div>
+    <div class="confidence-row">
+      <button class="conf-btn hard" onclick="rateCard('hard')">😟 Hard<br><span style="font-size:.65rem;font-weight:600;opacity:.7;">Review again</span></button>
+      <button class="conf-btn medium" onclick="rateCard('medium')">🤔 Medium<br><span style="font-size:.65rem;font-weight:600;opacity:.7;">Getting there</span></button>
+      <button class="conf-btn easy" onclick="rateCard('easy')">😊 Easy<br><span style="font-size:.65rem;font-weight:600;opacity:.7;">Got it!</span></button>
+    </div>`;
+}
+
+function prevCard() {
+  if (currentIdx > 0) { currentIdx--; renderStudyCard(); }
+}
+
+function nextCard() {
+  if (currentIdx < cards.length - 1) { currentIdx++; renderStudyCard(); }
+}
+
+function rateCard(level) {
+  if (level === 'easy') {
+    mastered++;
+    document.getElementById('masteredCount').textContent = mastered;
+  } else if (level === 'hard') {
+    needsReview++;
+    document.getElementById('reviewCount').textContent = needsReview;
+  }
+  if (currentIdx < cards.length - 1) {
+    currentIdx++;
+    renderStudyCard();
+  } else {
+    showToast(`Deck complete! Mastered: ${mastered}, Review: ${needsReview}`, '🎉');
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('gridView');
+  grid.innerHTML = cards.map((c, i) => `
+    <div class="fc-grid-card" onclick="this.classList.toggle('revealed')">
+      <div class="fcg-num">#${i + 1}</div>
+      <div class="fcg-q">${c.front}</div>
+      <div class="fcg-a">${c.back}</div>
+      <div class="fcg-tap">Tap to reveal</div>
+    </div>
+  `).join('');
+}
+
+function showToast(msg, icon = '✅') {
+  const s = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerHTML = `<span>${icon}</span>${msg}`;
+  s.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

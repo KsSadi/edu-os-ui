@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Groups &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Hero */
+.groups-hero{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 55%,#4338CA 100%);border-radius:18px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden;}
+.groups-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.05);}
+.gh-title{font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px;}
+.gh-sub{font-size:.84rem;color:rgba(255,255,255,.65);margin-bottom:18px;}
+.gh-search{display:flex;max-width:480px;background:rgba(255,255,255,.15);border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,.25);}
+.gh-search input{flex:1;background:transparent;border:none;outline:none;padding:11px 16px;color:#fff;font-size:.88rem;}
+.gh-search input::placeholder{color:rgba(255,255,255,.5);}
+.gh-search button{background:rgba(255,255,255,.2);border:none;padding:0 18px;cursor:pointer;font-size:.9rem;color:#fff;}
+
+/* Filter chips */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-chip{padding:5px 14px;border-radius:20px;font-size:.76rem;font-weight:700;border:1.5px solid var(--border);background:var(--white);color:var(--ink-2);cursor:pointer;transition:all .12s;}
+.filter-chip:hover,.filter-chip.on{background:var(--cmn);border-color:var(--cmn);color:#fff;}
+
+/* Tabs */
+.group-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.gt-btn{padding:9px 20px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.gt-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+
+/* Group card */
+.group-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;transition:all .18s;cursor:pointer;}
+.group-card:hover{box-shadow:0 5px 18px rgba(99,102,241,.12);transform:translateY(-2px);border-color:var(--cmn);}
+.gc-banner{height:64px;display:flex;align-items:flex-end;padding:0 14px 10px;gap:10px;}
+.gc-av{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;background:rgba(255,255,255,.2);margin-bottom:-16px;border:2.5px solid var(--white);}
+.gc-name{font-size:.88rem;font-weight:900;color:var(--ink);margin-top:20px;padding:0 14px 6px;}
+.gc-body{padding:4px 14px 12px;}
+.gc-desc{font-size:.76rem;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.gc-footer{display:flex;align-items:center;justify-content:space-between;}
+.gc-members{font-size:.72rem;color:var(--muted);}
+.join-btn{padding:5px 14px;border-radius:20px;font-size:.74rem;font-weight:800;border:1.5px solid var(--cmn);color:var(--cmn);background:transparent;cursor:pointer;transition:all .12s;}
+.join-btn:hover,.join-btn.joined{background:var(--cmn);color:#fff;}
+
+/* Create group CTA */
+.create-cta{border:2px dashed var(--cmn-light);border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all .15s;}
+.create-cta:hover{background:var(--cmn-pale);border-color:var(--cmn);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero -->
+    <div class="groups-hero anim-1">
+      <div class="gh-title"> Discover Groups</div>
+      <div class="gh-sub">Find your community &middot; join study circles, clubs, and interest groups at Dhaka High School</div>
+      <div class="gh-search">
+        <input type="text" id="groupSearch" placeholder="Search groups by name or subject&middot;" oninput="filterGroups()">
+        <button onclick="filterGroups()"></button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;" class="anim-1">
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;flex:1;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">24</div>
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Total Groups</div>
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;flex:1;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">5</div>
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;">My Groups</div>
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;flex:1;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">1,284</div>
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Total Members</div>
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;flex:1;text-align:center;">
+        <div style="font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">8</div>
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;">New This Week</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="group-tabs">
+      <button class="gt-btn on" onclick="switchTab('all',this)"> All Groups</button>
+      <button class="gt-btn" onclick="switchTab('mine',this)">My Groups</button>
+      <button class="gt-btn" onclick="switchTab('popular',this)"> Most Active</button>
+    </div>
+
+    <!-- Category filters -->
+    <div class="filter-bar" id="filterBar"></div>
+
+    <!-- Groups grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;" id="groupsGrid"></div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const GROUPS=[
+  {id:1,emoji:'',name:'Math Study Circle',category:'Academic',col:'#1D4ED8',desc:'Collaborative problem solving and exam prep for SSC & HSC Mathematics.',members:248,posts:1042,joined:true},
+  {id:2,emoji:'',name:'Science Olympiad Prep',category:'Academic',col:'#059669',desc:'Training and resources for district and national science olympiad competitions.',members:186,posts:743,joined:true},
+  {id:3,emoji:'',name:'Coding Club',category:'Technology',col:'#7C3AED',desc:'Learn to code, share projects, and build things together &middot; all skill levels welcome.',members:142,posts:612,joined:true},
+  {id:4,emoji:'',name:'Art & Culture Club',category:'Arts',col:'#D97706',desc:'Celebrating creativity through drawing, painting, photography, and cultural events.',members:98,posts:289,joined:true},
+  {id:5,emoji:'',name:'Book Discussion',category:'Literature',col:'#E11D48',desc:'Monthly reads, literary debates, and book reviews with fellow bookworms.',members:74,posts:204,joined:true},
+  {id:6,emoji:'&#x2705;',name:'Football Diaries',category:'Sports',col:'#0891B2',desc:'Match analysis, training tips, and inter-school tournament updates.',members:210,posts:876,joined:false},
+  {id:7,emoji:'',name:'Drama & Theatre',category:'Arts',col:'#BE123C',desc:'Script readings, rehearsal notes, and everything stage and performance arts.',members:56,posts:142,joined:false},
+  {id:8,emoji:'',name:'Geography Explorers',category:'Academic',col:'#065F46',desc:'Maps, geo-politics, environmental science and field trip planning.',members:88,posts:318,joined:false},
+  {id:9,emoji:'',name:'Music Makers',category:'Arts',col:'#92400E',desc:'Share your recordings, find jam partners, and discuss music theory.',members:112,posts:445,joined:false},
+  {id:10,emoji:'',name:'Chemistry Lab',category:'Academic',col:'#1E3A5F',desc:'Experiment notes, reaction mechanisms, and chemistry olympiad prep.',members:134,posts:521,joined:false},
+  {id:11,emoji:'',name:'Robotics Club',category:'Technology',col:'#5B21B6',desc:'Build bots, share designs, and prepare for national robotics competitions.',members:68,posts:231,joined:false},
+  {id:12,emoji:'',name:'History & Heritage',category:'Humanities',col:'#78350F',desc:'Bangladesh history, world events, and heritage conservation discussions.',members:92,posts:387,joined:false},
+];
+
+const CATEGORIES=['All','Academic','Technology','Arts','Sports','Literature','Humanities'];
+let activeCategory='All', activeTab='all';
+
+function renderFilterBar(){
+  document.getElementById('filterBar').innerHTML=CATEGORIES.map(c=>`<button class="filter-chip ${c===activeCategory?'on':''}" onclick="setCategory('${c}')">${c}</button>`).join('');
+}
+function setCategory(cat){activeCategory=cat;renderFilterBar();renderGroups();}
+
+function filterGroups(){renderGroups();}
+function renderGroups(){
+  const q=document.getElementById('groupSearch').value.toLowerCase();
+  let groups=GROUPS.filter(g=>{
+    const matchQ=!q||g.name.toLowerCase().includes(q)||g.category.toLowerCase().includes(q);
+    const matchCat=activeCategory==='All'||g.category===activeCategory;
+    const matchTab=activeTab==='all'||(activeTab==='mine'&&g.joined)||(activeTab==='popular');
+    return matchQ&&matchCat&&matchTab;
+  });
+  if(activeTab==='popular') groups=[...groups].sort((a,b)=>b.posts-a.posts);
+  const grid=document.getElementById('groupsGrid');
+  grid.innerHTML=groups.map(g=>`
+    <div class="group-card" onclick="showToast('Opening ${g.name}','&#x2705;')">
+      <div class="gc-banner" style="background:linear-gradient(135deg,${g.col}dd,${g.col}99);">
+        <div class="gc-av">${g.emoji}</div>
+      </div>
+      <div class="gc-name">${g.name}</div>
+      <div class="gc-body">
+        <span style="font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:8px;background:${g.col}18;color:${g.col};">${g.category}</span>
+        <div class="gc-desc" style="margin-top:6px;">${g.desc}</div>
+        <div class="gc-footer">
+          <span class="gc-members"> ${g.members.toLocaleString()} members &middot; ${g.posts.toLocaleString()} posts</span>
+          <button class="join-btn ${g.joined?'joined':''}" onclick="event.stopPropagation();toggleJoin(${g.id},this)">${g.joined?'Joined':'Join'}</button>
+        </div>
+      </div>
+    </div>`).join('')+`<div class="create-cta" onclick="showToast('Create Group form opened','&#x2705;')"><div style="font-size:2rem;margin-bottom:8px;"></div><div style="font-size:.9rem;font-weight:800;color:var(--cmn);margin-bottom:4px;">Create a New Group</div><div style="font-size:.78rem;color:var(--muted);">Start a community around any topic or subject</div></div>`;
+}
+function toggleJoin(id,btn){const g=GROUPS.find(x=>x.id===id);g.joined=!g.joined;g.members+=g.joined?1:-1;btn.className=`join-btn ${g.joined?'joined':''}`;btn.textContent=g.joined?'Joined':'Join';showToast(g.joined?`Joined ${g.name}!`:`Left ${g.name}`,g.joined?'&#x2705;':'');}
+function switchTab(t,el){activeTab=t;document.querySelectorAll('.gt-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderGroups();}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+renderFilterBar();renderGroups();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Question Creator — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.ai-card{background:linear-gradient(135deg,#0D3528 0%,#0F766E 100%);border-radius:16px;padding:28px 32px;color:#fff;margin-bottom:24px;}
+.ai-card-title{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.ai-card-sub{font-size:.88rem;opacity:.8;}
+.diff-btn{padding:8px 20px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink-3);}
+.diff-btn:hover{border-color:var(--teacher);}
+.diff-btn.on{border-color:var(--teacher);background:var(--teacher-pale);color:var(--teacher-dark);}
+.diff-btn.easy.on{border-color:#22C55E;background:#F0FDF4;color:#15803D;}
+.diff-btn.medium.on{border-color:#F59E0B;background:#FFFBEB;color:#92400E;}
+.diff-btn.hard.on{border-color:#EF4444;background:#FFF0F0;color:#B91C1C;}
+.q-result-card{border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--white);transition:border-color .15s;}
+.q-result-card:hover{border-color:var(--teacher);}
+.q-num{font-size:.72rem;font-weight:700;color:var(--teacher);margin-bottom:8px;}
+.q-text{font-size:.9rem;color:var(--ink-2);font-weight:600;margin-bottom:10px;}
+.q-opt{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--ink-3);margin-bottom:5px;}
+.q-opt-key{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;}
+.q-opt.correct .q-opt-key{background:#22C55E;border-color:#22C55E;color:#fff;}
+.q-actions-bar{display:flex;justify-content:flex-end;gap:6px;margin-top:10px;}
+.generating{display:flex;align-items:center;gap:12px;padding:40px;justify-content:center;font-size:.95rem;font-weight:600;color:var(--muted);}
+.spin{width:32px;height:32px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--teacher);animation:spin 0.8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">AI Tools</div>
+        <div class="page-title">🤖 AI Question Creator</div>
+        <div class="page-sub">Generate high-quality exam and quiz questions using AI.</div>
+      </div>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-card-title">Powered by EduOS AI</div>
+      <div class="ai-card-sub">Create multiple choice, short answer, and essay questions in seconds.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;">
+      <!-- Input Panel -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚙️ Generation Settings</div></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <select class="form-select" id="aiSubject">
+              <option selected>Mathematics</option>
+              <option>Science</option>
+              <option>English</option>
+              <option>Bangla</option>
+              <option>Social Studies</option>
+              <option>Physics</option>
+              <option>Chemistry</option>
+              <option>Biology</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class / Level</label>
+            <select class="form-select" id="aiClass">
+              <option>Class 7</option>
+              <option>Class 8</option>
+              <option selected>Class 9</option>
+              <option>Class 10</option>
+              <option>SSC Level</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Topic / Chapter</label>
+            <input type="text" class="form-input" id="aiTopic" placeholder="e.g. Algebra, Quadratic Equations">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Question Type</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+              <button class="diff-btn type-btn on" data-type="mcq" onclick="toggleType(this)">MCQ</button>
+              <button class="diff-btn type-btn" data-type="short" onclick="toggleType(this)">Short Answer</button>
+              <button class="diff-btn type-btn" data-type="tf" onclick="toggleType(this)">True/False</button>
+              <button class="diff-btn type-btn" data-type="essay" onclick="toggleType(this)">Essay</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button class="diff-btn easy" onclick="setDiff(this,'easy')">Easy</button>
+              <button class="diff-btn medium on" onclick="setDiff(this,'medium')">Medium</button>
+              <button class="diff-btn hard" onclick="setDiff(this,'hard')">Hard</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Questions</label>
+            <input type="range" min="3" max="20" value="5" id="qCount" class="form-range" style="width:100%;accent-color:var(--teacher);cursor:pointer;" oninput="document.getElementById('qCountVal').textContent=this.value">
+            <div style="font-size:.8rem;color:var(--muted);margin-top:4px;">Generate <strong id="qCountVal">5</strong> questions</div>
+          </div>
+          <button class="btn btn-primary w-full" style="background:var(--teacher);border-color:var(--teacher);" onclick="generateQuestions()">🤖 Generate Questions</button>
+        </div>
+      </div>
+
+      <!-- Results Panel -->
+      <div>
+        <div class="card" id="resultsCard">
+          <div class="card-header">
+            <div class="card-title">📋 Generated Questions</div>
+            <div style="display:flex;gap:6px;" id="resultActions" style="display:none;">
+              <button class="btn btn-xs btn-secondary">📥 Export PDF</button>
+              <button class="btn btn-xs btn-secondary">📋 Copy All</button>
+              <button class="btn btn-xs" style="background:var(--teacher);color:#fff;border-color:var(--teacher);">➕ Add to Assignment</button>
+            </div>
+          </div>
+          <div class="card-body" id="qResultsBody">
+            <div style="text-align:center;padding:40px;color:var(--muted);">
+              <div style="font-size:3rem;margin-bottom:12px;">🤖</div>
+              <div style="font-size:.95rem;font-weight:600;">Configure settings and click <em>Generate Questions</em></div>
+              <div style="font-size:.82rem;margin-top:6px;">AI will create questions based on your topic and difficulty.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    /* ===================== QUESTION BANK ===================== */
+    var QBANK = {
+      'Mathematics': {
+        mcq: {
+          easy: [
+            {q:'What is 15% of 200?', opts:['30','35','40','25'], ans:0},
+            {q:'What is the value of √144?', opts:['10','11','12','13'], ans:2},
+            {q:'Simplify: 3/4 + 1/4', opts:['1','3/8','7/8','1/2'], ans:0},
+            {q:'What is the value of 2³?', opts:['6','8','9','12'], ans:1},
+            {q:'The perimeter of a square with side 7 cm is:', opts:['28 cm','49 cm','21 cm','14 cm'], ans:0},
+            {q:'If x + 8 = 15, then x = ?', opts:['5','6','7','8'], ans:2},
+            {q:'The LCM of 4 and 6 is:', opts:['12','24','6','8'], ans:0},
+            {q:'A triangle has angles 60° and 70°. The third angle is:', opts:['50°','40°','60°','30°'], ans:0}
+          ],
+          medium: [
+            {q:'If 2x + 5 = 17, find the value of x.', opts:['x = 5','x = 6','x = 7','x = 8'], ans:1},
+            {q:'Which of the following is a quadratic equation?', opts:['3x + 5 = 0','x² + 4x – 5 = 0','2x³ – 1 = 0','5x⁴ = 0'], ans:1},
+            {q:'Simplify: (3a + 2b)² – (3a – 2b)²', opts:['24ab','12ab','48ab','6ab'], ans:0},
+            {q:'The sum of two numbers is 20 and their product is 75. The numbers are:', opts:['5 and 15','10 and 10','6 and 14','8 and 12'], ans:0},
+            {q:'Solve: x/3 + x/4 = 7', opts:['x = 12','x = 15','x = 18','x = 21'], ans:0},
+            {q:'The area of a circle with radius 7 cm is (π = 22/7):', opts:['154 cm²','44 cm²','308 cm²','22 cm²'], ans:0},
+            {q:'The slope of a line passing through (2, 3) and (4, 7) is:', opts:['1','2','3','4'], ans:1},
+            {q:'If a = 3 and b = –2, the value of 2a² – 3b is:', opts:['24','22','18','12'], ans:0}
+          ],
+          hard: [
+            {q:'If α and β are roots of x² – 5x + 6 = 0, find α² + β².', opts:['13','25','12','16'], ans:0},
+            {q:'If log₂8 = x, find x.', opts:['2','3','4','8'], ans:1},
+            {q:'The roots of 2x² – 7x + 3 = 0 are:', opts:['3 and 1/2','2 and 3','1 and 1/2','3 and 2'], ans:0},
+            {q:'A train travels 360 km in 4 hours. Its speed in m/s is:', opts:['25 m/s','90 m/s','30 m/s','20 m/s'], ans:0},
+            {q:'In an AP, first term is 3 and common difference is 4. The 10th term is:', opts:['39','36','43','40'], ans:0},
+            {q:'The value of sin 60° × cos 30° – cos 60° × sin 30° equals:', opts:['sin 30°','sin 90°','sin 0°','cos 60°'], ans:2}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'Find the HCF of 24 and 36.', answer:'HCF of 24 and 36 = 12. (Common factors: 1, 2, 3, 4, 6, 12 — largest is 12)'},
+            {q:'A rectangle has length 12 cm and breadth 5 cm. Find its area and perimeter.', answer:'Area = 12 × 5 = 60 cm². Perimeter = 2(12 + 5) = 34 cm.'},
+            {q:'Write down the first five multiples of 7.', answer:'7, 14, 21, 28, 35'},
+            {q:'Convert 3/8 to a decimal.', answer:'3 ÷ 8 = 0.375'},
+            {q:'What is the value of 5! (5 factorial)?', answer:'5! = 5 × 4 × 3 × 2 × 1 = 120'}
+          ],
+          medium: [
+            {q:'Solve the equation: 3(2x – 4) = 2(x + 5).', answer:'6x – 12 = 2x + 10 → 4x = 22 → x = 5.5'},
+            {q:'Find the mean of: 12, 15, 18, 20, 25.', answer:'Mean = (12+15+18+20+25) ÷ 5 = 90 ÷ 5 = 18'},
+            {q:'The angles of a triangle are in ratio 2:3:4. Find each angle.', answer:'Total = 180°. Unit = 180/9 = 20°. Angles = 40°, 60°, 80°'},
+            {q:'Factorize: x² – 7x + 12.', answer:'(x – 3)(x – 4). Roots: x = 3 and x = 4'},
+            {q:'A shopkeeper buys an article for ৳800 and sells for ৳960. Find the profit percentage.', answer:'Profit = ৳160. Profit% = (160/800) × 100 = 20%'}
+          ],
+          hard: [
+            {q:'If the roots of x² + px + q = 0 are equal, state the condition and find p when q = 9.', answer:'Condition: p² – 4q = 0 → p² = 36 → p = ±6'},
+            {q:'The sum of a geometric series is S = a(rⁿ–1)/(r–1). Find S for a = 3, r = 2, n = 5.', answer:'S = 3(2⁵–1)/(2–1) = 3 × 31 = 93'},
+            {q:'Prove that the diagonal of a rectangle with sides a and b has length √(a²+b²).', answer:'Using the Pythagorean theorem: d² = a² + b² → d = √(a²+b²). For a=3, b=4: d=√(9+16)=√25=5 cm.'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'The sum of the interior angles of a triangle is 180°.', ans:true},
+            {q:'A square is a special type of rectangle.', ans:true},
+            {q:'Zero (0) is a natural number.', ans:false},
+            {q:'The product of two negative numbers is always negative.', ans:false},
+            {q:'15 is a prime number.', ans:false},
+            {q:'The area of a triangle = ½ × base × height.', ans:true}
+          ],
+          medium: [
+            {q:'Every integer is a rational number.', ans:true},
+            {q:'The diagonals of a rhombus always bisect each other at 90°.', ans:true},
+            {q:'log(a × b) = log a + log b.', ans:true},
+            {q:'If x² = 9, then x = 3 only.', ans:false},
+            {q:'The median always equals the mean in any data set.', ans:false}
+          ],
+          hard: [
+            {q:'If f(x) is continuous at x = a, it must also be differentiable at x = a.', ans:false},
+            {q:'The sum of an infinite geometric series with |r| < 1 is a/(1–r).', ans:true},
+            {q:'sin²θ + cos²θ = 2 for all values of θ.', ans:false}
+          ]
+        },
+        essay: {
+          easy: [
+            {q:'Explain what a prime number is. List all prime numbers between 1 and 30 and explain why composite numbers are excluded.', guide:'Definition (2 marks) · Correct list: 2,3,5,7,11,13,17,19,23,29 (3 marks) · Explanation of composite exclusion (2 marks) · Examples (1 mark)'},
+            {q:'Describe the properties of a rectangle and show how to derive its area and perimeter formulas.', guide:'Properties: 4 right angles, opposite sides equal (2 marks) · Area = l × b derivation (3 marks) · Perimeter = 2(l+b) (2 marks) · Diagram (1 mark)'}
+          ],
+          medium: [
+            {q:'Explain the concept of quadratic equations. Derive the quadratic formula and solve x² – 5x + 6 = 0 using it.', guide:'Standard form ax²+bx+c=0 (2 marks) · Derive formula (4 marks) · Solve: x=3 or x=2 (3 marks) · Verify (1 mark)'},
+            {q:'What is the Pythagorean theorem? State it, prove it geometrically, and solve two problems using it.', guide:'Statement (2 marks) · Geometric proof (4 marks) · Problem 1 solution (2 marks) · Problem 2 solution (2 marks)'}
+          ],
+          hard: [
+            {q:'Discuss the applications of trigonometry in real life. A 20 m ladder leans against a wall making a 60° angle with the ground. Find the height reached on the wall and horizontal distance from the wall.', guide:'Real-life applications: navigation, architecture, astronomy (3 marks) · Height = 20 sin 60° = 10√3 ≈ 17.3 m (4 marks) · Distance = 20 cos 60° = 10 m (3 marks)'}
+          ]
+        }
+      },
+      'Physics': {
+        mcq: {
+          easy: [
+            {q:'The SI unit of force is:', opts:['Joule','Newton','Watt','Pascal'], ans:1},
+            {q:'Which of the following is a scalar quantity?', opts:['Velocity','Force','Speed','Displacement'], ans:2},
+            {q:'The speed of light in vacuum is approximately:', opts:['3×10⁶ m/s','3×10⁸ m/s','3×10¹⁰ m/s','3×10⁴ m/s'], ans:1},
+            {q:'The formula for kinetic energy is:', opts:['mgh','mv','½mv²','F×d'], ans:2},
+            {q:'Ohm\'s Law states that V =', opts:['I/R','IR','I+R','I²R'], ans:1},
+            {q:'The unit of electric resistance is:', opts:['Ampere','Volt','Ohm','Watt'], ans:2}
+          ],
+          medium: [
+            {q:'A car accelerates from rest to 20 m/s in 5 seconds. Its acceleration is:', opts:['4 m/s²','5 m/s²','100 m/s²','2 m/s²'], ans:0},
+            {q:'Work done by a force of 10 N moving an object 5 m in the same direction is:', opts:['50 J','2 J','15 J','0.5 J'], ans:0},
+            {q:'In a series circuit with two resistors, the total resistance is:', opts:['Less than the smallest R','Greater than both','Product of both R','Average of both R'], ans:1},
+            {q:'The image formed by a concave mirror when the object is placed at its focus is:', opts:['Real, inverted, same size','Virtual, erect, magnified','At infinity','Real, diminished'], ans:2},
+            {q:'Which wave property determines the pitch of a sound?', opts:['Amplitude','Frequency','Wavelength','Speed'], ans:1},
+            {q:'The gravitational potential energy of an object of mass m at height h is:', opts:['mh','½mv²','mgh','Fh/m'], ans:2}
+          ],
+          hard: [
+            {q:'A 5 kg object falls from 20 m height (g = 10 m/s²). Its velocity just before impact is:', opts:['10 m/s','20 m/s','14.1 m/s','200 m/s'], ans:1},
+            {q:'The equivalent resistance of 6Ω and 3Ω connected in parallel is:', opts:['9Ω','2Ω','3Ω','18Ω'], ans:1},
+            {q:'A wave has wavelength 0.5 m and frequency 400 Hz. Its speed is:', opts:['800 m/s','200 m/s','0.00125 m/s','400 m/s'], ans:1},
+            {q:'A body moves in a circle of radius r with speed v. Its centripetal acceleration is:', opts:['v²/r','v/r','vr','v²r'], ans:0}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'State Newton\'s First Law of Motion in your own words.', answer:'An object at rest stays at rest, and an object in motion continues in motion at the same speed and in the same direction, unless acted upon by an unbalanced external force.'},
+            {q:'What is the difference between mass and weight?', answer:'Mass: amount of matter in an object, measured in kg, constant everywhere. Weight: gravitational force on the object, measured in Newtons (N), varies with gravity.'},
+            {q:'Define speed and velocity. How are they different?', answer:'Speed = distance/time (scalar). Velocity = displacement/time (vector). Velocity has both magnitude and direction; speed does not.'}
+          ],
+          medium: [
+            {q:'A bus starts from rest and reaches 72 km/h in 10 seconds. Calculate its acceleration.', answer:'Convert: 72 km/h = 20 m/s. a = (v–u)/t = (20–0)/10 = 2 m/s²'},
+            {q:'Define power and write its SI unit. Calculate power if 500 J of work is done in 25 seconds.', answer:'Power = Work/Time. SI unit = Watt (W). P = 500/25 = 20 W.'},
+            {q:'A current of 3 A flows through a resistor of 8Ω. Find the voltage across it and the power dissipated.', answer:'Voltage: V = IR = 3×8 = 24 V. Power: P = I²R = 9×8 = 72 W (or P = VI = 24×3 = 72 W).'}
+          ],
+          hard: [
+            {q:'A 2 kg object at 5 m/s collides with a stationary 3 kg object. They stick together. Find the common velocity and state the type of collision.', answer:'By conservation of momentum: 2×5 = (2+3)×v → v = 2 m/s. This is a perfectly inelastic collision. KE lost = ½(2)(25) – ½(5)(4) = 25 – 10 = 15 J.'},
+            {q:'A transformer has 200 turns in the primary coil and 1000 turns in the secondary. If primary voltage is 240 V, find secondary voltage and the current ratio.', answer:'Vs/Vp = Ns/Np → Vs = 240 × (1000/200) = 1200 V. Current ratio: Ip/Is = Ns/Np = 5:1 (step-up transformer, current decreases).'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'Sound waves require a medium to travel.', ans:true},
+            {q:'The unit of electric current is Volt.', ans:false},
+            {q:'Friction always opposes the direction of motion.', ans:true},
+            {q:'Light travels faster in glass than in vacuum.', ans:false},
+            {q:'An object moving in a circle at constant speed has constant velocity.', ans:false}
+          ],
+          medium: [
+            {q:'The law of conservation of energy states that energy can neither be created nor destroyed.', ans:true},
+            {q:'In a parallel circuit, voltage across each branch is the same.', ans:true},
+            {q:'A concave lens always forms a real image.', ans:false},
+            {q:'The momentum of a body is always conserved during any collision.', ans:true}
+          ],
+          hard: [
+            {q:'A body in uniform circular motion has zero acceleration.', ans:false},
+            {q:'When a wave travels from a denser to a rarer medium, its frequency changes.', ans:false},
+            {q:'The efficiency of a machine can exceed 100% if lubricants are used.', ans:false}
+          ]
+        },
+        essay: {
+          easy: [{q:'Explain Newton\'s three laws of motion with one real-life example for each.', guide:'Law 1 – Inertia + example (3 marks) · Law 2 – F=ma + example (3 marks) · Law 3 – Action-Reaction + example (3 marks) · Clarity (1 mark)'}],
+          medium: [{q:'Describe how electricity is generated in a power station and transmitted to homes. Include the role of transformers.', guide:'Generation (3 marks) · Transmission at high voltage (2 marks) · Step-up transformer (2 marks) · Step-down at homes (2 marks) · Safety (1 mark)'}],
+          hard: [{q:'Explain the wave-particle duality of light. Discuss the photoelectric effect and its significance.', guide:'Wave nature + evidence (3 marks) · Particle nature (photons) (3 marks) · Photoelectric effect explanation (3 marks) · Einstein\'s equation E=hf (2 marks) · Applications (1 mark) · [12 marks total]'}]
+        }
+      },
+      'Chemistry': {
+        mcq: {
+          easy: [
+            {q:'The chemical formula of water is:', opts:['H₂O','HO₂','H₂O₂','HO'], ans:0},
+            {q:'Which of the following is a noble gas?', opts:['Nitrogen','Oxygen','Argon','Chlorine'], ans:2},
+            {q:'The number of protons in an atom is called its:', opts:['Mass number','Atomic number','Neutron number','Valency'], ans:1},
+            {q:'Which is an example of a physical change?', opts:['Burning wood','Rusting iron','Melting ice','Cooking food'], ans:2},
+            {q:'An acid turns litmus paper:', opts:['Blue','Green','Red','Yellow'], ans:2}
+          ],
+          medium: [
+            {q:'The pH of a neutral solution at 25°C is:', opts:['0','7','14','10'], ans:1},
+            {q:'Which type of bond involves sharing of electrons?', opts:['Ionic bond','Covalent bond','Metallic bond','Hydrogen bond'], ans:1},
+            {q:'The molar mass of NaCl is (Na=23, Cl=35.5):', opts:['48.5 g/mol','58.5 g/mol','68.5 g/mol','38.5 g/mol'], ans:1},
+            {q:'In the reaction 2H₂ + O₂ → 2H₂O, the mole ratio of H₂ to O₂ is:', opts:['1:1','1:2','2:1','2:2'], ans:2},
+            {q:'Which element has the symbol Fe?', opts:['Fluorine','Francium','Iron','Fermium'], ans:2}
+          ],
+          hard: [
+            {q:'The oxidation number of Cr in K₂Cr₂O₇ is:', opts:['+6','+3','+7','+2'], ans:0},
+            {q:'What is the hybridization of carbon in CH₄?', opts:['sp','sp²','sp³','sp³d'], ans:2},
+            {q:'The half-life of a radioactive element is 10 years. After 30 years, the fraction remaining is:', opts:['1/2','1/4','1/8','1/16'], ans:2}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'What is the difference between an atom and a molecule?', answer:'Atom: smallest unit of an element that retains its properties. Molecule: two or more atoms bonded together (e.g., O₂, H₂O).'},
+            {q:'Name the three states of matter and describe one property of each.', answer:'Solid: definite shape and volume. Liquid: definite volume, no definite shape. Gas: no definite shape or volume.'}
+          ],
+          medium: [
+            {q:'Balance the chemical equation: Fe + O₂ → Fe₂O₃', answer:'4Fe + 3O₂ → 2Fe₂O₃. (Check: 4 Fe each side; 6 O each side — balanced)'},
+            {q:'Calculate the number of moles in 44 g of CO₂. (C=12, O=16)', answer:'Molar mass of CO₂ = 12 + 2×16 = 44 g/mol. Moles = 44/44 = 1 mole.'}
+          ],
+          hard: [
+            {q:'Explain how pH is calculated and find the pH of a 0.01 M HCl solution.', answer:'pH = –log[H⁺]. HCl fully dissociates: [H⁺] = 0.01 = 10⁻². pH = –log(10⁻²) = 2. (Acidic solution)'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'All acids are corrosive and all bases are slippery to touch.', ans:true},
+            {q:'The periodic table is arranged by increasing atomic mass only.', ans:false},
+            {q:'Carbon dioxide is a greenhouse gas.', ans:true}
+          ],
+          medium: [
+            {q:'In an exothermic reaction, energy is absorbed from the surroundings.', ans:false},
+            {q:'Isotopes of an element have the same number of protons but different neutrons.', ans:true},
+            {q:'All metals are good conductors of electricity.', ans:true}
+          ],
+          hard: [
+            {q:'A catalyst increases the activation energy of a chemical reaction.', ans:false},
+            {q:'Le Chatelier\'s Principle states that a system at equilibrium will adjust to oppose any change.', ans:true}
+          ]
+        },
+        essay: {
+          easy: [{q:'Describe the structure of an atom including protons, neutrons, and electrons. Draw and label a diagram of the carbon atom.', guide:'Nucleus description (2 marks) · Protons/Neutrons in nucleus (2 marks) · Electrons in shells (2 marks) · Carbon diagram: 6p, 6n, shells 2,4 (4 marks)'}],
+          medium: [{q:'Explain the periodic table. Why are elements arranged in periods and groups? Describe the properties of Group 1 elements (alkali metals).', guide:'Table structure (2 marks) · Periods explanation (2 marks) · Groups explanation (2 marks) · Group 1 properties: reactive, soft, low density (4 marks)'}],
+          hard: [{q:'Explain the concept of chemical equilibrium. State Le Chatelier\'s Principle and apply it to the Haber process for ammonia synthesis.', guide:'Equilibrium definition (2 marks) · Le Chatelier\'s Principle (3 marks) · Haber process equation (2 marks) · Effect of T, P, concentration (4 marks) · Industrial significance (2 marks)'}]
+        }
+      },
+      'Biology': {
+        mcq: {
+          easy: [
+            {q:'The basic unit of life is:', opts:['Tissue','Organ','Cell','Molecule'], ans:2},
+            {q:'Photosynthesis takes place in:', opts:['Mitochondria','Ribosomes','Chloroplasts','Nucleus'], ans:2},
+            {q:'The process by which plants make food using sunlight is called:', opts:['Respiration','Photosynthesis','Digestion','Transpiration'], ans:1},
+            {q:'DNA stands for:', opts:['Deoxyribose Nucleic Acid','Di-Nitrogen Acid','Deoxyribonucleic Acid','Double Nitrogen Acid'], ans:2},
+            {q:'Which blood group is the universal donor?', opts:['A','B','AB','O'], ans:3}
+          ],
+          medium: [
+            {q:'The process of cell division in which the chromosome number is halved is called:', opts:['Mitosis','Meiosis','Osmosis','Binary fission'], ans:1},
+            {q:'Which organ produces insulin?', opts:['Liver','Kidney','Pancreas','Stomach'], ans:2},
+            {q:'The site of protein synthesis in a cell is:', opts:['Nucleus','Mitochondria','Ribosome','Golgi body'], ans:2},
+            {q:'Which of the following is an example of a reflex action?', opts:['Writing a letter','Pulling hand from hot object','Reading a book','Walking'], ans:1},
+            {q:'The scientific name of modern humans is:', opts:['Homo erectus','Homo habilis','Homo sapiens','Homo neanderthalensis'], ans:2}
+          ],
+          hard: [
+            {q:'In Mendel\'s experiment, when tall (TT) and short (tt) plants cross, the F₂ ratio is:', opts:['1:2:1','3:1','1:1','2:1'], ans:1},
+            {q:'Which enzyme is responsible for "unzipping" DNA during replication?', opts:['DNA polymerase','Helicase','Ligase','RNA polymerase'], ans:1},
+            {q:'The conversion of glucose to pyruvate during glycolysis yields how many ATP?', opts:['2','4','36','38'], ans:0}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'What is the difference between a plant cell and an animal cell?', answer:'Plant cell: has cell wall, chloroplasts, large central vacuole. Animal cell: no cell wall, no chloroplasts, small vacuoles.'},
+            {q:'Write the overall equation for photosynthesis.', answer:'6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂'}
+          ],
+          medium: [
+            {q:'Explain the difference between aerobic and anaerobic respiration. Give one example of each.', answer:'Aerobic: O₂ required, produces CO₂ + H₂O + 36-38 ATP (e.g., muscle cells). Anaerobic: no O₂, produces lactic acid or ethanol + CO₂ + 2 ATP (e.g., yeast fermentation).'},
+            {q:'What is osmosis? Explain what happens to a red blood cell placed in pure water.', answer:'Osmosis: movement of water through a semi-permeable membrane from low to high solute concentration. Red blood cell in pure water: water enters by osmosis → cell swells → bursts (haemolysis).'}
+          ],
+          hard: [
+            {q:'Explain how the immune system responds to a bacterial infection. Include the roles of B cells and T cells.', answer:'Bacteria detected → phagocytes engulf bacteria → antigens presented → T-helper cells activated → B cells produce antibodies → T-killer cells destroy infected cells → Memory cells formed for future rapid response.'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'Viruses are living organisms because they can reproduce.', ans:false},
+            {q:'The heart pumps blood through the circulatory system.', ans:true},
+            {q:'Plants can both photosynthesise and respire.', ans:true}
+          ],
+          medium: [
+            {q:'All inherited traits follow Mendel\'s laws of simple inheritance.', ans:false},
+            {q:'Enzymes are biological catalysts made of protein.', ans:true},
+            {q:'Mitosis produces genetically identical daughter cells.', ans:true}
+          ],
+          hard: [
+            {q:'Evolution always results in increased complexity of organisms.', ans:false},
+            {q:'A mutation in a somatic cell can be inherited by offspring.', ans:false}
+          ]
+        },
+        essay: {
+          easy: [{q:'Describe the structure and function of the cell membrane. Why is it called a "selectively permeable membrane"?', guide:'Phospholipid bilayer structure (3 marks) · Proteins embedded (2 marks) · Selective permeability explained (3 marks) · Role in osmosis/diffusion (2 marks)'}],
+          medium: [{q:'Explain the process of photosynthesis. Describe the light-dependent and light-independent reactions.', guide:'Overall equation (2 marks) · Light-dependent reaction (4 marks) · Calvin cycle/light-independent (4 marks) · Factors affecting rate (2 marks)'}],
+          hard: [{q:'Discuss Mendelian genetics. Explain the Laws of Segregation and Independent Assortment. Use a dihybrid cross example.', guide:'Law of Segregation (3 marks) · Law of Independent Assortment (3 marks) · Dihybrid cross setup (2 marks) · Punnett square (2 marks) · 9:3:3:1 ratio (2 marks)'}]
+        }
+      },
+      'Science': {
+        mcq: {
+          easy: [
+            {q:'Which planet is closest to the Sun?', opts:['Venus','Earth','Mercury','Mars'], ans:2},
+            {q:'The boiling point of water at standard pressure is:', opts:['90°C','100°C','110°C','80°C'], ans:1},
+            {q:'What force pulls objects toward the Earth?', opts:['Magnetism','Friction','Gravity','Tension'], ans:2},
+            {q:'Which gas is most abundant in Earth\'s atmosphere?', opts:['Oxygen','Carbon dioxide','Nitrogen','Argon'], ans:2},
+            {q:'The process of water turning into vapour is called:', opts:['Condensation','Evaporation','Precipitation','Sublimation'], ans:1}
+          ],
+          medium: [
+            {q:'Which layer of the Earth is made of solid iron and nickel?', opts:['Crust','Mantle','Outer core','Inner core'], ans:3},
+            {q:'The loudness of sound is measured in:', opts:['Hertz','Decibels','Newtons','Lumens'], ans:1},
+            {q:'Which type of rock is formed from cooled magma?', opts:['Sedimentary','Metamorphic','Igneous','Fossil'], ans:2},
+            {q:'The amount of a substance dissolved in a given volume of solution is called:', opts:['Density','Concentration','Solubility','Molarity'], ans:1}
+          ],
+          hard: [
+            {q:'Which electromagnetic wave has the highest frequency?', opts:['Radio waves','X-rays','Gamma rays','Ultraviolet rays'], ans:2},
+            {q:'The phenomenon where light bends when passing from one medium to another is:', opts:['Reflection','Diffraction','Refraction','Dispersion'], ans:2}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'What is the water cycle? Name its four main stages.', answer:'The continuous movement of water through Earth\'s systems. Stages: Evaporation → Condensation → Precipitation → Collection/Runoff'},
+            {q:'What is biodiversity and why is it important?', answer:'Biodiversity: variety of life (species, ecosystems, genes) in an area. Important for ecosystem stability, medicines, food security, climate regulation.'}
+          ],
+          medium: [
+            {q:'Explain the difference between renewable and non-renewable energy sources. Give two examples of each.', answer:'Renewable: replenished naturally (solar, wind). Non-renewable: finite, takes millions of years to form (coal, petroleum). Renewables are sustainable; non-renewables emit greenhouse gases.'}
+          ],
+          hard: [
+            {q:'Explain the greenhouse effect and its link to global climate change. What human activities contribute most?', answer:'Greenhouse gases (CO₂, CH₄) trap solar radiation → Earth warms. Human causes: burning fossil fuels, deforestation, agriculture. Effects: melting ice, rising sea levels, extreme weather.'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'The Sun is a star.', ans:true},
+            {q:'Plants release carbon dioxide during photosynthesis.', ans:false},
+            {q:'Sound travels faster in air than in water.', ans:false}
+          ],
+          medium: [
+            {q:'The ozone layer protects Earth from ultraviolet radiation.', ans:true},
+            {q:'Earthquakes always cause tsunamis.', ans:false}
+          ],
+          hard: [
+            {q:'All electromagnetic waves travel at the same speed in vacuum.', ans:true}
+          ]
+        },
+        essay: {
+          easy: [{q:'Describe the solar system. Name all eight planets in order from the Sun and state one fact about each.', guide:'Correct order (4 marks) · Facts per planet (4 marks) · Diagram (2 marks)'}],
+          medium: [{q:'Explain the causes and effects of climate change. What measures can individuals and governments take to reduce it?', guide:'Causes (3 marks) · Effects (3 marks) · Individual actions (2 marks) · Government policies (2 marks)'}],
+          hard: [{q:'Discuss the theory of evolution by natural selection. What evidence supports Darwin\'s theory?', guide:'Natural selection mechanism (4 marks) · Fossil evidence (2 marks) · Comparative anatomy (2 marks) · Molecular biology evidence (2 marks) · Geographical distribution (2 marks)'}]
+        }
+      },
+      'English': {
+        mcq: {
+          easy: [
+            {q:'Which of the following is a proper noun?', opts:['city','happiness','Dhaka','school'], ans:2},
+            {q:'Choose the correct plural of "child":', opts:['childs','children','childrens','child\'s'], ans:1},
+            {q:'The sentence "She sings beautifully." contains which type of adverb?', opts:['Adverb of place','Adverb of time','Adverb of manner','Adverb of frequency'], ans:2},
+            {q:'Which punctuation mark is used at the end of a question?', opts:['Full stop','Exclamation mark','Question mark','Comma'], ans:2},
+            {q:'"He is taller than his brother." This sentence uses which degree of comparison?', opts:['Positive','Comparative','Superlative','Absolute'], ans:1}
+          ],
+          medium: [
+            {q:'Choose the correct form: "If I _____ rich, I would travel the world."', opts:['am','was','were','will be'], ans:2},
+            {q:'Which of these sentences is in the passive voice?', opts:['The cat chased the mouse.','The mouse was chased by the cat.','The cat is chasing the mouse.','The cat had chased the mouse.'], ans:1},
+            {q:'The word "benevolent" most closely means:', opts:['Aggressive','Kind and generous','Stubborn','Mysterious'], ans:1},
+            {q:'Identify the figure of speech: "The wind whispered through the trees."', opts:['Simile','Metaphor','Personification','Hyperbole'], ans:2},
+            {q:'"He ran as fast as a cheetah." This is an example of:', opts:['Metaphor','Simile','Personification','Alliteration'], ans:1}
+          ],
+          hard: [
+            {q:'Choose the correctly punctuated sentence:', opts:['"Its" raining outside.','Its\' raining outside.','It\'s raining outside.','Its raining outside.'], ans:2},
+            {q:'The literary device where the end of a line repeats the sound of the previous line\'s end is called:', opts:['Alliteration','Assonance','Rhyme','Onomatopoeia'], ans:2},
+            {q:'Which sentence demonstrates the subjunctive mood?', opts:['I wish I was there.','I wish I were there.','I wish I am there.','I wish I will be there.'], ans:1}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'Write three sentences using the words "beautiful," "quickly," and "enormous."', answer:'The beautiful flower bloomed in spring. / She quickly finished her homework. / An enormous elephant stood near the river. (Accept any grammatically correct sentences using the given words.)'},
+            {q:'Identify the subject and predicate in: "The young student reads many books every day."', answer:'Subject: "The young student" · Predicate: "reads many books every day"'}
+          ],
+          medium: [
+            {q:'Transform the sentence into passive voice: "The teacher praised the student."', answer:'"The student was praised by the teacher." (Subject becomes object; object becomes subject; verb → was/were + past participle)'},
+            {q:'Write a short paragraph (4–5 sentences) describing your ideal school.', answer:'Model: My ideal school would be a bright, welcoming place full of curious students. Classrooms would have modern technology and creative spaces. Teachers would inspire rather than merely instruct. Students would be encouraged to ask questions freely. The school would also have gardens, sports facilities, and an active community.'}
+          ],
+          hard: [
+            {q:'Analyse the use of irony in O. Henry\'s "The Gift of the Magi." How does the ending illustrate the theme of selfless love?', answer:'Situational irony: Della sells her hair to buy Jim a watch chain; Jim sells his watch to buy Della hair combs. Each sacrifice renders the gift useless but reveals the depth of their love. The irony underscores that true gifts come from the heart, not material value.'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'"They" can be used as a singular pronoun in modern English.', ans:true},
+            {q:'An adjective modifies a verb.', ans:false},
+            {q:'A sentence must have a subject and a verb.', ans:true}
+          ],
+          medium: [
+            {q:'The present perfect tense is formed with "have/has + past participle."', ans:true},
+            {q:'"Affect" and "effect" are always interchangeable.', ans:false},
+            {q:'Shakespeare wrote "Romeo and Juliet" as a comedy.', ans:false}
+          ],
+          hard: [
+            {q:'Stream of consciousness is a narrative technique that presents a character\'s thoughts as they flow through the mind.', ans:true},
+            {q:'In a Petrarchan sonnet, the sestet always follows an ABAB rhyme scheme.', ans:false}
+          ]
+        },
+        essay: {
+          easy: [{q:'Write an essay (150–200 words) on "The Importance of Reading Books."', guide:'Introduction with clear thesis (3 marks) · 2–3 supporting arguments (6 marks) · Conclusion (2 marks) · Grammar and vocabulary (3 marks) · Organisation and coherence (2 marks) · [16 marks]'}],
+          medium: [{q:'Analyse the character of the protagonist in a story you have studied this year. How does the character change and grow throughout the narrative?', guide:'Character introduction (2 marks) · Initial traits with textual evidence (3 marks) · Key turning point (3 marks) · Change/growth at end (3 marks) · Personal reflection (2 marks) · Language quality (2 marks)'}],
+          hard: [{q:'Critically evaluate how William Shakespeare uses dramatic irony in "Romeo and Juliet" to build tension. Refer to at least three specific scenes.', guide:'Definition of dramatic irony (2 marks) · Scene 1 analysis + quote (3 marks) · Scene 2 analysis + quote (3 marks) · Scene 3 analysis + quote (3 marks) · Overall effect on audience (2 marks) · Language and structure (3 marks)'}]
+        }
+      },
+      'Bangla': {
+        mcq: {
+          easy: [
+            {q:'বাংলা বর্ণমালায় মোট স্বরবর্ণ কতটি?', opts:['৯টি','১১টি','১৩টি','৭টি'], ans:1},
+            {q:'"রবীন্দ্রনাথ ঠাকুর" কোন সালে জন্মগ্রহণ করেন?', opts:['১৮৫৮','১৮৬১','১৮৭০','১৮৫০'], ans:1},
+            {q:'"আমার সোনার বাংলা" গানটি রচনা করেন:', opts:['কাজী নজরুল ইসলাম','রবীন্দ্রনাথ ঠাকুর','জীবনানন্দ দাশ','মাইকেল মধুসূদন দত্ত'], ans:1},
+            {q:'বাংলাদেশের জাতীয় কবি কে?', opts:['রবীন্দ্রনাথ ঠাকুর','কাজী নজরুল ইসলাম','জীবনানন্দ দাশ','শামসুর রাহমান'], ans:1},
+            {q:'"বিদ্রোহী" কবিতাটি রচনা করেন:', opts:['রবীন্দ্রনাথ ঠাকুর','কাজী নজরুল ইসলাম','মাইকেল মধুসূদন দত্ত','জসীমউদ্দীন'], ans:1}
+          ],
+          medium: [
+            {q:'বাংলা ভাষার প্রথম ব্যাকরণ কে রচনা করেন?', opts:['ঈশ্বরচন্দ্র বিদ্যাসাগর','রামমোহন রায়','মানুয়েল দ্য আস্সুম্পসাঁও','উইলিয়াম কেরি'], ans:2},
+            {q:'"মেঘনাদবধ কাব্য" কোন ধরনের সাহিত্যকর্ম?', opts:['উপন্যাস','নাটক','মহাকাব্য','ছোটগল্প'], ans:2},
+            {q:'"গল্পগুচ্ছ" গ্রন্থটির রচয়িতা কে?', opts:['বঙ্কিমচন্দ্র চট্টোপাধ্যায়','রবীন্দ্রনাথ ঠাকুর','শরৎচন্দ্র চট্টোপাধ্যায়','মানিক বন্দ্যোপাধ্যায়'], ans:1}
+          ],
+          hard: [
+            {q:'"চর্যাপদ" এর রচনাকাল কোনটি?', opts:['৭ম–১২শ শতক','১৩শ–১৫শ শতক','১৫শ–১৭শ শতক','১০ম–১৪শ শতক'], ans:0},
+            {q:'"আনন্দমঠ" উপন্যাসের রচয়িতা কে এবং এটি কোন সালে প্রকাশিত হয়?', opts:['রবীন্দ্রনাথ, ১৮৮০','বঙ্কিমচন্দ্র, ১৮৮২','শরৎচন্দ্র, ১৯০০','মাইকেল, ১৮৭০'], ans:1}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'"মা" শব্দটি দিয়ে পাঁচটি বাক্য লেখো।', answer:'নমুনা: ১. আমার মা খুব ভালো। ২. মা সকালে ঘুম থেকে ওঠেন। ৩. মা আমাকে ভালোবাসেন। ৪. মা রান্না করেন। ৫. মা আমার সেরা বন্ধু।'},
+            {q:'সন্ধি কাকে বলে? একটি উদাহরণ দাও।', answer:'দুটি পদের বা শব্দের মধ্যে সংযোগ হওয়ার নিয়মকে সন্ধি বলে। উদাহরণ: দেব + আলয় = দেবালয়।'}
+          ],
+          medium: [
+            {q:'"বিদ্রোহী" কবিতায় কবি কী বোঝাতে চেয়েছেন? সংক্ষেপে আলোচনা করো।', answer:'কাজী নজরুল ইসলাম "বিদ্রোহী" কবিতায় সমাজের সব ধরনের অন্যায়, অবিচার ও শোষণের বিরুদ্ধে বিদ্রোহ ঘোষণা করেছেন। তিনি নিজেকে অপ্রতিরোধ্য শক্তির প্রতীক হিসেবে উপস্থাপন করেছেন।'},
+            {q:'কারক কাকে বলে? কয় প্রকার ও কী কী?', answer:'বাক্যের ক্রিয়াপদের সঙ্গে নামপদের সম্পর্ককে কারক বলে। ৬ প্রকার: কর্তৃকারক, কর্মকারক, করণকারক, সম্প্রদান কারক, অপাদান কারক, অধিকরণ কারক।'}
+          ],
+          hard: [
+            {q:'বাংলা সাহিত্যের মধ্যযুগের বৈশিষ্ট্য সংক্ষেপে আলোচনা করো।', answer:'মধ্যযুগ (১২০১–১৮০০): ধর্মীয় প্রভাব প্রবল, মঙ্গলকাব্য ও পদাবলী সাহিত্যের বিকাশ, মুসলিম শাসনের প্রভাবে নতুন ধারার সৃষ্টি, চৈতন্যদেবের প্রভাবে বৈষ্ণব পদাবলীর উদ্ভব।'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'বাংলাদেশের জাতীয় সংগীত রবীন্দ্রনাথ ঠাকুর রচনা করেন।', ans:true},
+            {q:'কাজী নজরুল ইসলাম বাংলাদেশে জন্মগ্রহণ করেন।', ans:false},
+            {q:'বাংলা ভাষায় মোট ব্যঞ্জনবর্ণ ৩৯টি।', ans:true}
+          ],
+          medium: [
+            {q:'"পদ্মানদীর মাঝি" উপন্যাসটি রবীন্দ্রনাথ ঠাকুরের লেখা।', ans:false},
+            {q:'ভাষা আন্দোলন ১৯৫২ সালের ২১শে ফেব্রুয়ারি হয়েছিল।', ans:true}
+          ],
+          hard: [
+            {q:'চর্যাপদ আবিষ্কার করেন হরপ্রসাদ শাস্ত্রী।', ans:true},
+            {q:'"মেঘনাদবধ কাব্য" সংস্কৃত মহাকাব্য রামায়ণের উপর ভিত্তি করে রচিত।', ans:false}
+          ]
+        },
+        essay: {
+          easy: [{q:'"বৃক্ষরোপণের প্রয়োজনীয়তা" বিষয়ে একটি অনুচ্ছেদ লেখো।', guide:'ভূমিকা (২ নম্বর) · গাছের উপকারিতা (৪ নম্বর) · বৃক্ষনিধনের ক্ষতি (২ নম্বর) · উপসংহার (২ নম্বর) · ভাষা ও বানান (২ নম্বর)'}],
+          medium: [{q:'রবীন্দ্রনাথ ঠাকুরের সাহিত্যকর্মের উপর একটি রচনা লেখো।', guide:'জীবন পরিচয় (২ নম্বর) · কবিতা ও গানে অবদান (৩ নম্বর) · উপন্যাস ও ছোটগল্পে অবদান (৩ নম্বর) · নোবেল পুরস্কার ও আন্তর্জাতিক স্বীকৃতি (২ নম্বর) · উপসংহার (২ নম্বর)'}],
+          hard: [{q:'বাংলা ভাষা আন্দোলনের ঐতিহাসিক প্রেক্ষাপট ও তাৎপর্য আলোচনা করো।', guide:'পটভূমি (৩ নম্বর) · ২১শে ফেব্রুয়ারির ঘটনা (৪ নম্বর) · ভাষা শহীদদের আত্মত্যাগ (২ নম্বর) · রাষ্ট্রভাষা হিসেবে বাংলার স্বীকৃতি (২ নম্বর) · আন্তর্জাতিক মাতৃভাষা দিবস (২ নম্বর) · ভাষা ও বানান (২ নম্বর)'}]
+        }
+      },
+      'Social Studies': {
+        mcq: {
+          easy: [
+            {q:'Bangladesh gained independence in:', opts:['1947','1952','1971','1965'], ans:2},
+            {q:'The capital of Bangladesh is:', opts:['Chittagong','Rajshahi','Sylhet','Dhaka'], ans:3},
+            {q:'Which river is known as the "lifeline" of Bangladesh?', opts:['Jamuna','Padma','Meghna','Surma'], ans:1},
+            {q:'The currency of Bangladesh is:', opts:['Rupee','Dollar','Taka','Dinar'], ans:2},
+            {q:'How many districts are there in Bangladesh?', opts:['32','44','64','72'], ans:2}
+          ],
+          medium: [
+            {q:'Which of the following is NOT a permanent member of the UN Security Council?', opts:['USA','UK','Germany','China'], ans:2},
+            {q:'The "Language Movement" of Bangladesh occurred in:', opts:['1947','1948','1952','1969'], ans:2},
+            {q:'Which organization ensures free and fair elections in Bangladesh?', opts:['Supreme Court','Bangladesh Election Commission','Parliament','Prime Minister\'s Office'], ans:1},
+            {q:'The concept of "separation of powers" divides government into:', opts:['Two branches','Three branches','Four branches','Five branches'], ans:1}
+          ],
+          hard: [
+            {q:'The Bretton Woods Conference of 1944 established which international organizations?', opts:['UN and NATO','IMF and World Bank','WTO and ASEAN','EU and OPEC'], ans:1},
+            {q:'Which Article of the Bangladesh Constitution declares the country a "unitary, independent, sovereign Republic"?', opts:['Article 1','Article 7','Article 11','Article 25'], ans:0}
+          ]
+        },
+        short: {
+          easy: [
+            {q:'Name five countries that share a border with Bangladesh.', answer:'Bangladesh is bordered only by India (west, north, east) and Myanmar (southeast). (Note: Bangladesh shares border with only 2 countries — India and Myanmar/Burma)'},
+            {q:'What is democracy? Name the two main types of democracy.', answer:'Democracy: a system of government where power lies with the people. Two types: Direct Democracy (citizens vote directly on laws) and Representative Democracy (citizens elect representatives to make decisions).'}
+          ],
+          medium: [
+            {q:'Explain the three branches of the Bangladesh government and their roles.', answer:'Legislature (Jatiya Sangsad): makes laws. Executive (Prime Minister + Cabinet): runs the government. Judiciary (Supreme Court): interprets laws and ensures justice. Each branch has checks and balances over the others.'},
+            {q:'What is globalization? Mention two positive and two negative effects.', answer:'Globalization: increasing interconnection of world economies, cultures, and societies. Positive: economic growth, technology sharing. Negative: cultural erosion, income inequality between nations.'}
+          ],
+          hard: [
+            {q:'Explain the causes of the 1971 Liberation War of Bangladesh. What role did the Language Movement of 1952 play in building national identity?', answer:'Causes: economic exploitation by West Pakistan, Agartala Conspiracy, 1970 election denial, Operation Searchlight March 25. Language Movement: created Bengali identity and nationalism as Bangladeshis fought to protect their mother language, laying the foundation for independence movement.'}
+          ]
+        },
+        tf: {
+          easy: [
+            {q:'The United Nations was founded in 1945.', ans:true},
+            {q:'Bangladesh is a landlocked country.', ans:false},
+            {q:'The Sundarbans is the world\'s largest mangrove forest.', ans:true}
+          ],
+          medium: [
+            {q:'SAARC was established to promote economic and social cooperation in South Asia.', ans:true},
+            {q:'The President of Bangladesh is the head of government.', ans:false},
+            {q:'Bangladesh became a member of the United Nations in 1974.', ans:true}
+          ],
+          hard: [
+            {q:'The Sustainable Development Goals (SDGs) replaced the Millennium Development Goals in 2015.', ans:true},
+            {q:'The International Court of Justice is the main judicial body of the World Trade Organization.', ans:false}
+          ]
+        },
+        essay: {
+          easy: [{q:'Describe the culture and traditions of Bangladesh. Include food, festivals, and traditional dress.', guide:'Introduction to cultural diversity (2 marks) · Food: rice, fish, hilsa (2 marks) · Festivals: Eid, Puja, Pohela Boishakh (3 marks) · Traditional dress: sari, panjabi (2 marks) · Music and arts (2 marks) · Conclusion (1 mark)'}],
+          medium: [{q:'Discuss the role of women in the development of Bangladesh. Include education, workforce participation, and political leadership.', guide:'Historical context (2 marks) · Education progress (3 marks) · Garment industry role (3 marks) · Political leadership: Hasina/Zia (3 marks) · Challenges remaining (2 marks) · Conclusion (2 marks) · [15 marks]'}],
+          hard: [{q:'Critically analyse the challenges to democracy in developing countries, with specific reference to Bangladesh. What reforms can strengthen democratic institutions?', guide:'Definition and principles (2 marks) · Challenges: corruption, political violence (4 marks) · Bangladesh-specific issues (3 marks) · Proposed reforms: independent judiciary, free press, electoral reform (4 marks) · Global context (2 marks) · Conclusion (2 marks)'}]
+        }
+      }
+    };
+
+    /* ===================== UTILITY FUNCTIONS ===================== */
+    function toggleType(btn){
+      btn.classList.toggle('on');
+    }
+    function setDiff(btn, level){
+      document.querySelectorAll('.diff-btn.easy,.diff-btn.medium,.diff-btn.hard').forEach(function(b){ b.classList.remove('on'); });
+      btn.classList.add('on');
+    }
+
+    function renderQuestion(q, num, diffLabel, cls){
+      var typeLabel = {mcq:'MCQ', short:'Short Answer', tf:'True / False', essay:'Essay'}[q._type] || 'MCQ';
+      var diffColor = {Easy:'#15803D', Medium:'#92400E', Hard:'#B91C1C'}[diffLabel] || '#444';
+      var diffBg   = {Easy:'#F0FDF4', Medium:'#FFFBEB', Hard:'#FFF0F0'}[diffLabel] || '#f5f5f5';
+
+      var header = '<div class="q-result-card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        + '<div class="q-num" style="margin:0;">Q' + num + ' &nbsp;·&nbsp; ' + cls + ' &nbsp;·&nbsp; ' + typeLabel + '</div>'
+        + '<span style="font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;background:' + diffBg + ';color:' + diffColor + ';">' + diffLabel + '</span>'
+        + '</div>'
+        + '<div class="q-text">' + q.q + '</div>';
+
+      var body = '';
+      if(q._type === 'mcq'){
+        body = ['A','B','C','D'].map(function(k,j){
+          return '<div class="q-opt' + (j === q.ans ? ' correct' : '') + '"><div class="q-opt-key">' + k + '</div>' + q.opts[j] + '</div>';
+        }).join('');
+      } else if(q._type === 'short'){
+        body = '<div style="background:var(--bg);border-left:3px solid var(--teacher);border-radius:0 8px 8px 0;padding:10px 14px;margin-top:10px;">'
+          + '<div style="font-size:.68rem;font-weight:800;color:var(--teacher);margin-bottom:5px;letter-spacing:.07em;">✅ MODEL ANSWER</div>'
+          + '<div style="font-size:.84rem;color:var(--ink-3);line-height:1.6;">' + q.answer + '</div></div>';
+      } else if(q._type === 'tf'){
+        body = '<div class="q-opt' + (q.ans ? ' correct' : '') + '"><div class="q-opt-key">T</div>True</div>'
+             + '<div class="q-opt' + (!q.ans ? ' correct' : '') + '"><div class="q-opt-key">F</div>False</div>';
+      } else if(q._type === 'essay'){
+        body = '<div style="background:#FFFBEB;border-left:3px solid #F59E0B;border-radius:0 8px 8px 0;padding:10px 14px;margin-top:10px;">'
+          + '<div style="font-size:.68rem;font-weight:800;color:#92400E;margin-bottom:5px;letter-spacing:.07em;">📋 MARKING GUIDE</div>'
+          + '<div style="font-size:.84rem;color:var(--ink-3);line-height:1.6;">' + q.guide + '</div></div>';
+      }
+
+      var footer = '<div class="q-actions-bar">'
+        + '<button class="btn btn-xs btn-secondary">✏️ Edit</button>'
+        + '<button class="btn btn-xs btn-secondary" onclick="this.closest(\'.q-result-card\').remove()">🗑 Remove</button>'
+        + '</div></div>';
+
+      return header + body + footer;
+    }
+
+    function generateQuestions(){
+      var subject  = document.getElementById('aiSubject').value;
+      var cls      = document.getElementById('aiClass').value;
+      var topic    = document.getElementById('aiTopic').value.trim().toLowerCase();
+      var count    = parseInt(document.getElementById('qCount').value);
+
+      var diff = 'medium';
+      if(document.querySelector('.diff-btn.easy.on'))  diff = 'easy';
+      if(document.querySelector('.diff-btn.hard.on'))  diff = 'hard';
+      var diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+
+      var types = [];
+      document.querySelectorAll('.type-btn.on').forEach(function(b){ types.push(b.dataset.type); });
+      if(types.length === 0) types = ['mcq'];
+
+      var body = document.getElementById('qResultsBody');
+      body.innerHTML = '<div class="generating"><div class="spin"></div>Generating ' + count + ' ' + diffLabel + ' ' + subject + ' questions for ' + cls + '…</div>';
+
+      setTimeout(function(){
+        var bank = QBANK[subject] || QBANK['Mathematics'];
+        var allQ = [];
+
+        types.forEach(function(type){
+          var pool = (bank[type] && bank[type][diff]) || [];
+          pool.forEach(function(q){
+            allQ.push(Object.assign({}, q, {_type: type}));
+          });
+        });
+
+        /* Topic keyword filter — only apply if something typed */
+        if(topic){
+          var filtered = allQ.filter(function(q){ return q.q.toLowerCase().indexOf(topic) !== -1; });
+          if(filtered.length > 0) allQ = filtered;
+        }
+
+        /* Shuffle */
+        allQ = allQ.sort(function(){ return Math.random() - 0.5; });
+
+        /* If not enough questions, cycle through */
+        var selected = [];
+        if(allQ.length === 0){
+          body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);"><div style="font-size:2rem;margin-bottom:10px;">🔍</div><div>No questions found for <strong>' + subject + ' · ' + diffLabel + '</strong>. Try a different difficulty or question type.</div></div>';
+          return;
+        }
+        while(selected.length < count){
+          selected = selected.concat(allQ);
+        }
+        selected = selected.slice(0, count);
+
+        body.innerHTML = selected.map(function(q, i){
+          return renderQuestion(q, i + 1, diffLabel, cls);
+        }).join('');
+
+        document.getElementById('resultActions').style.display = 'flex';
+      }, 1500);
+    }
+    </script>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

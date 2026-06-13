@@ -1,0 +1,425 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Orders — EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* ── Search & filter bar ── */
+.orders-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.search-box{display:flex;align-items:center;gap:8px;flex:1;min-width:220px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;transition:border-color .15s;}
+.search-box:focus-within{border-color:var(--mkt);}
+.search-box input{border:none;outline:none;font-size:.84rem;color:var(--ink-2);background:transparent;flex:1;min-width:0;}
+.search-box input::placeholder{color:var(--muted);}
+.sort-select{padding:9px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:600;color:var(--ink-2);cursor:pointer;outline:none;}
+.sort-select:focus{border-color:var(--mkt);}
+
+/* ── Filter tabs ── */
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.ftab{padding:7px 16px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);transition:all .15s;user-select:none;}
+.ftab.on{background:var(--mkt);color:#fff;border-color:var(--mkt);}
+.ftab:not(.on):hover{border-color:var(--mkt);color:var(--mkt);}
+.ftab .cnt{border-radius:10px;padding:1px 7px;margin-left:5px;font-size:.68rem;font-weight:800;}
+.ftab.on .cnt{background:rgba(255,255,255,.25);}
+.ftab:not(.on) .cnt{background:var(--bg);color:var(--ink-2);}
+
+/* Status badges */
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:800;white-space:nowrap;}
+.s-delivered{background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;}
+.s-transit{background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;}
+.s-processing{background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;}
+.s-cancelled{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;}
+.s-returned{background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE;}
+
+/* ── Order card ── */
+.order-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;transition:all .18s;}
+.order-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.08);border-color:#CBD5E1;}
+.oc-head{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg);gap:12px;flex-wrap:wrap;}
+.oc-head-left{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.oc-id-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.oc-id{font-size:.78rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink-2);cursor:pointer;}
+.oc-id:hover{color:var(--mkt);}
+.oc-view-link{font-size:.68rem;font-weight:800;color:var(--mkt);background:var(--mkt-pale);border:1px solid var(--mkt-light);padding:2px 8px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:background .1s;}
+.oc-view-link:hover{background:var(--mkt-light);}
+.oc-date{font-size:.71rem;color:var(--muted);}
+.oc-head-right{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.oc-eta{font-size:.69rem;font-weight:700;color:#2563EB;background:#EFF6FF;border:1px solid #BFDBFE;padding:3px 9px;border-radius:6px;white-space:nowrap;}
+.oc-body{padding:16px 20px;}
+/* ── Items row ── */
+.oc-items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.oc-item-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1px solid var(--border);}
+.oc-thumb{width:44px;height:44px;border-radius:9px;background:var(--white);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.oc-item-info{flex:1;min-width:0;}
+.oc-item-name{font-size:.84rem;font-weight:800;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.oc-item-meta{font-size:.71rem;color:var(--muted);margin-top:2px;}
+.oc-item-price{font-size:.86rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);flex-shrink:0;}
+/* ── Footer ── */
+.oc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.oc-total-wrap{display:flex;flex-direction:column;gap:2px;}
+.oc-total{font-size:.9rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.oc-payment-method{font-size:.68rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.oc-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.btn-sm{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn-sm-green{background:var(--mkt);color:#fff;}
+.btn-sm-green:hover{background:var(--mkt-dark);transform:translateY(-1px);}
+.btn-sm-outline{background:var(--white);color:var(--ink-2);border:1.5px solid var(--border);}
+.btn-sm-outline:hover{background:var(--bg);border-color:#94A3B8;}
+.btn-sm-danger{background:var(--white);color:#DC2626;border:1.5px solid #FECACA;}
+.btn-sm-danger:hover{background:#FEF2F2;}
+.btn-sm-blue{background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;}
+.btn-sm-blue:hover{background:#DBEAFE;}
+
+/* ── Progress stepper ── */
+.stepper{display:flex;align-items:flex-start;margin:4px 0 18px;}
+.step-item{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.step-item:not(:last-child)::after{content:'';position:absolute;left:calc(50% + 14px);right:calc(-50% + 14px);top:14px;height:2px;background:var(--border);}
+.step-item.done::after{background:var(--mkt);}
+.step-item.half::after{background:linear-gradient(to right,var(--mkt) 50%,var(--border) 50%);}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:.75rem;z-index:1;font-weight:900;position:relative;transition:all .2s;}
+.step-item.done .step-dot{background:var(--mkt);border-color:var(--mkt);color:#fff;}
+.step-item.current .step-dot{background:var(--white);border-color:var(--mkt);color:var(--mkt);box-shadow:0 0 0 4px var(--mkt-light);animation:pulse-step 1.8s infinite;}
+@keyframes pulse-step{0%,100%{box-shadow:0 0 0 4px var(--mkt-light);}50%{box-shadow:0 0 0 7px rgba(5,150,105,.12);}}
+.step-item.pending .step-dot{background:var(--bg);border-color:#CBD5E1;color:#CBD5E1;}
+.step-label{font-size:.6rem;color:var(--muted);margin-top:5px;text-align:center;font-weight:600;line-height:1.3;}
+.step-item.done .step-label{color:var(--mkt-dark);font-weight:700;}
+.step-item.current .step-label{color:var(--mkt);font-weight:900;}
+.step-item.pending .step-label{color:#CBD5E1;}
+.step-sublabel{font-size:.58rem;color:var(--muted);text-align:center;}
+.step-item.current .step-sublabel{color:var(--mkt);font-weight:700;}
+/* ── Load more ── */
+.load-more-row{text-align:center;padding:8px 0 20px;}
+.btn-load-more{padding:10px 28px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);color:var(--ink-2);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
+.btn-load-more:hover{border-color:var(--mkt);color:var(--mkt);background:var(--mkt-pale);}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:4rem;margin-bottom:12px;}
+.empty-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.empty-sub{font-size:.82rem;color:var(--muted);}
+
+/* ── Summary stat cards ── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+.sum-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s;}
+.sum-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);}
+.sum-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.sum-ic-all{background:#F0F9FF;border:1.5px solid #BAE6FD;}
+.sum-ic-delivered{background:#F0FDF4;border:1.5px solid #BBF7D0;}
+.sum-ic-transit{background:#EFF6FF;border:1.5px solid #BFDBFE;}
+.sum-ic-spent{background:var(--mkt-pale);border:1.5px solid var(--mkt-light);}
+.sum-val{font-size:1.45rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);line-height:1;}
+.sum-label{font-size:.69rem;color:var(--muted);font-weight:600;margin-top:3px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+    <!-- Search + sort -->
+    <div class="orders-toolbar anim-2">
+      <div class="search-box">
+        <span style="font-size:.9rem;">🔍</span>
+        <input type="text" placeholder="Search by order ID or item name…" oninput="searchOrders(this.value)">
+      </div>
+      <select class="sort-select">
+        <option>Sort: Newest First</option>
+        <option>Sort: Oldest First</option>
+        <option>Sort: Price High–Low</option>
+        <option>Sort: Price Low–High</option>
+      </select>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs anim-2">
+      <div class="ftab on" onclick="filterOrders('all',this)">All Orders <span class="cnt">12</span></div>
+      <div class="ftab" onclick="filterOrders('transit',this)">🚚 In Transit <span class="cnt">2</span></div>
+      <div class="ftab" onclick="filterOrders('processing',this)">⏳ Processing <span class="cnt">2</span></div>
+      <div class="ftab" onclick="filterOrders('delivered',this)">✅ Delivered <span class="cnt">8</span></div>
+      <div class="ftab" onclick="filterOrders('cancelled',this)">❌ Cancelled <span class="cnt">0</span></div>
+    </div>
+
+    <!-- Orders list -->
+    <div id="ordersList">
+
+      <!-- ── Order 1 — In Transit ── -->
+      <div class="order-card anim-2" data-status="transit">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250611-0089</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed Jun 11, 2025 · 10:42 AM</div>
+          </div>
+          <div class="oc-head-right">
+            <span class="oc-eta">📅 ETA: Jun 13, 2025</span>
+            <span class="status-badge s-transit">🚚 In Transit</span>
+          </div>
+        </div>
+        <div class="oc-body">
+          <div class="stepper">
+            <div class="step-item done"><div class="step-dot">✓</div><div class="step-label">Ordered</div><div class="step-sublabel">Jun 11</div></div>
+            <div class="step-item done"><div class="step-dot">✓</div><div class="step-label">Confirmed</div><div class="step-sublabel">Jun 11</div></div>
+            <div class="step-item done"><div class="step-dot">✓</div><div class="step-label">Shipped</div><div class="step-sublabel">Jun 12</div></div>
+            <div class="step-item current half"><div class="step-dot">●</div><div class="step-label">In Transit</div><div class="step-sublabel">Now</div></div>
+            <div class="step-item pending"><div class="step-dot">○</div><div class="step-label">Delivered</div><div class="step-sublabel">Jun 13</div></div>
+          </div>
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">📐</div>
+              <div class="oc-item-info"><div class="oc-item-name">Higher Mathematics Textbook IX–X</div><div class="oc-item-meta">Books · NCTB 2025 · Qty: 2 · ৳ 220 each</div></div>
+              <div class="oc-item-price">৳ 440</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 440</div><div class="oc-payment-method">💳 bKash · Paid</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-blue" onclick="window.location='market-tracking.html'">🚚 Track Order</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Order 2 — Processing ── -->
+      <div class="order-card anim-2" data-status="processing">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250610-0082</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed Jun 10, 2025 · 3:15 PM</div>
+          </div>
+          <div class="oc-head-right">
+            <span class="status-badge s-processing">⏳ Processing</span>
+          </div>
+        </div>
+        <div class="oc-body">
+          <div class="stepper">
+            <div class="step-item done"><div class="step-dot">✓</div><div class="step-label">Ordered</div><div class="step-sublabel">Jun 10</div></div>
+            <div class="step-item current"><div class="step-dot">●</div><div class="step-label">Confirmed</div><div class="step-sublabel">Now</div></div>
+            <div class="step-item pending"><div class="step-dot">○</div><div class="step-label">Shipped</div><div class="step-sublabel">—</div></div>
+            <div class="step-item pending"><div class="step-dot">○</div><div class="step-label">In Transit</div><div class="step-sublabel">—</div></div>
+            <div class="step-item pending"><div class="step-dot">○</div><div class="step-label">Delivered</div><div class="step-sublabel">—</div></div>
+          </div>
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">👕</div>
+              <div class="oc-item-info"><div class="oc-item-name">School Uniform — White Shirt (Size M)</div><div class="oc-item-meta">Uniforms · Qty: 3 · ৳ 350 each</div></div>
+              <div class="oc-item-price">৳ 1,050</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 1,050</div><div class="oc-payment-method">💳 Nagad · Paid</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-danger" onclick="showToast('Cancellation request sent','❌')">✕ Cancel</button>
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-blue" onclick="window.location='market-tracking.html'">🚚 Track</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Order 3 — Delivered (2 items) ── -->
+      <div class="order-card anim-3" data-status="delivered">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250601-0067</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed Jun 1, 2025 · Delivered Jun 3, 2025</div>
+          </div>
+          <div class="oc-head-right"><span class="status-badge s-delivered">✅ Delivered</span></div>
+        </div>
+        <div class="oc-body">
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">📚</div>
+              <div class="oc-item-info"><div class="oc-item-name">Bangla 1st Paper — Class IX</div><div class="oc-item-meta">Books · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 180</div>
+            </div>
+            <div class="oc-item-row">
+              <div class="oc-thumb">📐</div>
+              <div class="oc-item-info"><div class="oc-item-name">Geometry Box (Compass Set)</div><div class="oc-item-meta">Stationery · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 180</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 360</div><div class="oc-payment-method">💳 bKash · Paid</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-outline" onclick="showToast('Items added to cart','🛒')">🔄 Reorder</button>
+              <button class="btn-sm btn-sm-green" onclick="showToast('Thank you for your review!','⭐')">⭐ Review</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Order 4 — Delivered ── -->
+      <div class="order-card anim-3" data-status="delivered">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250520-0044</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed May 20, 2025 · Delivered May 22, 2025</div>
+          </div>
+          <div class="oc-head-right"><span class="status-badge s-delivered">✅ Delivered</span></div>
+        </div>
+        <div class="oc-body">
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">🔬</div>
+              <div class="oc-item-info"><div class="oc-item-name">Biology Dissection Kit</div><div class="oc-item-meta">Lab Supplies · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 420</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 420</div><div class="oc-payment-method">💵 Cash on Delivery</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-green" onclick="showToast('Items added to cart','🛒')">🔄 Reorder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Order 5 — Delivered (hidden, load more) ── -->
+      <div class="order-card anim-3" data-status="delivered" id="ord5" style="display:none;">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250510-0038</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed May 10, 2025 · Delivered May 12, 2025</div>
+          </div>
+          <div class="oc-head-right"><span class="status-badge s-delivered">✅ Delivered</span></div>
+        </div>
+        <div class="oc-body">
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">🎨</div>
+              <div class="oc-item-info"><div class="oc-item-name">Drawing &amp; Sketching Set</div><div class="oc-item-meta">Art &amp; Craft · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 280</div>
+            </div>
+            <div class="oc-item-row">
+              <div class="oc-thumb">✏️</div>
+              <div class="oc-item-info"><div class="oc-item-name">Ballpoint Pens (Box of 12)</div><div class="oc-item-meta">Stationery · Qty: 2</div></div>
+              <div class="oc-item-price">৳ 240</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 520</div><div class="oc-payment-method">💳 Rocket · Paid</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-outline" onclick="showToast('Items added to cart','🛒')">🔄 Reorder</button>
+              <button class="btn-sm btn-sm-green" onclick="showToast('Review submitted!','⭐')">⭐ Review</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Order 6 — Delivered (hidden) ── -->
+      <div class="order-card anim-3" data-status="delivered" id="ord6" style="display:none;">
+        <div class="oc-head">
+          <div class="oc-head-left">
+            <div class="oc-id-row">
+              <span class="oc-id" onclick="window.location='market-invoice.html'">#MKT-20250428-0031</span>
+              <span class="oc-view-link" onclick="window.location='market-invoice.html'">View Invoice →</span>
+            </div>
+            <div class="oc-date">Placed Apr 28, 2025 · Delivered Apr 30, 2025</div>
+          </div>
+          <div class="oc-head-right"><span class="status-badge s-delivered">✅ Delivered</span></div>
+        </div>
+        <div class="oc-body">
+          <div class="oc-items-list">
+            <div class="oc-item-row">
+              <div class="oc-thumb">📗</div>
+              <div class="oc-item-info"><div class="oc-item-name">English Grammar &amp; Composition — IX</div><div class="oc-item-meta">Books · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 165</div>
+            </div>
+            <div class="oc-item-row">
+              <div class="oc-thumb">📘</div>
+              <div class="oc-item-info"><div class="oc-item-name">Physics Guide — Class IX</div><div class="oc-item-meta">Books · Qty: 1</div></div>
+              <div class="oc-item-price">৳ 195</div>
+            </div>
+          </div>
+          <div class="oc-foot">
+            <div class="oc-total-wrap"><div class="oc-total">Total: ৳ 360</div><div class="oc-payment-method">💳 bKash · Paid</div></div>
+            <div class="oc-actions">
+              <button class="btn-sm btn-sm-outline" onclick="window.location='market-invoice.html'">🧾 Invoice</button>
+              <button class="btn-sm btn-sm-green" onclick="showToast('Items added to cart','🛒')">🔄 Reorder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ordersList -->
+
+    <!-- Load more -->
+    <div class="load-more-row" id="loadMoreRow">
+      <button class="btn-load-more" onclick="loadMore()">
+        📂 Show Older Orders <span style="font-size:.7rem;color:var(--muted);">(8 remaining)</span>
+      </button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function filterOrders(status, el){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('#ordersList .order-card').forEach(c=>{
+    const match = status==='all' || c.dataset.status===status;
+    // Keep hidden load-more cards hidden unless explicitly loaded
+    const isHidden = c.id==='ord5'||c.id==='ord6';
+    c.style.display = match && !isHidden ? '' : 'none';
+  });
+  document.getElementById('loadMoreRow').style.display='';
+}
+function loadMore(){
+  ['ord5','ord6'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  document.getElementById('loadMoreRow').innerHTML='<span style="font-size:.78rem;color:var(--muted);">✅ All 12 orders loaded</span>';
+}
+function searchOrders(val){
+  const q=val.trim().toLowerCase();
+  document.querySelectorAll('#ordersList .order-card').forEach(c=>{
+    c.style.display=(!q||c.innerText.toLowerCase().includes(q))?'':'none';
+  });
+}
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

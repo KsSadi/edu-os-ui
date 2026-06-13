@@ -1,0 +1,462 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Report category section */
+.report-section { margin-bottom:36px; }
+.rs-heading { font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.rs-heading::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Report cards */
+.report-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.report-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:14px; padding:20px 18px;
+  box-shadow:var(--shadow-sm);
+  display:flex; flex-direction:column; gap:0;
+  transition:box-shadow .18s, transform .18s;
+  cursor:pointer; text-decoration:none; color:inherit;
+  position:relative; overflow:hidden;
+}
+.report-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.report-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:14px 14px 0 0;
+}
+.rc-blue::before   { background:var(--blue); }
+.rc-green::before  { background:var(--green); }
+.rc-amber::before  { background:var(--amber); }
+.rc-violet::before { background:var(--violet); }
+.rc-indigo::before { background:var(--indigo); }
+.rc-teal::before   { background:var(--teal); }
+.rc-red::before    { background:var(--red); }
+.rc-slate::before  { background:#475569; }
+
+.report-icon { font-size:1.6rem; margin-bottom:12px; }
+.report-name { font-size:.92rem; font-weight:800; color:var(--ink); margin-bottom:5px; }
+.report-desc { font-size:.78rem; color:var(--muted); line-height:1.55; flex:1; }
+.report-meta { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+.report-last { font-size:.7rem; color:var(--muted-2); }
+.report-arrow { font-size:.75rem; color:var(--muted); transition:transform .15s; }
+.report-card:hover .report-arrow { transform:translateX(3px); color:var(--indigo); }
+
+/* Quick generate bar */
+.quick-generate {
+  background:linear-gradient(135deg,var(--indigo) 0%,#6366F1 100%);
+  border-radius:16px; padding:24px 28px; margin-bottom:32px;
+  display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  box-shadow:0 4px 20px rgba(79,70,229,.25);
+}
+.qg-left { flex:1; min-width:200px; }
+.qg-title { font-size:1rem; font-weight:800; color:#fff; margin-bottom:4px; }
+.qg-sub   { font-size:.8rem; color:rgba(255,255,255,.65); }
+.qg-controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.qg-select {
+  padding:8px 14px; border-radius:9px; border:1.5px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.12); color:#fff; font-family:inherit;
+  font-size:.84rem; outline:none; cursor:pointer;
+}
+.qg-select option { color:var(--ink); background:#fff; }
+
+/* Recent reports table */
+.recent-badge { display:inline-flex; align-items:center; gap:5px; }
+
+/* Scheduled reports */
+.sched-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
+.sched-row:last-child { border:none; }
+.sched-icon { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
+.sched-name { font-size:.85rem; font-weight:700; color:var(--ink-2); }
+.sched-freq { font-size:.73rem; color:var(--muted); margin-top:2px; }
+.sched-next { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); margin-left:auto; text-align:right; }
+
+/* Stats strip */
+.stats-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:28px; box-shadow:var(--shadow-sm); }
+.ss-block { background:var(--white); padding:16px 18px; text-align:center; }
+.ss-num { font-size:1.4rem; font-weight:800; color:var(--ink); }
+.ss-lbl { font-size:.72rem; color:var(--muted); margin-top:3px; font-weight:600; }
+
+/* Layout */
+.reports-layout { display:grid; grid-template-columns:1fr 280px; gap:24px; }
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:1100px){ .reports-layout{grid-template-columns:1fr;} }
+@media(max-width:700px){ .report-grid{grid-template-columns:1fr 1fr;} .stats-strip{grid-template-columns:1fr 1fr;} }
+@media(max-width:480px){ .report-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Analytics &amp; Insights</div>
+        <div class="page-title">Reports Overview</div>
+        <div class="page-sub">Generate, download, and schedule reports across all school modules for 2024&#x2013;25.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="openModal('scheduleModal')">Schedule Report</button>
+        <button class="btn btn-primary" onclick="openModal('customModal')">Custom Report</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip anim-1">
+      <div class="ss-block"><div class="ss-num">142</div><div class="ss-lbl">Reports Generated</div></div>
+      <div class="ss-block"><div class="ss-num">8</div><div class="ss-lbl">Scheduled Reports</div></div>
+      <div class="ss-block"><div class="ss-num">24</div><div class="ss-lbl">Report Types</div></div>
+      <div class="ss-block"><div class="ss-num">3</div><div class="ss-lbl">Generated Today</div></div>
+    </div>
+
+    <!-- Quick generate -->
+    <div class="quick-generate anim-1">
+      <div class="qg-left">
+        <div class="qg-title">Quick Generate</div>
+        <div class="qg-sub">Generate the most common reports in one click.</div>
+      </div>
+      <div class="qg-controls">
+        <select class="qg-select">
+          <option>Attendance Report</option>
+          <option>Fee Collection Report</option>
+          <option>Result Summary</option>
+          <option>Student List</option>
+          <option>Teacher Workload</option>
+        </select>
+        <select class="qg-select">
+          <option>February 2025</option>
+          <option>January 2025</option>
+          <option>Full Session 2024&#x2013;25</option>
+        </select>
+        <select class="qg-select">
+          <option>All Classes</option>
+          <option>Class IX</option>
+          <option>Class X</option>
+          <option>Class XI</option>
+          <option>Class XII</option>
+        </select>
+        <button class="btn btn-secondary" onclick="generateReport()"> Generate PDF</button>
+        <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.25);" onclick="generateReport('xlsx')"> Excel</button>
+      </div>
+    </div>
+
+    <div class="reports-layout">
+      <div>
+
+        <!-- ACADEMIC REPORTS -->
+        <div class="report-section anim-2">
+          <div class="rs-heading"> Academic Reports</div>
+          <div class="report-grid">
+            <a href="#" class="report-card rc-blue" onclick="openReport('Result Summary Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Result Summary Report</div>
+              <div class="report-desc">Class-wise and section-wise exam results. GPA distribution, subject averages, pass/fail breakdown.</div>
+              <div class="report-meta"><span class="report-last">Last: 20 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-violet" onclick="openReport('Marksheet &middot; Individual')">
+              <div class="report-icon"></div>
+              <div class="report-name">Individual Marksheet</div>
+              <div class="report-desc">Printable mark sheet per student with subject-wise marks, grades, GPA, and class position.</div>
+              <div class="report-meta"><span class="report-last">Last: 18 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-green" onclick="openReport('Progress Card')">
+              <div class="report-icon"></div>
+              <div class="report-name">Student Progress Card</div>
+              <div class="report-desc">Multi-term comparison showing student improvement or decline per subject over the session.</div>
+              <div class="report-meta"><span class="report-last">Last: 15 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-amber" onclick="openReport('Subject Performance Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Subject Performance</div>
+              <div class="report-desc">Per-subject pass rate, average marks, highest/lowest scores across all sections.</div>
+              <div class="report-meta"><span class="report-last">Last: 10 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-indigo" onclick="openReport('Merit List')">
+              <div class="report-icon"></div>
+              <div class="report-name">Merit List / Rankings</div>
+              <div class="report-desc">Top performers per class and section. Sortable by GPA, total marks, or individual subject.</div>
+              <div class="report-meta"><span class="report-last">Last: 8 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-teal" onclick="openReport('Admit Card')">
+              <div class="report-icon"></div>
+              <div class="report-name">Admit Card (Bulk)</div>
+              <div class="report-desc">Generate and print admit cards for all students for the upcoming examination.</div>
+              <div class="report-meta"><span class="report-last">Not generated yet</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- ATTENDANCE REPORTS -->
+        <div class="report-section anim-3">
+          <div class="rs-heading"> Attendance Reports</div>
+          <div class="report-grid">
+            <a href="#" class="report-card rc-green" onclick="openReport('Daily Attendance Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Daily Attendance</div>
+              <div class="report-desc">Day-by-day attendance for all classes. Present, absent, late counts with percentage.</div>
+              <div class="report-meta"><span class="report-last">Today, 7:45 AM</span><span class="badge badge-green" style="font-size:.65rem;">Auto-generated</span></div>
+            </a>
+            <a href="#" class="report-card rc-amber" onclick="openReport('Monthly Attendance Summary')">
+              <div class="report-icon"></div>
+              <div class="report-name">Monthly Summary</div>
+              <div class="report-desc">Month-wise attendance summary per student. Flag students below 75% threshold.</div>
+              <div class="report-meta"><span class="report-last">Last: 1 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-red" onclick="openReport('Defaulter List')">
+              <div class="report-icon"></div>
+              <div class="report-name">Attendance Defaulters</div>
+              <div class="report-desc">Students with attendance below 75%. Includes contact info for parent notification.</div>
+              <div class="report-meta"><span class="badge badge-red" style="font-size:.65rem;">12 defaulters</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-blue" onclick="openReport('Teacher Attendance')">
+              <div class="report-icon"></div>
+              <div class="report-name">Teacher Attendance</div>
+              <div class="report-desc">Staff attendance log with leave records, substitution tracking, and working day count.</div>
+              <div class="report-meta"><span class="report-last">Last: 24 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- FINANCE REPORTS -->
+        <div class="report-section anim-3">
+          <div class="rs-heading"> Finance Reports</div>
+          <div class="report-grid">
+            <a href="#" class="report-card rc-green" onclick="openReport('Fee Collection Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Fee Collection Report</div>
+              <div class="report-desc">Monthly fee collection totals, class-wise breakdown, payment channel distribution.</div>
+              <div class="report-meta"><span class="report-last">Last: 24 Feb 2025</span><span class="badge badge-green" style="font-size:.65rem;">৳14.2L collected</span></div>
+            </a>
+            <a href="#" class="report-card rc-red" onclick="openReport('Fee Defaulters')">
+              <div class="report-icon"></div>
+              <div class="report-name">Fee Defaulters List</div>
+              <div class="report-desc">Students with unpaid or overdue fees. Includes amount due, due date, and parent contact.</div>
+              <div class="report-meta"><span class="badge badge-red" style="font-size:.65rem;">47 defaulters &middot; ৳2.1L due</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-blue" onclick="openReport('Fee Receipt')">
+              <div class="report-icon"></div>
+              <div class="report-name">Fee Receipt (Bulk)</div>
+              <div class="report-desc">Generate printable receipts for all paid fees in a given month.</div>
+              <div class="report-meta"><span class="report-last">Last: 20 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-amber" onclick="openReport('Income Statement')">
+              <div class="report-icon"></div>
+              <div class="report-name">Income Statement</div>
+              <div class="report-desc">Session-level income summary. Fee heads, collection vs target, month-over-month trend.</div>
+              <div class="report-meta"><span class="report-last">Last: 1 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+          </div>
+        </div>
+
+        <!-- PEOPLE REPORTS -->
+        <div class="report-section anim-4">
+          <div class="rs-heading"> People Reports</div>
+          <div class="report-grid">
+            <a href="#" class="report-card rc-indigo" onclick="openReport('Student Directory')">
+              <div class="report-icon"></div>
+              <div class="report-name">Student Directory</div>
+              <div class="report-desc">Full student list with roll numbers, class, section, parent info, and contact details.</div>
+              <div class="report-meta"><span class="report-last">Last: 1 Jan 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-teal" onclick="openReport('Teacher Workload Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Teacher Workload</div>
+              <div class="report-desc">Periods per week per teacher, subjects taught, classes assigned. Workload balance analysis.</div>
+              <div class="report-meta"><span class="report-last">Last: 5 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-slate" onclick="openReport('New Admissions Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">New Admissions</div>
+              <div class="report-desc">List of newly admitted students with application date, class, and enrollment status.</div>
+              <div class="report-meta"><span class="report-last">Last: 10 Feb 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+            <a href="#" class="report-card rc-violet" onclick="openReport('Class Strength Report')">
+              <div class="report-icon"></div>
+              <div class="report-name">Class Strength Report</div>
+              <div class="report-desc">Enrolled vs capacity per class and section, gender breakdown, section-wise strength.</div>
+              <div class="report-meta"><span class="report-last">Last: 15 Jan 2025</span><span class="report-arrow">&#x203A;</span></div>
+            </a>
+          </div>
+        </div>
+
+      </div><!-- /main col -->
+
+      <!-- SIDEBAR -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Recent -->
+        <div class="card anim-2">
+          <div class="card-header"><div class="card-title"> Recently Generated</div></div>
+          <div class="card-body" style="padding:4px 22px 16px;">
+            <div class="sched-row">
+              <div class="sched-icon" style="background:var(--green-pale);"></div>
+              <div><div class="sched-name">Daily Attendance</div><div class="sched-freq">All Classes &middot; PDF</div></div>
+              <div class="sched-next">Today<br>7:45 AM</div>
+            </div>
+            <div class="sched-row">
+              <div class="sched-icon" style="background:var(--indigo-pale);"></div>
+              <div><div class="sched-name">Result Summary</div><div class="sched-freq">Half-Yearly &middot; Excel</div></div>
+              <div class="sched-next">20 Feb<br>3:12 PM</div>
+            </div>
+            <div class="sched-row">
+              <div class="sched-icon" style="background:var(--amber-pale);"></div>
+              <div><div class="sched-name">Fee Collection</div><div class="sched-freq">February &middot; PDF</div></div>
+              <div class="sched-next">20 Feb<br>11:00 AM</div>
+            </div>
+            <div class="sched-row">
+              <div class="sched-icon" style="background:var(--red-pale);"></div>
+              <div><div class="sched-name">Fee Defaulters</div><div class="sched-freq">47 students &middot; PDF</div></div>
+              <div class="sched-next">18 Feb<br>9:30 AM</div>
+            </div>
+            <div class="sched-row">
+              <div class="sched-icon" style="background:var(--violet-pale);"></div>
+              <div><div class="sched-name">Student Directory</div><div class="sched-freq">All &middot; Excel</div></div>
+              <div class="sched-next">15 Feb<br>2:00 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scheduled -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Scheduled Reports</div>
+            <button class="btn btn-sm btn-outline" onclick="openModal('scheduleModal')">+ Add</button>
+          </div>
+          <div class="card-body" style="padding:4px 22px 16px;">
+            <div class="sched-row">
+              <div><div class="sched-name">Daily Attendance</div><div class="sched-freq">Every day &middot; 7:00 AM &middot; Auto-email</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div class="sched-row">
+              <div><div class="sched-name">Fee Collection Summary</div><div class="sched-freq">Monthly &middot; 1st day</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div class="sched-row">
+              <div><div class="sched-name">Fee Defaulters Alert</div><div class="sched-freq">Weekly &middot; Monday</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div class="sched-row">
+              <div><div class="sched-name">Student Progress</div><div class="sched-freq">End of each term</div></div>
+              <span class="badge badge-amber">Paused</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export formats -->
+        <div class="card" style="padding:18px;">
+          <div class="card-title mb-4"> Export Options</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="btn btn-secondary" style="justify-content:center;font-size:.8rem;" onclick="showToast('Downloading PDF&middot;','&#x2705;')"> PDF</button>
+            <button class="btn btn-secondary" style="justify-content:center;font-size:.8rem;" onclick="showToast('Downloading Excel&middot;','&#x2705;')"> Excel</button>
+            <button class="btn btn-secondary" style="justify-content:center;font-size:.8rem;" onclick="showToast('Downloading CSV&middot;','&#x2705;')"> CSV</button>
+            <button class="btn btn-secondary" style="justify-content:center;font-size:.8rem;" onclick="showToast('Printing&middot;','&#x2705;')">&#x1F5A8;&#xFE0F; Print</button>
+          </div>
+          <div style="margin-top:12px;font-size:.74rem;color:var(--muted);line-height:1.5;">All reports are generated in real-time from live school data. PDFs are formatted for A4 printing.</div>
+        </div>
+
+      </div>
+    </div><!-- /reports-layout -->
+
+  </div><!-- /page-body -->
+</main>
+</div>
+
+<!-- Generate Modal -->
+<div class="modal-overlay" id="generateModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="modal-title" id="modalReportTitle">Generate Report</div><div class="modal-sub">Configure parameters and download.</div></div>
+      <button class="modal-close" onclick="closeModal('generateModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">Academic Year</label><select class="form-select"><option selected>2024&#x2013;25</option><option>2024&#x2013;25</option></select></div>
+        <div class="form-group"><label class="form-label">Term / Period</label><select class="form-select"><option>Half-Yearly 2024</option><option>Annual 2024</option><option>Full Session</option></select></div>
+      </div>
+      <div class="form-grid form-grid-2 mt-4">
+        <div class="form-group"><label class="form-label">Class</label><select class="form-select"><option>All Classes</option><option>Class IX</option><option>Class X</option><option>Class XI</option><option>Class XII</option></select></div>
+        <div class="form-group"><label class="form-label">Section</label><select class="form-select"><option>All Sections</option><option>Section A</option><option>Section B</option><option>Section C</option></select></div>
+      </div>
+      <div class="form-group mt-4"><label class="form-label">Output Format</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;padding:8px 14px;border:1.5px solid var(--indigo);border-radius:8px;background:var(--indigo-pale);"><input type="radio" name="fmt" value="pdf" checked style="accent-color:var(--indigo);">  PDF</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;"><input type="radio" name="fmt" value="excel" style="accent-color:var(--indigo);">  Excel</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;"><input type="radio" name="fmt" value="csv" style="accent-color:var(--indigo);">  CSV</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('generateModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="downloadReport()"> Generate &amp; Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><div><div class="modal-title">Schedule a Report</div></div><button class="modal-close" onclick="closeModal('scheduleModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group mb-4"><label class="form-label">Report Type</label><select class="form-select"><option>Attendance Summary</option><option>Fee Collection</option><option>Fee Defaulters</option><option>Result Summary</option><option>Student Progress</option></select></div>
+      <div class="form-group mb-4"><label class="form-label">Frequency</label><select class="form-select"><option>Daily</option><option>Weekly (Monday)</option><option>Monthly (1st)</option><option>End of Term</option></select></div>
+      <div class="form-group mb-4"><label class="form-label">Send To</label><input type="email" class="form-input" placeholder="principal@dhakahigh.edu.bd"></div>
+      <div class="form-group"><label class="form-label">Format</label><select class="form-select"><option>PDF</option><option>Excel</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button><button class="btn btn-primary" onclick="showToast('Report scheduled!','&#x2705;');closeModal('scheduleModal')">Schedule</button></div>
+  </div>
+</div>
+
+<!-- Custom report modal -->
+<div class="modal-overlay" id="customModal">
+  <div class="modal"><div class="modal-head"><div><div class="modal-title">Custom Report Builder</div><div class="modal-sub">Choose exactly what data you want to include.</div></div><button class="modal-close" onclick="closeModal('customModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-group mb-4"><label class="form-label">Report Name</label><input type="text" class="form-input" placeholder="e.g. Class X Science Performance Q1"></div>
+      <div class="form-group mb-4"><label class="form-label">Data Modules to Include</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--indigo);">Student Info</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--indigo);">Attendance</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--indigo);">Exam Results</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" style="accent-color:var(--indigo);">Fee Status</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" style="accent-color:var(--indigo);">Parent Contact</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.83rem;cursor:pointer;"><input type="checkbox" style="accent-color:var(--indigo);">Behaviour Notes</label>
+        </div>
+      </div>
+      <div class="form-grid form-grid-2 mt-4">
+        <div class="form-group"><label class="form-label">Group By</label><select class="form-select"><option>Class &amp; Section</option><option>Student</option><option>Subject</option></select></div>
+        <div class="form-group"><label class="form-label">Sort By</label><select class="form-select"><option>Roll Number</option><option>Name A&middot;Z</option><option>GPA (High&middot;Low)</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('customModal')">Cancel</button><button class="btn btn-primary" onclick="showToast('Custom report generated!','&#x2705;');closeModal('customModal')">Build Report</button></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+function openReport(name){document.getElementById('modalReportTitle').textContent='Generate: '+name;openModal('generateModal');}
+function generateReport(fmt){showToast('Generating report&middot;','&#x2705;');setTimeout(()=>showToast('Report ready! Downloading&middot;','&#x2705;'),1200);}
+function downloadReport(){closeModal('generateModal');showToast('Report downloaded successfully!','&#x2705;');}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

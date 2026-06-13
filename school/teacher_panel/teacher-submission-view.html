@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Submissions — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.sub-row{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+.sub-row:hover{background:var(--bg);}
+.sub-row:last-child{border:none;}
+.sub-avatar{width:36px;height:36px;border-radius:50%;background:var(--teacher-light);color:var(--teacher-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
+.sub-name{font-size:.875rem;font-weight:700;color:var(--ink-2);}
+.sub-meta{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.grade-input{width:64px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;font-weight:700;text-align:center;outline:none;transition:border-color .15s;}
+.grade-input:focus{border-color:var(--teacher);}
+.sub-status{font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:8px;}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Academics</div>
+        <div class="page-title">View Submissions</div>
+        <div class="page-sub">Review and grade student assignment submissions.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary">📥 Export Grades</button>
+        <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">💾 Save All Grades</button>
+      </div>
+    </div>
+
+    <!-- Assignment Selector -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-body" style="padding:16px 18px;">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <label class="form-label" style="font-size:.78rem;margin-bottom:4px;">Assignment</label>
+            <select class="form-select" style="min-width:280px;">
+              <option>Algebra – Chapter 5 Practice Problems (Class 9-A)</option>
+              <option>Statistics – Data Collection Exercise (Class 8-A)</option>
+              <option>Geometry – Area & Perimeter (Class 7-A)</option>
+              <option>Trigonometry – Problem Set 3 (Class 10-C)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:.78rem;margin-bottom:4px;">Filter</label>
+            <select class="form-select">
+              <option>All Students</option>
+              <option>Submitted</option>
+              <option>Not Submitted</option>
+              <option>Graded</option>
+              <option>Pending Grade</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--teacher);font-family:'Sora',sans-serif;">25</div>
+        <div style="font-size:.75rem;color:var(--muted);font-weight:600;">Total Students</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#16A34A;font-family:'Sora',sans-serif;">18</div>
+        <div style="font-size:.75rem;color:var(--muted);font-weight:600;">Submitted</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#D97706;font-family:'Sora',sans-serif;">7</div>
+        <div style="font-size:.75rem;color:var(--muted);font-weight:600;">Not Submitted</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;">
+        <div style="font-size:1.5rem;font-weight:800;color:#2563EB;font-family:'Sora',sans-serif;">12</div>
+        <div style="font-size:.75rem;color:var(--muted);font-weight:600;">Graded</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 Algebra – Chapter 5 (Class 9-A) &nbsp;<span class="badge badge-amber">Total: 25 marks</span></div>
+        <input type="text" class="form-input" placeholder="Search student..." style="width:200px;">
+      </div>
+      <div>
+        <div class="sub-row">
+          <div class="sub-avatar">RA</div>
+          <div style="flex:1;"><div class="sub-name">Rahim Ahmed</div><div class="sub-meta">Submitted: 23 Feb 2025 at 2:15 PM</div></div>
+          <a href="#" class="btn btn-xs btn-secondary">📄 View File</a>
+          <input type="number" class="grade-input" value="22" min="0" max="25">
+          <span style="font-size:.78rem;color:var(--muted);">/25</span>
+          <span class="sub-status" style="background:#D1FAE5;color:#15803D;">Graded</span>
+        </div>
+        <div class="sub-row">
+          <div class="sub-avatar">SB</div>
+          <div style="flex:1;"><div class="sub-name">Sadia Begum</div><div class="sub-meta">Submitted: 24 Feb 2025 at 10:30 AM</div></div>
+          <a href="#" class="btn btn-xs btn-secondary">📄 View File</a>
+          <input type="number" class="grade-input" value="19" min="0" max="25">
+          <span style="font-size:.78rem;color:var(--muted);">/25</span>
+          <span class="sub-status" style="background:#D1FAE5;color:#15803D;">Graded</span>
+        </div>
+        <div class="sub-row">
+          <div class="sub-avatar">MH</div>
+          <div style="flex:1;"><div class="sub-name">Mahfuz Hasan</div><div class="sub-meta">Submitted: 22 Feb 2025 at 6:00 PM</div></div>
+          <a href="#" class="btn btn-xs btn-secondary">📄 View File</a>
+          <input type="number" class="grade-input" placeholder="–" min="0" max="25">
+          <span style="font-size:.78rem;color:var(--muted);">/25</span>
+          <span class="sub-status" style="background:#FEF3C7;color:#92400E;">Pending</span>
+        </div>
+        <div class="sub-row">
+          <div class="sub-avatar">NA</div>
+          <div style="flex:1;"><div class="sub-name">Nasrin Akter</div><div class="sub-meta">Submitted: 24 Feb 2025 at 9:00 PM</div></div>
+          <a href="#" class="btn btn-xs btn-secondary">📄 View File</a>
+          <input type="number" class="grade-input" value="24" min="0" max="25">
+          <span style="font-size:.78rem;color:var(--muted);">/25</span>
+          <span class="sub-status" style="background:#D1FAE5;color:#15803D;">Graded</span>
+        </div>
+        <div class="sub-row">
+          <div class="sub-avatar">KB</div>
+          <div style="flex:1;"><div class="sub-name">Karim Bhuiyan</div><div class="sub-meta">Not submitted yet</div></div>
+          <span style="font-size:.8rem;color:var(--muted);margin-left:auto;">—</span>
+          <span class="sub-status" style="background:#FEE2E2;color:#B91C1C;">Missing</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

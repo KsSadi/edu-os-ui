@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Study Circle &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;--cmn-grad:linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#4338CA 100%);}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Group banner */
+.group-banner{background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 50%,#3B82F6 100%);padding:28px 32px 0;position:relative;overflow:hidden;margin-bottom:0;}
+.group-banner::before{content:'';position:absolute;right:-80px;top:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.06);}
+.gb-top{display:flex;align-items:flex-end;gap:20px;padding-bottom:20px;}
+.gb-icon{width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;}
+.gb-info{flex:1;}
+.gb-name{font-size:1.5rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:4px;}
+.gb-desc{font-size:.83rem;color:rgba(255,255,255,.7);margin-bottom:10px;}
+.gb-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.gb-tag{padding:3px 10px;border-radius:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);font-size:.68rem;font-weight:700;color:rgba(255,255,255,.9);}
+.gb-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.gb-stat-bar{background:rgba(0,0,0,.25);display:flex;gap:0;}
+.gb-stat{flex:1;text-align:center;padding:10px 20px;border-right:1px solid rgba(255,255,255,.1);}
+.gb-stat:last-child{border-right:none;}
+.gb-stat-num{font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;color:#fff;}
+.gb-stat-lbl{font-size:.63rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em;margin-top:1px;}
+
+/* Tab bar */
+.group-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;background:var(--white);}
+.gt-btn{padding:10px 20px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.gt-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+.gt-btn:hover{color:var(--cmn-dark);}
+
+/* Post card (reused from feed) */
+.post-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;transition:box-shadow .15s;}
+.post-card:hover{box-shadow:0 4px 16px rgba(99,102,241,.09);}
+.pc-head{padding:13px 15px 0;display:flex;align-items:flex-start;gap:10px;}
+.pc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+.pc-author{font-size:.86rem;font-weight:800;color:var(--ink-2);}
+.pc-meta{font-size:.71rem;color:var(--muted);margin-top:1px;}
+.pc-tag{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:8px;margin-left:5px;}
+.pc-body{padding:9px 15px 11px;}
+.pc-title{font-size:.92rem;font-weight:900;color:var(--ink);margin-bottom:4px;}
+.pc-text{font-size:.82rem;color:var(--ink-2);line-height:1.65;}
+.pc-actions{padding:0 15px 11px;display:flex;gap:0;border-top:1px solid var(--border);padding-top:9px;}
+.pa-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border:none;background:transparent;cursor:pointer;font-size:.77rem;font-weight:700;color:var(--muted);border-radius:8px;transition:all .12s;}
+.pa-btn:hover,.pa-btn.active{background:var(--cmn-pale);color:var(--cmn);}
+.pa-btn.liked{color:#EF4444;}
+
+/* Member list */
+.member-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.member-row:last-child{border-bottom:none;}
+.mr-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+.mr-name{font-size:.86rem;font-weight:700;color:var(--ink-2);flex:1;}
+.mr-role{font-size:.68rem;color:var(--muted);}
+.mr-badge{font-size:.64rem;padding:2px 8px;border-radius:8px;font-weight:800;}
+
+/* File row */
+.file-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--white);transition:border-color .12s;}
+.file-row:hover{border-color:var(--cmn);}
+.fr-icon{font-size:1.4rem;flex-shrink:0;}
+.fr-name{font-size:.84rem;font-weight:700;color:var(--ink-2);flex:1;}
+.fr-meta{font-size:.69rem;color:var(--muted);}
+
+/* Widget */
+.widget{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;}
+.widget-head{padding:11px 15px;border-bottom:1px solid var(--border);font-size:.76rem;font-weight:800;color:var(--ink-2);}
+.widget-body{padding:11px 15px;}
+
+/* Composer */
+.composer{border:1.5px solid var(--border);border-radius:14px;background:var(--white);padding:14px 16px;margin-bottom:14px;}
+.composer-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.composer-av{width:34px;height:34px;border-radius:50%;background:var(--cmn);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+.composer-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:.84rem;color:var(--ink);outline:none;resize:none;min-height:64px;font-family:inherit;transition:border-color .15s;}
+.composer-input:focus{border-color:var(--cmn);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<main class="main" style="padding:0;">
+  <div class="topbar"></div>
+
+  <!-- Group Banner -->
+  <div class="group-banner">
+    <div class="gb-top">
+      <div class="gb-icon"></div>
+      <div class="gb-info">
+        <div class="gb-name">Math Study Circle</div>
+        <div class="gb-desc">A collaborative space for SSC & HSC mathematics &middot; problem solving, exam prep, and concept discussions.</div>
+        <div class="gb-tags">
+          <span class="gb-tag"> SSC Prep</span>
+          <span class="gb-tag"> Geometry</span>
+          <span class="gb-tag">Algebra</span>
+          <span class="gb-tag">Calculus</span>
+        </div>
+      </div>
+      <div class="gb-actions">
+        <button class="btn" style="background:#fff;color:#1D4ED8;font-weight:800;font-size:.82rem;padding:8px 20px;border-radius:20px;border:none;cursor:pointer;" onclick="showToast('Already a member!','&#x2705;')">Joined</button>
+        <button class="btn btn-outline" style="font-size:.78rem;padding:6px 14px;border-radius:20px;color:#fff;border-color:rgba(255,255,255,.4);" onclick="showToast('Invite link copied!','&#x2705;')"> Invite</button>
+      </div>
+    </div>
+    <div class="gb-stat-bar">
+      <div class="gb-stat"><div class="gb-stat-num">248</div><div class="gb-stat-lbl">Members</div></div>
+      <div class="gb-stat"><div class="gb-stat-num">1,042</div><div class="gb-stat-lbl">Posts</div></div>
+      <div class="gb-stat"><div class="gb-stat-num">34</div><div class="gb-stat-lbl">Online</div></div>
+      <div class="gb-stat"><div class="gb-stat-num">Class IX</div><div class="gb-stat-lbl">Primary Level</div></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="group-tabs" style="padding:0 24px;">
+    <button class="gt-btn on" onclick="switchTab('posts',this)"> Posts</button>
+    <button class="gt-btn" onclick="switchTab('members',this)"> Members</button>
+    <button class="gt-btn" onclick="switchTab('files',this)"> Files</button>
+    <button class="gt-btn" onclick="switchTab('about',this)"> About</button>
+  </div>
+
+  <div style="padding:0 24px 24px;display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+
+    <!-- Main content -->
+    <div id="tabContent">
+      <!-- Posts tab -->
+      <div id="tab-posts">
+        <!-- Composer -->
+        <div class="composer">
+          <div class="composer-top">
+            <div class="composer-av">FI</div>
+            <textarea class="composer-input" id="groupCompose" placeholder="Post something to Math Study Circle&middot;" rows="3"></textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn btn-outline" style="font-size:.78rem;padding:6px 14px;" onclick="showToast('File picker opened','&#x2705;')"> Attach</button>
+            <button class="btn btn-primary" style="background:var(--cmn);border-color:var(--cmn);font-size:.8rem;padding:6px 18px;" onclick="postToGroup()">Post</button>
+          </div>
+        </div>
+
+        <!-- Posts -->
+        <div id="groupFeed"></div>
+      </div>
+
+      <!-- Members tab (hidden) -->
+      <div id="tab-members" style="display:none;">
+        <div class="widget">
+          <div class="widget-head"> Admins & Moderators</div>
+          <div class="widget-body" id="adminList"></div>
+        </div>
+        <div class="widget">
+          <div class="widget-head"> All Members (248)</div>
+          <div style="padding:12px 16px;" id="memberList"></div>
+        </div>
+      </div>
+
+      <!-- Files tab (hidden) -->
+      <div id="tab-files" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:.84rem;font-weight:800;color:var(--ink-2);"> Shared Resources (18 files)</div>
+          <button class="btn btn-primary" style="background:var(--cmn);border-color:var(--cmn);font-size:.78rem;padding:6px 16px;" onclick="showToast('Upload dialog opened','&#x2705;')"> Upload</button>
+        </div>
+        <div id="fileList"></div>
+      </div>
+
+      <!-- About tab (hidden) -->
+      <div id="tab-about" style="display:none;">
+        <div class="widget">
+          <div class="widget-head"> About This Group</div>
+          <div class="widget-body">
+            <div style="font-size:.84rem;color:var(--ink-2);line-height:1.7;margin-bottom:14px;">Math Study Circle is the official mathematics group for Dhaka High School students. We collaborate on problem sets, share study materials, and help each other prepare for SSC & HSC exams. All levels welcome &middot; from basic arithmetic to advanced calculus!</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="background:var(--bg);border-radius:10px;padding:12px;">
+                <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Created</div>
+                <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">March 12, 2024</div>
+              </div>
+              <div style="background:var(--bg);border-radius:10px;padding:12px;">
+                <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Privacy</div>
+                <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);"> Open to School</div>
+              </div>
+              <div style="background:var(--bg);border-radius:10px;padding:12px;">
+                <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Category</div>
+                <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);"> Academic Study</div>
+              </div>
+              <div style="background:var(--bg);border-radius:10px;padding:12px;">
+                <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Admin</div>
+                <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">Dr. Karim Hossain</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <div style="font-size:.76rem;font-weight:800;color:var(--ink-2);margin-bottom:8px;"> Group Rules</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:8px;font-size:.8rem;color:var(--ink-2);"><span style="color:var(--cmn);font-weight:900;">1.</span> Be respectful &middot; no bullying or mockery of questions.</div>
+                <div style="display:flex;gap:8px;font-size:.8rem;color:var(--ink-2);"><span style="color:var(--cmn);font-weight:900;">2.</span> Show your working when sharing solutions.</div>
+                <div style="display:flex;gap:8px;font-size:.8rem;color:var(--ink-2);"><span style="color:var(--cmn);font-weight:900;">3.</span> No exam cheating or sharing question papers.</div>
+                <div style="display:flex;gap:8px;font-size:.8rem;color:var(--ink-2);"><span style="color:var(--cmn);font-weight:900;">4.</span> Tag posts correctly (Homework, Question, Resource).</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div>
+      <div class="widget">
+        <div class="widget-head"> Pinned Resources</div>
+        <div class="widget-body" style="padding:8px 14px;" id="pinnedList"></div>
+      </div>
+      <div class="widget">
+        <div class="widget-head"> Online Members</div>
+        <div style="padding:8px 14px;" id="onlineMembers"></div>
+      </div>
+      <div class="widget">
+        <div class="widget-head"> Next Session</div>
+        <div class="widget-body">
+          <div style="background:var(--cmn-pale);border-radius:10px;padding:12px;border:1px solid var(--cmn-light);">
+            <div style="font-size:.78rem;font-weight:800;color:var(--cmn-dark);">Problem Solving Workshop</div>
+            <div style="font-size:.71rem;color:var(--muted);margin-top:3px;">Sat, Mar 1 &middot; 4:00 PM &middot; 6:00 PM</div>
+            <div style="font-size:.71rem;color:var(--muted);margin-top:1px;"> Room 202 &middot; Physics Building</div>
+            <button class="btn btn-primary" style="background:var(--cmn);border-color:var(--cmn);font-size:.74rem;padding:5px 14px;margin-top:10px;width:100%;" onclick="showToast('RSVP confirmed!','&#x2705;')">RSVP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const GROUP_POSTS=[
+  {id:1,init:'DK',name:'Dr. Karim Hossain',role:'Admin &middot; Math Teacher',col:'#1D4ED8',time:'2 hrs ago',
+   tag:{label:'Resource',bg:'#EFF6FF',col:'#1D4ED8'},
+   title:'SSC 2025 &middot; Complete Trigonometry Worksheet',
+   text:'I\'ve uploaded the full trigonometry worksheet covering all likely exam patterns. Includes 60 problems with step-by-step solutions. PDF attached below. Good luck!',
+   likes:34,comments:12,liked:false},
+  {id:2,init:'FI',name:'Farhan Islam',role:'Member &middot; Class IX-A',col:'#6366F1',time:'5 hrs ago',
+   tag:{label:'Question',bg:'#F0FDF4',col:'#166534'},
+   title:'Help with Logarithm Laws &middot; log(ab) problem',
+   text:'Stuck on this: If log2(x) = 3 and log2(y) = 5, find log2(x&middot;y&middot;). I know I should use the addition law but I\'m getting confused with the exponents. Anyone?',
+   likes:8,comments:6,liked:true},
+  {id:3,init:'RK',name:'Rahela Khatun',role:'Member &middot; Class IX-A',col:'#E11D48',time:'Yesterday',
+   tag:{label:'Study Note',bg:'#FFF1F2',col:'#BE123C'},
+   title:'My Geometry Proof Cheat Sheet ',
+   text:'Spent the weekend organising all the circle theorems, congruence rules, and similarity conditions. Really helped me revise fast. Sharing for everyone!',
+   likes:52,comments:18,liked:false},
+];
+
+function renderGroupFeed(){
+  document.getElementById('groupFeed').innerHTML=GROUP_POSTS.map(p=>`
+    <div class="post-card" id="gp-${p.id}">
+      <div class="pc-head">
+        <div class="pc-av" style="background:${p.col};">${p.init}</div>
+        <div style="flex:1;">
+          <div><span class="pc-author">${p.name}</span><span class="pc-tag" style="background:${p.tag.bg};color:${p.tag.col};">${p.tag.label}</span></div>
+          <div class="pc-meta">${p.role} &middot; ${p.time}</div>
+        </div>
+        <button style="background:none;border:none;cursor:pointer;color:var(--muted);" onclick="showToast('Options','&#x2705;')">&times;</button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-title">${p.title}</div>
+        <div class="pc-text">${p.text}</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pa-btn ${p.liked?'liked':''}" id="gl-${p.id}" onclick="gToggleLike(${p.id})">${p.liked?'':''} <span id="glc-${p.id}">${p.likes}</span></button>
+        <button class="pa-btn" onclick="showToast('Opening comments','&#x2705;')"> ${p.comments}</button>
+        <button class="pa-btn" onclick="showToast('Link copied!','&#x2705;')"> Share</button>
+        ${p.init==='DK'?`<button class="pa-btn" onclick="showToast('Downloading&middot;','&#x2705;')" style="margin-left:auto;">&#x1F4E5; Download</button>`:''}
+      </div>
+    </div>`).join('');
+}
+function gToggleLike(id){const p=GROUP_POSTS.find(x=>x.id===id);p.liked=!p.liked;p.likes+=p.liked?1:-1;document.getElementById(`gl-${id}`).innerHTML=`${p.liked?'':''} <span id="glc-${id}">${p.likes}</span>`;document.getElementById(`gl-${id}`).className=`pa-btn ${p.liked?'liked':''}`;}
+function postToGroup(){const t=document.getElementById('groupCompose').value.trim();if(!t){showToast('Write something first!','&#x2705;');return;}GROUP_POSTS.unshift({id:Date.now(),init:'FI',name:'Farhan Islam',role:'Member &middot; Class IX-A',col:'#6366F1',time:'just now',tag:{label:'Post',bg:'#EEF2FF',col:'#4338CA'},title:'',text:t,likes:0,comments:0,liked:false});document.getElementById('groupCompose').value='';renderGroupFeed();showToast('Posted!','&#x2705;');}
+
+const MEMBERS=[
+  {init:'DK',name:'Dr. Karim Hossain',role:'Admin &middot; Math Teacher',col:'#1D4ED8',badge:'Admin',badgeBg:'#EFF6FF',badgeCol:'#1D4ED8'},
+  {init:'FI',name:'Farhan Islam',role:'Member &middot; Class IX-A',col:'#6366F1',badge:'You',badgeBg:'#EEF2FF',badgeCol:'#4338CA'},
+  {init:'RK',name:'Rahela Khatun',role:'Member &middot; Class IX-A',col:'#E11D48',badge:null},
+  {init:'AH',name:'Arif Hossain',role:'Member &middot; Class IX-A',col:'#7C3AED',badge:null},
+  {init:'SB',name:'Sumaiya Begum',role:'Member &middot; Class IX-B',col:'#D97706',badge:null},
+  {init:'TJ',name:'Tanvir Ahmed',role:'Member &middot; Class IX-A',col:'#0891B2',badge:null},
+  {init:'NR',name:'Nadia Rahman',role:'Member &middot; Class IX-C',col:'#059669',badge:null},
+  {init:'MS',name:'Minhaj Sarkar',role:'Member &middot; Class IX-B',col:'#BE123C',badge:null},
+];
+function renderMembers(){
+  document.getElementById('adminList').innerHTML=MEMBERS.filter(m=>m.badge==='Admin').map(m=>`<div class="member-row"><div class="mr-av" style="background:${m.col};">${m.init}</div><div style="flex:1;"><div class="mr-name">${m.name}</div><div class="mr-role">${m.role}</div></div><span class="mr-badge" style="background:#EFF6FF;color:#1D4ED8;">Admin</span></div>`).join('');
+  document.getElementById('memberList').innerHTML=MEMBERS.map(m=>`<div class="member-row"><div class="mr-av" style="background:${m.col};">${m.init}</div><div style="flex:1;"><div class="mr-name">${m.name}</div><div class="mr-role">${m.role}</div></div>${m.badge?`<span class="mr-badge" style="background:${m.badgeBg};color:${m.badgeCol};">${m.badge}</span>`:m.init!=='FI'?`<button class="btn btn-outline" style="font-size:.68rem;padding:3px 10px;border-radius:12px;" onclick="showToast('Message sent!','&#x2705;')">Message</button>`:''}</div>`).join('');
+  document.getElementById('onlineMembers').innerHTML=MEMBERS.slice(0,5).map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;"><div style="position:relative;"><div class="mr-av" style="background:${m.col};width:28px;height:28px;font-size:.54rem;">${m.init}</div><div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#22C55E;border:1.5px solid #fff;"></div></div><span style="font-size:.78rem;font-weight:700;color:var(--ink-2);">${m.name}</span></div>`).join('');
+}
+const FILES=[
+  {icon:'&#x270F;&#xFE0F;',name:'Trigonometry_Full_Worksheet.pdf',by:'Dr. Karim Hossain',date:'Feb 24, 2026',size:'1.2 MB'},
+  {icon:'&#x270F;&#xFE0F;',name:'Algebra_Formula_Sheet.xlsx',by:'Farhan Islam',date:'Feb 20, 2026',size:'340 KB'},
+  {icon:'&#x270F;&#xFE0F;',name:'Geometry_Proof_Cheatsheet.pdf',by:'Rahela Khatun',date:'Feb 18, 2026',size:'840 KB'},
+  {icon:'&#x270F;&#xFE0F;',name:'Integration_Tutorial_Part1.mp4',by:'Dr. Karim Hossain',date:'Feb 10, 2026',size:'48 MB'},
+  {icon:'&#x270F;&#xFE0F;',name:'SSC_Past_Papers_2022-24.pdf',by:'Tanvir Ahmed',date:'Jan 30, 2026',size:'5.6 MB'},
+];
+function renderFiles(){document.getElementById('fileList').innerHTML=FILES.map(f=>`<div class="file-row"><div class="fr-icon">${f.icon}</div><div style="flex:1;"><div class="fr-name">${f.name}</div><div class="fr-meta">${f.by} &middot; ${f.date} &middot; ${f.size}</div></div><button class="btn btn-outline" style="font-size:.72rem;padding:4px 12px;border-radius:8px;" onclick="showToast('Downloading ${f.name}','&#x2705;')"></button></div>`).join('');}
+const PINNED=[
+  {icon:'&#x270F;&#xFE0F;',name:'Trigonometry Worksheet'},
+  {icon:'&#x270F;&#xFE0F;',name:'Algebra Formula Sheet'},
+  {icon:'&#x270F;&#xFE0F;',name:'Exam Schedule 2026'},
+];
+function renderPinned(){document.getElementById('pinnedList').innerHTML=PINNED.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="showToast('Opening ${p.name}','&#x2705;')"><span style="font-size:1rem;">${p.icon}</span><span style="font-size:.78rem;font-weight:700;color:var(--ink-2);">${p.name}</span></div>`).join('');}
+
+function switchTab(name,el){
+  document.querySelectorAll('.gt-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  ['posts','members','files','about'].forEach(t=>{document.getElementById(`tab-${t}`).style.display=t===name?'block':'none';});
+}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+renderGroupFeed();renderMembers();renderFiles();renderPinned();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

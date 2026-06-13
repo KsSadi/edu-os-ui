@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Hero */
+.events-hero{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 55%,#4338CA 100%);border-radius:18px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden;}
+.events-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.05);}
+
+/* Tabs */
+.ev-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:22px;}
+.ev-btn{padding:9px 20px;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s;}
+.ev-btn.on{color:var(--cmn);border-bottom-color:var(--cmn);}
+
+/* Event card (featured) */
+.event-card-big{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;margin-bottom:16px;transition:box-shadow .15s;}
+.event-card-big:hover{box-shadow:0 5px 20px rgba(99,102,241,.12);}
+.ecb-banner{padding:18px 20px;display:flex;gap:16px;align-items:flex-start;}
+.ecb-date{min-width:56px;text-align:center;background:var(--cmn-pale);border-radius:12px;padding:10px 8px;border:1.5px solid var(--cmn-light);}
+.ecb-day{font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);line-height:1;}
+.ecb-mon{font-size:.62rem;font-weight:800;text-transform:uppercase;color:var(--cmn-dark);letter-spacing:.04em;margin-top:2px;}
+.ecb-info{flex:1;}
+.ecb-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:5px;}
+.ecb-meta{font-size:.74rem;color:var(--muted);margin-bottom:6px;}
+.ecb-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.ecb-tag{font-size:.66rem;font-weight:800;padding:2px 9px;border-radius:8px;}
+.ecb-desc{font-size:.82rem;color:var(--ink-2);line-height:1.6;}
+.ecb-footer{padding:10px 20px 16px;display:flex;align-items:center;gap:12px;border-top:1px solid var(--border);}
+.ecb-attendees{display:flex;font-size:.76rem;color:var(--muted);align-items:center;gap:6px;flex:1;}
+.av-stack{display:flex;}
+.av-sm{width:22px;height:22px;border-radius:50%;border:2px solid var(--white);display:flex;align-items:center;justify-content:center;font-size:.48rem;font-weight:900;color:#fff;margin-left:-6px;}
+.av-sm:first-child{margin-left:0;}
+.rsvp-btn{padding:7px 18px;border-radius:20px;font-size:.78rem;font-weight:800;border:1.5px solid var(--cmn);color:var(--cmn);background:transparent;cursor:pointer;transition:all .12s;}
+.rsvp-btn:hover,.rsvp-btn.going{background:var(--cmn);color:#fff;}
+
+/* Mini calendar widget */
+.mini-cal{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;}
+.mc-head{background:var(--cmn);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.mc-month{font-size:.84rem;font-weight:800;color:#fff;}
+.mc-nav{background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#fff;font-size:.8rem;}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);margin:1px;}
+.mc-day-header{background:var(--bg);font-size:.6rem;font-weight:800;color:var(--muted);text-align:center;padding:6px 4px;text-transform:uppercase;}
+.mc-day{background:var(--white);font-size:.74rem;font-weight:600;text-align:center;padding:5px 2px;color:var(--ink-2);cursor:pointer;transition:background .1s;}
+.mc-day:hover{background:var(--cmn-pale);}
+.mc-day.has-event{color:var(--cmn);font-weight:900;}
+.mc-day.today{background:var(--cmn);color:#fff;font-weight:900;border-radius:4px;}
+.mc-day.empty{background:var(--bg);cursor:default;}
+
+/* Widget */
+.widget{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;}
+.widget-head{padding:11px 15px;border-bottom:1px solid var(--border);font-size:.76rem;font-weight:800;color:var(--ink-2);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero -->
+    <div class="events-hero anim-1">
+      <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:6px;"> School Events</div>
+      <div style="font-size:.84rem;color:rgba(255,255,255,.65);margin-bottom:18px;">Competitions, workshops, sports, and school activities &middot; all in one place</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 18px;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#fff;">12</div>
+          <div style="font-size:.66rem;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;">Upcoming</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 18px;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#fff;">3</div>
+          <div style="font-size:.66rem;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;">Going</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 18px;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#fff;">48</div>
+          <div style="font-size:.66rem;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;">Past Events</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+      <!-- Main -->
+      <div>
+        <!-- Tabs -->
+        <div class="ev-tabs">
+          <button class="ev-btn on" onclick="switchTab('upcoming',this)"> Upcoming</button>
+          <button class="ev-btn" onclick="switchTab('going',this)">Going</button>
+          <button class="ev-btn" onclick="switchTab('past',this)"> Past</button>
+        </div>
+        <div id="eventsList"></div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div>
+        <!-- Mini calendar -->
+        <div class="mini-cal">
+          <div class="mc-head">
+            <button class="mc-nav" onclick="showToast('Previous month','&#x2705;')">&times;</button>
+            <span class="mc-month">March 2026</span>
+            <button class="mc-nav" onclick="showToast('Next month','&#x2705;')">&times;</button>
+          </div>
+          <div class="mc-grid" id="calGrid"></div>
+        </div>
+
+        <!-- Upcoming quick list -->
+        <div class="widget">
+          <div class="widget-head"> This Week</div>
+          <div style="padding:8px 14px;" id="thisWeekList"></div>
+        </div>
+
+        <!-- Categories -->
+        <div class="widget">
+          <div class="widget-head"> Browse by Type</div>
+          <div style="padding:10px 14px;display:flex;flex-direction:column;gap:6px;" id="eventCats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const EVENTS=[
+  {id:1,day:'01',mon:'Mar',year:2026,title:'Science Olympiad District Heat',time:'9:00 AM &middot; 4:00 PM',venue:'Dhaka High School Main Hall',category:'Competition',catBg:'#EFF6FF',catCol:'#1D4ED8',
+   desc:'District-level science olympiad featuring physics, chemistry, biology, and mathematics rounds. 48 students from 12 schools competing. Our school has 8 registered participants.',
+   host:'Ms. Nasrin Ahmed &middot; Science Dept.',attendees:['MS','DK','FI','RK','AH'],totalAttendees:48,going:true},
+  {id:2,day:'05',mon:'Mar',year:2026,title:'Inter-Class Math Quiz Finals',time:'10:00 AM &middot; 1:00 PM',venue:'Main Hall &middot; Dhaka High School',category:'Academic',catBg:'#F0FDF4',catCol:'#166534',
+   desc:'The final round of the annual inter-class math quiz. Class IX-A vs IX-B vs IX-C. Three rounds: mental math, problem solving, and rapid fire. Representative teams of 4 students each.',
+   host:'Dr. Karim Hossain &middot; Math Dept.',attendees:['DK','FI','SB','TJ'],totalAttendees:120,going:true},
+  {id:3,day:'08',mon:'Mar',year:2026,title:' International Women\'s Day Assembly',time:'8:30 AM &middot; 9:30 AM',venue:'School Auditorium',category:'School',catBg:'#FDF2F8',catCol:'#9D174D',
+   desc:'Special morning assembly celebrating International Women\'s Day with speeches, cultural performances, and recognition of outstanding female students and teachers.',
+   host:'Principal Rahman Abdul',attendees:['RA','MS','RK','NR'],totalAttendees:420,going:false},
+  {id:4,day:'15',mon:'Mar',year:2026,title:'Parent-Teacher Meeting &middot; Term 2',time:'All Day &middot; 10:00 AM &middot; 4:00 PM',venue:'All Classrooms &middot; Dhaka High',category:'School',catBg:'#FEF9C3',catCol:'#92400E',
+   desc:'Scheduled parent-teacher meetings for all classes. Report cards will be distributed. Parents are required to attend at their assigned time slot. Please check the school notice board for your time.',
+   host:'School Administration',attendees:['RA','DK','MS'],totalAttendees:280,going:true},
+  {id:5,day:'20',mon:'Mar',year:2026,title:'Coding Hackathon 2026',time:'9:00 AM &middot; 9:00 PM',venue:'Computer Lab 1 & 2',category:'Technology',catBg:'#F3E8FF',catCol:'#5B21B6',
+   desc:'12-hour coding hackathon open to all students. Build anything &middot; web apps, games, tools. Judging criteria: creativity, functionality, and presentation. Prizes for top 3 teams.',
+   host:'CS Department & Coding Club',attendees:['AH','TJ','FI'],totalAttendees:64,going:false},
+  {id:6,day:'05',mon:'Apr',year:2026,title:'Annual Science Fair 2026',time:'10:00 AM &middot; 5:00 PM',venue:'School Auditorium',category:'Competition',catBg:'#EFF6FF',catCol:'#1D4ED8',
+   desc:'Annual science fair with projects from every class. Best 3 projects advance to divisional showcase. Registration deadline: March 10. Teams of 2&middot;4 students.',
+   host:'Principal &middot; Science & Math Depts.',attendees:['DK','MS','RA','FI','RK'],totalAttendees:180,going:false},
+];
+
+let activeTab='upcoming';
+function renderEvents(){
+  const list=document.getElementById('eventsList');
+  let events=EVENTS;
+  if(activeTab==='going') events=EVENTS.filter(e=>e.going);
+  if(activeTab==='past') events=[];// no past events in demo
+  if(!events.length){list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);">${activeTab==='past'?'No past events recorded yet.':'No events found.'}</div>`;return;}
+  list.innerHTML=events.map(e=>`
+    <div class="event-card-big anim-1">
+      <div class="ecb-banner">
+        <div class="ecb-date"><div class="ecb-day">${e.day}</div><div class="ecb-mon">${e.mon}</div></div>
+        <div class="ecb-info">
+          <div class="ecb-tags">
+            <span class="ecb-tag" style="background:${e.catBg};color:${e.catCol};">${e.category}</span>
+            ${e.going?'<span class="ecb-tag" style="background:#F0FDF4;color:#166534;">Going</span>':''}
+          </div>
+          <div class="ecb-title">${e.title}</div>
+          <div class="ecb-meta"> ${e.time} &nbsp;&middot;&nbsp;  ${e.venue}</div>
+          <div class="ecb-meta" style="margin-top:2px;"> Hosted by ${e.host}</div>
+          <div class="ecb-desc" style="margin-top:8px;">${e.desc}</div>
+        </div>
+      </div>
+      <div class="ecb-footer">
+        <div class="ecb-attendees">
+          <div class="av-stack">${e.attendees.map((a,i)=>`<div class="av-sm" style="background:${['#1D4ED8','#059669','#6366F1','#E11D48','#D97706'][i%5]};">${a}</div>`).join('')}</div>
+          <span>${e.totalAttendees} attending</span>
+        </div>
+        <button class="btn btn-outline" style="font-size:.76rem;padding:5px 14px;border-radius:8px;" onclick="showToast('Sharing event&middot;','&#x2705;')"> Share</button>
+        <button class="rsvp-btn ${e.going?'going':''}" id="rsvp-${e.id}" onclick="toggleRSVP(${e.id},this)">${e.going?'Going':'RSVP'}</button>
+      </div>
+    </div>`).join('');
+}
+function toggleRSVP(id,btn){const e=EVENTS.find(x=>x.id===id);e.going=!e.going;e.totalAttendees+=e.going?1:-1;btn.className=`rsvp-btn ${e.going?'going':''}`;btn.textContent=e.going?'Going':'RSVP';showToast(e.going?'RSVP confirmed! See you there':'RSVP cancelled',e.going?'&#x2705;':'');}
+function switchTab(t,el){activeTab=t;document.querySelectorAll('.ev-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderEvents();}
+
+function renderCalendar(){
+  const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const eventDays=[1,5,8,15,20];
+  let html=days.map(d=>`<div class="mc-day-header">${d}</div>`).join('');
+  // March 2026 starts on Sunday (index 0)
+  for(let i=0;i<31;i++){
+    const day=i+1;
+    const isToday=day===25;// Feb 25, 2026 &middot; show as current
+    const hasEvent=eventDays.includes(day);
+    html+=`<div class="mc-day ${isToday?'today':''} ${hasEvent&&!isToday?'has-event':''}" onclick="showToast('Mar ${day} events','&#x2705;')">${day}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function renderThisWeek(){
+  document.getElementById('thisWeekList').innerHTML=EVENTS.slice(0,3).map(e=>`
+    <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="showToast('${e.title}','&#x2705;')">
+      <div style="min-width:32px;text-align:center;background:var(--cmn-pale);border-radius:8px;padding:4px 0;">
+        <div style="font-size:.9rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);line-height:1;">${e.day}</div>
+        <div style="font-size:.52rem;font-weight:700;text-transform:uppercase;color:var(--cmn-dark);">${e.mon}</div>
+      </div>
+      <div><div style="font-size:.78rem;font-weight:700;color:var(--ink-2);">${e.title}</div><div style="font-size:.68rem;color:var(--muted);margin-top:1px;">${e.time.split('&middot;')[0]}</div></div>
+    </div>`).join('');
+}
+function renderCats(){
+  const cats=[{label:' Competitions',count:3},{label:' Academic',count:4},{label:' School Events',count:3},{label:' Technology',count:1},{label:' Arts & Culture',count:1}];
+  document.getElementById('eventCats').innerHTML=cats.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0;" onclick="showToast('Filtering by ${c.label}','&#x2705;')"><span style="font-size:.8rem;font-weight:700;color:var(--ink-2);">${c.label}</span><span style="font-size:.72rem;font-weight:800;background:var(--cmn-pale);color:var(--cmn);border-radius:8px;padding:1px 8px;">${c.count}</span></div>`).join('');
+}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+
+renderEvents();renderCalendar();renderThisWeek();renderCats();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

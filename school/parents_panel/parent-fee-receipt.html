@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Receipts — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+/* Child tab */
+.child-bar{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.cb-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:12px;border:2px solid var(--border);background:var(--white);cursor:pointer;transition:.15s;font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.cb-btn.on{border-color:var(--par);background:var(--par-pale);color:var(--par-dark);}
+.cb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;color:#fff;}
+
+/* Summary strip */
+.rec-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+@media(max-width:800px){.rec-summary{grid-template-columns:repeat(2,1fr);}}
+.rec-stat{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;}
+.rs-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.rs-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.rs-sub{font-size:.72rem;color:var(--muted);margin-top:4px;}
+
+/* Receipt cards */
+.receipt-list{display:flex;flex-direction:column;gap:12px;}
+.receipt-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .15s;}
+.receipt-card:hover{box-shadow:var(--shadow);}
+.rc-head{display:flex;align-items:center;gap:14px;padding:14px 18px;}
+.rc-icon{width:42px;height:42px;border-radius:10px;background:var(--par-pale);border:1.5px solid var(--par-light);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.rc-title{font-size:.88rem;font-weight:800;color:var(--ink);}
+.rc-meta{font-size:.74rem;color:var(--muted);margin-top:2px;}
+.rc-amount{margin-left:auto;text-align:right;}
+.rc-amt-num{font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.rc-amt-lbl{font-size:.68rem;color:var(--muted);}
+.rc-foot{display:flex;align-items:center;gap:8px;padding:8px 18px 12px;background:var(--bg);flex-wrap:wrap;}
+.rc-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+.rc-pill.paid{background:#D1FAE5;color:#065F46;}
+.rc-pill.method{background:#EFF6FF;color:#1D4ED8;}
+
+/* Modal receipt */
+.receipt-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;}
+.receipt-modal.show{display:flex;}
+.rm-box{background:#fff;border-radius:16px;width:420px;max-width:95%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.rm-head{background:linear-gradient(135deg,#1C0A00,#3B1A02);padding:20px 24px;text-align:center;}
+.rm-school{font-size:1rem;font-weight:800;color:#FCD34D;margin-bottom:2px;}
+.rm-sub{font-size:.75rem;color:rgba(255,255,255,.5);}
+.rm-body{padding:20px 24px;}
+.rm-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #E2E8F0;font-size:.83rem;}
+.rm-row:last-child{border-bottom:none;}
+.rm-label{color:#64748B;font-weight:600;}
+.rm-value{font-weight:700;color:#0F172A;}
+.rm-total{background:var(--par-pale);border-radius:10px;padding:12px 16px;text-align:center;margin:14px 0;}
+.rm-total-lbl{font-size:.75rem;color:var(--par-dark);font-weight:700;}
+.rm-total-num{font-size:1.8rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--par-dark);}
+.rm-foot{padding:16px 24px;border-top:1px solid #E2E8F0;display:flex;gap:10px;justify-content:flex-end;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">🧾 Finance</div>
+        <div class="page-title">Payment Receipts</div>
+        <div class="page-sub">Download and view all fee payment receipts. Session 2026–27.</div>
+      </div>
+      <div class="page-actions">
+        <a href="parent-fee.html" class="btn btn-outline">💳 Pay Now</a>
+        <button class="btn btn-outline" onclick="showToast('Downloading all receipts as ZIP…','📦')">📥 Download All</button>
+      </div>
+    </div>
+
+    <!-- Child Switcher -->
+    <div class="child-bar">
+      <div class="cb-btn on" id="cb-farhan" onclick="switchChild('farhan',this)">
+        <div class="cb-av" style="background:#7C3AED;">FI</div>Farhan Islam · IX–A
+      </div>
+      <div class="cb-btn" id="cb-tasnim" onclick="switchChild('tasnim',this)">
+        <div class="cb-av" style="background:#0891B2;">TI</div>Tasnim Islam · VI–A
+      </div>
+    </div>
+
+    <!-- ── FARHAN ── -->
+    <div id="child-farhan">
+      <div class="rec-summary">
+        <div class="rec-stat">
+          <div class="rs-label">Total Paid (2026–27)</div>
+          <div class="rs-num">৳ 6,400</div>
+          <div class="rs-sub">7 transactions</div>
+        </div>
+        <div class="rec-stat" style="border-color:#FECACA;background:#FFF5F5;">
+          <div class="rs-label">Balance Due</div>
+          <div class="rs-num" style="color:var(--red);">৳ 1,200</div>
+          <div class="rs-sub">July 2026 — Due Jul 10</div>
+        </div>
+        <div class="rec-stat" style="border-color:#BBF7D0;background:#F0FDF4;">
+          <div class="rs-label">Last Receipt</div>
+          <div class="rs-num" style="color:#059669;font-size:1rem;">Jun 5, 2026</div>
+          <div class="rs-sub">RCP-2026-0006 · bKash</div>
+        </div>
+      </div>
+
+      <div class="receipt-list">
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">June 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: June 5, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0006</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 1,200</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">📱 bKash</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','Jun 2026','RCP-2026-0006','June 5, 2026','bKash','৳ 1,200','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">May 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: May 8, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0005</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 1,200</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">🟠 Nagad</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','May 2026','RCP-2026-0005','May 8, 2026','Nagad','৳ 1,200','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">April 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: Apr 3, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0004</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 1,200</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">📱 bKash</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','Apr 2026','RCP-2026-0004','Apr 3, 2026','bKash','৳ 1,200','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">March 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: Mar 5, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0003</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 1,200</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">🏦 Bank Transfer</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','Mar 2026','RCP-2026-0003','Mar 5, 2026','Bank Transfer','৳ 1,200','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">February 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: Feb 10, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0002</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 1,200</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">📱 bKash</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','Feb 2026','RCP-2026-0002','Feb 10, 2026','bKash','৳ 1,200','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">January 2026 — Tuition + Admission Fee</div>
+              <div class="rc-meta">Paid: Jan 2, 2026 &nbsp;·&nbsp; Receipt No: RCP-2026-0001</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 3,700</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">💳 Card</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('farhan','Jan 2026','RCP-2026-0001','Jan 2, 2026','Visa Card','৳ 3,700','Tuition ৳1,200 + Admission ৳2,500')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASNIM ── -->
+    <div id="child-tasnim" style="display:none;">
+      <div class="rec-summary">
+        <div class="rec-stat" style="border-color:#BBF7D0;background:#F0FDF4;">
+          <div class="rs-label">Total Paid (2026–27)</div>
+          <div class="rs-num" style="color:#059669;">৳ 7,300</div>
+          <div class="rs-sub">7 transactions · all paid</div>
+        </div>
+        <div class="rec-stat" style="border-color:#BBF7D0;background:#F0FDF4;">
+          <div class="rs-label">Balance Due</div>
+          <div class="rs-num" style="color:#059669;">৳ 0</div>
+          <div class="rs-sub">All fees up to date ✅</div>
+        </div>
+        <div class="rec-stat" style="border-color:#BBF7D0;background:#F0FDF4;">
+          <div class="rs-label">Last Receipt</div>
+          <div class="rs-num" style="color:#059669;font-size:1rem;">Jun 4, 2026</div>
+          <div class="rs-sub">RCP-T-2026-0007 · bKash</div>
+        </div>
+      </div>
+
+      <div class="receipt-list">
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">July 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: June 4, 2026 &nbsp;·&nbsp; Receipt No: RCP-T-2026-0007</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 900</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">📱 bKash</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('tasnim','Jul 2026','RCP-T-2026-0007','Jun 4, 2026','bKash','৳ 900','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-icon">🧾</div>
+            <div>
+              <div class="rc-title">June 2026 — Monthly Tuition</div>
+              <div class="rc-meta">Paid: May 31, 2026 &nbsp;·&nbsp; Receipt No: RCP-T-2026-0006</div>
+            </div>
+            <div class="rc-amount"><div class="rc-amt-num">৳ 900</div><div class="rc-amt-lbl">Paid</div></div>
+          </div>
+          <div class="rc-foot">
+            <span class="rc-pill paid">✅ Paid</span>
+            <span class="rc-pill method">🟠 Nagad</span>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:.75rem;" onclick="openReceipt('tasnim','Jun 2026','RCP-T-2026-0006','May 31, 2026','Nagad','৳ 900','Monthly Tuition')">👁 View</button>
+            <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="showToast('Downloading receipt…','📄')">📥 Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Receipt Modal -->
+<div class="receipt-modal" id="receiptModal" onclick="if(event.target===this)closeReceipt()">
+  <div class="rm-box">
+    <div class="rm-head">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🧾</div>
+      <div class="rm-school">Dhaka High School</div>
+      <div class="rm-sub">Official Fee Receipt · Session 2026–27</div>
+    </div>
+    <div class="rm-body">
+      <div class="rm-row"><span class="rm-label">Student</span><span class="rm-value" id="rm-student"></span></div>
+      <div class="rm-row"><span class="rm-label">Class</span><span class="rm-value" id="rm-class"></span></div>
+      <div class="rm-row"><span class="rm-label">Receipt No.</span><span class="rm-value" id="rm-rcpno"></span></div>
+      <div class="rm-row"><span class="rm-label">Payment Date</span><span class="rm-value" id="rm-date"></span></div>
+      <div class="rm-row"><span class="rm-label">Payment Method</span><span class="rm-value" id="rm-method"></span></div>
+      <div class="rm-row"><span class="rm-label">Description</span><span class="rm-value" id="rm-desc"></span></div>
+      <div class="rm-total">
+        <div class="rm-total-lbl">Amount Paid</div>
+        <div class="rm-total-num" id="rm-amount"></div>
+      </div>
+      <div style="text-align:center;font-size:.72rem;color:#94A3B8;">This is a computer-generated receipt and does not require a signature.</div>
+    </div>
+    <div class="rm-foot">
+      <button class="btn btn-outline" onclick="closeReceipt()">Close</button>
+      <button class="btn" style="background:var(--par);color:#fff;border-color:var(--par);" onclick="showToast('Downloading PDF receipt…','📄');closeReceipt()">📥 Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function switchChild(id, el) {
+  document.querySelectorAll('.cb-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('child-farhan').style.display = id === 'farhan' ? '' : 'none';
+  document.getElementById('child-tasnim').style.display = id === 'tasnim' ? '' : 'none';
+}
+const CHILD_DATA = {
+  farhan: { name: 'Farhan Islam', cls: 'Class IX–A · Roll: 05' },
+  tasnim: { name: 'Tasnim Islam', cls: 'Class VI–A · Roll: 11' },
+};
+function openReceipt(child, period, rcpNo, date, method, amount, desc) {
+  const c = CHILD_DATA[child];
+  document.getElementById('rm-student').textContent = c.name;
+  document.getElementById('rm-class').textContent = c.cls;
+  document.getElementById('rm-rcpno').textContent = rcpNo;
+  document.getElementById('rm-date').textContent = date;
+  document.getElementById('rm-method').textContent = method;
+  document.getElementById('rm-desc').textContent = desc + ' — ' + period;
+  document.getElementById('rm-amount').textContent = amount;
+  document.getElementById('receiptModal').classList.add('show');
+}
+function closeReceipt() {
+  document.getElementById('receiptModal').classList.remove('show');
+}
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(), 300); }, 3000);
+}
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

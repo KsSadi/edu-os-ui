@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Note Summarizer — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+
+.badge-ai{background:rgba(99,102,241,.3);color:#A5B4FC;font-size:.68rem;font-weight:800;padding:2px 9px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;}
+
+/* 2-col layout */
+.ns-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* Input panel */
+.input-panel{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.panel-head-title{font-size:.88rem;font-weight:800;color:var(--ink);}
+.panel-body{padding:16px 18px;}
+
+/* Textarea */
+.note-input{width:100%;height:230px;resize:vertical;border:1.5px solid var(--border);border-radius:10px;padding:14px;font-size:.84rem;line-height:1.6;font-family:'Inter',sans-serif;color:var(--ink);outline:none;transition:border-color .15s;background:var(--bg);}
+.note-input:focus{border-color:var(--stu);}
+
+/* Language toggle */
+.lang-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;}
+.lang-btn{padding:7px 16px;font-size:.78rem;font-weight:700;background:none;border:none;cursor:pointer;color:var(--muted);transition:all .15s;}
+.lang-btn.active{background:var(--stu-pale);color:var(--stu);}
+
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg);}
+.drop-zone:hover{border-color:var(--stu);background:var(--stu-pale);}
+.drop-zone-icon{font-size:1.8rem;margin-bottom:6px;}
+.drop-zone-text{font-size:.78rem;color:var(--muted);font-weight:600;}
+
+/* Output panel */
+.output-panel{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.out-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);}
+.out-placeholder-icon{font-size:2.5rem;margin-bottom:10px;opacity:.4;}
+
+/* Summary output */
+.summary-section{margin-bottom:14px;}
+.ss-label{font-size:.72rem;font-weight:800;color:var(--stu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.key-point{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--bg);border-radius:8px;font-size:.82rem;color:var(--ink);line-height:1.5;margin-bottom:5px;}
+.key-point .dot{width:6px;height:6px;border-radius:50%;background:var(--stu);flex-shrink:0;margin-top:6px;}
+.kw-chip{display:inline-flex;gap:4px;background:var(--stu-pale);border:1px solid var(--stu-light);border-radius:8px;padding:3px 10px;font-size:.76rem;font-weight:700;color:var(--stu-dark);margin:3px 3px 3px 0;}
+.formula-box{background:#1E1B4B;border-radius:9px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.8rem;color:#A5B4FC;margin-bottom:6px;}
+
+/* Flashcard */
+.fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fc{border-radius:10px;padding:12px 14px;font-size:.78rem;line-height:1.5;cursor:pointer;border:1.5px solid var(--border);transition:all .15s;}
+.fc:hover{box-shadow:var(--shadow);}
+.fc-q{background:var(--bg);color:var(--muted);font-weight:600;}
+.fc-a{background:var(--stu-pale);color:var(--stu-dark);font-weight:700;border-color:var(--stu-light);}
+.fc-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;font-weight:800;}
+
+/* Library sidebar */
+.lib-item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.lib-item:hover{background:var(--bg);}
+.lib-item:last-child{border-bottom:none;}
+.lib-title{font-size:.8rem;font-weight:700;color:var(--ink);}
+.lib-meta{font-size:.7rem;color:var(--muted);margin-top:2px;}
+
+/* Processing animation */
+@keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+.processing{animation:pulse 1.2s infinite;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .25s ease both;}
+@keyframes tin{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📝 AI Tools</div>
+        <div class="page-title">AI Note Summarizer</div>
+        <div class="page-sub">Paste your class notes or textbook chapter — AI produces a clean summary, key points, formulas, and flashcards.</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--stu);">8</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">Summaries Saved</div>
+      </div>
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#059669;">34</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">Flashcards Created</div>
+      </div>
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;color:#F59E0B;">−60%</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">Avg. Revision Time Saved</div>
+      </div>
+      <div class="card" style="padding:14px 16px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;">EN / বা</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">Bilingual Output</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 280px;gap:16px;">
+
+      <!-- Input panel -->
+      <div>
+        <div class="input-panel">
+          <div class="panel-head">
+            <div class="panel-head-title">📄 Input Notes</div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <div class="lang-toggle">
+                <button class="lang-btn active" id="langEn" onclick="setLang('en')">English</button>
+                <button class="lang-btn" id="langBn" onclick="setLang('bn')">বাংলা</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+              <button class="btn btn-outline btn-sm active" id="tabPaste" onclick="switchTab('paste')" style="flex:1;">✏️ Paste Text</button>
+              <button class="btn btn-outline btn-sm" id="tabUpload" onclick="switchTab('upload')" style="flex:1;">📎 Upload PDF</button>
+            </div>
+
+            <div id="pasteTab">
+              <textarea class="note-input" id="noteInput" placeholder="Paste your class notes, textbook paragraph, or chapter text here...
+
+Example:
+The digestive system is a group of organs that convert food into energy. Food passes through the alimentary canal which includes: oral cavity, pharynx, esophagus, stomach, small intestine, and large intestine. The liver, gallbladder, and pancreas produce enzymes..."></textarea>
+              <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+                <span id="charCount" style="font-size:.72rem;color:var(--muted);">0 characters</span>
+                <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="loadExample()">📋 Load Example</button>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('noteInput').value='';updateCount()">Clear</button>
+              </div>
+            </div>
+
+            <div id="uploadTab" style="display:none;">
+              <div class="drop-zone" onclick="showToast('PDF upload coming soon! Use Paste Text for now.','📎')">
+                <div class="drop-zone-icon">📎</div>
+                <div class="drop-zone-text">Drop PDF here or click to upload</div>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:4px;">Max 10 MB · PDF, DOCX, TXT</div>
+              </div>
+            </div>
+
+            <button class="btn" style="width:100%;background:var(--stu);color:#fff;border-color:var(--stu);margin-top:14px;padding:12px;" onclick="summarize()" id="sumBtn">
+              ✨ Summarize with AI
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output panel -->
+      <div>
+        <div class="output-panel" style="min-height:480px;">
+          <div class="panel-head">
+            <div class="panel-head-title">✨ AI Summary</div>
+            <span class="badge-ai" id="outBadge" style="display:none;">Done</span>
+            <div style="margin-left:auto;display:flex;gap:8px;" id="outActions" style="display:none!important;">
+              <button class="btn btn-outline btn-sm" onclick="showToast('Summary saved to library! 💾','📚')">💾 Save</button>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Share link copied! 🔗','🔗')">🔗 Share</button>
+            </div>
+          </div>
+          <div class="panel-body" id="outputBody">
+            <div class="out-placeholder">
+              <div class="out-placeholder-icon">✨</div>
+              <div style="font-size:.84rem;font-weight:700;color:var(--ink);margin-bottom:4px;">Paste notes and click Summarize</div>
+              <div style="font-size:.75rem;text-align:center;max-width:220px;">AI will generate key points, definitions, formulas, and flashcards in seconds.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Library -->
+      <div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:.88rem;font-weight:800;color:var(--ink);">📚 Saved Summaries</div>
+          <div id="libraryList">
+            <div class="lib-item" onclick="loadSaved('digestive')">
+              <div class="lib-title">🔬 Digestive System</div>
+              <div class="lib-meta">Biology · May 28 · 5 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('photosynthesis')">
+              <div class="lib-title">🌿 Photosynthesis</div>
+              <div class="lib-meta">Biology · May 25 · 4 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('algebra')">
+              <div class="lib-title">📐 Algebra Basics</div>
+              <div class="lib-meta">Math · May 20 · 6 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('electricity')">
+              <div class="lib-title">⚡ Electricity</div>
+              <div class="lib-meta">Physics · May 18 · 5 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('cell')">
+              <div class="lib-title">🔬 Cell Structure</div>
+              <div class="lib-meta">Biology · May 15 · 7 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('grammar')">
+              <div class="lib-title">✍️ English Tenses</div>
+              <div class="lib-meta">English · May 12 · 5 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('acid')">
+              <div class="lib-title">⚗️ Acids & Bases</div>
+              <div class="lib-meta">Chemistry · May 10 · 6 key points</div>
+            </div>
+            <div class="lib-item" onclick="loadSaved('mughal')">
+              <div class="lib-title">🏰 Mughal Empire</div>
+              <div class="lib-meta">History · May 5 · 4 key points</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:12px 14px;background:linear-gradient(135deg,#1E0A3C,#2D1B69);border-radius:12px;border:1.5px solid rgba(124,58,237,.25);">
+          <div style="font-size:.7rem;font-weight:800;color:#A78BFA;margin-bottom:6px;">💡 Pro Tip</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.55);line-height:1.55;">AI-generated flashcards থেকে practice করলে তোমার revision time ৬০% পর্যন্ত কমে যাবে। প্রতিদিন ১০ মিনিট flashcard review করো।</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let outputLang = 'en';
+
+const SUMMARIES = {
+  digestive: {
+    title: 'Digestive System',
+    subject: 'Biology',
+    points: [
+      'Digestive system converts food into energy and basic nutrients.',
+      'Alimentary canal path: Oral cavity → Pharynx → Esophagus → Stomach → Small intestine → Large intestine.',
+      'Accessory organs: Liver, Gallbladder, Pancreas — produce digestive enzymes.',
+      'Enzymes break down complex food molecules into simpler, absorbable substances.',
+      'Small intestine absorbs nutrients; large intestine absorbs water.',
+    ],
+    keywords: ['Alimentary Canal','Enzyme','Digestion','Liver','Peristalsis','Villi'],
+    formulas: [],
+    flashcards: [
+      { q: 'What is the alimentary canal?', a: 'The long tube from mouth to anus through which food passes.' },
+      { q: 'Function of the liver?', a: 'Produces bile to digest fats; filters blood.' },
+      { q: 'Where is water absorbed?', a: 'Large intestine.' },
+      { q: 'What are enzymes?', a: 'Biological catalysts that break down food molecules.' },
+    ]
+  },
+  photosynthesis: {
+    title: 'Photosynthesis',
+    subject: 'Biology',
+    points: [
+      'Photosynthesis is the process by which green plants make food using sunlight.',
+      'Takes place in chloroplasts — specifically chlorophyll pigment.',
+      'Inputs: CO₂ (from air) + H₂O (from soil) + Sunlight (energy source).',
+      'Outputs: Glucose (food) + O₂ (released into atmosphere).',
+    ],
+    keywords: ['Chlorophyll','Chloroplast','Glucose','CO₂','Photosynthesis'],
+    formulas: ['6CO₂ + 6H₂O + Light → C₆H₁₂O₆ + 6O₂'],
+    flashcards: [
+      { q: 'Where does photosynthesis occur?', a: 'In chloroplasts of plant cells.' },
+      { q: 'What is the role of chlorophyll?', a: 'Absorbs sunlight to power photosynthesis.' },
+      { q: 'What gas is released?', a: 'Oxygen (O₂).' },
+      { q: 'Formula for photosynthesis?', a: '6CO₂ + 6H₂O + Light → C₆H₁₂O₆ + 6O₂' },
+    ]
+  },
+  algebra: {
+    title: 'Algebra Basics',
+    subject: 'Mathematics',
+    points: [
+      'Algebra uses variables (letters) to represent unknown numbers.',
+      'An equation shows that two expressions are equal: e.g. 3x + 5 = 14.',
+      'To solve, isolate the variable by applying inverse operations.',
+      'Like terms can be combined: 3x + 2x = 5x.',
+      'BODMAS/PEMDAS rule applies when simplifying expressions.',
+      'Factoring: ax + ay = a(x + y) — taking common factor out.',
+    ],
+    keywords: ['Variable','Equation','Expression','Like Terms','Factoring','BODMAS'],
+    formulas: ['Quadratic: ax² + bx + c = 0', 'x = (−b ± √(b²−4ac)) / 2a'],
+    flashcards: [
+      { q: 'What is a variable?', a: 'A letter representing an unknown value, e.g. x.' },
+      { q: 'Solve: 3x = 15', a: 'x = 5 (divide both sides by 3).' },
+      { q: 'What does BODMAS stand for?', a: 'Brackets, Orders, Division, Multiplication, Addition, Subtraction.' },
+      { q: 'Factor: 6x + 9', a: '3(2x + 3).' },
+    ]
+  },
+  electricity: {
+    title: 'Electricity',
+    subject: 'Physics',
+    points: [
+      'Electric current is the flow of electrons through a conductor.',
+      'Voltage (V) is the potential difference driving current flow.',
+      'Resistance (R) opposes the flow of current — measured in Ohms (Ω).',
+      "Ohm's Law relates current, voltage, and resistance.",
+      'Series circuit: same current throughout; voltages add up.',
+    ],
+    keywords: ['Current','Voltage','Resistance','Circuit','Ohm','Conductor'],
+    formulas: ["Ohm's Law: V = I × R", 'Power: P = V × I = I²R'],
+    flashcards: [
+      { q: "State Ohm's Law.", a: 'Voltage = Current × Resistance (V = IR).' },
+      { q: 'Unit of resistance?', a: 'Ohm (Ω).' },
+      { q: 'What is current?', a: 'Flow of electric charge (electrons) through a conductor.' },
+      { q: 'Formula for power?', a: 'P = VI or P = I²R.' },
+    ]
+  },
+  cell: {
+    title: 'Cell Structure',
+    subject: 'Biology',
+    points: [
+      'Cell is the basic structural and functional unit of life.',
+      'Nucleus: controls all cellular activities; contains DNA.',
+      'Mitochondria: produces energy (ATP) — "powerhouse of the cell".',
+      'Cell membrane: semi-permeable; controls what enters and exits.',
+      'Chloroplasts: in plant cells; site of photosynthesis.',
+      'Ribosomes: site of protein synthesis.',
+      'Cell wall: found only in plant cells (cellulose); provides rigidity.',
+    ],
+    keywords: ['Nucleus','Mitochondria','Ribosome','Chloroplast','Cell Wall','DNA','ATP'],
+    formulas: [],
+    flashcards: [
+      { q: 'What is the "powerhouse of the cell"?', a: 'Mitochondria — produces ATP.' },
+      { q: 'Which organelle contains DNA?', a: 'The nucleus.' },
+      { q: 'What is unique to plant cells?', a: 'Cell wall and chloroplasts.' },
+      { q: 'Function of ribosomes?', a: 'Protein synthesis.' },
+    ]
+  },
+  grammar: {
+    title: 'English Tenses',
+    subject: 'English',
+    points: [
+      'Tenses show the time of an action: past, present, or future.',
+      'Simple Present: used for habits, facts. Structure: Subject + V1 (s/es for 3rd person).',
+      'Present Continuous: action happening now. Structure: am/is/are + V-ing.',
+      'Simple Past: completed action. Structure: Subject + V2.',
+      'Present Perfect: past action with present relevance. Structure: has/have + V3.',
+    ],
+    keywords: ['Tense','Verb','Present','Past','Future','Continuous','Perfect'],
+    formulas: [],
+    flashcards: [
+      { q: 'Simple present structure?', a: 'Subject + V1 (+s/es for she/he/it).' },
+      { q: 'Present continuous?', a: 'am/is/are + V-ing.' },
+      { q: 'Present perfect?', a: 'has/have + V3 (past participle).' },
+      { q: 'Simple past?', a: 'Subject + V2 (past form).' },
+    ]
+  },
+  acid: {
+    title: 'Acids & Bases',
+    subject: 'Chemistry',
+    points: [
+      'Acids release H⁺ ions in solution; have pH < 7.',
+      'Bases release OH⁻ ions in solution; have pH > 7.',
+      'Neutral substances have pH = 7 (e.g. pure water).',
+      'Neutralisation: Acid + Base → Salt + Water.',
+      'Indicators (litmus, phenolphthalein) show whether a substance is acid/base.',
+      'Strong acids: HCl, H₂SO₄, HNO₃. Strong bases: NaOH, KOH.',
+    ],
+    keywords: ['Acid','Base','pH','Neutralisation','Indicator','Salt','Ion'],
+    formulas: ['HCl + NaOH → NaCl + H₂O', 'pH < 7 = Acid | pH = 7 = Neutral | pH > 7 = Base'],
+    flashcards: [
+      { q: 'What is neutralisation?', a: 'Acid + Base → Salt + Water.' },
+      { q: 'pH of pure water?', a: '7 (neutral).' },
+      { q: 'What ions do acids release?', a: 'H⁺ (hydrogen ions).' },
+      { q: 'Name 2 strong acids.', a: 'HCl (hydrochloric acid) and H₂SO₄ (sulphuric acid).' },
+    ]
+  },
+  mughal: {
+    title: 'Mughal Empire',
+    subject: 'History',
+    points: [
+      'Mughal Empire founded by Babur in 1526 after the First Battle of Panipat.',
+      'Greatest emperor: Akbar (1556–1605) — known for tolerance and administration.',
+      'Shah Jahan built the Taj Mahal (1632–1653) in memory of Mumtaz Mahal.',
+      'Empire declined after Aurangzeb due to religious conflicts and revolts.',
+    ],
+    keywords: ['Babur','Akbar','Aurangzeb','Taj Mahal','Panipat','Mughal'],
+    formulas: [],
+    flashcards: [
+      { q: 'Who founded the Mughal Empire?', a: 'Babur, in 1526.' },
+      { q: 'Who built the Taj Mahal?', a: 'Shah Jahan.' },
+      { q: 'Greatest Mughal emperor?', a: 'Akbar (1556–1605).' },
+      { q: 'When did the Mughal Empire decline?', a: 'After Aurangzeb\'s death in 1707.' },
+    ]
+  }
+};
+
+const EXAMPLE_TEXT = `The digestive system is a group of organs working together to convert food into energy and basic nutrients to feed the entire body. Food passes through a long tube inside the body known as the alimentary canal (also called the gastrointestinal tract or GI tract). The alimentary canal is made up of the oral cavity, pharynx, esophagus, stomach, small intestines, and large intestines. The digestive organs also include the liver, gallbladder, and pancreas. These organs produce enzymes and chemicals that help break down food into simpler substances that can be absorbed into the bloodstream. The small intestine is mainly responsible for absorbing nutrients, while the large intestine absorbs water and forms waste material for excretion.`;
+
+const BN_EXAMPLE = `পরিপাকতন্ত্র হলো একটি অঙ্গতন্ত্র যা খাদ্যকে শক্তি ও পুষ্টিতে রূপান্তরিত করে। খাদ্য alimentary canal এর মধ্য দিয়ে যায় যা মুখ → গলা → খাদ্যনালী → পাকস্থলী → ক্ষুদ্রান্ত্র → বৃহদান্ত্র নিয়ে গঠিত। যকৃত, পিত্তথলি ও অগ্ন্যাশয় পাচক এনজাইম তৈরি করে। ক্ষুদ্রান্ত্র পুষ্টি শোষণ করে এবং বৃহদান্ত্র পানি শোষণ করে।`;
+
+function setLang(l) {
+  outputLang = l;
+  document.getElementById('langEn').classList.toggle('active', l === 'en');
+  document.getElementById('langBn').classList.toggle('active', l === 'bn');
+  if (l === 'bn') {
+    document.getElementById('noteInput').placeholder = 'তোমার class notes এখানে paste করো...';
+  } else {
+    document.getElementById('noteInput').placeholder = 'Paste your class notes, textbook paragraph, or chapter text here...';
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('pasteTab').style.display = tab === 'paste' ? '' : 'none';
+  document.getElementById('uploadTab').style.display = tab === 'upload' ? '' : 'none';
+  document.getElementById('tabPaste').classList.toggle('active', tab === 'paste');
+  document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+}
+
+function loadExample() {
+  const txt = outputLang === 'bn' ? BN_EXAMPLE : EXAMPLE_TEXT;
+  document.getElementById('noteInput').value = txt;
+  updateCount();
+}
+
+function updateCount() {
+  const len = document.getElementById('noteInput').value.length;
+  document.getElementById('charCount').textContent = len + ' characters';
+}
+
+document.getElementById('noteInput').addEventListener('input', updateCount);
+
+function summarize() {
+  const text = document.getElementById('noteInput').value.trim();
+  if (!text) { showToast('Please paste some notes first!', '⚠️'); return; }
+
+  const btn = document.getElementById('sumBtn');
+  btn.textContent = '⏳ AI is reading your notes...';
+  btn.disabled = true;
+  btn.classList.add('processing');
+
+  const outBody = document.getElementById('outputBody');
+  outBody.innerHTML = `<div style="text-align:center;padding:60px 20px;"><div style="font-size:2rem;margin-bottom:12px;">🧠</div><div class="processing" style="font-size:.88rem;color:var(--muted);font-weight:700;">AI is summarizing your notes...</div></div>`;
+
+  setTimeout(() => {
+    btn.textContent = '✨ Summarize with AI';
+    btn.disabled = false;
+    btn.classList.remove('processing');
+    document.getElementById('outBadge').style.display = '';
+    document.getElementById('outActions').style.removeProperty('display');
+    renderOutput(detectSummary(text));
+    showToast('Summary ready! ✨', '🤖');
+  }, 1800);
+}
+
+function detectSummary(text) {
+  const t = text.toLowerCase();
+  if (t.includes('digest') || t.includes('alimentary') || t.includes('পরিপাক')) return SUMMARIES.digestive;
+  if (t.includes('photosyn') || t.includes('chlorophyll') || t.includes('সালোকসংশ্লেষ')) return SUMMARIES.photosynthesis;
+  if (t.includes('algebra') || t.includes('variable') || t.includes('equation') && t.includes('math')) return SUMMARIES.algebra;
+  if (t.includes('electric') || t.includes('current') || t.includes('ohm') || t.includes('voltage')) return SUMMARIES.electricity;
+  if (t.includes('cell') && (t.includes('mitochondria') || t.includes('nucleus'))) return SUMMARIES.cell;
+  if (t.includes('tense') || t.includes('grammar') || t.includes('present perfect')) return SUMMARIES.grammar;
+  if (t.includes('acid') || t.includes('base') || t.includes('ph')) return SUMMARIES.acid;
+  if (t.includes('mughal') || t.includes('akbar') || t.includes('babur')) return SUMMARIES.mughal;
+  // generic fallback
+  return SUMMARIES.digestive;
+}
+
+function renderOutput(data) {
+  const isBn = outputLang === 'bn';
+  const outBody = document.getElementById('outputBody');
+  const formulaHTML = data.formulas.length
+    ? `<div class="summary-section"><div class="ss-label">📐 Key Formulas</div>${data.formulas.map(f => `<div class="formula-box">${f}</div>`).join('')}</div>`
+    : '';
+
+  outBody.innerHTML = `
+    <div style="background:var(--stu-pale);border-bottom:1px solid var(--stu-light);padding:10px 18px;margin:-16px -18px 16px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:.78rem;font-weight:800;color:var(--stu-dark);">📄 ${data.title}</span>
+      <span style="font-size:.72rem;color:var(--muted);">·</span>
+      <span style="font-size:.72rem;color:var(--muted);">${data.subject}</span>
+    </div>
+    <div class="summary-section">
+      <div class="ss-label">🔑 Key Points</div>
+      ${data.points.map(p => `<div class="key-point"><span class="dot"></span><span>${p}</span></div>`).join('')}
+    </div>
+    <div class="summary-section">
+      <div class="ss-label">📌 Key Terms</div>
+      <div>${data.keywords.map(k => `<span class="kw-chip">${k}</span>`).join('')}</div>
+    </div>
+    ${formulaHTML}
+    <div class="summary-section">
+      <div class="ss-label" style="margin-bottom:10px;">🃏 Flashcards</div>
+      <div class="fc-grid">
+        ${data.flashcards.map(fc => `
+          <div class="fc fc-q" onclick="flipCard(this,'${fc.a.replace(/'/g,"\\'")}')">
+            <div class="fc-label" style="color:var(--muted);">Question</div>${fc.q}
+          </div>
+          <div class="fc fc-a">
+            <div class="fc-label" style="color:var(--stu);">Answer</div>${fc.a}
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function flipCard(el, answer) {
+  if (el.classList.contains('fc-a')) return;
+  el.classList.toggle('fc-a');
+  el.classList.toggle('fc-q');
+  const lbl = el.querySelector('.fc-label');
+  if (el.classList.contains('fc-a')) {
+    lbl.textContent = 'Answer'; lbl.style.color = 'var(--stu)';
+    el.querySelector('.fc-label').nextSibling.textContent = answer; // simple swap isn't perfect but works
+  }
+}
+
+function loadSaved(key) {
+  if (!SUMMARIES[key]) return;
+  document.getElementById('noteInput').value = '[Loaded from library]';
+  updateCount();
+  document.getElementById('outBadge').style.display = '';
+  document.getElementById('outActions').style.removeProperty('display');
+  renderOutput(SUMMARIES[key]);
+  showToast('Loaded: ' + SUMMARIES[key].title, '📚');
+}
+
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; d.style.transition='opacity .3s'; setTimeout(() => d.remove(),300); }, 3000);
+}
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

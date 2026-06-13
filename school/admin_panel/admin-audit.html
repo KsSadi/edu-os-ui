@@ -1,0 +1,612 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Log &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+/* -- Timeline feed -- */
+.audit-feed { display: flex; flex-direction: column; }
+
+.audit-entry {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+  position: relative; transition: background .12s;
+}
+.audit-entry:hover { background: var(--blue-pale); margin: 0 -22px; padding-left: 22px; padding-right: 22px; border-radius: 8px; }
+.audit-entry:last-child { border: none; }
+
+.audit-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; flex-shrink: 0; margin-top: 1px;
+}
+.audit-body { flex: 1; min-width: 0; }
+.audit-main {
+  font-size: .87rem; color: var(--ink-3); line-height: 1.55;
+}
+.audit-main strong { color: var(--ink-2); font-weight: 700; }
+.audit-main .entity {
+  font-family: 'DM Mono', monospace; font-size: .78rem;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; color: var(--muted);
+}
+.audit-meta {
+  display: flex; gap: 12px; align-items: center;
+  margin-top: 4px; flex-wrap: wrap;
+}
+.audit-time { font-size: .73rem; color: var(--muted-light); font-family: 'DM Mono', monospace; }
+.audit-ip   { font-size: .72rem; color: var(--muted-light); font-family: 'DM Mono', monospace; }
+.audit-tag  {
+  font-size: .68rem; font-weight: 700; padding: 1px 7px;
+  border-radius: 10px; white-space: nowrap;
+}
+
+/* Action type color chips */
+.tag-create  { background: var(--green-light);  color: #065F46; }
+.tag-update  { background: var(--blue-light);   color: var(--blue-dark); }
+.tag-delete  { background: var(--red-light);    color: #991B1B; }
+.tag-login   { background: var(--teal-light);   color: #0F766E; }
+.tag-export  { background: var(--purple-light); color: #5B21B6; }
+.tag-setting { background: var(--amber-light);  color: #92400E; }
+.tag-payment { background: #E0F2FE;             color: #0369A1; }
+.tag-access  { background: var(--red-light);    color: #991B1B; }
+
+/* User pill */
+.actor-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2px 9px 2px 4px;
+  font-size: .73rem; font-weight: 600; color: var(--ink-3);
+}
+.ap-avatar {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .55rem; font-weight: 800; color: #fff;
+}
+
+/* Diff block */
+.audit-diff {
+  display: none; margin-top: 8px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; font-size: .78rem;
+}
+.audit-diff.open { display: block; }
+.diff-row { display: flex; gap: 0; }
+.diff-field { padding: 5px 12px; background: var(--bg); border-right: 1px solid var(--border); font-weight: 700; color: var(--muted); min-width: 120px; font-size: .72rem; }
+.diff-old   { padding: 5px 12px; flex: 1; background: #FFF5F5; color: #991B1B; border-right: 1px solid var(--border); font-family: 'DM Mono', monospace; }
+.diff-new   { padding: 5px 12px; flex: 1; background: #F0FDF4; color: #065F46; font-family: 'DM Mono', monospace; }
+.diff-row + .diff-row { border-top: 1px solid var(--border); }
+.diff-toggle { font-size: .72rem; font-weight: 700; color: var(--blue); cursor: pointer; background: none; border: none; font-family: 'Plus Jakarta Sans', sans-serif; padding: 0; margin-top: 4px; }
+
+/* Stats strip */
+.audit-stats { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 24px; }
+.ast-block { background: var(--white); padding: 16px 18px; }
+.ast-num   { font-size: 1.4rem; font-weight: 800; color: var(--ink); }
+.ast-lbl   { font-size: .72rem; color: var(--muted); margin-top: 3px; font-weight: 600; }
+
+/* Filters row */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+
+/* Severity badge right side */
+.audit-severity {
+  flex-shrink: 0; font-size: .7rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 8px; margin-top: 2px;
+}
+.sev-high   { background: var(--red-light);   color: #991B1B; }
+.sev-medium { background: var(--amber-light); color: #92400E; }
+.sev-low    { background: var(--green-light); color: #065F46; }
+.sev-info   { background: var(--blue-light);  color: var(--blue-dark); }
+
+/* Toast */
+.toast-stack { position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px; }
+.toast { background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s; }
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:900px){.audit-stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.audit-stats{grid-template-columns:1fr 1fr;}.audit-ip{display:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> System Monitoring</div>
+        <div class="page-title">Audit Log</div>
+        <div class="page-sub">A complete, tamper-proof record of every action performed in the system &middot; who did what, and when.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="openModal('exportModal')">Export Log</button>
+        <button class="btn btn-outline" style="color:var(--red);border-color:var(--red);" onclick="openModal('retentionModal')">Retention Policy</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="audit-stats anim-1">
+      <div class="ast-block"><div class="ast-num">4,821</div><div class="ast-lbl">Total Events</div></div>
+      <div class="ast-block"><div class="ast-num">23</div><div class="ast-lbl">Today's Actions</div></div>
+      <div class="ast-block"><div class="ast-num" style="color:var(--red);">4</div><div class="ast-lbl">High Severity</div></div>
+      <div class="ast-block"><div class="ast-num">18</div><div class="ast-lbl">Active Users</div></div>
+      <div class="ast-block"><div class="ast-num">90d</div><div class="ast-lbl">Retention Period</div></div>
+    </div>
+
+    <!-- High severity alert -->
+    <div class="alert anim-1" style="background:var(--red-light);border:1px solid #FECACA;color:#7F1D1D;margin-bottom:20px;">
+      <span class="alert-icon"></span>
+      <div>
+        <div class="alert-title">4 high-severity events in the last 24 hours</div>
+        Includes: 2 failed login attempts for admin account, 1 bulk student record deletion, 1 permission escalation.
+      </div>
+      <button class="btn btn-sm btn-outline" style="margin-left:auto;flex-shrink:0;border-color:var(--red);color:var(--red);" onclick="filterSeverity('high')">View High Severity &middot;</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row anim-2">
+      <div class="search-bar" style="width:260px;">
+        <span class="sb-search-icon">&#x1F50D;</span>
+        <input type="text" placeholder="Search by user, action, resource&middot;" oninput="filterLog(this.value)">
+      </div>
+      <select class="form-select" style="width:140px;padding:8px 10px;" id="filterAction" onchange="applyFilters()">
+        <option value="">All Actions</option>
+        <option value="create">Create</option>
+        <option value="update">Update</option>
+        <option value="delete">Delete</option>
+        <option value="login">Login / Auth</option>
+        <option value="export">Export</option>
+        <option value="setting">Settings</option>
+        <option value="payment">Payment</option>
+      </select>
+      <select class="form-select" style="width:130px;padding:8px 10px;" id="filterUser" onchange="applyFilters()">
+        <option value="">All Users</option>
+        <option>Abdur Rahman</option>
+        <option>Nasrin Khatun</option>
+        <option>Tanvir Ahmed</option>
+        <option>System</option>
+      </select>
+      <input type="date" class="form-input" style="width:150px;padding:8px 10px;" id="filterDate" onchange="applyFilters()">
+      <select class="form-select" style="width:130px;padding:8px 10px;" id="filterSeverity" onchange="applyFilters()">
+        <option value="">All Severity</option>
+        <option value="high"> High</option>
+        <option value="medium"> Medium</option>
+        <option value="low"> Low</option>
+        <option value="info"> Info</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <!-- Main audit log card -->
+    <div class="card anim-2">
+      <div class="card-header" style="padding:16px 22px;">
+        <div>
+          <div class="card-title">Activity Timeline</div>
+          <div class="card-sub">Showing most recent 50 of 4,821 events</div>
+        </div>
+        <div class="page-actions">
+          <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);">
+            <div class="live-dot"></div> Live updates on
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="refreshLog()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="audit-feed" id="auditFeed">
+
+          <!-- Entry 1 &middot; HIGH: Failed login -->
+          <div class="audit-entry" data-severity="high" data-action="login" data-user="system">
+            <div class="audit-icon" style="background:var(--red-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:var(--red);"></span>Unknown</span>
+                &nbsp;<strong>failed to login</strong> as admin &middot; 3 consecutive failed attempts.
+                IP blocked for 30 minutes.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-access">ACCESS DENIED</span>
+                <span class="audit-severity sev-high">HIGH</span>
+                <span class="audit-time">Today, 09:42 AM</span>
+                <span class="audit-ip">IP: 103.94.12.45</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 2 &middot; UPDATE: Settings changed -->
+          <div class="audit-entry" data-severity="medium" data-action="setting" data-user="abdur">
+            <div class="audit-icon" style="background:var(--amber-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;updated <strong>School Settings</strong> &middot; changed school logo and phone number.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-setting">SETTING</span>
+                <span class="audit-severity sev-medium">MEDIUM</span>
+                <span class="audit-time">Today, 09:18 AM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+                <button class="diff-toggle" onclick="toggleDiff(this)">Show changes</button>
+              </div>
+              <div class="audit-diff">
+                <div class="diff-row">
+                  <div class="diff-field">school_phone</div>
+                  <div class="diff-old">01711-000000</div>
+                  <div class="diff-new">01711-123456</div>
+                </div>
+                <div class="diff-row">
+                  <div class="diff-field">logo_url</div>
+                  <div class="diff-old">logo_old.png</div>
+                  <div class="diff-new">logo_2025.png</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 3 &middot; CREATE: New user -->
+          <div class="audit-entry" data-severity="low" data-action="create" data-user="abdur">
+            <div class="audit-icon" style="background:var(--green-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;created new user account for <strong>Ms. Fatema Begum</strong>
+                <span class="entity">user_id: USR-2024-089</span> with role <strong>Teacher</strong>.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-create">CREATE</span>
+                <span class="audit-severity sev-low">LOW</span>
+                <span class="audit-time">Today, 08:55 AM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 4 &middot; LOGIN: Successful -->
+          <div class="audit-entry" data-severity="info" data-action="login" data-user="nasrin">
+            <div class="audit-icon" style="background:var(--teal-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#2563EB,#3B82F6);">NK</span>Nasrin Khatun</span>
+                &nbsp;<strong>logged in</strong> successfully. Device: Chrome / Windows 11.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-login"> LOGIN</span>
+                <span class="audit-severity sev-info">INFO</span>
+                <span class="audit-time">Today, 08:32 AM</span>
+                <span class="audit-ip">IP: 192.168.1.22</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 5 &middot; DELETE: HIGH -->
+          <div class="audit-entry" data-severity="high" data-action="delete" data-user="tanvir">
+            <div class="audit-icon" style="background:var(--red-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#D97706,#F59E0B);">TA</span>Tanvir Ahmed</span>
+                &nbsp;<strong>bulk-deleted 42 student records</strong> from Class VI&middot;B
+                <span class="entity">class_id: CLS-VI-B</span>. Records moved to trash (recoverable for 30d).
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-delete">DELETE</span>
+                <span class="audit-severity sev-high">HIGH</span>
+                <span class="audit-time">Yesterday, 04:11 PM</span>
+                <span class="audit-ip">IP: 192.168.1.88</span>
+                <button class="btn btn-sm btn-outline" style="font-size:.7rem;padding:3px 9px;" onclick="showToast('Recovery dialog&middot;','&#x2705;')">Recover</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 6 &middot; EXPORT -->
+          <div class="audit-entry" data-severity="medium" data-action="export" data-user="abdur">
+            <div class="audit-icon" style="background:var(--purple-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;exported <strong>Full Student List</strong> (1,248 records) as Excel (.xlsx).
+                File: <span class="entity">students_2024-25_export.xlsx</span>
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-export"> EXPORT</span>
+                <span class="audit-severity sev-medium">MEDIUM</span>
+                <span class="audit-time">Yesterday, 02:30 PM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 7 &middot; UPDATE: Role change -->
+          <div class="audit-entry" data-severity="high" data-action="update" data-user="abdur">
+            <div class="audit-icon" style="background:var(--amber-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;changed role of <strong>Tanvir Ahmed</strong>
+                <span class="entity">user_id: USR-2024-034</span>
+                from <strong>Teacher</strong> &middot; <strong>Admin</strong>.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-update">UPDATE</span>
+                <span class="audit-severity sev-high">HIGH</span>
+                <span class="audit-time">Yesterday, 11:14 AM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+                <button class="diff-toggle" onclick="toggleDiff(this)">Show changes</button>
+              </div>
+              <div class="audit-diff">
+                <div class="diff-row">
+                  <div class="diff-field">role</div>
+                  <div class="diff-old">Teacher</div>
+                  <div class="diff-new">Admin</div>
+                </div>
+                <div class="diff-row">
+                  <div class="diff-field">permissions</div>
+                  <div class="diff-old">read_only:students</div>
+                  <div class="diff-new">full_access:all</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 8 &middot; PAYMENT -->
+          <div class="audit-entry" data-severity="info" data-action="payment" data-user="system">
+            <div class="audit-icon" style="background:#E0F2FE;"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:#0369A1;">SY</span>System</span>
+                &nbsp;<strong>subscription payment processed</strong> &middot; ৳4,800.00 deducted for Growth Plan (Jan 2025).
+                Transaction: <span class="entity">TXN-2025-0001</span>
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-payment"> PAYMENT</span>
+                <span class="audit-severity sev-info">INFO</span>
+                <span class="audit-time">Jan 1, 2025 &middot; 12:00 AM</span>
+                <span class="audit-ip">Automated</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 9 &middot; CREATE: New class -->
+          <div class="audit-entry" data-severity="low" data-action="create" data-user="abdur">
+            <div class="audit-icon" style="background:var(--green-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;created new class <strong>Class XI&middot;C (Humanities)</strong> with capacity 40.
+                <span class="entity">class_id: CLS-XI-C</span>
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-create">CREATE</span>
+                <span class="audit-severity sev-low">LOW</span>
+                <span class="audit-time">Dec 28, 2024 &middot; 03:22 PM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 10 &middot; UPDATE: Exam result published -->
+          <div class="audit-entry" data-severity="medium" data-action="update" data-user="nasrin">
+            <div class="audit-icon" style="background:var(--blue-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#2563EB,#3B82F6);">NK</span>Nasrin Khatun</span>
+                &nbsp;<strong>published exam results</strong> for Annual Exam 2024 &middot; Class IX (Science A).
+                342 result records updated. Status: <strong>Draft Published</strong>.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-update">UPDATE</span>
+                <span class="audit-severity sev-medium">MEDIUM</span>
+                <span class="audit-time">Dec 26, 2024 &middot; 10:45 AM</span>
+                <span class="audit-ip">IP: 192.168.1.22</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 11 &middot; LOGOUT -->
+          <div class="audit-entry" data-severity="info" data-action="login" data-user="tanvir">
+            <div class="audit-icon" style="background:var(--teal-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#D97706,#F59E0B);">TA</span>Tanvir Ahmed</span>
+                &nbsp;<strong>logged out</strong>. Session duration: 2h 14m.
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-login">LOGOUT</span>
+                <span class="audit-severity sev-info">INFO</span>
+                <span class="audit-time">Dec 25, 2024 &middot; 06:02 PM</span>
+                <span class="audit-ip">IP: 192.168.1.88</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Entry 12 &middot; DELETE: Subject -->
+          <div class="audit-entry" data-severity="medium" data-action="delete" data-user="abdur">
+            <div class="audit-icon" style="background:var(--red-light);"></div>
+            <div class="audit-body">
+              <div class="audit-main">
+                <span class="actor-pill"><span class="ap-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1);">AR</span>Abdur Rahman</span>
+                &nbsp;deleted subject <strong>Higher Mathematics (H-MATH)</strong> from Class XI.
+                <span class="entity">subj_id: SUBJ-089</span>
+              </div>
+              <div class="audit-meta">
+                <span class="audit-tag tag-delete">DELETE</span>
+                <span class="audit-severity sev-medium">MEDIUM</span>
+                <span class="audit-time">Dec 22, 2024 &middot; 09:30 AM</span>
+                <span class="audit-ip">IP: 192.168.1.104</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- #auditFeed -->
+      </div><!-- .card-body -->
+
+      <div class="card-footer">
+        <span class="text-sm text-muted">Showing 12 of 4,821 events &middot; Retention: 90 days</span>
+        <div class="pagination">
+          <button class="pg-btn">&middot;</button>
+          <button class="pg-btn on">1</button>
+          <button class="pg-btn" onclick="showToast('Page 2')">2</button>
+          <button class="pg-btn" onclick="showToast('Page 3')">3</button>
+          <span style="padding:0 4px;color:var(--muted);">&middot;</span>
+          <button class="pg-btn" onclick="showToast('Last page')">402</button>
+          <button class="pg-btn">&middot;</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- page-body -->
+</main>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div><div class="modal-title">Export Audit Log</div><div class="modal-sub">Download a filtered or full copy of the audit log.</div></div>
+      <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-4">
+        <label class="form-label">Date Range</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" class="form-input" value="2025-01-01">
+          <span style="color:var(--muted);"></span>
+          <input type="date" class="form-input" value="2025-02-24">
+        </div>
+      </div>
+      <div class="form-group mb-4">
+        <label class="form-label">Include Actions</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" checked style="accent-color:var(--blue);"> Creates</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" checked style="accent-color:var(--blue);"> Updates</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" checked style="accent-color:var(--blue);"> Deletes</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" style="accent-color:var(--blue);"> Logins</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" checked style="accent-color:var(--blue);"> Exports</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;"><input type="checkbox" style="accent-color:var(--blue);"> Payments</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Format</label>
+        <div style="display:flex;gap:10px;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;">
+            <input type="radio" name="expFmt" checked style="accent-color:var(--blue);"> CSV
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;">
+            <input type="radio" name="expFmt" style="accent-color:var(--blue);"> Excel (.xlsx)
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:.84rem;font-weight:600;">
+            <input type="radio" name="expFmt" style="accent-color:var(--blue);"> PDF Report
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="exportLog()">Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETENTION POLICY MODAL -->
+<div class="modal-overlay" id="retentionModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div><div class="modal-title">Audit Log Retention Policy</div><div class="modal-sub">Configure how long audit logs are kept before auto-deletion.</div></div>
+      <button class="modal-close" onclick="closeModal('retentionModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-4">
+        <label class="form-label">Retention Period</label>
+        <select class="form-select">
+          <option>30 days</option>
+          <option selected>90 days</option>
+          <option>180 days</option>
+          <option>365 days (1 year)</option>
+          <option>Never auto-delete</option>
+        </select>
+        <div class="form-hint" style="margin-top:6px;">Logs older than this period will be automatically purged. This cannot be undone.</div>
+      </div>
+      <div class="toggle-wrap mb-4">
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        <span class="toggle-label">Alert me before auto-deletion runs</span>
+      </div>
+      <div class="toggle-wrap">
+        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        <span class="toggle-label">Exclude high-severity events from auto-deletion</span>
+      </div>
+      <div class="alert" style="background:var(--red-light);border:1px solid #FECACA;color:#7F1D1D;font-size:.8rem;padding:10px 12px;border-radius:8px;margin-top:16px;">
+         Changing this setting will apply to all future log entries. Existing logs within the new window are unaffected.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('retentionModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRetention()">Save Policy</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o)o.classList.remove('open'); }));
+
+/* Diff toggle */
+function toggleDiff(btn){
+  const diff = btn.closest('.audit-body').querySelector('.audit-diff');
+  diff.classList.toggle('open');
+  btn.textContent = diff.classList.contains('open') ? 'Hide changes' : 'Show changes';
+}
+
+/* Filters */
+function filterLog(q){
+  const lq = q.toLowerCase();
+  document.querySelectorAll('.audit-entry').forEach(row => {
+    row.style.display = (!lq || row.textContent.toLowerCase().includes(lq)) &middot; '' : 'none';
+  });
+}
+function applyFilters(){
+  const action = document.getElementById('filterAction').value.toLowerCase();
+  const user   = document.getElementById('filterUser').value.toLowerCase();
+  const sev    = document.getElementById('filterSeverity').value.toLowerCase();
+  document.querySelectorAll('.audit-entry').forEach(row => {
+    const matchAction = !action || row.dataset.action === action;
+    const matchSev    = !sev    || row.dataset.severity === sev;
+    row.style.display = (matchAction && matchSev) &middot; '' : 'none';
+  });
+}
+function filterSeverity(sev){
+  document.getElementById('filterSeverity').value = sev;
+  applyFilters();
+}
+function clearFilters(){
+  document.getElementById('filterAction').value = '';
+  document.getElementById('filterUser').value = '';
+  document.getElementById('filterSeverity').value = '';
+  document.getElementById('filterDate').value = '';
+  document.querySelectorAll('.audit-entry').forEach(row => row.style.display = '');
+  showToast('Filters cleared','&#x2705;');
+}
+function refreshLog(){ showToast('Log refreshed','&#x2705;'); }
+function exportLog(){ closeModal('exportModal'); showToast('Preparing export&middot;','&#x2705;'); setTimeout(()=>showToast('Download ready!','&#x2705;'),1500); }
+function saveRetention(){ closeModal('retentionModal'); showToast('Retention policy saved','&#x2705;'); }
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

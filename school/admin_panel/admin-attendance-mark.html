@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+.att-selector{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.att-selector label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block;}
+.sel-g{display:flex;flex-direction:column;}
+.vdiv{width:1px;height:36px;background:var(--border);align-self:flex-end;}
+.att-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.as-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);}
+.as-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.as-num{font-size:1.3rem;font-weight:800;color:var(--ink);}
+.as-lbl{font-size:.7rem;color:var(--muted);font-weight:600;}
+.as-pct{font-size:.8rem;font-weight:700;margin-left:auto;}
+.period-tabs{display:flex;gap:4px;flex-wrap:wrap;}
+.pt-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;background:var(--white);font-family:'Plus Jakarta Sans',sans-serif;transition:all .12s;}
+.pt-btn.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.quick-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);}
+.qdiv{width:1px;height:24px;background:var(--border);}
+.att-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .12s;}
+.att-row:last-child{border:none;}
+.att-row:hover{background:var(--bg);}
+.att-row.P{background:#F0FDF4;}
+.att-row.A{background:#FFF5F5;}
+.att-row.L{background:#FFFBEB;}
+.att-row.V{background:var(--blue-pale);}
+.ar-num{width:28px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:.74rem;color:var(--muted);}
+.ar-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0;}
+.ar-name{flex:1;min-width:0;}
+.ar-en{font-size:.86rem;font-weight:700;color:var(--ink-2);}
+.ar-id{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.status-btns{display:flex;gap:3px;width:220px;flex-shrink:0;}
+.sb{padding:5px 9px;border-radius:7px;border:1.5px solid transparent;font-size:.72rem;font-weight:800;cursor:pointer;transition:all .12s;background:var(--bg);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;}
+.sb.P{background:var(--green-light);border-color:#6EE7B7;color:#065F46;}
+.sb.A{background:var(--red-light);border-color:#FCA5A5;color:#991B1B;}
+.sb.L{background:var(--amber-light);border-color:#FDE68A;color:#92400E;}
+.sb.V{background:var(--blue-light);border-color:#BAE6FD;color:var(--blue-dark);}
+.sb.on{box-shadow:0 1px 4px rgba(0,0,0,.12);transform:scale(1.05);}
+.note-inp{width:140px;flex-shrink:0;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.73rem;font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink-3);}
+.note-inp:focus{outline:none;border-color:var(--blue);background:var(--white);}
+.prev-days{display:flex;gap:4px;width:88px;flex-shrink:0;justify-content:flex-end;}
+.pd{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:800;}
+.pd-P{background:var(--green-light);color:#065F46;}
+.pd-A{background:var(--red-light);color:#991B1B;}
+.pd-L{background:var(--amber-light);color:#92400E;}
+.pd-V{background:var(--blue-light);color:var(--blue-dark);}
+.save-strip{position:sticky;bottom:0;z-index:10;background:var(--white);border-top:1.5px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+.toast-stack{position:fixed;bottom:70px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:ti .25s ease both;transition:opacity .3s;}
+@keyframes ti{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.att-stats{grid-template-columns:repeat(3,1fr);}.note-inp,.prev-days{display:none;}}
+@media(max-width:640px){.att-stats{grid-template-columns:1fr 1fr;}.status-btns{width:180px;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">&#x1F4CA; Attendance</div>
+        <div class="page-title">Mark Attendance</div>
+        <div class="page-sub">Record daily attendance per class, section, and period. Auto-saves every 30 seconds.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="copyYesterday()"> Copy Yesterday</button>
+        <button class="btn btn-primary" onclick="saveAttendance()"> Save Attendance</button>
+      </div>
+    </div>
+
+    <!-- Selector -->
+    <div class="att-selector anim-1">
+      <div class="sel-g">
+        <label>Date</label>
+        <input type="date" class="form-input" id="attDate" style="width:155px;padding:8px 10px;" value="2025-02-24" onchange="loadAtt()">
+      </div>
+      <div class="vdiv"></div>
+      <div class="sel-g">
+        <label>Class</label>
+        <select class="form-select" style="width:115px;padding:8px 10px;" onchange="loadAtt()">
+          <option>Class IX</option><option>Class I</option><option>Class II</option>
+          <option>Class V</option><option>Class VI</option><option>Class X</option>
+          <option>Class XI</option><option>Class XII</option>
+        </select>
+      </div>
+      <div class="sel-g">
+        <label>Section</label>
+        <select class="form-select" style="width:115px;padding:8px 10px;" onchange="loadAtt()">
+          <option>Section A</option><option>Section B</option><option>Section C</option>
+        </select>
+      </div>
+      <div class="vdiv"></div>
+      <div class="sel-g">
+        <label>Period</label>
+        <div class="period-tabs">
+          <button class="pt-btn on" onclick="setPeriod(this,'Full Day')">Full Day</button>
+          <button class="pt-btn" onclick="setPeriod(this,'1st')">1st</button>
+          <button class="pt-btn" onclick="setPeriod(this,'2nd')">2nd</button>
+          <button class="pt-btn" onclick="setPeriod(this,'3rd')">3rd</button>
+          <button class="pt-btn" onclick="setPeriod(this,'4th')">4th</button>
+          <button class="pt-btn" onclick="setPeriod(this,'5th')">5th</button>
+          <button class="pt-btn" onclick="setPeriod(this,'6th')">6th</button>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 1.5s infinite;"></div>
+        <span style="font-size:.76rem;font-weight:700;color:var(--green);">Auto-saving</span>
+        <span style="font-size:.72rem;color:var(--muted);" id="lastSaved">09:42 AM</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="att-stats anim-1">
+      <div class="as-card"><div class="as-dot" style="background:var(--blue);"></div><div><div class="as-num" id="sTotal">42</div><div class="as-lbl">Total Students</div></div></div>
+      <div class="as-card"><div class="as-dot" style="background:var(--green);"></div><div><div class="as-num" id="sPresent" style="color:var(--green);">38</div><div class="as-lbl">Present</div></div><div class="as-pct" style="color:var(--green);" id="sPPct">90%</div></div>
+      <div class="as-card"><div class="as-dot" style="background:var(--red);"></div><div><div class="as-num" id="sAbsent" style="color:var(--red);">3</div><div class="as-lbl">Absent</div></div><div class="as-pct" style="color:var(--red);" id="sAPct">7%</div></div>
+      <div class="as-card"><div class="as-dot" style="background:var(--amber);"></div><div><div class="as-num" id="sLate" style="color:var(--amber);">1</div><div class="as-lbl">Late</div></div><div class="as-pct" style="color:var(--amber);" id="sLPct">2%</div></div>
+      <div class="as-card"><div class="as-dot" style="background:var(--blue);"></div><div><div class="as-num" id="sLeave">0</div><div class="as-lbl">On Leave</div></div><div class="as-pct" id="sVPct">0%</div></div>
+    </div>
+
+    <div class="card anim-2" style="overflow:visible;">
+      <!-- Quick bar -->
+      <div class="quick-bar">
+        <span style="font-size:.76rem;font-weight:700;color:var(--muted);">Mark all:</span>
+        <button class="btn btn-sm" style="background:var(--green-light);color:#065F46;border:1.5px solid #6EE7B7;font-weight:800;font-size:.75rem;" onclick="markAll('P')">All Present</button>
+        <button class="btn btn-sm" style="background:var(--red-light);color:#991B1B;border:1.5px solid #FCA5A5;font-weight:800;font-size:.75rem;" onclick="markAll('A')">All Absent</button>
+        <div class="qdiv"></div>
+        <button class="btn btn-sm btn-ghost" onclick="undoLast()">Undo</button>
+        <div class="qdiv"></div>
+        <div class="search-bar" style="width:190px;"><span class="sb-search-icon">&#x1F50D;</span><input type="text" placeholder="Find student&middot;" oninput="filterRows(this.value)"></div>
+        <span style="margin-left:auto;font-size:.76rem;color:var(--muted);" id="submittedBadge"></span>
+      </div>
+
+      <!-- Table header -->
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--bg);border-bottom:2px solid var(--border);">
+        <div style="width:28px;flex-shrink:0;"></div>
+        <div style="width:34px;flex-shrink:0;"></div>
+        <div style="flex:1;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Student</div>
+        <div style="width:220px;flex-shrink:0;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Status</div>
+        <div style="width:140px;flex-shrink:0;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Note / Reason</div>
+        <div style="width:88px;flex-shrink:0;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:right;">Last 5 days</div>
+      </div>
+
+      <div id="attBody"></div>
+    </div>
+
+    <div class="save-strip">
+      <div style="flex:1;font-size:.84rem;color:var(--muted);">
+        <span id="ss1" style="font-weight:800;color:var(--ink-2);">38</span> Present &middot;
+        <span id="ss2" style="font-weight:800;color:var(--ink-2);">3</span> Absent &middot;
+        <span id="ss3" style="font-weight:800;color:var(--ink-2);">1</span> Late &middot;
+        <span id="ss4" style="font-weight:800;color:var(--ink-2);">0</span> Leave
+        <span style="margin-left:12px;font-size:.74rem;color:var(--muted);">Class IX&middot;A &middot; Full Day &middot; Feb 24, 2025</span>
+      </div>
+      <button class="btn btn-outline" style="font-size:.8rem;" onclick="showToast('SMS sent to 3 absent parents','&#x2705;')"> SMS Absent Parents</button>
+      <button class="btn btn-primary" onclick="saveAttendance()"> Save &amp; Submit</button>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46','#9D174D','#1D4ED8'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Mahmud','Nafisa','Tahsin','Sumaiya','Karim','Mitu','Rezaul','Shirina','Tanvir','Fatema','Bilal','Ayasha','Nazmul','Rifat'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+const PREVS=['PPPPP','PPPPA','PPPAP','PPPLP','PPAPP','PPLPP','PAPPP','APPPP','PPPPP','PPPPP','PPPPV','PPPPP','PPLPP','PPPAP','PPPPP','PPAPP','PPPPP','PAPPP','PPPPP','PPPPA','PPPPP','PPPPP'];
+const students=FIRST.map((fn,i)=>{
+  const ln=LAST[i%LAST.length];
+  return{name:fn+' '+ln,initials:fn[0]+LAST[i%LAST.length][0],color:COLORS[i%COLORS.length],
+    id:'STU-2024-'+String(i+1).padStart(3,'0'),roll:String(i+1).padStart(3,'0'),
+    status:i===2?'A':i===9?'A':i===14?'A':i===7?'L':i===11?'V':'P',
+    note:'',prev:PREVS[i]};
+});
+let hist=[];
+
+function buildRows(){
+  document.getElementById('attBody').innerHTML=students.map((s,i)=>{
+    const dots=s.prev.split('').map(c=>`<div class="pd pd-${c}" title="${{P:'Present',A:'Absent',L:'Late',V:'Leave'}[c]}">${c}</div>`).join('');
+    return`<div class="att-row ${s.status}" id="row${i}" data-idx="${i}">
+      <div class="ar-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="ar-av" style="background:${s.color};">${s.initials}</div>
+      <div class="ar-name"><div class="ar-en">${s.name}</div><div class="ar-id">${s.id} &middot; Roll ${s.roll}</div></div>
+      <div class="status-btns">
+        <button class="sb P ${s.status==='P'?'on':''}" onclick="setSt(${i},'P')">P</button>
+        <button class="sb A ${s.status==='A'?'on':''}" onclick="setSt(${i},'A')">A</button>
+        <button class="sb L ${s.status==='L'?'on':''}" onclick="setSt(${i},'L')">Late</button>
+        <button class="sb V ${s.status==='V'?'on':''}" onclick="setSt(${i},'V')"> Leave</button>
+      </div>
+      <input class="note-inp" type="text" placeholder="Add note&middot;" value="${s.note}" oninput="students[${i}].note=this.value" style="${s.status==='P'?'opacity:.4;':''}">
+      <div class="prev-days">${dots}</div>
+    </div>`;
+  }).join('');
+  calcStats();
+}
+
+function setSt(idx,st){
+  hist.push({idx,prev:students[idx].status});
+  students[idx].status=st;
+  const row=document.getElementById('row'+idx);
+  row.className='att-row '+st;
+  row.querySelectorAll('.sb').forEach(b=>b.classList.remove('on'));
+  const map={P:0,A:1,L:2,V:3};
+  row.querySelectorAll('.sb')[map[st]]?.classList.add('on');
+  row.querySelector('.note-inp').style.opacity=st==='P'?'.4':'1';
+  calcStats();
+}
+function markAll(st){
+  hist.push({bulk:true,states:students.map(s=>s.status)});
+  students.forEach((_,i)=>setSt(i,st));
+  showToast(st==='P'?'All marked Present':'All marked Absent',st==='P'?'&#x2713;':'');
+}
+function undoLast(){
+  if(!hist.length){showToast('Nothing to undo','&#x2705;');return;}
+  const l=hist.pop();
+  if(l.bulk){l.states.forEach((s,i)=>setSt(i,s));}
+  else{setSt(l.idx,l.prev);}
+  showToast('Undone','&#x2705;');
+}
+function calcStats(){
+  const c={P:0,A:0,L:0,V:0};
+  students.forEach(s=>c[s.status]=(c[s.status]||0)+1);
+  const t=students.length;
+  document.getElementById('sPresent').textContent=c.P||0;
+  document.getElementById('sAbsent').textContent=c.A||0;
+  document.getElementById('sLate').textContent=c.L||0;
+  document.getElementById('sLeave').textContent=c.V||0;
+  document.getElementById('sPPct').textContent=Math.round((c.P||0)/t*100)+'%';
+  document.getElementById('sAPct').textContent=Math.round((c.A||0)/t*100)+'%';
+  document.getElementById('sLPct').textContent=Math.round((c.L||0)/t*100)+'%';
+  document.getElementById('sVPct').textContent=Math.round((c.V||0)/t*100)+'%';
+  document.getElementById('ss1').textContent=c.P||0;
+  document.getElementById('ss2').textContent=c.A||0;
+  document.getElementById('ss3').textContent=c.L||0;
+  document.getElementById('ss4').textContent=c.V||0;
+}
+function filterRows(q){
+  const lq=q.toLowerCase();
+  document.querySelectorAll('.att-row').forEach(r=>{r.style.display=(!lq||r.textContent.toLowerCase().includes(lq))?'':'none';});
+}
+function setPeriod(btn,p){
+  document.querySelectorAll('.pt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  showToast('Period: '+p,'&#x2705;');
+}
+function loadAtt(){showToast('Loading attendance&middot;','&#x2705;');setTimeout(()=>{buildRows();showToast('Loaded','&#x2705;');},350);}
+function copyYesterday(){showToast("Copied from Feb 23 record",'&#x2705;');}
+function saveAttendance(){
+  const n=new Date();
+  document.getElementById('lastSaved').textContent=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('submittedBadge').innerHTML='<span class="badge badge-green" style="font-size:.72rem;">Submitted</span>';
+  showToast('Attendance saved & submitted','&#x2705;');
+}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2200);setTimeout(()=>t.remove(),2500);
+}
+buildRows();
+setInterval(()=>{const n=new Date();document.getElementById('lastSaved').textContent=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');},30000);
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

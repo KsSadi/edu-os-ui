@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.settings-nav{display:flex;flex-direction:column;gap:2px;}
+.sn-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;cursor:pointer;font-size:.87rem;font-weight:600;color:var(--ink-3);transition:all .13s;text-decoration:none;}
+.sn-item:hover{background:var(--bg);color:var(--ink-2);}
+.sn-item.on{background:var(--teacher-pale);color:var(--teacher-dark);}
+.sn-icon{width:28px;height:28px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.sn-item.on .sn-icon{background:var(--teacher-light);}
+.settings-section{display:none;}
+.settings-section.on{display:block;}
+.avatar-upload{display:flex;align-items:center;gap:18px;margin-bottom:24px;}
+.profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:var(--teacher);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;flex-shrink:0;}
+.toggle-sw{position:relative;display:inline-block;width:42px;height:24px;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:24px;transition:.3s;}
+.toggle-track:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle-sw input:checked + .toggle-track{background:var(--teacher);}
+.toggle-sw input:checked + .toggle-track:before{transform:translateX(18px);}
+.notif-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+.notif-row:last-child{border:none;}
+.notif-label{font-size:.875rem;font-weight:600;color:var(--ink-2);}
+.notif-desc{font-size:.77rem;color:var(--muted);margin-top:2px;}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Account</div>
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Manage your profile, security, and notification preferences.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start;">
+      <!-- Nav -->
+      <div class="card">
+        <div class="card-body">
+          <div class="settings-nav">
+            <a class="sn-item on" onclick="showSection('profile',this)"><div class="sn-icon">👤</div>Profile</a>
+            <a class="sn-item" onclick="showSection('security',this)"><div class="sn-icon">🔒</div>Security</a>
+            <a class="sn-item" onclick="showSection('notifications',this)"><div class="sn-icon">🔔</div>Notifications</a>
+            <a class="sn-item" onclick="showSection('display',this)"><div class="sn-icon">🎨</div>Display</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sections -->
+      <div>
+        <!-- Profile -->
+        <div class="settings-section on" id="sec-profile">
+          <div class="card">
+            <div class="card-header"><div class="card-title">👤 Profile Information</div></div>
+            <div class="card-body">
+              <div class="avatar-upload">
+                <div class="profile-avatar-lg">DK</div>
+                <div>
+                  <div style="font-size:.95rem;font-weight:700;color:var(--ink-2);">Mr. Delwar Khan</div>
+                  <div style="font-size:.8rem;color:var(--muted);">Mathematics Teacher · Class 8-A Class Teacher</div>
+                  <button class="btn btn-xs btn-secondary" style="margin-top:8px;">📷 Change Photo</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" value="Delwar">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" value="Khan">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="delwar.khan@dhakahigh.edu.bd">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone</label>
+                  <input type="tel" class="form-input" value="+880 1712-345678">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Subject</label>
+                  <input type="text" class="form-input" value="Mathematics">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Employee ID</label>
+                  <input type="text" class="form-input" value="TCH-2019-042" readonly>
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                  <label class="form-label">Qualifications</label>
+                  <input type="text" class="form-input" value="M.Sc Mathematics, B.Ed">
+                </div>
+              </div>
+              <div style="margin-top:16px;display:flex;gap:8px;">
+                <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">💾 Save Changes</button>
+                <button class="btn btn-secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <div class="settings-section" id="sec-security">
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔒 Security</div></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" placeholder="Enter current password">
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" placeholder="Enter new password">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-input" placeholder="Confirm new password">
+              </div>
+              <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">🔒 Update Password</button>
+              <hr style="margin:20px 0;border-color:var(--border);">
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink-2);margin-bottom:12px;">Active Sessions</div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
+                <div style="font-size:1.3rem;">💻</div>
+                <div style="flex:1;">
+                  <div style="font-size:.84rem;font-weight:600;">Chrome on Windows</div>
+                  <div style="font-size:.74rem;color:var(--muted);">192.168.1.5 · Last active: Now</div>
+                </div>
+                <span class="badge badge-green">Current</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;">
+                <div style="font-size:1.3rem;">📱</div>
+                <div style="flex:1;">
+                  <div style="font-size:.84rem;font-weight:600;">Mobile Browser</div>
+                  <div style="font-size:.74rem;color:var(--muted);">192.168.1.12 · Last active: 2h ago</div>
+                </div>
+                <button class="btn btn-xs btn-danger">Revoke</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-section" id="sec-notifications">
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔔 Notification Preferences</div></div>
+            <div class="card-body">
+              <div class="notif-row"><div><div class="notif-label">New Message</div><div class="notif-desc">Alert when you receive a message from parents or students</div></div><label class="toggle-sw"><input type="checkbox" checked><span class="toggle-track"></span></label></div>
+              <div class="notif-row"><div><div class="notif-label">Assignment Submission</div><div class="notif-desc">Notify when a student submits an assignment</div></div><label class="toggle-sw"><input type="checkbox" checked><span class="toggle-track"></span></label></div>
+              <div class="notif-row"><div><div class="notif-label">Low Attendance Alert</div><div class="notif-desc">Alert when a student's attendance drops below 75%</div></div><label class="toggle-sw"><input type="checkbox" checked><span class="toggle-track"></span></label></div>
+              <div class="notif-row"><div><div class="notif-label">Notice Board Updates</div><div class="notif-desc">Receive school notice and circular notifications</div></div><label class="toggle-sw"><input type="checkbox"><span class="toggle-track"></span></label></div>
+              <div class="notif-row"><div><div class="notif-label">Email Digest</div><div class="notif-desc">Receive a daily summary via email</div></div><label class="toggle-sw"><input type="checkbox"><span class="toggle-track"></span></label></div>
+              <div style="margin-top:16px;">
+                <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">💾 Save Preferences</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Display -->
+        <div class="settings-section" id="sec-display">
+          <div class="card">
+            <div class="card-header"><div class="card-title">🎨 Display</div></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Language</label>
+                <select class="form-select">
+                  <option selected>English</option>
+                  <option>বাংলা (Bangla)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Timezone</label>
+                <select class="form-select">
+                  <option selected>Asia/Dhaka (GMT+6)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date Format</label>
+                <select class="form-select">
+                  <option selected>DD/MM/YYYY</option>
+                  <option>MM/DD/YYYY</option>
+                  <option>YYYY-MM-DD</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">💾 Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    function showSection(id, el) {
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('on'));
+      document.querySelectorAll('.sn-item').forEach(s => s.classList.remove('on'));
+      document.getElementById('sec-' + id).classList.add('on');
+      el.classList.add('on');
+    }
+    </script>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+</body>
+</html>

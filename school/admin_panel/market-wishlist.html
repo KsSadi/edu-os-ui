@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wishlist — EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* Wishlist grid */
+.wish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.wish-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s;position:relative;}
+.wish-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--mkt);}
+
+/* Remove button (heart) */
+.wc-remove{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s;box-shadow:0 2px 6px rgba(0,0,0,.12);}
+.wc-remove:hover{background:#FFF1F2;transform:scale(1.1);}
+
+/* Card image section */
+.wc-img{height:120px;display:flex;align-items:center;justify-content:center;font-size:3.4rem;background:linear-gradient(135deg,#F0FDF4,#D1FAE5);border-bottom:1px solid var(--border);position:relative;}
+.wc-badge{position:absolute;top:8px;left:8px;background:#DC2626;color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:6px;}
+.wc-badge.new{background:var(--mkt);}
+
+/* Card body */
+.wc-body{padding:14px 16px;}
+.wc-cat{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--mkt);margin-bottom:4px;}
+.wc-name{font-size:.88rem;font-weight:800;color:var(--ink-2);line-height:1.3;margin-bottom:6px;}
+.wc-price-row{display:flex;align-items:baseline;gap:7px;margin-bottom:8px;}
+.wc-price{font-size:1.05rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+.wc-old{font-size:.8rem;font-family:'DM Mono',monospace;color:var(--muted);text-decoration:line-through;}
+.wc-save{font-size:.65rem;font-weight:800;background:#FEF2F2;color:#DC2626;padding:2px 7px;border-radius:6px;}
+
+/* Stock indicator */
+.wc-stock{display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;margin-bottom:12px;}
+.wc-stock.ok{color:var(--mkt);}
+.wc-stock.low{color:#D97706;}
+.wc-stock.out{color:#DC2626;}
+
+/* CTA row */
+.wc-actions{display:flex;gap:8px;}
+.btn-cart{flex:1;padding:9px;border-radius:9px;background:var(--mkt);color:#fff;border:none;font-size:.8rem;font-weight:800;cursor:pointer;transition:all .15s;}
+.btn-cart:hover{background:var(--mkt-dark);}
+.btn-cart.disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.btn-view{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:.9rem;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.btn-view:hover{background:var(--bg);}
+
+/* Sort bar */
+.sort-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.sort-left{font-size:.84rem;color:var(--muted);font-weight:600;}
+.sort-left strong{color:var(--ink);}
+.sort-select{padding:7px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:600;color:var(--ink-2);cursor:pointer;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:80px 20px;}
+.empty-icon{font-size:4.5rem;margin-bottom:16px;}
+.empty-title{font-size:1.05rem;font-weight:900;color:var(--ink-2);margin-bottom:6px;}
+.empty-sub{font-size:.83rem;color:var(--muted);margin-bottom:24px;}
+.btn-primary{background:var(--mkt);color:#fff;border:none;padding:12px 24px;border-radius:11px;font-size:.88rem;font-weight:800;cursor:pointer;transition:all .15s;}
+.btn-primary:hover{background:var(--mkt-dark);transform:translateY(-1px);}
+
+/* Cart summary bar (sticky bottom) */
+.cart-bar{position:fixed;bottom:0;left:242px;right:0;background:var(--white);border-top:1.5px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+.cb-left{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.cb-left strong{color:var(--ink);}
+.cb-actions{display:flex;gap:10px;}
+.btn-cart-all{padding:10px 22px;border-radius:10px;background:var(--mkt);color:#fff;border:none;font-size:.84rem;font-weight:800;cursor:pointer;transition:all .15s;}
+.btn-cart-all:hover{background:var(--mkt-dark);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:72px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div><!-- /wishGrid -->
+
+    <!-- Empty state (hidden by default) -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-icon">🤍</div>
+      <div class="empty-title">Your wishlist is empty</div>
+      <div class="empty-sub">Save items you like by tapping the ❤️ on any product.</div>
+      <button class="btn-primary" onclick="window.location='market-catalogue.html'">Browse Catalogue</button>
+    </div>
+
+    <div style="height:70px;"></div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+let removedCount=0;
+
+function removeWish(id, name){
+  const card=document.getElementById(id);
+  if(!card)return;
+  card.style.opacity='0';card.style.transform='scale(0.9)';card.style.transition='all .2s';
+  setTimeout(()=>{
+    card.remove();removedCount++;
+    showToast(`Removed: ${name}`,'🤍');
+    const remaining=document.querySelectorAll('.wish-card').length;
+    if(remaining===0){document.getElementById('emptyState').style.display='block';document.getElementById('wishGrid').style.display='none';}
+  },220);
+}
+
+function addToCart(name){
+  showToast(`${name} added to cart`,'🛒');
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

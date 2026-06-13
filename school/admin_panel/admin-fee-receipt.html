@@ -1,0 +1,308 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt Viewer &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Layout */
+.receipt-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
+
+/* Receipt list */
+.rct-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.rct-row:hover{background:var(--blue-pale);}
+.rct-row.sel{background:var(--blue-pale);border-left:3px solid var(--blue);}
+.rct-row:last-child{border-bottom:none;}
+.rct-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:700;color:#fff;flex-shrink:0;}
+.rct-name{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.rct-meta{font-size:.7rem;color:var(--muted);}
+.rct-amt{font-family:'DM Mono',monospace;font-weight:800;font-size:.88rem;color:var(--green);}
+.rct-no{font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.rct-method-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* -- RECEIPT PRINT LAYOUT -- */
+.receipt-doc{
+  background:#fff;
+  font-family:'Plus Jakarta Sans','DM Sans',sans-serif;
+  padding:0;
+  border:1px solid #E5E7EB;
+  border-radius:8px;
+  max-width:640px;
+  margin:0 auto;
+  box-shadow:0 4px 24px rgba(0,0,0,.09);
+  overflow:hidden;
+}
+.receipt-head{
+  background:linear-gradient(135deg,#0C1B45 0%,#1E3A8A 100%);
+  color:#fff;
+  padding:28px 32px 22px;
+  position:relative;
+}
+.receipt-head::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:40%;
+  background:url("data:image/svg+xml,%3Csvg width='200' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='160' cy='20' r='80' fill='rgba(255,255,255,.04)'/%3E%3Ccircle cx='200' cy='100' r='60' fill='rgba(255,255,255,.03)'/%3E%3C/svg%3E") no-repeat center;
+}
+.receipt-school{font-size:1.1rem;font-weight:800;letter-spacing:.01em;}
+.receipt-school-sub{font-size:.76rem;opacity:.7;margin-top:3px;}
+.receipt-title{font-size:.78rem;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-top:16px;margin-bottom:4px;}
+.receipt-no{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:.05em;}
+
+.receipt-status-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;background:#F0FDF4;border-bottom:1px solid #A7F3D0;}
+.rsb-paid{font-size:.82rem;font-weight:800;color:#065F46;display:flex;align-items:center;gap:6px;}
+.rsb-date{font-size:.78rem;color:var(--muted);}
+
+.receipt-body{padding:24px 32px;}
+.receipt-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.rig-item{display:flex;flex-direction:column;gap:2px;}
+.rig-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.rig-val{font-size:.86rem;font-weight:700;color:var(--ink);}
+.rig-val.mono{font-family:'DM Mono',monospace;}
+
+/* Items table */
+.receipt-items{border-collapse:collapse;width:100%;margin:16px 0;}
+.receipt-items th{padding:8px 12px;background:var(--bg);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:2px solid var(--border);}
+.receipt-items th:last-child{text-align:right;}
+.receipt-items td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.85rem;}
+.receipt-items td:last-child{text-align:right;font-family:'DM Mono',monospace;font-weight:700;}
+.receipt-items tr:last-child td{border-bottom:none;}
+.receipt-items tfoot td{padding-top:10px;border-top:2px solid var(--border);font-weight:800;}
+
+/* Totals -->
+.receipt-total-row{display:flex;justify-content:flex-end;margin-top:12px;}
+.receipt-total-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 20px;min-width:200px;}
+.rtb-row{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:6px;}
+.rtb-row.final{font-size:.98rem;font-weight:900;padding-top:8px;border-top:1.5px solid var(--border);margin-top:2px;color:var(--blue);}
+
+/* QR code placeholder */
+.receipt-qr{width:72px;height:72px;background:repeating-linear-gradient(45deg,#1E293B 0px,#1E293B 4px,transparent 4px,transparent 8px),repeating-linear-gradient(-45deg,#1E293B 0px,#1E293B 4px,transparent 4px,transparent 8px);border-radius:6px;margin:0 auto;}
+
+/* Footer */
+.receipt-footer{background:var(--bg);border-top:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
+.receipt-note{font-size:.72rem;color:var(--muted);line-height:1.6;max-width:300px;}
+
+/* Print toolbar */
+.print-toolbar{display:flex;gap:10px;padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+
+/* Method dot colors */
+.cash-dot{background:#059669;}
+.bkash-dot{background:#7C3AED;}
+.nagad-dot{background:#E11D48;}
+.bank-dot{background:#2563EB;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media print{
+  .sidebar,.topbar,.print-toolbar,.receipt-layout .card:first-child,.page-header,.toast-stack{display:none!important;}
+  .main{margin:0!important;padding:0!important;}
+  .page-body{padding:0!important;}
+  .receipt-doc{box-shadow:none;border:none;border-radius:0;}
+  @page{margin:.5cm;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Receipts</div>
+        <div class="page-title">Receipt Viewer</div>
+        <div class="page-sub">View, print, and share individual payment receipts. Search by student, receipt number, or date.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="window.print()"> Print Receipt</button>
+      </div>
+    </div>
+
+    <div class="receipt-layout anim-1">
+
+      <!-- Left: Receipt list -->
+      <div class="card">
+        <div class="card-header" style="padding:12px 14px;">
+          <div class="card-title" style="font-size:.86rem;"> Recent Receipts</div>
+          <select class="form-select" style="width:90px;padding:4px 7px;font-size:.74rem;">
+            <option>Feb 2025</option>
+            <option>Jan 2025</option>
+            <option>All Time</option>
+          </select>
+        </div>
+        <div style="padding:8px 14px;border-bottom:1px solid var(--border);">
+          <div class="search-bar" style="width:100%;">
+            <span class="sb-search-icon">&#x1F50D;</span>
+            <input type="text" placeholder="Name or receipt no&middot;" oninput="filterReceipts(this.value)">
+          </div>
+        </div>
+        <div id="receiptList" style="max-height:540px;overflow-y:auto;"></div>
+        <div class="card-footer"><span class="text-sm text-muted">Showing 12 of 1,247 receipts</span></div>
+      </div>
+
+      <!-- Right: Receipt preview -->
+      <div>
+        <!-- Print toolbar -->
+        <div class="card" style="border-radius:14px 14px 0 0;border-bottom:none;">
+          <div class="print-toolbar">
+            <button class="btn btn-sm btn-outline" onclick="window.print()"> Print</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Downloading PDF&middot;','&#x2705;')"> PDF</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Sending SMS receipt to parent&middot;','&#x2705;')"> SMS</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Sending email receipt&middot;','&#x2705;')"> Email</button>
+            <button class="btn btn-sm btn-ghost" onclick="prevReceipt()">&middot; Prev</button>
+            <button class="btn btn-sm btn-ghost" onclick="nextReceipt()">Next &middot;</button>
+            <div style="margin-left:auto;font-size:.78rem;color:var(--muted);" id="receiptNavLabel">Receipt 1 of 12</div>
+          </div>
+        </div>
+
+        <!-- Receipt document -->
+        <div class="card" style="border-radius:0 0 14px 14px;padding:24px;" id="receiptWrap">
+          <div id="receiptDoc"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Tahsin','Mahmud','Sumaiya','Nafisa'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun'];
+const METHODS=['Cash','bKash','Nagad','Bank Transfer'];
+const METHOD_COLORS={'Cash':'cash-dot','bKash':'bkash-dot','Nagad':'nagad-dot','Bank Transfer':'bank-dot'};
+const DATES=['Feb 24','Feb 24','Feb 23','Feb 22','Feb 21','Feb 20','Feb 19','Feb 18','Feb 17','Feb 16','Feb 15','Feb 14'];
+
+const receipts=Array.from({length:12},(_,i)=>{
+  const fn=FIRST[i%FIRST.length],ln=LAST[i%LAST.length];
+  const method=METHODS[i%METHODS.length];
+  const items=[
+    {desc:'Monthly Tuition &middot; '+(['Feb','Jan','Dec','Nov'][i%4])+' 2025',amount:600+((i%4)*100)},
+    ...(i%3===0?[{desc:'Lab Fee &middot; Monthly',amount:150}]:[]),
+    ...(i%5===0?[{desc:'Late Fine',amount:80}]:[]),
+  ];
+  const total=items.reduce((a,b)=>a+b.amount,0);
+  return{
+    idx:i,fn,ln,id:`STU-24-${String(i+1).padStart(3,'0')}`,cls:`IX&middot;${String.fromCharCode(65+i%2)}`,
+    roll:String(i+1).padStart(3,'0'),color:COLORS[i%COLORS.length],
+    rctNo:`RCT-2025-${1800+i}`,method,date:DATES[i],
+    items,total,father:`Mohammad ${FIRST[(i+4)%FIRST.length]}`,
+    txnRef:method!=='Cash'?`TX${Math.random().toString(36).slice(2,10).toUpperCase()}`:null,
+    collectedBy:'Abdur Rahman (Admin)',
+  };
+});
+let selected=0;
+
+function buildReceiptList(filter=''){
+  document.getElementById('receiptList').innerHTML=receipts
+    .filter(r=>!filter||(r.fn+' '+r.ln+r.rctNo).toLowerCase().includes(filter.toLowerCase()))
+    .map(r=>`
+    <div class="rct-row ${r.idx===selected?'sel':''}" onclick="selectReceipt(${r.idx})">
+      <div class="rct-av" style="background:${r.color};">${r.fn[0]}${r.ln[0]}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="rct-name">${r.fn} ${r.ln}</div>
+        <div class="rct-meta">${r.rctNo} &middot; ${r.date}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+        <div class="rct-amt">${r.total}</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div class="rct-method-dot ${METHOD_COLORS[r.method]}"></div>
+          <span style="font-size:.67rem;color:var(--muted);">${r.method}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterReceipts(q){buildReceiptList(q);}
+function selectReceipt(idx){selected=idx;buildReceiptList();renderReceipt();document.getElementById('receiptNavLabel').textContent=`Receipt ${idx+1} of ${receipts.length}`;}
+function prevReceipt(){if(selected>0){selected--;buildReceiptList();renderReceipt();}}
+function nextReceipt(){if(selected<receipts.length-1){selected++;buildReceiptList();renderReceipt();}}
+
+function renderReceipt(){
+  const r=receipts[selected];
+  document.getElementById('receiptDoc').innerHTML=`
+  <div class="receipt-doc">
+    <!-- Header -->
+    <div class="receipt-head">
+      <div class="receipt-school"> Dhaka High School</div>
+      <div class="receipt-school-sub">EIIN: 108765 &middot; Dhaka, Bangladesh &middot; dhaka-high.prathomik.edu.bd</div>
+      <div class="receipt-title">Payment Receipt</div>
+      <div class="receipt-no">${r.rctNo}</div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="receipt-status-bar">
+      <div class="rsb-paid">PAID &middot; ${r.method}</div>
+      <div class="rsb-date">${r.date}, 2025 &middot; Collected by: ${r.collectedBy}</div>
+    </div>
+
+    <!-- Body -->
+    <div class="receipt-body">
+      <!-- Info grid -->
+      <div class="receipt-info-grid">
+        <div class="rig-item"><div class="rig-label">Student Name</div><div class="rig-val">${r.fn} ${r.ln}</div></div>
+        <div class="rig-item"><div class="rig-label">Student ID</div><div class="rig-val mono">${r.id}</div></div>
+        <div class="rig-item"><div class="rig-label">Father's Name</div><div class="rig-val">${r.father}</div></div>
+        <div class="rig-item"><div class="rig-label">Class &amp; Roll</div><div class="rig-val">Class ${r.cls} &middot; Roll ${r.roll}</div></div>
+        <div class="rig-item"><div class="rig-label">Academic Session</div><div class="rig-val">2024&#x2013;25</div></div>
+        <div class="rig-item"><div class="rig-label">Payment Method</div><div class="rig-val">${r.method}${r.txnRef?` &middot; <span style="font-family:monospace;font-size:.82rem;">${r.txnRef}</span>`:''}</div></div>
+      </div>
+
+      <!-- Items -->
+      <table class="receipt-items">
+        <thead><tr><th>#</th><th>Description</th><th>Amount (?)</th></tr></thead>
+        <tbody>
+          ${r.items.map((item,i)=>`<tr><td style="color:var(--muted);">${i+1}</td><td>${item.desc}</td><td>${item.amount.toLocaleString()}</td></tr>`).join('')}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="2" style="text-align:right;font-size:.88rem;font-weight:800;">TOTAL PAID</td><td style="font-size:.96rem;font-weight:900;color:var(--blue);font-family:'DM Mono',monospace;">${r.total.toLocaleString()}</td></tr>
+        </tfoot>
+      </table>
+
+      <!-- QR + note -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;">SCAN TO VERIFY RECEIPT</div>
+          <div class="receipt-qr"></div>
+          <div style="font-size:.6rem;color:var(--muted);text-align:center;margin-top:4px;">${r.rctNo}</div>
+        </div>
+        <div style="text-align:right;font-size:.72rem;color:var(--muted);max-width:260px;line-height:1.7;">
+          <strong style="color:var(--ink);display:block;margin-bottom:4px;">Important Note</strong>
+          This receipt is computer-generated and valid without a physical signature. Please keep this receipt for your records. For disputes, contact the school office within 7 days.
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="receipt-footer">
+      <div class="receipt-note">Dhaka High School &middot; EIIN 108765<br>Verify online: dhaka-high.prathomik.edu.bd/receipt/${r.rctNo}</div>
+      <div style="text-align:right;">
+        <div style="width:90px;border-bottom:1px solid var(--muted);margin-bottom:4px;"></div>
+        <div style="font-size:.68rem;color:var(--muted);">Authorised Signature</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildReceiptList();renderReceipt();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

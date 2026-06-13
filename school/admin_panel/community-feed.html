@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Feed &middot; EduOS Community</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --cmn:#6366F1;--cmn-light:#E0E7FF;--cmn-pale:#EEF2FF;--cmn-dark:#4338CA;
+  --cmn-grad:linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#4338CA 100%);
+}
+.sidebar{background:linear-gradient(180deg,#0D0E26 0%,#1A1B4B 60%,#252660 100%);}
+.sb-link.active{background:rgba(99,102,241,.28);color:#A5B4FC;}
+.sb-link.active .sb-icon{background:rgba(99,102,241,.38);color:#818CF8;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.3);}
+.live-dot{background:var(--cmn);}
+
+/* Three-column layout override */
+.community-layout{display:grid;grid-template-columns:220px 1fr 280px;gap:18px;align-items:start;}
+
+/* Composer card */
+.composer{border:1.5px solid var(--border);border-radius:16px;background:var(--white);padding:16px 18px;margin-bottom:16px;}
+.composer-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;}
+.composer-av{width:36px;height:36px;border-radius:50%;background:var(--cmn);display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:900;color:#fff;flex-shrink:0;}
+.composer-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.86rem;color:var(--ink);outline:none;resize:none;min-height:72px;font-family:inherit;transition:border-color .15s;}
+.composer-input:focus{border-color:var(--cmn);}
+.composer-actions{display:flex;gap:8px;justify-content:space-between;align-items:center;}
+.ca-tools{display:flex;gap:5px;}
+.ca-tool{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem;transition:all .12s;}
+.ca-tool:hover{border-color:var(--cmn);background:var(--cmn-pale);}
+.post-type-tabs{display:flex;gap:0;background:var(--bg);border-radius:8px;overflow:hidden;border:1.5px solid var(--border);}
+.ptt-btn{padding:5px 12px;font-size:.74rem;font-weight:700;color:var(--muted);border:none;background:transparent;cursor:pointer;transition:all .12s;}
+.ptt-btn.on{background:var(--cmn);color:#fff;}
+
+/* Post card */
+.post-card{border:1.5px solid var(--border);border-radius:16px;background:var(--white);overflow:hidden;margin-bottom:14px;transition:box-shadow .15s;}
+.post-card:hover{box-shadow:0 4px 16px rgba(99,102,241,.1);}
+.post-card.featured{border-color:var(--cmn);box-shadow:0 0 0 3px rgba(99,102,241,.1);}
+.pc-head{padding:14px 16px 0;display:flex;align-items:flex-start;gap:10px;}
+.pc-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:900;color:#fff;flex-shrink:0;position:relative;}
+.pc-av-badge{position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--white);display:flex;align-items:center;justify-content:center;font-size:.48rem;}
+.pc-author{font-size:.86rem;font-weight:800;color:var(--ink-2);}
+.pc-meta{font-size:.71rem;color:var(--muted);margin-top:1px;}
+.pc-tag{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:8px;margin-left:5px;vertical-align:middle;}
+.pc-body{padding:10px 16px 12px;}
+.pc-title{font-size:.94rem;font-weight:900;color:var(--ink);margin-bottom:5px;line-height:1.4;}
+.pc-text{font-size:.83rem;color:var(--ink-2);line-height:1.65;}
+.pc-image{width:100%;border-radius:10px;overflow:hidden;margin:10px 0;background:var(--bg);aspect-ratio:16/7;display:flex;align-items:center;justify-content:center;font-size:3rem;}
+.pc-subject-pill{display:inline-flex;align-items:center;gap:5px;background:var(--cmn-pale);border:1px solid var(--cmn-light);color:var(--cmn-dark);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:6px;}
+.pc-poll{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.poll-option{border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .12s;}
+.poll-option:hover{border-color:var(--cmn);}
+.poll-option.voted{border-color:var(--cmn);}
+.poll-fill{position:absolute;inset:0;background:var(--cmn-pale);border-radius:8px;z-index:0;}
+.poll-text{position:relative;z-index:1;font-size:.82rem;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between;}
+.pc-attachment{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:8px;}
+.att-icon{font-size:1.3rem;flex-shrink:0;}
+.att-name{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.att-size{font-size:.7rem;color:var(--muted);}
+
+/* Post actions */
+.pc-actions{padding:0 16px 12px;display:flex;align-items:center;gap:0;border-top:1px solid var(--border);padding-top:10px;margin-top:0;}
+.pa-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:none;background:transparent;cursor:pointer;font-size:.78rem;font-weight:700;color:var(--muted);border-radius:8px;transition:all .12s;}
+.pa-btn:hover,.pa-btn.active{background:var(--cmn-pale);color:var(--cmn);}
+.pa-btn.liked{color:var(--red);}
+.pa-btn.liked:hover{background:#FFF5F5;}
+.pa-count{font-size:.76rem;font-weight:800;}
+
+/* Comments section */
+.comment-section{border-top:1px solid var(--border);background:var(--bg);padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
+.comment-row{display:flex;gap:8px;align-items:flex-start;}
+.cm-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:900;color:#fff;}
+.cm-bubble{flex:1;background:var(--white);border-radius:10px;padding:7px 12px;border:1px solid var(--border);}
+.cm-author{font-size:.74rem;font-weight:800;color:var(--ink-2);}
+.cm-text{font-size:.78rem;color:var(--ink-2);margin-top:2px;line-height:1.5;}
+.cm-actions{display:flex;gap:10px;margin-top:4px;}
+.cm-action{font-size:.68rem;font-weight:700;color:var(--muted);cursor:pointer;transition:color .1s;}
+.cm-action:hover{color:var(--cmn);}
+.comment-input-row{display:flex;gap:8px;margin-top:4px;}
+.cm-input{flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:.8rem;color:var(--ink);outline:none;font-family:inherit;}
+.cm-input:focus{border-color:var(--cmn);}
+.cm-send{width:28px;height:28px;border-radius:50%;background:var(--cmn);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:background .12s;}
+.cm-send:hover{background:var(--cmn-dark);}
+
+/* Right sidebar widgets */
+.widget{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;margin-bottom:14px;}
+.widget-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.78rem;font-weight:800;color:var(--ink-2);}
+.widget-body{padding:12px 16px;}
+
+/* Who to follow */
+.wtf-row{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.wtf-row:last-child{margin-bottom:0;}
+.wtf-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#fff;flex-shrink:0;}
+.wtf-name{font-size:.82rem;font-weight:700;color:var(--ink-2);flex:1;}
+.wtf-role{font-size:.68rem;color:var(--muted);}
+.follow-btn{padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:800;border:1.5px solid var(--cmn);color:var(--cmn);background:transparent;cursor:pointer;transition:all .12s;}
+.follow-btn:hover,.follow-btn.on{background:var(--cmn);color:#fff;}
+
+/* Trending topics */
+.trend-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .1s;}
+.trend-row:last-child{border-bottom:none;}
+.trend-row:hover{opacity:.75;}
+.trend-rank{font-size:.7rem;font-weight:900;color:var(--muted);min-width:18px;}
+.trend-tag{font-size:.82rem;font-weight:800;color:var(--cmn);}
+.trend-count{font-size:.68rem;color:var(--muted);margin-left:auto;}
+
+/* Event card mini */
+.event-mini{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.event-mini:last-child{border-bottom:none;}
+.em-date{width:34px;text-align:center;flex-shrink:0;}
+.em-day{font-size:1rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);line-height:1;}
+.em-mon{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--muted);}
+.em-title{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.em-sub{font-size:.69rem;color:var(--muted);margin-top:2px;}
+
+/* Left column &middot; my groups */
+.my-group{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.my-group:last-child{border-bottom:none;}
+.my-group:hover .mg-name{color:var(--cmn);}
+.mg-av{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0;}
+.mg-name{font-size:.76rem;font-weight:700;color:var(--ink-2);flex:1;transition:color .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mg-badge{font-size:.6rem;font-weight:900;background:var(--cmn);color:#fff;border-radius:10px;padding:1px 5px;flex-shrink:0;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.community-layout{grid-template-columns:220px 1fr;}.right-col{display:none;}}
+@media(max-width:820px){.community-layout{grid-template-columns:1fr;}.left-col{display:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<main class="main" style="padding:0;">
+  <div class="topbar"></div>
+
+  <div style="padding:20px 24px;" class="page-body">
+    <!-- Feed type tabs -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;">
+      <button class="ptt-btn on" id="tab-all" onclick="switchTab('all',this)" style="padding:8px 18px;font-size:.84rem;border-radius:0;border-bottom:2px solid var(--cmn);margin-bottom:-2px;background:transparent;border-top:none;border-left:none;border-right:none;color:var(--cmn);"> All</button>
+      <button class="ptt-btn" id="tab-following" onclick="switchTab('following',this)" style="padding:8px 18px;font-size:.84rem;border-radius:0;border:none;background:transparent;color:var(--muted);"> Following</button>
+      <button class="ptt-btn" id="tab-questions" onclick="switchTab('questions',this)" style="padding:8px 18px;font-size:.84rem;border-radius:0;border:none;background:transparent;color:var(--muted);">Q&amp;A</button>
+      <button class="ptt-btn" id="tab-events" onclick="switchTab('events',this)" style="padding:8px 18px;font-size:.84rem;border-radius:0;border:none;background:transparent;color:var(--muted);"> Events</button>
+      <div style="margin-left:auto;padding:6px 0;">
+        <select class="form-select" style="padding:5px 10px;font-size:.76rem;width:130px;">
+          <option>Sort: Latest</option>
+          <option>Sort: Top Liked</option>
+          <option>Sort: Most Discussed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="community-layout">
+      <!-- LEFT: shortcuts -->
+      <div class="left-col">
+        <div class="widget">
+          <div style="background:var(--cmn-grad);padding:14px 16px;text-align:center;">
+            <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);border:2.5px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#fff;margin:0 auto 6px;">FI</div>
+            <div style="font-size:.88rem;font-weight:800;color:#fff;">Farhan Islam</div>
+            <div style="font-size:.72rem;opacity:.7;color:#fff;margin-top:2px;">Class IX&middot;A &middot; Roll 001</div>
+          </div>
+          <div style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);">
+            <div style="background:var(--white);padding:8px;text-align:center;cursor:pointer;" onclick="showToast('Viewing your posts','&#x2705;')">
+              <div style="font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">24</div>
+              <div style="font-size:.66rem;color:var(--muted);font-weight:600;">Posts</div>
+            </div>
+            <div style="background:var(--white);padding:8px;text-align:center;cursor:pointer;" onclick="showToast('Viewing followers','&#x2705;')">
+              <div style="font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--green);">148</div>
+              <div style="font-size:.66rem;color:var(--muted);font-weight:600;">Followers</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-head"> My Groups</div>
+          <div class="widget-body" style="padding:8px 14px;" id="myGroupsWidget"></div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-head"> Upcoming Events</div>
+          <div class="widget-body" style="padding:8px 14px;" id="upcomingEventsWidget"></div>
+        </div>
+      </div>
+
+      <!-- CENTRE: Feed -->
+      <div class="feed-col">
+        <!-- Composer -->
+        <div class="composer anim-1">
+          <div class="composer-top">
+            <div class="composer-av">FI</div>
+            <textarea class="composer-input" id="composerText" placeholder="Share something with your school community&middot;" rows="3"></textarea>
+          </div>
+          <div class="composer-actions">
+            <div class="ca-tools">
+              <div class="ca-tool" title="Add image" onclick="showToast('Image picker opened','&#x2705;')"></div>
+              <div class="ca-tool" title="Add file" onclick="showToast('File picker opened','&#x2705;')"></div>
+              <div class="ca-tool" title="Add poll" onclick="showToast('Poll builder opened','&#x2705;')"></div>
+              <div class="ca-tool" title="Ask question" onclick="showToast('Q&A mode activated','&#x2705;')"></div>
+              <div class="ca-tool" title="Tag subject" onclick="showToast('Subject tagger opened','&#x2705;')"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="form-select" style="padding:5px 10px;font-size:.74rem;width:110px;">
+                <option> Everyone</option>
+                <option> My School</option>
+                <option> My Groups</option>
+              </select>
+              <button class="btn btn-primary" style="background:var(--cmn);border-color:var(--cmn);padding:7px 18px;font-size:.82rem;" onclick="postCompose()">Post</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Posts -->
+        <div id="feedPosts" class="anim-1"></div>
+      </div>
+
+      <!-- RIGHT: Sidebar -->
+      <div class="right-col">
+        <!-- Trending -->
+        <div class="widget">
+          <div class="widget-head"> Trending Now</div>
+          <div class="widget-body" style="padding:6px 14px;" id="trendingWidget"></div>
+        </div>
+
+        <!-- Who to follow -->
+        <div class="widget">
+          <div class="widget-head"> Suggested to Follow</div>
+          <div class="widget-body" style="padding:8px 14px;" id="followWidget"></div>
+        </div>
+
+        <!-- School stats -->
+        <div class="widget" style="padding:14px 16px;background:var(--cmn-pale);border-color:var(--cmn-light);">
+          <div style="font-size:.76rem;font-weight:800;color:var(--cmn-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;"> School Community</div>
+          <div id="schoolStatsWidget"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const POSTS=[
+  {id:1,type:'question',author:{init:'FI',name:'Farhan Islam',role:'Class IX-A &middot; Student',col:'#6366F1',badge:''},
+   time:'2 min ago',title:'Anyone solved this integration problem? ',
+   text:'Been stuck on this for an hour &middot; integral (x^2 + 3x + 2)/(x+1) dx. I simplified the numerator but the partial fractions aren\'t coming out clean. Any hints appreciated!',
+   tag:{label:'Question',bg:'#EFF6FF',col:'#1D4ED8'},subject:' Mathematics',
+   likes:14,comments:7,shares:2,liked:false,bookmarked:false,
+   openComments:true,
+   comments:[
+     {init:'DK',name:'Dr. Karim',col:'#1D4ED8',text:'Hint: factor x&middot;+3x+2 first. It factors nicely ',time:'1 min ago'},
+     {init:'AH',name:'Arif H.',col:'#7C3AED',text:'Oh I had this last week! Try polynomial long division first when degree of numerator = denominator.',time:'just now'},
+   ]},
+  {id:2,type:'announcement',author:{init:'MS',name:'Ms. Nasrin Ahmed',role:'Physics Teacher &middot; Dhaka High',col:'#059669',badge:''},
+   time:'18 min ago',title:' Science Olympiad Practice &middot; New Schedule',
+   text:'Starting next week, practice sessions move to Tuesday & Thursday 4&middot;6 PM in the Physics Lab. We have 12 days until the district heat. Attendance is mandatory for all registered students. Please confirm in the poll below.',
+   tag:{label:'Announcement',bg:'#ECFDF5',col:'#065F46'},subject:' Science',
+   poll:[{option:'Confirmed, I\'ll be there',votes:18,voted:true},{option:'One day only (conflict)',votes:4,voted:false},{option:'Can\'t attend (please DM me)',votes:1,voted:false}],
+   likes:31,comments:8,shares:5,liked:true,bookmarked:true,
+   openComments:false,comments:[]},
+  {id:3,type:'note',author:{init:'RK',name:'Rahela Khatun',role:'Class IX-A &middot; Student',col:'#E11D48',badge:''},
+   time:'45 min ago',title:' My notes: Organic Chemistry Reactions Cheat Sheet',
+   text:'Spent the weekend making this. Covers substitution, elimination, addition, and redox reactions with examples from the SSC syllabus. Hope it helps everyone!',
+   tag:{label:'Study Note',bg:'#FFF1F2',col:'#BE123C'},subject:' Chemistry',
+   attachment:{icon:'&#x270F;&#xFE0F;',name:'Organic_Reactions_Cheatsheet.pdf',size:'840 KB'},
+   likes:42,comments:12,shares:18,liked:false,bookmarked:false,
+   openComments:false,comments:[]},
+  {id:4,type:'post',author:{init:'TJ',name:'Tanvir Ahmed',role:'Class IX-A &middot; Student',col:'#0891B2',badge:''},
+   time:'1 hr ago',
+   text:'Just finished my entry for the National ICT Showcase 2025  Built a school attendance system using Python + Flask + SQLite. It auto-detects absent students and sends SMS to parents. Took 3 weekends but really worth it. Link to GitHub in comments!',
+   tag:{label:'Achievement',bg:'#FEF3C7',col:'#92400E'},subject:' ICT',
+   imageEmoji:'',
+   likes:67,comments:14,shares:9,liked:false,bookmarked:false,
+   openComments:false,comments:[]},
+  {id:5,type:'event',author:{init:'RA',name:'Rahman Abdul',role:'Principal &middot; Dhaka High School',col:'#BE123C',badge:''},
+   time:'2 hrs ago',title:' Annual Science Fair &middot; Register Now',
+   text:'The Annual Science Fair is confirmed for April 5th in the school auditorium. Teams of 2&middot;4 students. Projects can be from any science/tech category. Best 3 projects get to present at divisional level. Registration closes March 10.',
+   tag:{label:'Event',bg:'#F3E8FF',col:'#5B21B6'},
+   likes:54,comments:19,shares:28,liked:true,bookmarked:false,
+   openComments:false,comments:[]},
+];
+
+function postCard(p){
+  const tagHtml=p.tag?`<span class="pc-tag" style="background:${p.tag.bg};color:${p.tag.col};">${p.tag.label}</span>`:'';
+  const pollHtml=p.poll?`<div class="pc-poll">${p.poll.map((opt,i)=>{const total=p.poll.reduce((a,x)=>a+x.votes,0);const pct=Math.round(opt.votes/total*100);return`<div class="poll-option ${opt.voted?'voted':''}" onclick="vote(${p.id},${i})"><div class="poll-fill" style="width:${pct}%;"></div><div class="poll-text"><span>${opt.option}</span><span style="font-weight:700;color:${opt.voted?'var(--cmn)':'var(--muted)'};">${pct}%</span></div></div>`;}).join('')}<div style="font-size:.72rem;color:var(--muted);margin-top:4px;">${p.poll.reduce((a,x)=>a+x.votes,0)} votes &middot; 2 days left</div></div>`:'';
+  const attHtml=p.attachment?`<div class="pc-attachment"><div class="att-icon">${p.attachment.icon}</div><div><div class="att-name">${p.attachment.name}</div><div class="att-size">${p.attachment.size}</div></div><button class="btn btn-sm btn-outline" style="margin-left:auto;font-size:.72rem;" onclick="showToast('Downloading&middot;','&#x2705;')">Download</button></div>`:'';
+  const imgHtml=p.imageEmoji?`<div class="pc-image">${p.imageEmoji}</div>`:'';
+  const commentsHtml=p.openComments?`<div class="comment-section">
+    ${p.comments.map(c=>`<div class="comment-row"><div class="cm-av" style="background:${c.col};">${c.init}</div><div class="cm-bubble"><div class="cm-author">${c.name} <span style="font-size:.64rem;color:var(--muted);font-weight:500;">${c.time}</span></div><div class="cm-text">${c.text}</div><div class="cm-actions"><span class="cm-action"> Like</span><span class="cm-action">Reply</span></div></div></div>`).join('')}
+    <div class="comment-input-row"><div class="cm-av" style="background:var(--cmn);">FI</div><input class="cm-input" placeholder="Write a comment&middot;" onkeydown="if(event.key==='Enter'){postComment(${p.id},this)}"><button class="cm-send" onclick="postComment(${p.id},this.previousElementSibling)">&times;</button></div>
+  </div>`:'';
+
+  return`<div class="post-card ${p.type==='announcement'?'featured':''}" id="post-${p.id}">
+    <div class="pc-head">
+      <div class="pc-av" style="background:${p.author.col};">${p.author.init}<div class="pc-av-badge" style="background:${p.author.badge===''||p.author.badge===''?'var(--green)':'var(--cmn)'};">${p.author.badge}</div></div>
+      <div style="flex:1;">
+        <div><span class="pc-author">${p.author.name}</span>${tagHtml}</div>
+        <div class="pc-meta">${p.author.role} &middot; ${p.time}</div>
+      </div>
+      <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;" onclick="showToast('Options menu','&#x2705;')">&times;</button>
+    </div>
+    <div class="pc-body">
+      ${p.title?`<div class="pc-title">${p.title}</div>`:''}
+      <div class="pc-text">${p.text}</div>
+      ${imgHtml}${pollHtml}${attHtml}
+      ${p.subject?`<div class="pc-subject-pill">${p.subject}</div>`:''}
+    </div>
+    <div class="pc-actions">
+      <button class="pa-btn ${p.liked?'liked':''}" id="like-${p.id}" onclick="toggleLike(${p.id})">
+        ${p.liked?'':''} <span class="pa-count" id="lc-${p.id}">${p.likes}</span>
+      </button>
+      <button class="pa-btn" onclick="toggleComments(${p.id})"> <span class="pa-count">${p.comments.length||p.commentCount||0}</span></button>
+      <button class="pa-btn" onclick="showToast('Link copied!','&#x2705;')"> Share</button>
+      <button class="pa-btn ${p.bookmarked?'active':''}" id="bm-${p.id}" onclick="toggleBookmark(${p.id})">${p.bookmarked?'':''}</button>
+      ${p.type==='question'?`<button class="pa-btn" onclick="showToast('Writing answer&middot;','&#x2705;')" style="margin-left:auto;background:var(--cmn-pale);color:var(--cmn);"> Answer</button>`:''}
+    </div>
+    ${commentsHtml}
+  </div>`;
+}
+
+function renderFeed(){
+  const visible=filterPosts(POSTS,activeTab);
+  const empty=visible.length===0;
+  document.getElementById('feedPosts').innerHTML=empty
+    ?`<div style="text-align:center;padding:48px 24px;color:var(--muted);">
+        <div style="font-size:2.5rem;margin-bottom:10px;"></div>
+        <div style="font-size:.92rem;font-weight:700;">No posts here yet</div>
+        <div style="font-size:.78rem;margin-top:4px;">Try a different tab or be the first to post!</div>
+      </div>`
+    :visible.map(p=>postCard(p)).join('');
+}
+
+function renderWidgets(){
+  // My Groups
+  const groups=[
+    {emoji:'',name:'Math Study Circle',badge:3,col:'#1D4ED8'},
+    {emoji:'',name:'Science Olympiad',badge:1,col:'#059669'},
+    {emoji:'',name:'Coding Club',badge:5,col:'#7C3AED'},
+    {emoji:'',name:'Art & Culture',badge:0,col:'#D97706'},
+    {emoji:'',name:'Book Discussion',badge:2,col:'#E11D48'},
+  ];
+  document.getElementById('myGroupsWidget').innerHTML=groups.map(g=>
+    `<div class="my-group"><div class="mg-av" style="background:${g.col}20;">${g.emoji}</div><span class="mg-name">${g.name}</span>${g.badge?`<span class="mg-badge">${g.badge}</span>`:''}</div>`
+  ).join('');
+
+  // Upcoming Events
+  const events=[
+    {day:'01',mon:'Mar',title:'Science Olympiad Prep Session',sub:'4:00 PM &middot; Physics Lab'},
+    {day:'05',mon:'Mar',title:'Inter-class Math Quiz Finals',sub:'10:00 AM &middot; Main Hall'},
+    {day:'15',mon:'Mar',title:'Parent-Teacher Meeting',sub:'All day &middot; School Campus'},
+  ];
+  document.getElementById('upcomingEventsWidget').innerHTML=events.map(e=>
+    `<div class="event-mini"><div class="em-date"><div class="em-day">${e.day}</div><div class="em-mon">${e.mon}</div></div><div><div class="em-title">${e.title}</div><div class="em-sub">${e.sub}</div></div></div>`
+  ).join('');
+
+  // Trending
+  const trends=[
+    {tag:'#ScienceOlympiad2025',count:'284 posts'},
+    {tag:'#MathChallenge',count:'196 posts'},
+    {tag:'#SSCPrep2025',count:'148 posts'},
+    {tag:'#PhysicsHelp',count:'112 posts'},
+    {tag:'#AnnualResults',count:'94 posts'},
+    {tag:'#CodingChallenge',count:'77 posts'},
+  ];
+  document.getElementById('trendingWidget').innerHTML=trends.map((t,i)=>
+    `<div class="trend-row" onclick="showToast('Viewing ${t.tag}','&#x2705;')"><span class="trend-rank">${i+1}</span><span class="trend-tag">${t.tag}</span><span class="trend-count">${t.count}</span></div>`
+  ).join('');
+
+  // Suggested to Follow
+  const follows=[
+    {init:'DR',name:'Dr. Karim Hossain',role:'Math Teacher',col:'#1D4ED8'},
+    {init:'MS',name:'Ms. Nasrin Ahmed',role:'Physics Teacher',col:'#059669'},
+    {init:'AH',name:'Arif Hossain',role:'Class IX-A',col:'#7C3AED'},
+    {init:'SB',name:'Sumaiya Begum',role:'Class IX-A',col:'#E11D48'},
+  ];
+  document.getElementById('followWidget').innerHTML=follows.map(u=>
+    `<div class="wtf-row"><div class="wtf-av" style="background:${u.col};">${u.init}</div><div><div class="wtf-name">${u.name}</div><div class="wtf-role">${u.role}</div></div><button class="follow-btn" onclick="this.classList.toggle('on');showToast(this.classList.contains('on')?'Following ${u.name}':'Unfollowed ${u.name}','&#x2705;')">Follow</button></div>`
+  ).join('');
+
+  // School Community Stats
+  const stats=[
+    {label:'Total Members',val:'1,284',icon:''},
+    {label:'Posts Today',val:'48',icon:''},
+    {label:'Active Groups',val:'12',icon:''},
+    {label:'Online Now',val:'142',icon:''},
+  ];
+  document.getElementById('schoolStatsWidget').innerHTML=stats.map(s=>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.8rem;border-bottom:1px solid #C7D2FE;"><span style="color:var(--cmn-dark);">${s.icon} ${s.label}</span><span style="font-weight:900;font-family:'DM Mono',monospace;color:var(--cmn);">${s.val}</span></div>`
+  ).join('');
+}
+
+
+function toggleLike(id){
+  const p=POSTS.find(x=>x.id===id);
+  p.liked=!p.liked;p.likes+=p.liked?1:-1;
+  document.getElementById(`like-${id}`).innerHTML=`${p.liked?'':''} <span class="pa-count" id="lc-${id}">${p.likes}</span>`;
+  document.getElementById(`like-${id}`).className=`pa-btn ${p.liked?'liked':''}`;
+}
+function toggleBookmark(id){
+  const p=POSTS.find(x=>x.id===id);p.bookmarked=!p.bookmarked;
+  document.getElementById(`bm-${id}`).textContent=p.bookmarked?'':'';
+  document.getElementById(`bm-${id}`).className=`pa-btn ${p.bookmarked?'active':''}`;
+  showToast(p.bookmarked?'Post saved to bookmarks':'Bookmark removed',p.bookmarked?'':'');
+}
+function toggleComments(id){
+  const p=POSTS.find(x=>x.id===id);p.openComments=!p.openComments;renderFeed();
+}
+function vote(postId,optIdx){
+  const p=POSTS.find(x=>x.id===postId);
+  if(p.poll.some(o=>o.voted))return;
+  p.poll[optIdx].voted=true;p.poll[optIdx].votes++;renderFeed();
+  showToast('Vote recorded!','&#x2705;');
+}
+function postComment(id,input){
+  const text=input.value.trim();if(!text)return;
+  const p=POSTS.find(x=>x.id===id);
+  p.comments.push({init:'FI',name:'Farhan Islam',col:'var(--cmn)',text,time:'just now'});
+  input.value='';renderFeed();
+}
+function postCompose(){
+  const text=document.getElementById('composerText').value.trim();
+  if(!text){showToast('Write something first!','&#x2705;');return;}
+  POSTS.unshift({id:Date.now(),type:'post',author:{init:'FI',name:'Farhan Islam',role:'Class IX-A &middot; Student',col:'#6366F1',badge:''},time:'just now',text,likes:0,comments:[],shares:0,liked:false,bookmarked:false,openComments:false});
+  document.getElementById('composerText').value='';renderFeed();
+  showToast('Post published!','&#x2705;');
+}
+let activeTab='all';
+function switchTab(tab,el){
+  activeTab=tab;
+  document.querySelectorAll('[id^="tab-"]').forEach(b=>{b.style.color='var(--muted)';b.style.borderBottom='none';});
+  el.style.color='var(--cmn)';el.style.borderBottom='2px solid var(--cmn)';
+  renderFeed();
+}
+function filterPosts(posts,tab){
+  if(tab==='all') return posts;
+  if(tab==='following') return posts.filter(p=>p.author.role.includes('Teacher')||p.author.role.includes('Principal')||p.followed);
+  if(tab==='questions') return posts.filter(p=>p.type==='question');
+  if(tab==='events') return posts.filter(p=>p.type==='event'||p.type==='announcement');
+  return posts;
+}
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+renderFeed();
+renderWidgets();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

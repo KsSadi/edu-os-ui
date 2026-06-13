@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Detail � Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+/* Tenant header banner */
+.tenant-banner{background:linear-gradient(135deg,#0A0F1E 0%,#1A1F35 60%,#2D1B3D 100%);border-radius:16px;padding:24px 28px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px;display:flex;align-items:center;gap:18px;}
+.tenant-banner::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(190,18,60,.1);}
+.tb-av{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:#fff;flex-shrink:0;border:2.5px solid rgba(255,255,255,.3);}
+.tb-name{font-size:1.2rem;font-weight:900;}
+.tb-meta{font-size:.78rem;opacity:.65;margin-top:3px;}
+.tb-kpis{display:flex;gap:0;background:rgba(0,0,0,.3);border-radius:10px;overflow:hidden;margin-left:auto;flex-shrink:0;}
+.tb-kpi{padding:12px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.08);}
+.tb-kpi:last-child{border-right:none;}
+.tb-kpi-num{font-size:1.1rem;font-weight:900;font-family:'DM Mono',monospace;}
+.tb-kpi-lbl{font-size:.6rem;opacity:.5;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* Plan change badge */
+.plan-select-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.76rem;font-weight:800;cursor:pointer;border:1.5px solid;transition:all .12s;}
+
+/* Usage gauges */
+.gauge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.gauge-card{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--white);text-align:center;}
+.gauge-ring-wrap{width:60px;height:60px;margin:0 auto 8px;position:relative;}
+.gauge-ring-wrap svg{transform:rotate(-90deg);}
+.gauge-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;font-family:'DM Mono',monospace;}
+.gauge-lbl{font-size:.72rem;font-weight:700;color:var(--muted);}
+.gauge-sub{font-size:.66rem;color:var(--muted);margin-top:2px;}
+
+/* Timeline */
+.timeline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);position:relative;}
+.timeline-item:last-child{border-bottom:none;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.tl-title{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.tl-meta{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.tl-time{font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;min-width:80px;text-align:right;flex-shrink:0;}
+
+/* Feature toggle row */
+.feat-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.feat-row:last-child{border-bottom:none;}
+.feat-icon{font-size:1rem;flex-shrink:0;}
+.feat-name{flex:1;font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.feat-plan{font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* Invoice rows */
+.inv-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--border);}
+.inv-row:last-child{border-bottom:none;}
+.inv-num{font-size:.76rem;font-family:'DM Mono',monospace;font-weight:700;color:var(--muted);min-width:90px;}
+.inv-desc{flex:1;font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.inv-amt{font-family:'DM Mono',monospace;font-weight:800;font-size:.84rem;}
+.inv-status{font-size:.64rem;font-weight:900;padding:2px 8px;border-radius:6px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:480px;max-width:90%;animation:pop .25s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-body{padding:18px 22px;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link active"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Anthropic</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><a href="super-tenants.html" style="color:var(--muted);text-decoration:none;">Tenants</a><span class="breadcrumb-sep">�</span><span class="current">Dhaka High School</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="showToast('Opening school as admin�','??')">?? Login as Admin</button>
+      <button class="btn btn-sm" style="background:var(--sup);border-color:var(--sup);color:#fff;" onclick="openSuspendModal()">? Suspend Tenant</button>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Tenant Banner -->
+    <div class="tenant-banner anim-1">
+      <div class="tb-av" style="background:#4F46E5;">DH</div>
+      <div style="flex:1;">
+        <div class="tb-name">Dhaka High School and College</div>
+        <div class="tb-meta">EIIN: 108765 � dhakahigh.prathomik.edu.bd � Dhaka Division � Joined Sep 2022</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <span style="font-size:.68rem;font-weight:900;padding:3px 10px;border-radius:8px;background:rgba(79,70,229,.4);color:#C7D2FE;border:1px solid rgba(79,70,229,.5);">Basic Plan</span>
+          <span style="font-size:.68rem;font-weight:900;padding:3px 10px;border-radius:8px;background:rgba(5,150,105,.4);color:#6EE7B7;border:1px solid rgba(5,150,105,.5);">? Active</span>
+          <span style="font-size:.68rem;font-weight:900;padding:3px 10px;border-radius:8px;background:rgba(245,158,11,.3);color:#FDE68A;border:1px solid rgba(245,158,11,.4);">30-day renewal due</span>
+        </div>
+      </div>
+      <div class="tb-kpis">
+        <div class="tb-kpi"><div class="tb-kpi-num">890</div><div class="tb-kpi-lbl">Students</div></div>
+        <div class="tb-kpi"><div class="tb-kpi-num" style="color:#86EFAC;">?4,800</div><div class="tb-kpi-lbl">MRR</div></div>
+        <div class="tb-kpi"><div class="tb-kpi-num">2.5yr</div><div class="tb-kpi-lbl">Tenure</div></div>
+        <div class="tb-kpi"><div class="tb-kpi-num" style="color:#FDE68A;">68%</div><div class="tb-kpi-lbl">Activity</div></div>
+      </div>
+    </div>
+
+    <!-- Usage gauges -->
+    <div class="gauge-grid anim-1">
+      <div class="gauge-card">
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="24" fill="none" stroke="#E5E7EB" stroke-width="6"/><circle cx="30" cy="30" r="24" fill="none" stroke="#4F46E5" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="45.2" stroke-linecap="round"/></svg>
+          <div class="gauge-val" style="color:#4F46E5;">70%</div>
+        </div>
+        <div class="gauge-lbl">Storage Used</div>
+        <div class="gauge-sub">7.0 / 10 GB</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="24" fill="none" stroke="#E5E7EB" stroke-width="6"/><circle cx="30" cy="30" r="24" fill="none" stroke="#059669" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="60.3" stroke-linecap="round"/></svg>
+          <div class="gauge-val" style="color:#059669;">60%</div>
+        </div>
+        <div class="gauge-lbl">API Calls</div>
+        <div class="gauge-sub">60K / 100K monthly</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="24" fill="none" stroke="#E5E7EB" stroke-width="6"/><circle cx="30" cy="30" r="24" fill="none" stroke="#D97706" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="30.2" stroke-linecap="round"/></svg>
+          <div class="gauge-val" style="color:#D97706;">80%</div>
+        </div>
+        <div class="gauge-lbl">Student Seats</div>
+        <div class="gauge-sub">890 / 1,000 max</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="24" fill="none" stroke="#E5E7EB" stroke-width="6"/><circle cx="30" cy="30" r="24" fill="none" stroke="#0891B2" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="96.5" stroke-linecap="round"/></svg>
+          <div class="gauge-val" style="color:#0891B2;">36%</div>
+        </div>
+        <div class="gauge-lbl">SMS Credits</div>
+        <div class="gauge-sub">3,600 / 10,000 used</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Subscription & billing -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">?? Subscription & Billing</div><div class="card-sub">EIIN 108765 � Basic Plan</div></div>
+          <button class="btn btn-sm btn-outline" onclick="openPlanModal()">? Change Plan</button>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div style="background:var(--bg);border-radius:9px;padding:12px 14px;">
+              <div style="font-size:.7rem;color:var(--muted);font-weight:600;margin-bottom:3px;">Current Plan</div>
+              <div style="font-size:1rem;font-weight:900;color:#4F46E5;">Basic</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">? 4,800 / month</div>
+            </div>
+            <div style="background:var(--bg);border-radius:9px;padding:12px 14px;">
+              <div style="font-size:.7rem;color:var(--muted);font-weight:600;margin-bottom:3px;">Next Renewal</div>
+              <div style="font-size:1rem;font-weight:900;color:var(--amber);">Mar 25, 2025</div>
+              <div style="font-size:.72rem;color:var(--amber);margin-top:2px;font-weight:700;">29 days left</div>
+            </div>
+          </div>
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Invoice History</div>
+          <div id="invoiceList"></div>
+        </div>
+      </div>
+
+      <!-- Login activity & sessions -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Login Activity</div><div class="card-sub">Last 7 days � All user roles</div></div>
+        <div style="padding:14px 18px;">
+          <div style="display:flex;align-items:flex-end;gap:4px;height:80px;border-bottom:2px solid var(--border);margin-bottom:6px;" id="loginChart"></div>
+          <div style="display:flex;gap:4px;margin-bottom:14px;" id="loginLabels"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:var(--muted);">Unique users (7d)</span><span style="font-weight:800;font-family:'DM Mono',monospace;">142</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:var(--muted);">Total sessions</span><span style="font-weight:800;font-family:'DM Mono',monospace;">841</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:var(--muted);">Avg session length</span><span style="font-weight:800;font-family:'DM Mono',monospace;">18 min</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:var(--muted);">Peak concurrent</span><span style="font-weight:800;font-family:'DM Mono',monospace;">48 users</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;"><span style="color:var(--muted);">Last login</span><span style="font-weight:800;">Today, 10:18 AM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+
+      <!-- Feature usage -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">? Feature Usage</div><div class="card-sub">This month � Module activity</div></div>
+        <div style="padding:10px 16px;" id="featureList"></div>
+      </div>
+
+      <!-- Admin activity log -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Tenant Activity Log</div><div class="card-sub">Recent admin actions</div></div>
+        <div id="tenantLog" style="padding:8px 0;"></div>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card anim-2" style="border-color:#FECACA;background:#FFF5F5;padding:18px 22px;">
+      <div style="font-size:.86rem;font-weight:800;color:var(--red);margin-bottom:12px;">? Danger Zone</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-sm" style="border-color:#FECACA;color:var(--red);background:#fff;" onclick="showToast('Suspension dialog opened�','?')">? Suspend Tenant</button>
+        <button class="btn btn-sm" style="border-color:#FECACA;color:var(--red);background:#fff;" onclick="showToast('Plan downgraded to Trial','??')">?? Downgrade to Trial</button>
+        <button class="btn btn-sm" style="border-color:#FECACA;color:var(--red);background:#fff;" onclick="showToast('Password reset email sent','??')">?? Force Password Reset</button>
+        <button class="btn btn-sm" style="border-color:#FECACA;color:var(--red);background:#fff;" onclick="showToast('This cannot be undone � type CONFIRM first','?')">?? Delete Tenant Data</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Plan change modal -->
+<div class="modal-overlay" id="planModal">
+  <div class="modal-box">
+    <div class="modal-head"><div style="font-size:.96rem;font-weight:800;">?? Change Plan � Dhaka High School</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);" onclick="document.getElementById('planModal').classList.remove('show')">?</button></div>
+    <div class="modal-body">
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Current plan: <strong>Basic � ?4,800/month</strong></div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="planOptions"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="document.getElementById('planModal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" style="background:var(--sup);border-color:var(--sup);" onclick="changePlan()">Apply Change</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+// Invoices
+const invoices=[
+  {num:'INV-2025-0841',desc:'Basic Plan � February 2025',amt:4800,status:'paid',date:'Feb 1'},
+  {num:'INV-2025-0612',desc:'Basic Plan � January 2025',amt:4800,status:'paid',date:'Jan 1'},
+  {num:'INV-2024-1204',desc:'Basic Plan � December 2024',amt:4800,status:'paid',date:'Dec 1'},
+  {num:'INV-2024-0980',desc:'Basic Plan � November 2024',amt:4800,status:'paid',date:'Nov 1'},
+];
+document.getElementById('invoiceList').innerHTML=invoices.map(inv=>`
+  <div class="inv-row">
+    <div class="inv-num">${inv.num}</div>
+    <div><div class="inv-desc">${inv.desc}</div><div style="font-size:.68rem;color:var(--muted);">${inv.date}, 2025</div></div>
+    <div class="inv-amt" style="color:${inv.status==='paid'?'var(--green)':'var(--red)'};">? ${inv.amt.toLocaleString()}</div>
+    <span class="inv-status" style="background:${inv.status==='paid'?'#ECFDF5':'#FFF5F5'};color:${inv.status==='paid'?'#065F46':'var(--red)'};">${inv.status.toUpperCase()}</span>
+    <button style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);" onclick="showToast('Downloading PDF invoice�','??')">??</button>
+  </div>`).join('');
+
+// Login chart
+const loginData=[42,65,38,80,72,91,58];
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const maxL=Math.max(...loginData);
+document.getElementById('loginChart').innerHTML=loginData.map((v,i)=>{
+  const h=Math.round(v/maxL*70);
+  const isToday=i===6;
+  return`<div style="flex:1;height:${h}px;background:${isToday?'var(--sup)':'#FBCFE8'};border-radius:3px 3px 0 0;cursor:pointer;" title="${days[i]}: ${v} sessions"></div>`;}).join('');
+document.getElementById('loginLabels').innerHTML=days.map(d=>`<div style="flex:1;text-align:center;font-size:.6rem;color:var(--muted);font-weight:600;">${d}</div>`).join('');
+
+// Feature usage
+const features=[
+  {icon:'??',name:'Student Management',usage:94,plan:'Basic'},
+  {icon:'??',name:'Attendance',usage:88,plan:'Basic'},
+  {icon:'??',name:'Exam & Results',usage:76,plan:'Basic'},
+  {icon:'??',name:'Fee Collection',usage:82,plan:'Basic'},
+  {icon:'??',name:'Notices Board',usage:65,plan:'Basic'},
+  {icon:'??',name:'Study Materials',usage:58,plan:'Basic'},
+  {icon:'??',name:'Parent Portal',usage:44,plan:'Basic'},
+  {icon:'??',name:'Marketplace',usage:12,plan:'Pro',locked:true},
+  {icon:'??',name:'Contest Hub',usage:0,plan:'Pro',locked:true},
+];
+document.getElementById('featureList').innerHTML=features.map(f=>`
+  <div class="feat-row">
+    <div class="feat-icon">${f.icon}</div>
+    <div class="feat-name" style="color:${f.locked?'var(--muted)':''}">${f.name}</div>
+    ${f.locked?`<span class="feat-plan">${f.plan} only</span>`:`<div style="flex:0 0 100px;"><div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${f.usage}%;background:${f.usage>70?'var(--green)':f.usage>40?'var(--blue)':'var(--amber)'}"></div></div><div style="font-size:.64rem;color:var(--muted);text-align:right;margin-top:2px;">${f.usage}%</div></div>`}
+  </div>`).join('');
+
+// Activity log
+const tenantLog=[
+  {dot:'var(--blue)',title:'Staff account created: Ms. Fatema (Teacher)','meta':'By: admin@dhakahigh � Ref: USR-2025-440','time':'2h ago'},
+  {dot:'var(--green)',title:'Fee collected: ? 4,800 (bKash)','meta':'Transaction ID: 8N2024XY44','time':'5h ago'},
+  {dot:'var(--green)',title:'Exam results published: Annual 2024','meta':'Class IX�A, IX�B, X�A (42 students)','time':'Feb 18'},
+  {dot:'var(--amber)',title:'Bulk student import: 48 records','meta':'5 failed � 43 succeeded','time':'Feb 15'},
+  {dot:'var(--sup)',title:'Plan auto-renewal reminder sent','meta':'Renewal due Mar 25 � ? 4,800','time':'Feb 10'},
+  {dot:'var(--blue)',title:'Attendance module activated','meta':'2,841 records imported from Excel','time':'Jan 28'},
+];
+document.getElementById('tenantLog').innerHTML=tenantLog.map(l=>`
+  <div style="display:flex;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border);">
+    <div style="width:9px;height:9px;border-radius:50%;background:${l.dot};flex-shrink:0;margin-top:5px;"></div>
+    <div style="flex:1;"><div style="font-size:.83rem;font-weight:700;color:var(--ink-2);">${l.title}</div><div style="font-size:.71rem;color:var(--muted);margin-top:1px;">${l.meta}</div></div>
+    <div style="font-size:.68rem;color:var(--muted);font-family:'DM Mono',monospace;flex-shrink:0;">${l.time}</div>
+  </div>`).join('');
+
+// Plan options
+const plans=[
+  {name:'Trial',price:0,features:'Up to 100 students � Core modules only',col:'#D97706'},
+  {name:'Basic',price:4800,features:'1,000 students � Core + Fee + Attendance + Results',col:'#059669',current:true},
+  {name:'Pro',price:12000,features:'5,000 students � All Basic + Marketplace + Contest',col:'#1D4ED8'},
+  {name:'Enterprise',price:28000,features:'Unlimited � All modules + API access + SLA',col:'#5B21B6'},
+];
+document.getElementById('planOptions').innerHTML=plans.map(p=>`
+  <div style="border:1.5px solid ${p.current?p.col:'var(--border)'};border-radius:10px;padding:12px 14px;cursor:pointer;background:${p.current?'#F8F9FF':'var(--white)'};display:flex;align-items:center;gap:10px;" onclick="document.querySelectorAll('.plan-opt-radio').forEach(r=>r.checked=false);this.querySelector('input').checked=true">
+    <input type="radio" class="plan-opt-radio" name="planOpt" value="${p.name}" ${p.current?'checked':''}>
+    <div style="flex:1;"><div style="font-size:.88rem;font-weight:800;color:${p.col};">${p.name} ${p.current?'<span style="font-size:.6rem;background:'+p.col+';color:#fff;padding:1px 6px;border-radius:4px;vertical-align:middle;">Current</span>':''}</div><div style="font-size:.74rem;color:var(--muted);margin-top:2px;">${p.features}</div></div>
+    <div style="font-family:'DM Mono',monospace;font-weight:900;font-size:.88rem;color:${p.col};">${p.price?'?'+p.price.toLocaleString()+'/mo':'Free'}</div>
+  </div>`).join('');
+
+function openPlanModal(){document.getElementById('planModal').classList.add('show');}
+function changePlan(){
+  const sel=document.querySelector('.plan-opt-radio:checked')?.value;
+  document.getElementById('planModal').classList.remove('show');
+  if(sel)showToast(`Plan changed to ${sel}!`,'?');
+}
+function openSuspendModal(){showToast('Opening suspension dialog�','?');}
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

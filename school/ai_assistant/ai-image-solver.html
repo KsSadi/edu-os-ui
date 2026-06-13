@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Image Question Solver — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* ── HERO ── */
+.is-hero{
+  background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);
+  border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;
+}
+.is-hero::before{content:'📷';position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:7rem;opacity:.07;pointer-events:none;}
+.ish-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.ish-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.ish-sub{font-size:.84rem;opacity:.65;line-height:1.65;max-width:540px;}
+.ish-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.ish-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:700;color:rgba(255,255,255,.75);}
+
+/* ── MAIN LAYOUT ── */
+.is-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{
+  background:var(--white);border:2.5px dashed var(--border);border-radius:20px;
+  padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s ease;
+  margin-bottom:20px;position:relative;overflow:hidden;
+}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--ai);background:var(--ai-pale);transform:scale(1.005);}
+.upload-zone.has-image{border-style:solid;border-color:var(--ai);padding:0;background:#000;}
+.uz-icon{font-size:3.5rem;margin-bottom:14px;display:block;transition:transform .2s;}
+.upload-zone:hover .uz-icon{transform:scale(1.1);}
+.uz-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:6px;}
+.uz-sub{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:22px;}
+.uz-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.uz-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:12px;font-size:.82rem;font-weight:800;cursor:pointer;border:none;transition:all .15s;}
+.uz-btn-primary{background:var(--ai-soft);color:#fff;}
+.uz-btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+.uz-btn-secondary{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-2);}
+.uz-btn-secondary:hover{border-color:var(--ai);color:var(--ai-dark);}
+.uz-formats{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+.uz-fmt{font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border);color:var(--muted);}
+input[type=file]{display:none;}
+
+/* ── IMAGE PREVIEW ── */
+.img-preview-wrap{position:relative;border-radius:18px;overflow:hidden;background:#050314;}
+.img-preview-wrap img{width:100%;max-height:420px;object-fit:contain;display:block;}
+.img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,3,20,.85) 0%,transparent 50%);pointer-events:none;}
+.img-preview-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 20px;display:flex;gap:8px;align-items:center;}
+.ipa-badge{flex:1;font-size:.75rem;font-weight:700;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;}
+.ipa-badge span{width:8px;height:8px;border-radius:50%;background:#34D399;display:inline-block;}
+.ipa-btn{padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);font-size:.76rem;font-weight:800;color:#fff;cursor:pointer;transition:all .12s;backdrop-filter:blur(8px);}
+.ipa-btn:hover{background:rgba(255,255,255,.2);}
+.ipa-solve{background:var(--ai-soft);border-color:transparent;padding:9px 20px;}
+
+/* ── SCANNING ANIMATION ── */
+.scan-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,3,20,.88);z-index:10;border-radius:18px;}
+.scan-line{width:80%;height:3px;background:linear-gradient(90deg,transparent,#06B6D4,#8B5CF6,transparent);border-radius:2px;animation:scanMove 1.4s ease-in-out infinite;margin-bottom:24px;}
+@keyframes scanMove{0%{transform:translateY(-80px);opacity:.6;}50%{opacity:1;}100%{transform:translateY(80px);opacity:.6;}}
+.scan-corners{position:absolute;inset:20px;border-radius:12px;pointer-events:none;}
+.scan-corners::before,.scan-corners::after{content:'';position:absolute;width:24px;height:24px;border-color:#06B6D4;border-style:solid;}
+.scan-corners::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.scan-corners::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+.scan-corners-2{position:absolute;inset:20px;}
+.scan-corners-2::before,.scan-corners-2::after{content:'';position:absolute;width:24px;height:24px;border-color:#8B5CF6;border-style:solid;}
+.scan-corners-2::before{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.scan-corners-2::after{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.scan-label{font-size:.8rem;font-weight:800;color:#67E8F9;letter-spacing:.06em;text-transform:uppercase;}
+.scan-dots{display:flex;gap:5px;margin-top:8px;}
+.scan-dot{width:6px;height:6px;border-radius:50%;background:#06B6D4;animation:dotPulse 1.2s infinite;}
+.scan-dot:nth-child(2){animation-delay:.2s;}.scan-dot:nth-child(3){animation-delay:.4s;}
+@keyframes dotPulse{0%,100%{opacity:.3;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+
+/* ── CAMERA MODAL ── */
+.camera-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
+.camera-modal-bg.open{opacity:1;pointer-events:all;}
+.camera-modal{background:#050314;border:1px solid rgba(6,182,212,.25);border-radius:24px;width:min(520px,95vw);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6);}
+.cm-header{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;}
+.cm-title{font-size:.95rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;}
+.cm-close{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;}
+.cm-close:hover{background:rgba(255,255,255,.1);color:#fff;}
+.cm-body{position:relative;background:#000;aspect-ratio:4/3;overflow:hidden;}
+#cameraFeed{width:100%;height:100%;object-fit:cover;display:block;}
+.cm-viewfinder{position:absolute;inset:0;pointer-events:none;}
+.cvf-inner{position:absolute;inset:10%;border:1px solid rgba(6,182,212,.4);border-radius:6px;}
+.cvf-corner{position:absolute;width:18px;height:18px;border-color:#06B6D4;border-style:solid;}
+.cvf-tl{top:0;left:0;border-width:2px 0 0 2px;border-radius:2px 0 0 0;}
+.cvf-tr{top:0;right:0;border-width:2px 2px 0 0;border-radius:0 2px 0 0;}
+.cvf-bl{bottom:0;left:0;border-width:0 0 2px 2px;border-radius:0 0 0 2px;}
+.cvf-br{bottom:0;right:0;border-width:0 2px 2px 0;border-radius:0 0 2px 0;}
+.cm-scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(6,182,212,.8),transparent);animation:camScan 2s ease-in-out infinite;top:10%;}
+@keyframes camScan{0%{top:10%;}100%{top:90%;}}
+.cm-footer{padding:18px 22px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;}
+.cm-hint{font-size:.72rem;color:rgba(255,255,255,.4);line-height:1.5;}
+.cm-capture-btn{width:58px;height:58px;border-radius:50%;border:4px solid #06B6D4;background:transparent;cursor:pointer;position:relative;transition:all .15s;flex-shrink:0;}
+.cm-capture-btn::after{content:'';position:absolute;inset:5px;border-radius:50%;background:#fff;transition:all .15s;}
+.cm-capture-btn:hover{box-shadow:0 0 20px rgba(6,182,212,.5);}
+.cm-capture-btn:active::after{background:#06B6D4;}
+.cm-switch{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.cm-switch:hover{background:rgba(255,255,255,.12);color:#fff;}
+
+/* ── SOLUTION PANEL ── */
+.sol-panel{background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
+.sol-head{padding:16px 20px;background:linear-gradient(135deg,#050314,#0D0828);display:flex;align-items:center;justify-content:space-between;}
+.sol-title{font-size:.9rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px;}
+.sol-badge{font-size:.64rem;font-weight:800;padding:3px 10px;border-radius:8px;background:rgba(6,182,212,.2);color:#67E8F9;border:1px solid rgba(6,182,212,.3);}
+.sol-body{padding:0;}
+
+/* Detected question strip */
+.detected-q{background:linear-gradient(135deg,rgba(6,182,212,.06),rgba(139,92,246,.06));border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.dq-icon{width:36px;height:36px;border-radius:10px;background:var(--ai-pale);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.dq-info{flex:1;min-width:0;}
+.dq-label{font-size:.62rem;font-weight:800;color:var(--ai-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.dq-text{font-size:.9rem;font-weight:700;color:var(--ink);font-family:'DM Mono',monospace;line-height:1.5;}
+.dq-type{display:inline-flex;align-items:center;gap:4px;font-size:.64rem;font-weight:800;padding:2px 8px;border-radius:6px;background:var(--ai-pale);color:var(--ai-dark);margin-top:5px;}
+
+/* Step by step */
+.step-item{border-bottom:1px solid var(--border);overflow:hidden;}
+.step-item:last-child{border-bottom:none;}
+.step-header{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;background:var(--bg);transition:background .1s;}
+.step-header:hover{background:#f0f9ff;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--ai-soft);color:#fff;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-ttl{font-size:.84rem;font-weight:800;color:var(--ink);flex:1;}
+.step-chev{font-size:.8rem;color:var(--muted);transition:transform .2s;}
+.step-header.open .step-chev{transform:rotate(180deg);}
+.step-content{padding:0 20px 18px;display:none;}
+.step-header.open+.step-content{display:block;}
+.step-explain{font-size:.82rem;color:var(--ink-2);line-height:1.75;margin-bottom:12px;margin-top:12px;}
+.step-math{background:#050314;color:#67E8F9;font-family:'DM Mono',monospace;font-size:.92rem;border-radius:12px;padding:14px 18px;line-height:2;overflow-x:auto;}
+.step-math .op{color:#A78BFA;}.step-math .ans{color:#34D399;font-weight:700;}.step-math .sub{color:rgba(103,232,249,.5);font-size:.78rem;}
+
+/* Answer banner */
+.answer-banner{background:linear-gradient(135deg,#050314 0%,#0D0828 50%,#1A1040 100%);padding:24px 20px;text-align:center;}
+.ab-label{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#67E8F9;margin-bottom:6px;}
+.ab-value{font-family:'DM Mono',monospace;font-size:2.2rem;font-weight:900;background:var(--ai-soft);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;}
+.ab-verify{font-size:.72rem;color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:14px;}
+.ab-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.ab-btn{padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);font-size:.76rem;font-weight:800;color:rgba(255,255,255,.8);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px;}
+.ab-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);}
+.ab-btn.primary{background:rgba(6,182,212,.2);border-color:rgba(6,182,212,.4);color:#67E8F9;}
+.ab-btn.primary:hover{background:rgba(6,182,212,.3);}
+
+/* ── SIDE PANEL ── */
+.is-side{display:flex;flex-direction:column;gap:14px;}
+.side-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.sdc-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;}
+.sdc-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.sdc-body{padding:14px 16px;}
+
+/* Recent solves */
+.recent-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .1s;}
+.recent-item:last-child{border-bottom:none;}
+.recent-item:hover{margin:0 -16px;padding:8px 16px;background:var(--bg);}
+.ri-thumb{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#0D0828,#1A1040);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;border:1px solid var(--border);}
+.ri-info{flex:1;min-width:0;}
+.ri-title{font-size:.76rem;font-weight:800;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri-meta{font-size:.64rem;color:var(--muted);margin-top:2px;}
+.ri-score{font-size:.72rem;font-weight:800;color:#16A34A;font-family:'DM Mono',monospace;}
+
+/* Tips */
+.tip-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.76rem;line-height:1.55;color:var(--ink-2);}
+.tip-item:last-child{border-bottom:none;}
+.ti-icon{flex-shrink:0;font-size:1rem;margin-top:1px;}
+
+/* Subject support */
+.subj-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:.72rem;font-weight:700;color:var(--ink-2);margin:3px;}
+.sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* Stats mini */
+.stat-mini{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.stat-mini:last-child{border-bottom:none;}
+.sm-label{font-size:.74rem;color:var(--muted);font-weight:600;}
+.sm-val{font-size:.84rem;font-weight:900;font-family:'DM Mono',monospace;color:var(--ink);}
+
+/* Subject support colors */
+.dot-math{background:#06B6D4;}.dot-physics{background:#8B5CF6;}.dot-chem{background:#EC4899;}
+.dot-bio{background:#10B981;}.dot-eng{background:#F59E0B;}.dot-geo{background:#EF4444;}
+
+/* ── EMPTY STATE ── */
+.is-empty{text-align:center;padding:52px 24px;display:block;}
+.ise-icon{font-size:4rem;margin-bottom:16px;display:block;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.ise-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:8px;}
+.ise-sub{font-size:.78rem;color:var(--muted);line-height:1.7;max-width:330px;margin:0 auto 22px;}
+.ise-samples{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:380px;margin:0 auto;}
+.ise-sample{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.74rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;text-align:left;background:var(--bg);}
+.ise-sample:hover{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+
+/* ── ANIMATIONS ── */
+.anim-1{animation:fadeUp .35s ease both;}
+.anim-2{animation:fadeUp .35s .1s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ── TOAST ── */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.is-layout{grid-template-columns:1fr;}.is-side{display:grid;grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.is-side{grid-template-columns:1fr;}.uz-actions{flex-direction:column;align-items:center;}.ab-value{font-size:1.6rem;}.ise-samples{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar"></aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="is-hero anim-1">
+      <div class="ish-badge">📸 AI Vision · Image Question Solver</div>
+      <div class="ish-title">Snap a Question, Get the Answer</div>
+      <div class="ish-sub">Take a photo of any math problem, physics equation, chemistry diagram, or handwritten question — AI will scan, detect and solve it step by step instantly.</div>
+      <div class="ish-pills">
+        <span class="ish-pill">📐 Math & Algebra</span>
+        <span class="ish-pill">⚡ Physics</span>
+        <span class="ish-pill">🧪 Chemistry</span>
+        <span class="ish-pill">🌱 Biology Diagrams</span>
+        <span class="ish-pill">✍️ Handwritten Notes</span>
+        <span class="ish-pill">📄 Textbook Pages</span>
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="is-layout">
+      <div class="is-left anim-1">
+
+        <!-- Upload zone (shown when no image) -->
+        <div class="upload-zone" id="uploadZone"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)"
+          onclick="document.getElementById('fileInput').click()">
+          <span class="uz-icon">📷</span>
+          <div class="uz-title">Upload or Capture a Question</div>
+          <div class="uz-sub">Drag & drop an image here, take a photo with your camera,<br>or upload from your gallery.</div>
+          <div class="uz-actions" onclick="event.stopPropagation()">
+            <button class="uz-btn uz-btn-primary" onclick="openCamera()">📷 Use Camera</button>
+            <button class="uz-btn uz-btn-secondary" onclick="document.getElementById('fileInput').click()">🖼️ Upload Image</button>
+          </div>
+          <div class="uz-formats">
+            <span class="uz-fmt">JPG</span>
+            <span class="uz-fmt">PNG</span>
+            <span class="uz-fmt">WEBP</span>
+            <span class="uz-fmt">HEIC</span>
+            <span class="uz-fmt">Max 10MB</span>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+
+        <!-- Image preview + scan + solution (hidden until image loaded) -->
+        <div id="imageSolverArea" style="display:none;">
+
+          <!-- Preview -->
+          <div class="img-preview-wrap" id="previewWrap">
+            <img id="previewImg" src="" alt="Uploaded question">
+            <div class="img-overlay"></div>
+
+            <!-- Scanning animation -->
+            <div class="scan-overlay" id="scanOverlay" style="display:none;">
+              <div class="scan-corners"></div>
+              <div class="scan-corners-2"></div>
+              <div class="scan-line"></div>
+              <div class="scan-label">Scanning Question…</div>
+              <div class="scan-dots"><div class="scan-dot"></div><div class="scan-dot"></div><div class="scan-dot"></div></div>
+            </div>
+
+            <div class="img-preview-actions">
+              <div class="ipa-badge"><span></span> Image loaded — ready to solve</div>
+              <button class="ipa-btn" onclick="resetSolver()">🔄 New Image</button>
+              <button class="ipa-btn ipa-solve" id="solveBtn" onclick="startSolving()">✨ Solve This →</button>
+            </div>
+          </div>
+
+          <!-- Solution panel (hidden until solved) -->
+          <div id="solutionPanel" style="display:none;margin-top:20px;">
+            <div class="sol-panel">
+              <div class="sol-head">
+                <div class="sol-title">✨ AI Solution <span style="opacity:.5;font-weight:400;font-size:.75rem;">· Step-by-step</span></div>
+                <span class="sol-badge" id="solSubjectBadge">Math · Quadratic</span>
+              </div>
+              <div class="sol-body">
+
+                <!-- Detected question -->
+                <div class="detected-q">
+                  <div class="dq-icon">🔍</div>
+                  <div class="dq-info">
+                    <div class="dq-label">📷 Detected Question</div>
+                    <div class="dq-text" id="detectedQ">2x² − 5x + 3 = 0</div>
+                    <div class="dq-type" id="detectedType">📐 Quadratic Equation</div>
+                  </div>
+                </div>
+
+                <!-- Steps -->
+                <div id="stepsContainer">
+                  <!-- Steps injected by JS -->
+                </div>
+
+                <!-- Answer -->
+                <div class="answer-banner">
+                  <div class="ab-label">🎯 Final Answer</div>
+                  <div class="ab-value" id="finalAnswer">x = 3/2 &nbsp; or &nbsp; x = 1</div>
+                  <div class="ab-verify">✅ Verified &nbsp;·&nbsp; Confidence: 99%</div>
+                  <div class="ab-actions">
+                    <button class="ab-btn" onclick="showToast('Copied to clipboard!','📋')">📋 Copy Answer</button>
+                    <button class="ab-btn primary" onclick="goToMathSolver()">🔢 Open in Math Solver</button>
+                    <button class="ab-btn" onclick="showToast('Added to Flashcards!','🃏')">🃏 Save to Flashcards</button>
+                    <button class="ab-btn" onclick="window.print()">🖨️ Print Solution</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state shown while no solution yet -->
+          <div id="emptyHint" class="is-empty">
+            <span class="ise-icon">🔍</span>
+            <div class="ise-title">Image loaded. Ready to solve!</div>
+            <div class="ise-sub">Click <strong>"✨ Solve This"</strong> above to let AI scan and solve your question step by step.</div>
+          </div>
+        </div>
+
+        <!-- Initial empty state (shown before any image) -->
+        <div id="initialEmpty" class="is-empty">
+          <span class="ise-icon">📸</span>
+          <div class="ise-title">How would you like to solve?</div>
+          <div class="ise-sub">Upload a photo or take a live shot of any question from your textbook, exam paper, or handwritten notes.</div>
+          <div class="ise-samples">
+            <div class="ise-sample" onclick="loadDemo('math')">📐 <span>Math Problem</span></div>
+            <div class="ise-sample" onclick="loadDemo('physics')">⚡ <span>Physics Numerics</span></div>
+            <div class="ise-sample" onclick="loadDemo('chemistry')">🧪 <span>Chemistry Equation</span></div>
+            <div class="ise-sample" onclick="loadDemo('geometry')">📏 <span>Geometry Figure</span></div>
+          </div>
+        </div>
+
+      </div><!-- /.is-left -->
+
+      <!-- ── SIDE PANEL ── -->
+      <div class="is-side anim-2">
+
+        <!-- Stats -->
+        <div class="side-card">
+          <div class="sdc-head"><span>📊</span><span class="sdc-title">Your Stats</span></div>
+          <div class="sdc-body">
+            <div class="stat-mini"><span class="sm-label">Questions Solved</span><span class="sm-val">47</span></div>
+            <div class="stat-mini"><span class="sm-label">Accuracy Rate</span><span class="sm-val">94%</span></div>
+            <div class="stat-mini"><span class="sm-label">Avg Solve Time</span><span class="sm-val">3.2s</span></div>
+            <div class="stat-mini"><span class="sm-label">Saved to Flashcards</span><span class="sm-val">12</span></div>
+            <div class="stat-mini"><span class="sm-label">Today's Solves</span><span class="sm-val">5</span></div>
+          </div>
+        </div>
+
+        <!-- Recent solves -->
+        <div class="side-card">
+          <div class="sdc-head"><span>🕐</span><span class="sdc-title">Recent Solves</span></div>
+          <div class="sdc-body">
+            <div class="recent-item" onclick="loadSample('quadratic')">
+              <div class="ri-thumb">📐</div>
+              <div class="ri-info"><div class="ri-title">2x² − 5x + 3 = 0</div><div class="ri-meta">Math · 2 min ago</div></div>
+              <div class="ri-score">✅</div>
+            </div>
+            <div class="recent-item" onclick="loadSample('newton')">
+              <div class="ri-thumb">⚡</div>
+              <div class="ri-info"><div class="ri-title">F = ma, find a when F=20N</div><div class="ri-meta">Physics · 15 min ago</div></div>
+              <div class="ri-score">✅</div>
+            </div>
+            <div class="recent-item" onclick="loadSample('mole')">
+              <div class="ri-thumb">🧪</div>
+              <div class="ri-info"><div class="ri-title">Balance: Fe + O₂ → Fe₂O₃</div><div class="ri-meta">Chemistry · 1 hr ago</div></div>
+              <div class="ri-score">✅</div>
+            </div>
+            <div class="recent-item" onclick="loadSample('triangle')">
+              <div class="ri-thumb">📏</div>
+              <div class="ri-info"><div class="ri-title">Find hypotenuse: a=3, b=4</div><div class="ri-meta">Math · Yesterday</div></div>
+              <div class="ri-score">✅</div>
+            </div>
+            <div class="recent-item" onclick="loadSample('ohm')">
+              <div class="ri-thumb">🔌</div>
+              <div class="ri-info"><div class="ri-title">V = IR, find current</div><div class="ri-meta">Physics · Yesterday</div></div>
+              <div class="ri-score">✅</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supported subjects -->
+        <div class="side-card">
+          <div class="sdc-head"><span>🎓</span><span class="sdc-title">Supported Subjects</span></div>
+          <div class="sdc-body">
+            <div>
+              <div class="subj-pill"><div class="sp-dot dot-math"></div>Mathematics</div>
+              <div class="subj-pill"><div class="sp-dot dot-physics"></div>Physics</div>
+              <div class="subj-pill"><div class="sp-dot dot-chem"></div>Chemistry</div>
+              <div class="subj-pill"><div class="sp-dot dot-bio"></div>Biology</div>
+              <div class="subj-pill"><div class="sp-dot dot-eng"></div>English</div>
+              <div class="subj-pill"><div class="sp-dot dot-geo"></div>Geography</div>
+            </div>
+            <div style="margin-top:12px;font-size:.7rem;color:var(--muted);line-height:1.6;">Supports printed text, handwriting, diagrams, and equations in <strong>Bangla & English</strong>.</div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="side-card">
+          <div class="sdc-head"><span>💡</span><span class="sdc-title">Tips for Best Results</span></div>
+          <div class="sdc-body">
+            <div class="tip-item"><span class="ti-icon">☀️</span><span>Use good lighting — avoid shadows on the paper</span></div>
+            <div class="tip-item"><span class="ti-icon">📐</span><span>Keep the camera parallel to the page, not at an angle</span></div>
+            <div class="tip-item"><span class="ti-icon">✂️</span><span>Crop to show only the question, not the whole page</span></div>
+            <div class="tip-item"><span class="ti-icon">🖊️</span><span>Handwritten equations work best in dark ink on white paper</span></div>
+            <div class="tip-item"><span class="ti-icon">🔍</span><span>Higher resolution = more accurate detection</span></div>
+          </div>
+        </div>
+
+      </div><!-- /.is-side -->
+    </div><!-- /.is-layout -->
+
+  </div><!-- /.page-body -->
+</main>
+</div>
+
+<!-- ══ CAMERA MODAL ══ -->
+<div class="camera-modal-bg" id="cameraModal">
+  <div class="camera-modal">
+    <div class="cm-header">
+      <div class="cm-title">📷 Camera — Point at your question</div>
+      <button class="cm-close" onclick="closeCamera()">✕</button>
+    </div>
+    <div class="cm-body">
+      <video id="cameraFeed" autoplay playsinline muted></video>
+      <canvas id="captureCanvas" style="display:none;"></canvas>
+      <div class="cm-viewfinder">
+        <div class="cvf-inner">
+          <div class="cvf-corner cvf-tl"></div>
+          <div class="cvf-corner cvf-tr"></div>
+          <div class="cvf-corner cvf-bl"></div>
+          <div class="cvf-corner cvf-br"></div>
+        </div>
+      </div>
+      <div class="cm-scan-line"></div>
+    </div>
+    <div class="cm-footer">
+      <div class="cm-hint">Hold steady.<br>Frame the question inside the box.</div>
+      <button class="cm-capture-btn" onclick="capturePhoto()" title="Capture"></button>
+      <button class="cm-switch" onclick="switchCamera()" title="Switch Camera">🔄</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast stack -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ── Demo data ── */
+const DEMO = {
+  math: {
+    question:'2x² − 5x + 3 = 0',
+    type:'📐 Quadratic Equation',
+    subject:'Math · Quadratic',
+    answer:'x = 3/2 &nbsp; or &nbsp; x = 1',
+    steps:[
+      {title:'Identify the Equation Type',badge:{text:'Quadratic',color:'#CFFAFE',c:'#0E7490'},
+       explain:'The equation is in the form <strong>ax² + bx + c = 0</strong>, where a = 2, b = −5, c = 3.',
+       math:'<span class="op">a</span> = 2 &nbsp;&nbsp; <span class="op">b</span> = −5 &nbsp;&nbsp; <span class="op">c</span> = 3'},
+      {title:'Apply the Quadratic Formula',badge:{text:'Formula',color:'#EDE9FE',c:'#6D28D9'},
+       explain:'Use the standard quadratic formula: x = (−b ± √(b² − 4ac)) / 2a',
+       math:'x = <span class="op">(−b ± √(b² − 4ac))</span> / <span class="op">2a</span>'},
+      {title:'Calculate the Discriminant',badge:{text:'Step',color:'#DCFCE7',c:'#166534'},
+       explain:'Calculate Δ = b² − 4ac to determine how many roots exist.',
+       math:'Δ = <span class="op">(−5)²</span> − 4 × 2 × 3\nΔ = 25 − 24\n<span class="ans">Δ = 1  ✓ (two real roots)</span>'},
+      {title:'Solve for x',badge:{text:'Final',color:'#CFFAFE',c:'#0E7490'},
+       explain:'Since Δ = 1 (positive), there are two distinct real roots.',
+       math:'x₁ = <span class="op">(5 + √1)</span> / 4 = 6/4 = <span class="ans">3/2</span>\nx₂ = <span class="op">(5 − √1)</span> / 4 = 4/4 = <span class="ans">1</span>'}
+    ]
+  },
+  physics: {
+    question:"F = ma; F = 20 N, m = 4 kg — Find acceleration 'a'",
+    type:'⚡ Newton\'s Second Law',
+    subject:'Physics · Mechanics',
+    answer:'a = 5 m/s²',
+    steps:[
+      {title:"Identify Given Values",badge:{text:'Extract',color:'#EDE9FE',c:'#6D28D9'},
+       explain:"List the known quantities from the problem.",
+       math:'<span class="op">F</span> = 20 N &nbsp;&nbsp; <span class="op">m</span> = 4 kg &nbsp;&nbsp; <span class="op">a</span> = ?'},
+      {title:'Apply Newton\'s Second Law',badge:{text:'Formula',color:'#CFFAFE',c:'#0E7490'},
+       explain:'Newton\'s Second Law: Force equals mass times acceleration.',
+       math:'F = m × a'},
+      {title:'Rearrange for Acceleration',badge:{text:'Algebra',color:'#DCFCE7',c:'#166534'},
+       explain:'Divide both sides by mass (m) to isolate acceleration (a).',
+       math:'a = F / m\na = <span class="op">20</span> / <span class="op">4</span>'},
+      {title:'Calculate Result',badge:{text:'Answer',color:'#FEF3C7',c:'#92400E'},
+       explain:'Perform the division to get the final acceleration.',
+       math:'<span class="ans">a = 5 m/s²</span>\n<span class="sub">// Direction same as force F</span>'}
+    ]
+  },
+  chemistry: {
+    question:'Balance: Fe + O₂ → Fe₂O₃',
+    type:'🧪 Chemical Equation Balancing',
+    subject:'Chemistry · Balancing',
+    answer:'4Fe + 3O₂ → 2Fe₂O₃',
+    steps:[
+      {title:'Count Atoms on Each Side',badge:{text:'Count',color:'#FCE7F3',c:'#9D174D'},
+       explain:'First, count the atoms of each element on both sides of the arrow.',
+       math:'Left:  <span class="op">Fe</span> = 1 &nbsp; <span class="op">O</span> = 2\nRight: <span class="op">Fe</span> = 2 &nbsp; <span class="op">O</span> = 3\n<span class="sub">// Unbalanced — need to adjust coefficients</span>'},
+      {title:'Balance Iron (Fe)',badge:{text:'Step 1',color:'#EDE9FE',c:'#6D28D9'},
+       explain:'Put coefficient 4 on Fe left and 2 on Fe₂O₃ right to balance 4 iron atoms.',
+       math:'<span class="op">4</span>Fe + O₂ → <span class="op">2</span>Fe₂O₃\nFe: 4 = 4 ✓'},
+      {title:'Balance Oxygen (O)',badge:{text:'Step 2',color:'#DCFCE7',c:'#166534'},
+       explain:'Right side now has 6 oxygen atoms (2 × 3). Put coefficient 3 on O₂ left.',
+       math:'4Fe + <span class="op">3</span>O₂ → 2Fe₂O₃\nO: 6 = 6 ✓'},
+      {title:'Verify Balanced Equation',badge:{text:'Check',color:'#CFFAFE',c:'#0E7490'},
+       explain:'Confirm all atoms are equal on both sides.',
+       math:'<span class="ans">4Fe + 3O₂ → 2Fe₂O₃</span>\nFe: 4 = 4 ✓ &nbsp;&nbsp; O: 6 = 6 ✓'}
+    ]
+  },
+  geometry: {
+    question:'Find hypotenuse: right triangle a = 3 cm, b = 4 cm',
+    type:'📏 Pythagorean Theorem',
+    subject:'Math · Geometry',
+    answer:'c = 5 cm',
+    steps:[
+      {title:'Identify the Formula',badge:{text:'Theorem',color:'#CFFAFE',c:'#0E7490'},
+       explain:'For a right-angled triangle, the Pythagorean theorem states: c² = a² + b²',
+       math:'c² = <span class="op">a²</span> + <span class="op">b²</span>'},
+      {title:'Substitute Values',badge:{text:'Substitute',color:'#EDE9FE',c:'#6D28D9'},
+       explain:'Replace a with 3 and b with 4 in the formula.',
+       math:'c² = <span class="op">3²</span> + <span class="op">4²</span>\nc² = 9 + 16'},
+      {title:'Calculate c²',badge:{text:'Calculate',color:'#DCFCE7',c:'#166534'},
+       explain:'Add the squared values.',
+       math:'c² = <span class="ans">25</span>'},
+      {title:'Find c by Square Root',badge:{text:'Answer',color:'#FEF3C7',c:'#92400E'},
+       explain:'Take the square root of both sides to get c.',
+       math:'c = √25\n<span class="ans">c = 5 cm</span>'}
+    ]
+  }
+};
+
+/* ── State ── */
+let currentStream = null;
+let facing = 'environment';
+let currentDemo = null;
+
+/* ── Drag and drop ── */
+function handleDragOver(e){e.preventDefault();e.stopPropagation();document.getElementById('uploadZone').classList.add('dragover');}
+function handleDragLeave(e){document.getElementById('uploadZone').classList.remove('dragover');}
+function handleDrop(e){
+  e.preventDefault();e.stopPropagation();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')){loadImageFile(file);}
+  else{showToast('Please drop an image file','⚠️');}
+}
+
+function handleFileUpload(e){
+  const file = e.target.files[0];
+  if(file){loadImageFile(file);}
+  e.target.value='';
+}
+
+function loadImageFile(file){
+  if(file.size > 10*1024*1024){showToast('Image too large (max 10MB)','⚠️');return;}
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    showPreview(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPreview(src){
+  document.getElementById('previewImg').src = src;
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('initialEmpty').style.display = 'none';
+  document.getElementById('imageSolverArea').style.display = 'block';
+  document.getElementById('solutionPanel').style.display = 'none';
+  document.getElementById('emptyHint').style.display = 'block';
+  document.getElementById('stepsContainer').innerHTML = '';
+  showToast('Image loaded! Click "Solve This" →','✅');
+}
+
+/* ── Demo samples ── */
+function loadDemo(type){
+  currentDemo = type;
+  const d = DEMO[type];
+  // Create a placeholder image via canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = 700; canvas.height = 320;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const grad = ctx.createLinearGradient(0,0,700,320);
+  grad.addColorStop(0,'#050314'); grad.addColorStop(1,'#1A1040');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,700,320);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(6,182,212,.08)'; ctx.lineWidth = 1;
+  for(let i=0;i<700;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,320);ctx.stroke();}
+  for(let i=0;i<320;i+=40){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(700,i);ctx.stroke();}
+
+  // Paper texture
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(100,60,500,200); 
+  ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 1; ctx.strokeRect(100,60,500,200);
+  // Lines
+  for(let y=100;y<240;y+=28){ctx.fillStyle='#E2E8F0';ctx.fillRect(120,y,460,1);}
+
+  // Question text
+  ctx.fillStyle = '#0F172A'; ctx.font = 'bold 22px "DM Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(d.question, 350, 168);
+
+  // Label
+  ctx.fillStyle = 'rgba(6,182,212,.5)'; ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('[ Sample Question — ' + d.type + ' ]', 350, 230);
+
+  showPreview(canvas.toDataURL());
+}
+
+function loadSample(type){
+  const map={quadratic:'math',newton:'physics',mole:'chemistry',triangle:'geometry',ohm:'physics'};
+  loadDemo(map[type]||'math');
+}
+
+/* ── Camera ── */
+function openCamera(){
+  document.getElementById('cameraModal').classList.add('open');
+  startCamera();
+}
+
+async function startCamera(){
+  try{
+    if(currentStream){currentStream.getTracks().forEach(t=>t.stop());}
+    currentStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});
+    document.getElementById('cameraFeed').srcObject = currentStream;
+  } catch(err){
+    closeCamera();
+    showToast('Camera not available — please upload an image','📁');
+  }
+}
+
+function switchCamera(){
+  facing = facing==='environment'?'user':'environment';
+  startCamera();
+}
+
+function capturePhoto(){
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('captureCanvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataUrl = canvas.toDataURL('image/jpeg',0.92);
+  closeCamera();
+  showPreview(dataUrl);
+  currentDemo = 'math'; // default to math for live camera demo
+}
+
+function closeCamera(){
+  document.getElementById('cameraModal').classList.remove('open');
+  if(currentStream){currentStream.getTracks().forEach(t=>t.stop()); currentStream=null;}
+}
+
+/* ── Solve ── */
+function startSolving(){
+  const scanOverlay = document.getElementById('scanOverlay');
+  const solveBtn = document.getElementById('solveBtn');
+  solveBtn.disabled = true;
+  solveBtn.textContent = '⏳ Analyzing…';
+  document.getElementById('emptyHint').style.display = 'none';
+  scanOverlay.style.display = 'flex';
+
+  const type = currentDemo || 'math';
+  const d = DEMO[type];
+
+  setTimeout(()=>{
+    scanOverlay.style.display = 'none';
+    solveBtn.disabled = false;
+    solveBtn.textContent = '✨ Solve This →';
+    document.getElementById('detectedQ').textContent = d.question;
+    document.getElementById('detectedType').innerHTML = d.type;
+    document.getElementById('finalAnswer').innerHTML = d.answer;
+    document.getElementById('solSubjectBadge').textContent = d.subject;
+    buildSteps(d.steps);
+    document.getElementById('solutionPanel').style.display = 'block';
+    document.getElementById('solutionPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    showToast('Question solved successfully! 🎉','✨');
+  }, 2800);
+}
+
+function buildSteps(steps){
+  const container = document.getElementById('stepsContainer');
+  container.innerHTML = steps.map((s,i)=>`
+    <div class="step-item">
+      <div class="step-header ${i===0?'open':''}" onclick="toggleStep(this)">
+        <div class="step-num">${i+1}</div>
+        <div class="step-ttl">${s.title}</div>
+        <span class="step-chev ${i===0?'open':''}">▼</span>
+      </div>
+      <div class="step-content" style="${i===0?'display:block':''}">
+        <div class="step-explain">${s.explain}</div>
+        <div class="step-math">${s.math.replace(/\n/g,'<br>')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleStep(header){
+  const isOpen = header.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.step-header').forEach(h=>h.classList.remove('open'));
+  document.querySelectorAll('.step-chev').forEach(c=>c.classList.remove('open'));
+  document.querySelectorAll('.step-content').forEach(c=>c.style.display='none');
+  if(!isOpen){
+    header.classList.add('open');
+    header.querySelector('.step-chev').classList.add('open');
+    header.nextElementSibling.style.display='block';
+  }
+}
+
+function resetSolver(){
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('initialEmpty').style.display = '';
+  document.getElementById('imageSolverArea').style.display = 'none';
+  document.getElementById('solutionPanel').style.display = 'none';
+  currentDemo = null;
+}
+
+function goToMathSolver(){
+  window.location.href='ai-math-solver.html';
+}
+
+/* ── Toast ── */
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+/* Close camera on modal bg click */
+document.getElementById('cameraModal').addEventListener('click',function(e){if(e.target===this)closeCamera();});
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

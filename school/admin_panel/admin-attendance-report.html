@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Report &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+.view-tabs{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:20px;}
+.vt{padding:10px 20px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:.84rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.vt.on{color:var(--blue);border-bottom-color:var(--blue);}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:flex-end;}
+.fb-g label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block;}
+.heat-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.heat-table{border-collapse:collapse;white-space:nowrap;min-width:100%;font-size:.78rem;}
+.heat-table th{padding:7px 4px;background:var(--bg);border-bottom:2px solid var(--border);font-weight:700;color:var(--muted);text-align:center;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;z-index:1;min-width:26px;}
+.heat-table th.nc{text-align:left;padding-left:14px;min-width:190px;position:sticky;left:0;background:var(--bg);z-index:2;}
+.heat-table td{padding:0;border:1px solid var(--border);text-align:center;vertical-align:middle;}
+.heat-table td.name-cell{padding:8px 14px;text-align:left;background:var(--white);position:sticky;left:0;z-index:1;border-right:2px solid var(--border-mid);min-width:190px;}
+.heat-table td.sum{padding:6px 10px;font-weight:700;font-size:.8rem;}
+.day-cell{width:26px;height:34px;cursor:pointer;position:relative;}
+.day-cell:hover{filter:brightness(.88);}
+.dc-p{background:#D1FAE5;} .dc-a{background:#FEE2E2;} .dc-l{background:#FEF3C7;} .dc-h{background:#F1F5F9;}
+.dc-sym{font-size:.6rem;font-weight:800;}
+.dc-p .dc-sym{color:#065F46;} .dc-a .dc-sym{color:#991B1B;} .dc-l .dc-sym{color:#92400E;}
+.stu-n{font-size:.82rem;font-weight:700;color:var(--ink-2);}
+.stu-i{font-size:.67rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.bar-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.bar-row:last-child{border:none;}
+.bname{width:155px;flex-shrink:0;}
+.bbar{flex:1;background:var(--bg);border-radius:6px;overflow:hidden;height:18px;position:relative;}
+.bfill{height:100%;border-radius:6px;opacity:.85;}
+.bpct{width:44px;flex-shrink:0;font-size:.8rem;font-weight:800;text-align:right;}
+.bcnts{width:110px;flex-shrink:0;display:flex;gap:5px;}
+.bc{font-size:.68rem;font-weight:700;padding:1px 5px;border-radius:4px;}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.mcd{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;}
+.mcd.p{background:var(--green);color:#fff;} .mcd.a{background:var(--red);color:#fff;}
+.mcd.l{background:var(--amber);color:#fff;} .mcd.hd{background:var(--bg);color:var(--muted-light);}
+.mcd.na{background:transparent;}
+.student-pick-row{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;font-size:.84rem;}
+.student-pick-row:hover{background:var(--blue-pale);}
+.student-pick-row.on{background:var(--blue-pale);border-left:3px solid var(--blue);}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:ti .25s ease both;transition:opacity .3s;}
+@keyframes ti{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.bcnts{display:none;}.filter-bar{gap:6px;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">&#x1F4CA; Attendance</div>
+        <div class="page-title">Attendance Report</div>
+        <div class="page-sub">View monthly attendance heatmap, ranked bar chart, or individual student calendar.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Preparing PDF&middot;','&#x2705;');setTimeout(()=>showToast('Report ready!','&#x2705;'),1200)"> PDF</button>
+        <button class="btn btn-outline" onclick="showToast('Downloading Excel&middot;','&#x2705;')">Excel</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar anim-1">
+      <div class="fb-g"><label>Month</label>
+        <select class="form-select" style="width:155px;padding:8px 10px;" onchange="buildHeatmap()">
+          <option selected>February 2025</option>
+          <option>January 2025</option><option>December 2024</option><option>November 2024</option>
+        </select>
+      </div>
+      <div class="fb-g"><label>Class</label>
+        <select class="form-select" style="width:115px;padding:8px 10px;" onchange="buildHeatmap()">
+          <option>Class IX</option><option>Class I</option><option>Class V</option>
+          <option>Class X</option><option>Class XI</option><option>Class XII</option>
+        </select>
+      </div>
+      <div class="fb-g"><label>Section</label>
+        <select class="form-select" style="width:115px;padding:8px 10px;" onchange="buildHeatmap()">
+          <option>Section A</option><option>Section B</option><option>Section C</option>
+        </select>
+      </div>
+      <div class="fb-g"><label>Show only</label>
+        <select class="form-select" style="width:145px;padding:8px 10px;" id="filterThresh" onchange="buildBar()">
+          <option value="0">All Students</option>
+          <option value="85">Below 85%</option>
+          <option value="75">Below 75%</option>
+          <option value="65">Below 65%</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:#D1FAE5;border-radius:2px;"></div>Present</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:#FEE2E2;border-radius:2px;"></div>Absent</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:#FEF3C7;border-radius:2px;"></div>Late</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:#F1F5F9;border:1px solid var(--border);border-radius:2px;"></div>Holiday</div>
+      </div>
+    </div>
+
+    <!-- View tabs -->
+    <div class="view-tabs anim-1">
+      <button class="vt on" onclick="switchView(this,'heatmap')"> Heatmap (Class)</button>
+      <button class="vt" onclick="switchView(this,'bar')"> Bar Chart (Ranked)</button>
+      <button class="vt" onclick="switchView(this,'student')"> Individual Student</button>
+    </div>
+
+    <!-- HEATMAP -->
+    <div id="view-heatmap" class="card anim-2">
+      <div class="card-header" style="padding:16px 20px;">
+        <div><div class="card-title"> February 2025 &middot; Class IX&middot;A</div><div class="card-sub">20 school days &middot; 20 students shown &middot; Class average: <strong>91.8%</strong></div></div>
+        <span class="badge badge-green">91.8% avg</span>
+      </div>
+      <div class="heat-wrap"><table class="heat-table" id="heatTable"></table></div>
+      <div class="card-footer"><span class="text-sm text-muted">February 2025 &middot; 20 students</span><button class="btn btn-sm btn-outline" onclick="showToast('Downloading CSV&middot;','&#x2705;')">CSV</button></div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div id="view-bar" class="card anim-2" style="display:none;">
+      <div class="card-header" style="padding:16px 20px;">
+        <div><div class="card-title"> Ranked Attendance &middot; Class IX&middot;A &middot; February 2025</div><div class="card-sub">Students sorted by attendance %. Use filter to show at-risk students.</div></div>
+        <div style="display:flex;gap:6px;"><span class="badge badge-green" id="badgeHigh">17 =85%</span><span class="badge badge-amber" id="badgeMid">2 at risk</span><span class="badge badge-red" id="badgeLow">1 critical</span></div>
+      </div>
+      <div class="card-body"><div id="barBody"></div></div>
+      <div class="card-footer"><span class="text-sm text-muted">20 school days &middot; February 2025</span><button class="btn btn-sm btn-outline" onclick="showToast('Exporting&middot;','&#x2705;')">Export</button></div>
+    </div>
+
+    <!-- INDIVIDUAL -->
+    <div id="view-student" style="display:none;">
+      <div style="display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start;">
+        <div class="card">
+          <div class="card-header" style="padding:14px 16px;"><div class="card-title" style="font-size:.88rem;">Select Student</div></div>
+          <div style="padding:8px 12px;border-bottom:1px solid var(--border);"><div class="search-bar"><span class="sb-search-icon">&#x1F50D;</span><input type="text" placeholder="Search&middot;" oninput="filterStuPicker(this.value)"></div></div>
+          <div id="stuPickList" style="max-height:400px;overflow-y:auto;"></div>
+        </div>
+        <div class="card" id="stuDetailCard">
+          <div class="card-header" style="padding:16px 20px;" id="stuDetailHeader">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="sdAvatar" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#2563EB,#3B82F6);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;color:#fff;flex-shrink:0;">FI</div>
+              <div><div id="sdName" style="font-size:1rem;font-weight:800;color:var(--ink);">Farhan Islam</div><div id="sdMeta" style="font-size:.76rem;color:var(--muted);">STU-2024-001 &middot; Class IX&middot;A &middot; Roll 001</div></div>
+            </div>
+            <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-outline" onclick="showToast('SMS sent to parent','&#x2705;')"> SMS</button><button class="btn btn-sm btn-outline" onclick="showToast('Printing&middot;','&#x2705;')"></button></div>
+          </div>
+          <div id="sdSummary" style="display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);"></div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div style="font-weight:800;color:var(--ink-2);font-size:.9rem;">February 2025</div>
+              <div style="display:flex;gap:5px;"><button class="btn btn-sm btn-ghost">&times;</button><button class="btn btn-sm btn-ghost">&times;</button></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px;">
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Sun</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Mon</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Tue</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Wed</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Thu</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Fri</div>
+              <div style="text-align:center;font-size:.64rem;font-weight:700;color:var(--muted);">Sat</div>
+            </div>
+            <div class="mini-cal-grid" id="studentCal"></div>
+            <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:var(--green);border-radius:3px;"></div>Present</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:var(--red);border-radius:3px;"></div>Absent</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:var(--amber);border-radius:3px;"></div>Late</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:.74rem;"><div style="width:12px;height:12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;"></div>Holiday</div>
+            </div>
+            <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+              <div style="font-size:.8rem;font-weight:800;color:var(--ink-2);margin-bottom:10px;">Monthly Trend (Sep 2024 &middot; Feb 2025)</div>
+              <div id="sparkline" style="display:flex;align-items:flex-end;gap:4px;height:48px;"></div>
+              <div style="display:flex;gap:4px;margin-top:3px;" id="sparkMonths"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46','#9D174D','#1D4ED8'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Mahmud','Nafisa','Tahsin','Sumaiya','Karim','Mitu','Rezaul','Shirina','Tanvir','Fatema','Bilal','Ayasha'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+// Feb 2025 &middot; Sun=0 offset from Feb 1=Sat(6), school days skip Fri(5)+Sat(6) and holidays
+const HOLIDAYS=[1,5,6,7,8,12,13,14,15,19,20,21,22,26,27]; // all weekends + some holidays
+
+function rndSt(i,d){
+  if(HOLIDAYS.includes(d)) return 'h';
+  const r=Math.random();
+  if(i>14) return r<.2?'a':r<.28?'l':'p';
+  if(i>10) return r<.1?'a':r<.14?'l':'p';
+  return r<.05?'a':r<.07?'l':'p';
+}
+
+const students=FIRST.map((fn,i)=>{
+  const ln=LAST[i%LAST.length];
+  const days={};
+  for(let d=1;d<=28;d++) days[d]=rndSt(i,d);
+  const p=Object.values(days).filter(s=>s==='p').length;
+  const a=Object.values(days).filter(s=>s==='a').length;
+  const l=Object.values(days).filter(s=>s==='l').length;
+  const school=Object.values(days).filter(s=>s!=='h').length;
+  const pct=school>0?Math.round((p+(l*.5))/school*100):100;
+  return{name:fn+' '+ln,initials:fn[0]+ln[0],color:COLORS[i%COLORS.length],
+    id:'STU-2024-'+String(i+1).padStart(3,'0'),roll:String(i+1).padStart(3,'0'),
+    days,p,a,l,pct};
+});
+
+function buildHeatmap(){
+  const t=document.getElementById('heatTable');
+  let h=`<thead><tr><th class="nc">Student</th>`;
+  for(let d=1;d<=28;d++){
+    h+=`<th style="${HOLIDAYS.includes(d)?'color:var(--border-mid);':''}">${d}</th>`;
+  }
+  h+=`<th style="min-width:42px;">%</th><th>P</th><th>A</th><th>L</th></tr></thead>`;
+  let b='<tbody>';
+  students.forEach(s=>{
+    const pc=s.pct>=85?'var(--green)':s.pct>=75?'var(--amber)':'var(--red)';
+    b+=`<tr><td class="name-cell"><div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:24px;height:24px;border-radius:50%;background:${s.color};display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0;">${s.initials}</div>
+      <div><div class="stu-n">${s.name}</div><div class="stu-i">Roll ${s.roll}</div></div>
+    </div></td>`;
+    for(let d=1;d<=28;d++){
+      const st=s.days[d];
+      if(st==='h'){b+=`<td class="day-cell dc-h"></td>`;}
+      else{
+        const cls={p:'dc-p',a:'dc-a',l:'dc-l'}[st]||'dc-p';
+        const sym={p:'P',a:'A',l:'L'}[st]||'P';
+        b+=`<td class="day-cell ${cls}" title="${d} Feb &middot; ${st==='p'?'Present':st==='a'?'Absent':'Late'}"><span class="dc-sym">${sym}</span></td>`;
+      }
+    }
+    b+=`<td class="sum" style="color:${pc};">${s.pct}%</td>
+        <td class="sum" style="color:var(--green);">${s.p}</td>
+        <td class="sum" style="color:var(--red);">${s.a}</td>
+        <td class="sum" style="color:var(--amber);">${s.l}</td></tr>`;
+  });
+  b+='</tbody>';
+  t.innerHTML=h+b;
+}
+
+function buildBar(){
+  const thresh=parseInt(document.getElementById('filterThresh').value)||0;
+  const sorted=[...students].sort((a,b)=>b.pct-a.pct).filter(s=>!thresh||s.pct<thresh);
+  const hi=sorted.filter(s=>s.pct>=85).length;
+  const mid=sorted.filter(s=>s.pct>=75&&s.pct<85).length;
+  const lo=sorted.filter(s=>s.pct<75).length;
+  document.getElementById('badgeHigh').textContent=hi+' =85%';
+  document.getElementById('badgeMid').textContent=mid+' at risk';
+  document.getElementById('badgeLow').textContent=lo+' critical';
+  document.getElementById('barBody').innerHTML=sorted.map((s,i)=>{
+    const pc=s.pct>=85?'var(--green)':s.pct>=75?'var(--amber)':'var(--red)';
+    return`<div class="bar-row">
+      <div class="bname"><div style="display:flex;align-items:center;gap:7px;">
+        <div style="width:22px;height:22px;border-radius:50%;background:${s.color};display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0;">${s.initials}</div>
+        <div><div style="font-size:.84rem;font-weight:700;color:var(--ink-2);">${s.name}</div><div style="font-size:.67rem;color:var(--muted);">Roll ${s.roll}</div></div>
+      </div></div>
+      <div class="bbar"><div class="bfill" style="width:${s.pct}%;background:${pc};"></div></div>
+      <div class="bpct" style="color:${pc};">${s.pct}%</div>
+      <div class="bcnts">
+        <span class="bc" style="background:var(--green-light);color:#065F46;">${s.p}P</span>
+        <span class="bc" style="background:var(--red-light);color:#991B1B;">${s.a}A</span>
+        <span class="bc" style="background:var(--amber-light);color:#92400E;">${s.l}L</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildStudentPicker(){
+  document.getElementById('stuPickList').innerHTML=students.map((s,i)=>`
+    <div class="student-pick-row ${i===0?'on':''}" onclick="selectStu(this,${i})" id="spk${i}">
+      <div style="width:24px;height:24px;border-radius:50%;background:${s.color};display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0;">${s.initials}</div>
+      <div style="flex:1;"><div style="font-weight:700;color:var(--ink-2);font-size:.84rem;">${s.name}</div><div style="font-size:.68rem;color:var(--muted);">${s.pct}% &middot; ${s.a} absent</div></div>
+      ${s.pct<75?'<span style="font-size:.68rem;font-weight:800;color:var(--red);"></span>':s.pct<85?'<span style="font-size:.68rem;color:var(--amber);">!</span>':''}
+    </div>`).join('');
+}
+
+function selectStu(el,i){
+  document.querySelectorAll('.student-pick-row').forEach(r=>{r.classList.remove('on');});
+  el.classList.add('on');
+  renderStudentDetail(i);
+}
+
+function filterStuPicker(q){
+  const lq=q.toLowerCase();
+  document.querySelectorAll('.student-pick-row').forEach(r=>r.style.display=(!lq||r.textContent.toLowerCase().includes(lq))?'':'none');
+}
+
+function renderStudentDetail(i){
+  const s=students[i];
+  document.getElementById('sdAvatar').style.background=s.color;
+  document.getElementById('sdAvatar').textContent=s.initials;
+  document.getElementById('sdName').textContent=s.name;
+  document.getElementById('sdMeta').textContent=s.id+' &middot; Class IX&middot;A &middot; Roll '+s.roll;
+  const pc=s.pct>=85?'var(--green)':s.pct>=75?'var(--amber)':'var(--red)';
+  const school=Object.values(s.days).filter(d=>d!=='h').length;
+  document.getElementById('sdSummary').innerHTML=
+    `<div style="padding:12px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.4rem;font-weight:800;color:${pc};">${s.pct}%</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Feb Att.</div></div>
+     <div style="padding:12px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.2rem;font-weight:800;color:var(--green);">${s.p}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Present</div></div>
+     <div style="padding:12px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.2rem;font-weight:800;color:var(--red);">${s.a}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Absent</div></div>
+     <div style="padding:12px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.2rem;font-weight:800;color:var(--amber);">${s.l}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">Late</div></div>
+     <div style="padding:12px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;color:var(--blue);">${school}</div><div style="font-size:.68rem;color:var(--muted);font-weight:600;">School Days</div></div>`;
+
+  // Calendar
+  let cal='';
+  for(let j=0;j<6;j++) cal+=`<div class="mcd na"></div>`; // Feb 1 = Saturday offset
+  for(let d=1;d<=28;d++){
+    const st=s.days[d];
+    cal+=`<div class="mcd ${st==='h'?'hd':st||'p'}" title="${d} Feb: ${st==='p'?'Present':st==='a'?'Absent':st==='l'?'Late':'Holiday'}">${d}</div>`;
+  }
+  document.getElementById('studentCal').innerHTML=cal;
+
+  // Sparkline
+  const trendData=[82,88,s.pct-8,s.pct-4,s.pct+2,s.pct].map(v=>Math.min(100,Math.max(60,v)));
+  const months=['Sep','Oct','Nov','Dec','Jan','Feb'];
+  const maxV=Math.max(...trendData);
+  document.getElementById('sparkline').innerHTML=trendData.map((v,idx)=>{
+    const h=Math.round(v/maxV*44);
+    const c=v>=85?'var(--green)':v>=75?'var(--amber)':'var(--red)';
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;">
+      <div style="font-size:.6rem;font-weight:700;color:${c};">${Math.round(v)}%</div>
+      <div style="height:${h}px;width:100%;background:${c};border-radius:3px 3px 0 0;opacity:.8;"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('sparkMonths').innerHTML=months.map(m=>`<div style="flex:1;text-align:center;font-size:.6rem;color:var(--muted);font-weight:600;">${m}</div>`).join('');
+}
+
+function switchView(btn,id){
+  document.querySelectorAll('.vt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['heatmap','bar','student'].forEach(v=>document.getElementById('view-'+v).style.display='none');
+  document.getElementById('view-'+id).style.display='';
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2200);setTimeout(()=>t.remove(),2500);
+}
+
+buildHeatmap(); buildBar(); buildStudentPicker(); renderStudentDetail(0);
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

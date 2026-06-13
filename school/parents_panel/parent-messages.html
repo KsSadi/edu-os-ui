@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Message Teacher — Parent Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--par:#D97706;--par-light:#FEF3C7;--par-pale:#FFFBEB;--par-dark:#92400E;}
+.sidebar{background:linear-gradient(180deg,#1C0A00 0%,#3B1A02 100%);}
+.sb-link.active{background:rgba(217,119,6,.25);color:#FCD34D;}
+.sb-link.active .sb-icon{background:rgba(217,119,6,.3);color:#FDE68A;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--par);}
+
+.msg-layout{display:grid;grid-template-columns:290px 1fr;gap:0;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--white);min-height:520px;}
+.msg-sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.msg-search{padding:12px 14px;border-bottom:1px solid var(--border);}
+.msg-search input{width:100%;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:.83rem;outline:none;}
+.msg-search input:focus{border-color:var(--par);}
+.msg-list{flex:1;overflow-y:auto;}
+.msg-group-label{padding:8px 14px 4px;font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.msg-contact{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;}
+.msg-contact:hover,.msg-contact.on{background:var(--par-pale);}
+.msg-contact.on{border-left:3px solid var(--par);}
+.contact-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0;color:#fff;}
+.contact-name{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.contact-preview{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.contact-time{font-size:.68rem;color:var(--muted);margin-left:auto;align-self:flex-start;flex-shrink:0;}
+.unread-badge{background:var(--par);color:#fff;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:auto;flex-shrink:0;}
+.msg-main{display:flex;flex-direction:column;}
+.msg-thread-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--white);}
+.th-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;}
+.th-name{font-size:.9rem;font-weight:800;color:var(--ink);}
+.th-role{font-size:.74rem;color:var(--muted);}
+.msg-thread{flex:1;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;background:var(--bg);}
+.msg-bubble{max-width:65%;padding:10px 14px;border-radius:14px;font-size:.86rem;line-height:1.55;}
+.msg-bubble.them{background:var(--white);border:1px solid var(--border);border-radius:14px 14px 14px 2px;align-self:flex-start;}
+.msg-bubble.me{background:var(--par);color:#fff;border-radius:14px 14px 2px 14px;align-self:flex-end;}
+.msg-time{font-size:.68rem;opacity:.7;margin-top:4px;text-align:right;}
+.msg-input-area{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--white);}
+.msg-input{flex:1;min-height:38px;max-height:100px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-size:.85rem;resize:none;outline:none;font-family:inherit;}
+.msg-input:focus{border-color:var(--par);}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:.84rem;}
+.empty-state .es-icon{font-size:2.5rem;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">💬 Communication</div>
+        <div class="page-title">Message Teacher</div>
+        <div class="page-sub">Send and receive messages with your child's teachers. Session 2026–27.</div>
+      </div>
+    </div>
+
+    <div class="msg-layout">
+      <!-- Contact List -->
+      <div class="msg-sidebar">
+        <div class="msg-search">
+          <input type="text" id="searchInput" placeholder="🔍  Search teachers...">
+        </div>
+        <div class="msg-list" id="contactList"></div>
+      </div>
+
+      <!-- Thread -->
+      <div class="msg-main" id="msgMain">
+        <div class="empty-state" id="emptyState">
+          <div class="es-icon">💬</div>
+          <div style="font-weight:700;color:var(--ink-2);">Select a teacher to start messaging</div>
+          <div>Choose a contact from the left panel</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-body -->
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ── CONTACTS DATA ────────────────────────────────────────────────────
+const CONTACTS = [
+  {
+    id: 1, initials: 'SR', name: 'Mr. Sabbir Rahman', subject: 'Mathematics · Class IX-A',
+    avatarBg: '#0891B2', unread: 2, lastTime: '10:32 AM',
+    messages: [
+      { from: 'them', text: 'Good morning! I wanted to inform you that Farhan has been performing very well in class lately.', time: 'Yesterday 9:15 AM' },
+      { from: 'me',   text: 'Thank you so much for letting me know. We have been helping him practice at home.', time: 'Yesterday 10:02 AM' },
+      { from: 'them', text: 'That is great to hear. His last test score was 85/100 — a big improvement!', time: 'Yesterday 10:18 AM' },
+      { from: 'them', text: 'The upcoming exam is on June 15. Please ensure he revises chapters 7–9.', time: '10:32 AM' },
+    ]
+  },
+  {
+    id: 2, initials: 'NA', name: 'Ms. Nusrat Ara', subject: 'Science · Class IX-A',
+    avatarBg: '#7C3AED', unread: 0, lastTime: 'Yesterday',
+    messages: [
+      { from: 'them', text: 'Dear Parent, Farhan submitted the science project on time and it was well done.', time: 'Mon 11:00 AM' },
+      { from: 'me',   text: 'We are glad! He worked very hard on it.', time: 'Mon 12:30 PM' },
+      { from: 'them', text: 'We will have a lab practical next week. Please ensure he brings his lab notebook.', time: 'Yesterday 2:00 PM' },
+    ]
+  },
+  {
+    id: 3, initials: 'RH', name: 'Mr. Rafiq Hossain', subject: 'English · Class IX-A',
+    avatarBg: '#059669', unread: 1, lastTime: '9:05 AM',
+    messages: [
+      { from: 'them', text: 'Hello, I wanted to discuss Farhan\'s essay writing skills with you.', time: '9:05 AM' },
+    ]
+  },
+  {
+    id: 4, initials: 'FI', name: 'Ms. Fatema Islam', subject: 'Class VI-A Teacher · Tasnim',
+    avatarBg: '#DC2626', unread: 0, lastTime: 'Jun 28',
+    messages: [
+      { from: 'them', text: 'Tasnim has been doing well. She is very active in class.', time: 'Jun 28 10:00 AM' },
+      { from: 'me',   text: 'Thank you for the update!', time: 'Jun 28 11:15 AM' },
+    ]
+  },
+];
+
+let activeId = null;
+
+// ── RENDER CONTACT LIST ──────────────────────────────────────────────
+function renderList(query) {
+  const q = (query || '').toLowerCase();
+  const filtered = CONTACTS.filter(c =>
+    c.name.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q)
+  );
+  const ul = document.getElementById('contactList');
+  if (!filtered.length) { ul.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:.82rem;">No contacts found</div>'; return; }
+  ul.innerHTML = filtered.map(c => `
+    <div class="msg-contact${c.id === activeId ? ' on' : ''}" onclick="openChat(${c.id})">
+      <div class="contact-avatar" style="background:${c.avatarBg};">${c.initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="contact-name">${c.name}</div>
+          <div class="contact-time">${c.lastTime}</div>
+        </div>
+        <div class="contact-preview">${c.messages.length ? c.messages[c.messages.length-1].text : 'No messages yet'}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:1px;">${c.subject}</div>
+      </div>
+      ${c.unread ? `<span class="unread-badge" id="badge-${c.id}">${c.unread}</span>` : `<span id="badge-${c.id}"></span>`}
+    </div>
+  `).join('');
+}
+
+// ── RENDER THREAD ────────────────────────────────────────────────────
+function renderThread(c) {
+  const main = document.getElementById('msgMain');
+  document.getElementById('emptyState') && (document.getElementById('emptyState').style.display = 'none');
+  main.innerHTML = `
+    <div class="msg-thread-header">
+      <div class="th-avatar" style="background:${c.avatarBg};">${c.initials}</div>
+      <div>
+        <div class="th-name">${c.name}</div>
+        <div class="th-role">${c.subject}</div>
+      </div>
+    </div>
+    <div class="msg-thread" id="msgThread">
+      ${c.messages.map(m => bubbleHTML(m.from, m.text, m.time)).join('')}
+    </div>
+    <div class="msg-input-area">
+      <textarea class="msg-input" id="msgInput" placeholder="Type a message… (Enter to send)" rows="1"></textarea>
+      <button class="btn" style="background:var(--par);color:#fff;border-color:var(--par);flex-shrink:0;" onclick="sendMessage()">Send ➤</button>
+    </div>
+  `;
+  const inp = document.getElementById('msgInput');
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; });
+  scrollThread();
+}
+
+function bubbleHTML(from, text, time) {
+  return `<div class="msg-bubble ${from}">
+    ${text}
+    <div class="msg-time">${time}</div>
+  </div>`;
+}
+
+function appendBubble(from, text, time) {
+  const t = document.getElementById('msgThread');
+  if (!t) return;
+  const div = document.createElement('div');
+  div.innerHTML = bubbleHTML(from, text, time);
+  t.appendChild(div.firstElementChild);
+  scrollThread();
+}
+
+function scrollThread() {
+  const t = document.getElementById('msgThread');
+  if (t) t.scrollTop = t.scrollHeight;
+}
+
+// ── SEND MESSAGE ─────────────────────────────────────────────────────
+function sendMessage() {
+  const inp = document.getElementById('msgInput');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text || activeId == null) return;
+  const c = CONTACTS.find(x => x.id === activeId);
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-BD', {hour:'2-digit', minute:'2-digit'});
+  c.messages.push({ from: 'me', text, time });
+  c.lastTime = time;
+  appendBubble('me', text, time);
+  inp.value = '';
+  inp.style.height = 'auto';
+  renderList(document.getElementById('searchInput').value);
+
+  // Auto-reply after 1.4s
+  setTimeout(() => {
+    const replies = [
+      'Thank you for reaching out. I will get back to you shortly.',
+      'Noted. I will discuss this with you at the next parent-teacher meeting.',
+      'Thank you for your message. I will keep an eye on this.',
+      'Understood. I will make sure to give extra attention to this.',
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    const replyTime = new Date().toLocaleTimeString('en-BD', {hour:'2-digit', minute:'2-digit'});
+    c.messages.push({ from: 'them', text: reply, time: replyTime });
+    c.lastTime = replyTime;
+    appendBubble('them', reply, replyTime);
+    renderList(document.getElementById('searchInput').value);
+  }, 1400);
+}
+
+// ── OPEN CHAT ────────────────────────────────────────────────────────
+function openChat(id) {
+  activeId = id;
+  const c = CONTACTS.find(x => x.id === id);
+  c.unread = 0;
+  renderList(document.getElementById('searchInput').value);
+  renderThread(c);
+}
+
+// ── SEARCH ───────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', function() {
+  renderList(this.value);
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────
+renderList();
+
+// ── TOAST ────────────────────────────────────────────────────────────
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(), 300); }, 3000);
+}
+</script>
+<script src="parent-shell.js"></script>
+</body>
+</html>

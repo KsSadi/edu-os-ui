@@ -1,0 +1,380 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Catalogue — EduOS Marketplace</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{
+  --mkt:#059669;--mkt-light:#D1FAE5;--mkt-pale:#ECFDF5;--mkt-dark:#065F46;
+  --mkt-grad:linear-gradient(135deg,#064E3B 0%,#065F46 50%,#059669 100%);
+}
+.sidebar{background:linear-gradient(180deg,#022C22 0%,#064E3B 100%);}
+.sb-link.active{background:rgba(5,150,105,.28);color:#6EE7B7;}
+.sb-link.active .sb-icon{background:rgba(5,150,105,.35);color:#34D399;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--mkt);}
+
+/* Hero banner */
+.mkt-hero{background:var(--mkt-grad);border-radius:18px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.mkt-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.05);}
+.mkt-hero::after{content:'';position:absolute;left:42%;bottom:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.04);}
+.mh-eyebrow{font-size:.7rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.mh-title{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+.mh-sub{font-size:.84rem;opacity:.75;max-width:380px;line-height:1.5;}
+.mh-search{display:flex;gap:0;background:rgba(255,255,255,.15);border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,.25);max-width:320px;flex-shrink:0;}
+.mh-search input{flex:1;background:transparent;border:none;outline:none;padding:12px 16px;color:#fff;font-size:.86rem;font-weight:500;}
+.mh-search input::placeholder{color:rgba(255,255,255,.55);}
+.mh-search button{background:rgba(255,255,255,.2);border:none;padding:0 16px;cursor:pointer;font-size:1rem;color:#fff;transition:background .15s;}
+.mh-search button:hover{background:rgba(255,255,255,.3);}
+
+/* Category pills */
+.cat-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.cat-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;user-select:none;}
+.cat-pill:hover{border-color:var(--mkt);color:var(--mkt);}
+.cat-pill.on{background:var(--mkt);border-color:var(--mkt);color:#fff;}
+.cat-pill-count{font-size:.66rem;font-weight:800;background:rgba(0,0,0,.15);border-radius:10px;padding:1px 6px;}
+.cat-pill.on .cat-pill-count{background:rgba(255,255,255,.25);}
+
+/* Product card */
+.product-card{border:1.5px solid var(--border);border-radius:14px;background:var(--white);overflow:hidden;transition:all .18s;cursor:pointer;display:flex;flex-direction:column;}
+.product-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1);transform:translateY(-3px);border-color:var(--mkt);}
+.pc-img{width:100%;aspect-ratio:1;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;border-bottom:1px solid var(--border);}
+.pc-img-emoji{font-size:3.2rem;user-select:none;}
+.pc-badge{position:absolute;top:10px;left:10px;font-size:.62rem;font-weight:900;padding:3px 8px;border-radius:6px;color:#fff;}
+.pc-badge.new{background:var(--mkt);}
+.pc-badge.popular{background:var(--amber);}
+.pc-badge.sale{background:var(--red);}
+.pc-badge.out{background:var(--muted);}
+.pc-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;}
+.pc-category{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px;}
+.pc-name{font-size:.88rem;font-weight:800;color:var(--ink-2);line-height:1.35;margin-bottom:4px;}
+.pc-desc{font-size:.74rem;color:var(--muted);line-height:1.5;flex:1;}
+.pc-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);}
+.pc-price{font-family:'DM Mono',monospace;font-weight:900;font-size:1rem;color:var(--ink);}
+.pc-price-old{font-size:.76rem;color:var(--muted);text-decoration:line-through;font-family:'DM Mono',monospace;margin-left:4px;}
+.pc-price-tag{display:flex;align-items:baseline;gap:4px;}
+.add-to-cart-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:9px;background:var(--mkt);color:#fff;border:none;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .12s;}
+.add-to-cart-btn:hover{background:var(--mkt-dark);transform:scale(1.04);}
+.add-to-cart-btn.added{background:var(--mkt-light);color:var(--mkt-dark);}
+.add-to-cart-btn.out-btn{background:var(--bg);color:var(--muted);cursor:not-allowed;}
+
+/* Qty control */
+.qty-ctrl{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+.qty-btn{width:26px;height:26px;border:none;background:var(--bg);cursor:pointer;font-size:.9rem;font-weight:800;color:var(--muted);transition:background .1s;display:flex;align-items:center;justify-content:center;}
+.qty-btn:hover{background:var(--mkt-light);}
+.qty-num{width:28px;text-align:center;font-size:.8rem;font-weight:800;font-family:'DM Mono',monospace;color:var(--ink);}
+
+/* Cart drawer */
+.cart-drawer{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--white);box-shadow:-4px 0 30px rgba(0,0,0,.15);z-index:200;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;}
+.cart-drawer.open{transform:none;}
+.cart-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199;}
+.cart-overlay.open{display:block;}
+.cart-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);}
+.cart-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.cart-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.cart-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.ci-img{width:44px;height:44px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.ci-name{font-size:.84rem;font-weight:700;color:var(--ink-2);}
+.ci-price{font-size:.78rem;font-weight:800;color:var(--mkt);font-family:'DM Mono',monospace;}
+.cart-foot{padding:16px 20px;border-top:1px solid var(--border);}
+.cart-subtotal{display:flex;justify-content:space-between;font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:10px;}
+
+/* Cart fab */
+.cart-fab{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:var(--mkt);color:#fff;border:none;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(5,150,105,.4);transition:all .15s;z-index:100;display:flex;align-items:center;justify-content:center;}
+.cart-fab:hover{transform:scale(1.08);background:var(--mkt-dark);}
+.cart-count{position:absolute;top:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-size:.62rem;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+
+/* Sorting / view toggle */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.view-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .12s;}
+.view-btn:hover,.view-btn.on{border-color:var(--mkt);background:var(--mkt-pale);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;left:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <!-- Hero -->
+    <div class="mkt-hero anim-1">
+      <div>
+        <div class="mh-eyebrow">📦 EduOS Marketplace</div>
+        <div class="mh-title">School Supply Catalogue</div>
+        <div class="mh-sub">Order books, stationery, uniforms, and lab supplies. Delivered to school or your doorstep. 2026–27.</div>
+      </div>
+      <div>
+        <div class="mh-search">
+          <input type="text" placeholder="Search products…" id="heroSearch" oninput="searchProducts(this.value)">
+          <button>🔍</button>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;">120+</div><div style="font-size:.64rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Products</div></div>
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;">2–3</div><div style="font-size:.64rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Day Delivery</div></div>
+          <div style="text-align:center;"><div style="font-size:1.2rem;font-weight:900;font-family:'DM Mono',monospace;">bKash</div><div style="font-size:.64rem;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Accepted</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category pills -->
+    <div class="cat-pills anim-1" id="catPills"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar anim-1">
+      <span style="font-size:.82rem;color:var(--muted);" id="resultsCount">Showing 24 products</span>
+      <div style="flex:1;"></div>
+      <select class="form-select" style="width:150px;padding:6px 10px;font-size:.78rem;" onchange="sortProducts(this.value)">
+        <option value="popular">Most Popular</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="newest">Newest First</option>
+        <option value="az">A–Z</option>
+      </select>
+      <div class="view-btn on" id="vb-grid" onclick="setView('grid',this)" title="Grid view">⊞</div>
+      <div class="view-btn" id="vb-list" onclick="setView('list',this)" title="List view">☰</div>
+    </div>
+
+    <!-- Product grid -->
+    <div id="productGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:30px;" class="anim-1"></div>
+
+    <!-- Pagination -->
+    <div style="display:flex;justify-content:center;gap:6px;margin-bottom:20px;">
+      <button class="pg-btn on">1</button>
+      <button class="pg-btn" onclick="showToast('Loading page 2…','📄')">2</button>
+      <button class="pg-btn" onclick="showToast('Loading page 3…','📄')">3</button>
+      <button class="pg-btn" onclick="showToast('Loading page 4…','📄')">4</button>
+      <button class="pg-btn" onclick="showToast('Loading page 5…','📄')">5</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Cart overlay -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+<!-- Cart drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <div class="cart-title">🛒 My Cart <span id="cartCountHead" style="font-size:.8rem;color:var(--muted);"></span></div>
+    <button style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted);" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody">
+    <div style="text-align:center;padding:40px 20px;color:var(--muted);">
+      <div style="font-size:3rem;margin-bottom:10px;">🛒</div>
+      <div style="font-size:.88rem;">Your cart is empty</div>
+      <div style="font-size:.78rem;margin-top:4px;">Add items to get started</div>
+    </div>
+  </div>
+  <div class="cart-foot" id="cartFoot" style="display:none;">
+    <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal" style="font-family:'DM Mono',monospace;color:var(--mkt);">৳ 0</span></div>
+    <div style="display:flex;gap:3px;font-size:.72rem;color:var(--muted);margin-bottom:10px;"><span>🚚</span>Free delivery for orders over ৳ 500</div>
+    <a href="market-order.html" class="btn btn-primary" style="width:100%;justify-content:center;background:var(--mkt);border-color:var(--mkt);">Proceed to Checkout →</a>
+  </div>
+</div>
+
+<!-- Cart FAB -->
+<button class="cart-fab" id="cartFab" onclick="toggleCart()">🛒<div class="cart-count" id="cartCount" style="display:none;">0</div></button>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const cats=[
+  {name:'All',icon:'📦',count:120},
+  {name:'Books',icon:'📚',count:38},
+  {name:'Stationery',icon:'✏️',count:42},
+  {name:'Uniforms',icon:'👕',count:12},
+  {name:'Lab Supplies',icon:'🔬',count:16},
+  {name:'Art & Craft',icon:'🎨',count:12},
+];
+
+const products=[
+  // Books
+  {id:1,name:'Bangla 1st Paper — Class IX',cat:'Books',price:180,oldPrice:null,emoji:'📗',badge:'popular',stock:true,desc:'NCTB approved textbook for Class IX Bangla 1st Paper, 2025 edition.'},
+  {id:2,name:'Higher Mathematics Textbook IX–X',cat:'Books',price:220,oldPrice:280,emoji:'📐',badge:'sale',stock:true,desc:'Complete Higher Mathematics guide with solved examples and exercises.'},
+  {id:3,name:'Physics Guide — Class IX (Science)',cat:'Books',price:195,oldPrice:null,emoji:'⚗️',badge:'new',stock:true,desc:'Comprehensive physics guide aligned with HSC curriculum.'},
+  {id:4,name:'English Grammar & Composition',cat:'Books',price:165,oldPrice:200,emoji:'📘',badge:'sale',stock:true,desc:'Full grammar guide with model essays and practice exercises.'},
+  {id:5,name:'Chemistry Lab Manual Class IX',cat:'Books',price:140,oldPrice:null,emoji:'🧪',badge:null,stock:true,desc:'Step-by-step lab experiment guides with safety instructions.'},
+  {id:6,name:'SSC Model Test Questions',cat:'Books',price:250,oldPrice:null,emoji:'📝',badge:'popular',stock:true,desc:'10-year SSC board question collection with explanations.'},
+  // Stationery
+  {id:7,name:'Camlin Geometry Box Set',cat:'Stationery',price:95,oldPrice:120,emoji:'📐',badge:'sale',stock:true,desc:'Complete geometry set: compass, protractor, set squares, scale.'},
+  {id:8,name:'Rotring Fountain Pen (Blue)',cat:'Stationery',price:320,oldPrice:null,emoji:'🖊️',badge:null,stock:true,desc:'Premium school fountain pen, refillable, smooth flow ink.'},
+  {id:9,name:'A4 Notebook — 200 pages (5-pack)',cat:'Stationery',price:180,oldPrice:null,emoji:'📓',badge:'popular',stock:true,desc:'Quality ruled notebooks with thick pages, spiral binding.'},
+  {id:10,name:'Highlighter Set (6 colours)',cat:'Stationery',price:85,oldPrice:110,emoji:'🖍️',badge:'sale',stock:true,desc:'Fluorescent chisel-tip highlighters, smear-proof on ink.'},
+  {id:11,name:'Scientific Calculator FX-991EX',cat:'Stationery',price:1450,oldPrice:1600,emoji:'🔢',badge:'popular',stock:true,desc:'Casio FX-991EX Natural Display, 552 functions, ideal for SSC/HSC.'},
+  {id:12,name:'Pencil Box Organiser (Large)',cat:'Stationery',price:120,oldPrice:null,emoji:'📦',badge:'new',stock:true,desc:'Double-layer organiser with compartments for pencils, rulers, erasers.'},
+  {id:13,name:'Ballpoint Pen Box (20-pack)',cat:'Stationery',price:140,oldPrice:160,emoji:'🖊️',badge:'sale',stock:true,desc:'Smooth-flow blue ballpoint pens, medium tip, exam approved.'},
+  {id:14,name:'Drawing Pencil Set (HB–8B)',cat:'Stationery',price:160,oldPrice:null,emoji:'✏️',badge:null,stock:true,desc:'12-piece professional graphite pencil set for technical drawing.'},
+  // Uniforms
+  {id:15,name:'School Shirt — White (Boys)',cat:'Uniforms',price:350,oldPrice:null,emoji:'👔',badge:null,stock:true,desc:'Official school shirt. Polyester-cotton blend. Sizes: S, M, L, XL.'},
+  {id:16,name:'School Trousers — Grey (Boys)',cat:'Uniforms',price:420,oldPrice:null,emoji:'👖',badge:null,stock:true,desc:'Official grey trousers. Durable fabric. Sizes: 28–38 waist.'},
+  {id:17,name:'School Shalwar Kameez (Girls)',cat:'Uniforms',price:580,oldPrice:null,emoji:'👗',badge:null,stock:true,desc:'Official girls uniform set. Includes kameez + shalwar + dupatta.'},
+  {id:18,name:'School Blazer — Navy Blue',cat:'Uniforms',price:950,oldPrice:1100,emoji:'🧥',badge:'sale',stock:true,desc:'Official school blazer with crest embroidery. Poly-wool blend.'},
+  // Lab Supplies
+  {id:19,name:'Biology Dissection Kit',cat:'Lab Supplies',price:380,oldPrice:null,emoji:'🔬',badge:'new',stock:true,desc:'Complete 8-piece dissection kit: scalpel, forceps, pins, scissors.'},
+  {id:20,name:'Physics Experiment Kit',cat:'Lab Supplies',price:520,oldPrice:600,emoji:'⚡',badge:'sale',stock:true,desc:'Electricity & magnetism experiment kit for Class IX–X labs.'},
+  {id:21,name:'Safety Goggles (Pair)',cat:'Lab Supplies',price:120,oldPrice:null,emoji:'🥽',badge:null,stock:true,desc:'ANSI-approved clear lab safety goggles, anti-fog coating.'},
+  {id:22,name:'Lab Apron — White',cat:'Lab Supplies',price:180,oldPrice:null,emoji:'🥼',badge:null,stock:true,desc:'Full-length laboratory apron, easy-wipe surface, elastic back.'},
+  // Art & Craft
+  {id:23,name:'Watercolour Paint Set — 24 colours',cat:'Art & Craft',price:240,oldPrice:300,emoji:'🎨',badge:'sale',stock:true,desc:'Student-grade watercolours with 3 brushes and a plastic palette.'},
+  {id:24,name:'A3 Drawing Pad (40 sheets)',cat:'Art & Craft',price:140,oldPrice:null,emoji:'🖼️',badge:null,stock:false,desc:'Heavyweight 120gsm white drawing paper, perforated for easy tear.'},
+];
+
+let activecat='All',searchQ='',sortBy='popular',viewMode='grid';
+let cart={};// id -> qty
+
+// Build category pills
+document.getElementById('catPills').innerHTML=cats.map(c=>`
+  <div class="cat-pill ${c.name==='All'?'on':''}" data-cat="${c.name}" onclick="filterCat('${c.name}',this)">
+    <span>${c.icon}</span>${c.name}<span class="cat-pill-count">${c.count}</span>
+  </div>`).join('');
+
+function filterCat(name,el){
+  activecat=name;
+  document.querySelectorAll('.cat-pill,[data-cat]').forEach(p=>p.classList.remove('on'));
+  if(el)el.classList.add('on');
+  else{const pill=document.querySelector(`.cat-pill[data-cat="${name}"]`);if(pill)pill.classList.add('on');}
+  buildGrid();
+}
+function searchProducts(q){searchQ=q.toLowerCase();buildGrid();}
+function sortProducts(v){sortBy=v;buildGrid();}
+function setView(mode,btn){
+  viewMode=mode;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('productGrid').style.gridTemplateColumns=mode==='list'?'1fr':'repeat(auto-fill,minmax(200px,1fr))';
+  buildGrid();
+}
+
+function buildGrid(){
+  let filtered=products.filter(p=>{
+    const catOk=activecat==='All'||p.cat===activecat;
+    const searchOk=!searchQ||p.name.toLowerCase().includes(searchQ)||p.cat.toLowerCase().includes(searchQ);
+    return catOk&&searchOk;
+  });
+  // Sort
+  if(sortBy==='price-asc')filtered.sort((a,b)=>a.price-b.price);
+  else if(sortBy==='price-desc')filtered.sort((a,b)=>b.price-a.price);
+  else if(sortBy==='az')filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  document.getElementById('resultsCount').textContent=`Showing ${filtered.length} product${filtered.length!==1?'s':''}`;
+
+  if(!filtered.length){
+    document.getElementById('productGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);"><div style="font-size:2.5rem;margin-bottom:8px;">🔍</div><div>No products found</div></div>';
+    return;
+  }
+  document.getElementById('productGrid').innerHTML=filtered.map(p=>productCard(p)).join('');
+}
+
+function productCard(p){
+  const inCart=cart[p.id]||0;
+  const isOutOfStock=!p.stock;
+  return`<div class="product-card" onclick="viewProduct(${p.id})">
+    <div class="pc-img">
+      <div class="pc-img-emoji">${p.emoji}</div>
+      ${p.badge?`<div class="pc-badge ${isOutOfStock?'out':p.badge}">${isOutOfStock?'Out of Stock':p.badge==='new'?'New':p.badge==='popular'?'Popular':p.badge==='sale'?'Sale':'—'}</div>`:''}
+      ${isOutOfStock?`<div class="pc-badge out">Out of Stock</div>`:''}
+    </div>
+    <div class="pc-body">
+      <div class="pc-category">${p.cat}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.desc}</div>
+    </div>
+    <div class="pc-foot">
+      <div class="pc-price-tag">
+        <span class="pc-price">৳ ${p.price.toLocaleString()}</span>
+        ${p.oldPrice?`<span class="pc-price-old">৳ ${p.oldPrice}</span>`:''}
+      </div>
+      ${isOutOfStock
+        ?`<button class="add-to-cart-btn out-btn" disabled onclick="event.stopPropagation()">Unavailable</button>`
+        :inCart>0
+          ?`<div class="qty-ctrl" onclick="event.stopPropagation()">
+              <button class="qty-btn" onclick="changeQty(${p.id},-1)">−</button>
+              <div class="qty-num">${inCart}</div>
+              <button class="qty-btn" onclick="changeQty(${p.id},1)">+</button>
+            </div>`
+          :`<button class="add-to-cart-btn" onclick="event.stopPropagation();addToCart(${p.id})">＋ Add</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function addToCart(id){
+  cart[id]=(cart[id]||0)+1;
+  updateCartUI();
+  buildGrid();
+  const p=products.find(x=>x.id===id);
+  showToast(`${p.emoji} ${p.name} added to cart`,'🛒');
+}
+function changeQty(id,delta){
+  cart[id]=(cart[id]||0)+delta;
+  if(cart[id]<=0)delete cart[id];
+  updateCartUI();
+  buildGrid();
+}
+
+function updateCartUI(){
+  const total=Object.values(cart).reduce((a,b)=>a+b,0);
+  const subtotal=Object.entries(cart).reduce((a,[id,qty])=>{const p=products.find(x=>x.id==id);return a+(p?p.price*qty:0);},0);
+  const countEl=document.getElementById('cartCount');
+  const dotEl=document.getElementById('cartNotifDot');
+  countEl.textContent=total;
+  countEl.style.display=total>0?'flex':'none';
+  dotEl.style.display=total>0?'block':'none';
+  document.getElementById('cartCountHead').textContent=total>0?`(${total} items)`:'';
+  document.getElementById('cartSubtotal').textContent=`৳ ${subtotal.toLocaleString()}`;
+  document.getElementById('cartFoot').style.display=total>0?'block':'none';
+
+  if(total===0){
+    document.getElementById('cartBody').innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--muted);"><div style="font-size:3rem;margin-bottom:10px;">🛒</div><div style="font-size:.88rem;">Your cart is empty</div></div>';
+    return;
+  }
+  document.getElementById('cartBody').innerHTML=Object.entries(cart).map(([id,qty])=>{
+    const p=products.find(x=>x.id==id);if(!p)return'';
+    return`<div class="cart-item">
+      <div class="ci-img">${p.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-price">৳ ${(p.price*qty).toLocaleString()}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${id},-1)">−</button>
+        <div class="qty-num">${qty}</div>
+        <button class="qty-btn" onclick="changeQty(${id},1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCart(){
+  const d=document.getElementById('cartDrawer'),o=document.getElementById('cartOverlay');
+  d.classList.toggle('open');o.classList.toggle('open');
+}
+
+function viewProduct(id){window.location='market-product.html';}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildGrid();
+
+// Pre-load cart from localStorage workaround (memory only)
+window.getCart=()=>cart;
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

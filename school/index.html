@@ -1,0 +1,1457 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhaka High School — Excellence in Education Since 1962</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="school.css">
+<style>
+/* ── HERO ── */
+.hero {
+  background: 
+    radial-gradient(circle at 20% 40%, rgba(224,122,45,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(59,130,246,0.04) 0%, transparent 50%),
+    linear-gradient(135deg, #F0F7FF 0%, #FFFFFF 40%, #FFF9F0 100%);
+  min-height: 95vh;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 60%;
+  height: 140%;
+  background: radial-gradient(ellipse, rgba(224,122,45,0.06) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: hero-float 25s ease-in-out infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -15%;
+  width: 50%;
+  height: 120%;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.05) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: hero-float 30s ease-in-out infinite reverse;
+}
+
+/* Decorative shapes */
+.hero-shape {
+  position: absolute;
+  opacity: 0.03;
+  pointer-events: none;
+}
+.hero-shape-1 {
+  width: 400px;
+  height: 400px;
+  border: 2px solid var(--navy);
+  border-radius: 50%;
+  top: -100px;
+  left: -100px;
+  animation: hero-rotate 40s linear infinite;
+}
+.hero-shape-2 {
+  width: 200px;
+  height: 200px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  bottom: 50px;
+  right: 100px;
+  animation: hero-rotate 30s linear infinite reverse;
+}
+.hero-shape-3 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, var(--gold) 0%, transparent 100%);
+  border-radius: 50%;
+  top: 20%;
+  right: 5%;
+  opacity: 0.02;
+  animation: hero-float 20s ease-in-out infinite;
+}
+
+.hero-pattern {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(rgba(8,145,178,0.04) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+}
+.hero-glow {
+  position: absolute;
+  border-radius: 50%; filter: blur(160px); pointer-events: none;
+  opacity: 0.6;
+}
+.glow-1 {
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(224,122,45,0.12) 0%, transparent 70%);
+  top: -250px; right: -200px;
+  animation: glow-drift 20s ease-in-out infinite;
+}
+.glow-2 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+  bottom: -150px; left: -150px;
+  animation: glow-drift 25s ease-in-out infinite reverse;
+}
+@keyframes glow-drift {
+  0%,100%{transform:translate(0,0) scale(1);} 
+  50%{transform:translate(50px,-40px) scale(1.1);}
+}
+@keyframes hero-float {
+  0%,100%{transform:translate(0,0) rotate(0deg);} 
+  50%{transform:translate(30px,-30px) rotate(5deg);}
+}
+@keyframes hero-rotate {
+  from{transform:rotate(0deg);} 
+  to{transform:rotate(360deg);}
+}
+.hero-inner {
+  max-width: 1360px; margin: 0 auto; padding: 140px 5% 120px;
+  display: grid; grid-template-columns: 1.1fr 0.9fr;
+  gap: 100px; align-items: center;
+  position: relative; z-index: 1;
+}
+.hero-content {
+  animation: hero-fade-in 1s ease-out;
+}
+@keyframes hero-fade-in {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  border: 2px solid rgba(224,122,45,0.3);
+  color: #92400E; font-size: .78rem; font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 10px 20px; border-radius: 30px; margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(224,122,45,0.15);
+  animation: hero-badge-pulse 3s ease-in-out infinite;
+}
+@keyframes hero-badge-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(224,122,45,0.15); }
+  50% { transform: scale(1.02); box-shadow: 0 6px 24px rgba(224,122,45,0.25); }
+}
+.hero-badge::before {
+  content: ''; width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, #D4A030 100%);
+  animation: pulse 2s infinite;
+  box-shadow: 0 0 12px rgba(224,122,45,0.6);
+}
+.hero h1 {
+  font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+  font-weight: 900; 
+  color: var(--navy);
+  line-height: 1.08; margin-bottom: 28px;
+  letter-spacing: -0.03em;
+  animation: hero-title-slide 1s ease-out 0.2s backwards;
+}
+@keyframes hero-title-slide {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.hero h1 em { 
+  font-style: normal;
+  background: linear-gradient(135deg, #E07A2D 0%, #F3A95B 50%, #E07A2D 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: hero-gradient-shift 4s ease infinite;
+  position: relative;
+}
+@keyframes hero-gradient-shift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+.hero h1 em::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+.hero-sub {
+  font-size: 1.15rem; color: var(--ink-2);
+  line-height: 1.85; margin-bottom: 44px; max-width: 560px;
+  font-weight: 450;
+  animation: hero-fade-in 1s ease-out 0.4s backwards;
+}
+.hero-btns { 
+  display: flex; gap: 18px; flex-wrap: wrap;
+  animation: hero-fade-in 1s ease-out 0.6s backwards;
+}
+.hero-btns .btn {
+  position: relative;
+  overflow: hidden;
+}
+.hero-btns .btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+.hero-btns .btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+.hero-stats {
+  display: flex; gap: 24px; margin-top: 64px;
+  padding-top: 36px;
+  border-top: 2px solid rgba(8,145,178,.1);
+  flex-wrap: nowrap;
+  animation: hero-fade-in 1s ease-out 0.8s backwards;
+  align-items: center;
+}
+.hstat { 
+  position: relative;
+  transition: transform 0.3s;
+  flex: 1;
+  min-width: 0;
+}
+.hstat:hover {
+  transform: translateY(-4px);
+}
+.hstat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 900; 
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  position: relative;
+}
+.hstat-lbl { 
+  font-size: .78rem; color: var(--muted); 
+  margin-top: 6px; font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.hstat-div { 
+  width: 1.5px; 
+  background: linear-gradient(180deg, transparent, rgba(8,145,178,.15), transparent);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* Hero visual — school info card */
+.hero-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 100%);
+  border: 2px solid rgba(8,145,178,0.08);
+  border-radius: 28px; padding: 40px;
+  backdrop-filter: blur(30px);
+  box-shadow: 
+    0 30px 80px rgba(8,145,178,0.12),
+    0 0 0 1px rgba(255,255,255,0.5) inset;
+  position: relative;
+  overflow: hidden;
+  animation: hero-card-float 6s ease-in-out infinite;
+}
+@keyframes hero-card-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(224,122,45,0.08) 0%, transparent 70%);
+  animation: hero-card-glow 8s ease-in-out infinite;
+}
+@keyframes hero-card-glow {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50% { transform: translate(-20px, 20px) scale(1.2); opacity: 0.8; }
+}
+.hcard-header {
+  display: flex; align-items: center; gap: 18px; margin-bottom: 32px;
+  padding-bottom: 24px; 
+  border-bottom: 2px solid rgba(8,145,178,0.08);
+  position: relative;
+  z-index: 1;
+}
+.hcard-crest {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, #F3A95B 50%, #E07A2D 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; flex-shrink: 0;
+  box-shadow: 
+    0 12px 32px rgba(224,122,45,0.4),
+    0 0 0 4px rgba(224,122,45,0.1);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+.hcard-crest img {
+  position: relative;
+  z-index: 1;
+}
+.hcard-crest::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), transparent, var(--gold));
+  opacity: 0.3;
+  animation: hero-crest-pulse 3s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes hero-crest-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+}
+.hcard-crest img {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s;
+}
+.hcard-crest:hover img {
+  transform: scale(1.08);
+}
+.hcard-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem; font-weight: 800; color: var(--navy);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.hcard-tag { 
+  font-size: .76rem; color: var(--muted);
+  font-weight: 600;
+}
+.hcard-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 0; border-bottom: 1px solid rgba(8,145,178,0.05);
+  font-size: .9rem;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s;
+}
+.hcard-row:hover {
+  padding-left: 8px;
+  background: rgba(224,122,45,0.02);
+  border-radius: 8px;
+}
+.hcard-row:last-child { border: none; }
+.hcard-icon { 
+  font-size: 1.2rem; 
+  width: 36px; 
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8,145,178,0.04);
+  border-radius: 8px;
+}
+.hcard-label { 
+  color: var(--muted); 
+  font-size: .82rem; 
+  min-width: 110px; 
+  font-weight: 600; 
+}
+.hcard-val { 
+  color: var(--ink); 
+  font-weight: 700; 
+  flex: 1; 
+}
+.hcard-live {
+  margin-top: 28px; padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(5,150,105,0.1) 0%, rgba(5,150,105,0.15) 100%);
+  border: 2px solid rgba(5,150,105,0.25);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .88rem; color: var(--ink-2);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+.hcard-live::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(5,150,105,0.1), transparent);
+  animation: live-shimmer 3s infinite;
+}
+@keyframes live-shimmer {
+  to { left: 100%; }
+}
+.live-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #22C55E; margin-right: 10px;
+  animation: pulse 2s infinite; display: inline-block;
+  box-shadow: 
+    0 0 0 0 rgba(34,197,94,0.7),
+    0 0 12px rgba(34,197,94,0.5);
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7), 0 0 12px rgba(34,197,94,0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(34,197,94,0), 0 0 16px rgba(34,197,94,0.8); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0), 0 0 12px rgba(34,197,94,0.5); }
+}
+
+/* Scroll Indicator */
+.hero-scroll {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  animation: hero-scroll-bounce 2s ease-in-out infinite;
+  z-index: 10;
+  cursor: pointer;
+}
+@keyframes hero-scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+.hero-scroll-icon {
+  width: 24px;
+  height: 36px;
+  border: 2px solid var(--muted);
+  border-radius: 12px;
+  position: relative;
+}
+.hero-scroll-icon::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 8px;
+  background: var(--muted);
+  border-radius: 2px;
+  animation: hero-scroll-wheel 2s ease-in-out infinite;
+}
+@keyframes hero-scroll-wheel {
+  0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(12px); opacity: 0; }
+}
+
+/* ── QUICK LINKS STRIP ── */
+.quick-strip {
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  padding: 26px 5%;
+  border-bottom: 1px solid rgba(8,145,178,.08);
+  border-top: 1px solid rgba(8,145,178,.08);
+}
+.quick-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+.quick-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 10px;
+  background: white; border: 1.5px solid rgba(8,145,178,.1);
+  color: var(--ink-2); font-size: .85rem; font-weight: 600;
+  text-decoration: none; transition: all .25s;
+  box-shadow: 0 2px 8px rgba(8,145,178,0.04);
+}
+.quick-btn:hover { 
+  background: var(--gold-pale); 
+  border-color: rgba(224,122,45,.3); 
+  color: var(--navy);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(8,145,178,0.1);
+}
+.quick-btn-icon { font-size: 1.05rem; }
+
+/* ── NOTICE BOARD SECTION ── */
+.notice-card-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+.notices-panel {
+  background: var(--white); border-radius: 20px;
+  border: 1px solid var(--border); overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+.panel-header {
+  padding: 20px 26px; border-bottom: 2px solid var(--gold);
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-pale) 100%);
+}
+.panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 800; color: var(--navy);
+}
+.panel-link {
+  font-size: .82rem; color: #92400E; font-weight: 700;
+  text-decoration: none; display: flex; align-items: center; gap: 4px;
+  transition: all .2s;
+}
+.panel-link:hover { 
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+.notice-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--border);
+  padding: 0 26px; overflow-x: auto;
+}
+.notice-tab {
+  padding: 12px 16px; font-size: .85rem; font-weight: 700;
+  color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent;
+  white-space: nowrap; transition: all .25s; background: none; border-top: none;
+  border-left: none; border-right: none; font-family: 'DM Sans', sans-serif;
+  margin-bottom: -2px;
+}
+.notice-tab:hover {
+  color: var(--ink-2);
+  background: var(--bg);
+}
+.notice-tab.on { 
+  color: var(--navy); 
+  border-bottom-color: var(--gold);
+}
+
+/* ── SIDEBAR PANELS ── */
+.sidebar-panels { display: flex; flex-direction: column; gap: 24px; }
+.sidebar-panel {
+  background: var(--white); border-radius: 20px;
+  border: 1px solid var(--border);
+  overflow: hidden; box-shadow: var(--card-shadow);
+}
+.event-item {
+  display: flex; gap: 16px; padding: 16px 20px;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
+  transition: background .2s;
+}
+.event-item:hover {
+  background: var(--bg);
+}
+.event-item:last-child { border: none; }
+.event-date-box {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  color: #fff;
+  border-radius: 10px; padding: 8px 12px; text-align: center;
+  flex-shrink: 0; min-width: 48px;
+  box-shadow: 0 4px 12px rgba(8,145,178,0.2);
+}
+.event-day {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 800; line-height: 1;
+}
+.event-mon { 
+  font-size: .62rem; font-weight: 700; 
+  text-transform: uppercase; letter-spacing: .08em; 
+  opacity: .8; margin-top: 2px;
+}
+.event-name { 
+  font-size: .9rem; font-weight: 700; 
+  color: var(--ink-2); margin-bottom: 4px; 
+}
+.event-desc { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+
+/* Principal message */
+.principal-card {
+  background: linear-gradient(145deg, #0B9ABD 0%, #06B6D4 60%, #22D3EE 100%);
+  border-radius: 20px;
+  padding: 28px 30px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 14px 36px rgba(8,145,178,0.24);
+}
+.principal-card::before {
+  content: '"'; position: absolute; top: -34px; right: 14px;
+  font-family: 'Playfair Display', serif;
+  font-size: 10.5rem; color: rgba(255,255,255,0.12); line-height: 1;
+}
+.principal-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .66rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(255,255,255,0.84);
+  margin-bottom: 14px;
+}
+.principal-photo {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(224,122,45,0.24);
+  overflow: hidden;
+}
+.principal-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.principal-quote {
+  font-size: .98rem;
+  color: rgba(255,255,255,.97);
+  line-height: 1.82;
+  font-style: italic;
+  margin-bottom: 20px;
+  position: relative; z-index: 1;
+  max-width: 34ch;
+}
+.principal-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #fff;
+}
+.principal-title {
+  font-size: .82rem;
+  color: rgba(255,255,255,.84);
+  margin-top: 2px;
+}
+
+/* ── ACHIEVEMENTS TICKER ── */
+.ticker-wrap {
+  background: linear-gradient(135deg, var(--gold) 0%, #F08E3A 100%);
+  padding: 14px 0; overflow: hidden;
+  border-top: 2px solid #EE9A4A; border-bottom: 2px solid #EE9A4A;
+  box-shadow: 0 4px 16px rgba(224,122,45,0.15);
+}
+.ticker-inner {
+  display: flex; gap: 48px; width: max-content;
+  animation: ticker 30s linear infinite;
+}
+.ticker-inner:hover { animation-play-state: paused; }
+@keyframes ticker { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+.ticker-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 1.05rem; font-weight: 700; color: #ffffff;
+  white-space: nowrap;
+}
+.ticker-sep { color: rgba(255,255,255,.6); font-size: 1.2rem; }
+
+/* ── STATS SECTION ── */
+.stats-band { 
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); 
+  padding: 72px 5%; 
+  border-top: 1px solid rgba(8,145,178,0.08);
+  border-bottom: 1px solid rgba(8,145,178,0.08);
+}
+.stats-grid { 
+  display: grid; grid-template-columns: repeat(5,1fr); 
+  gap: 1px; background: rgba(8,145,178,.08); 
+  max-width: 1280px; margin: 0 auto; 
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(8,145,178,0.08);
+}
+.stat-block {
+  background: white;
+  padding: 40px 24px; text-align: center;
+  transition: all .3s;
+}
+.stat-block:hover { 
+  background: var(--gold-pale); 
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(8,145,178,0.1);
+}
+.stat-block-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem; font-weight: 800; 
+  background: linear-gradient(135deg, var(--gold) 0%, #D4A030 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1; margin-bottom: 10px;
+}
+.stat-block-label { 
+  font-size: .82rem; color: var(--ink-3); 
+  line-height: 1.5; font-weight: 500;
+}
+.stat-block-icon { 
+  font-size: 1.8rem; margin-bottom: 12px; 
+  opacity: .5;
+}
+
+/* ── FEATURES ROW ── */
+.features-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 24px;
+}
+.feature-card { 
+  padding: 32px 24px; text-align: center;
+  transition: transform .3s;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+}
+.feat-icon-box {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-pale) 100%);
+  display: flex; align-items: center;
+  justify-content: center; font-size: 1.6rem;
+  margin: 0 auto 20px;
+  border: 2px solid rgba(224,122,45,.15);
+  box-shadow: 0 4px 16px rgba(224,122,45,0.1);
+}
+.feat-name { 
+  font-family: 'DM Sans', sans-serif; 
+  font-size: .98rem; font-weight: 700; 
+  color: var(--navy); margin-bottom: 8px; 
+}
+.feat-desc { 
+  font-size: .85rem; color: var(--muted); 
+  line-height: 1.65; 
+}
+
+/* ── GALLERY STRIP ── */
+.gallery-strip {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 220px 220px;
+  gap: 12px; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(8,145,178,0.1);
+}
+.gallery-item {
+  border-radius: 8px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem; position: relative;
+  transition: transform .3s;
+}
+.gallery-item:hover {
+  transform: scale(1.02);
+}
+.gallery-item:first-child { grid-row: 1 / 3; }
+.gallery-item .gallery-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(8,145,178,.85));
+  color: #fff; font-size: .8rem; font-weight: 700;
+  padding: 28px 16px 14px; text-align: center;
+  letter-spacing: 0.02em;
+}
+.gallery-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+.gallery-link:hover {
+  transform: scale(1.03);
+}
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.95);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .3s ease-in-out;
+}
+.lightbox.active {
+  display: flex;
+}
+.lightbox-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90vh;
+}
+.lightbox-img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 2rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 300;
+  z-index: 10000;
+  transition: color .2s;
+}
+.lightbox-close:hover {
+  color: var(--gold);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── TESTIMONIALS ── */
+.testi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+.testi-card { 
+  padding: 32px; 
+  position: relative;
+  transition: all .3s;
+}
+.testi-card::before {
+  content: '"';
+  position: absolute;
+  top: 16px; left: 24px;
+  font-family: 'Playfair Display', serif;
+  font-size: 4rem;
+  color: rgba(224,122,45,0.1);
+  line-height: 1;
+}
+.testi-card:hover {
+  transform: translateY(-4px);
+}
+.testi-stars { 
+  color: var(--gold); font-size: .95rem; 
+  margin-bottom: 16px; position: relative; z-index: 1;
+}
+.testi-text { 
+  font-size: .92rem; color: var(--ink-3); 
+  line-height: 1.75; font-style: italic; 
+  margin-bottom: 20px; position: relative; z-index: 1;
+}
+.testi-person { display: flex; align-items: center; gap: 12px; }
+.testi-ava { 
+  width: 42px; height: 42px; border-radius: 50%; 
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-pale));
+  display: flex; align-items: center; justify-content: center; 
+  font-size: 1.1rem;
+  border: 2px solid rgba(224,122,45,.2);
+}
+.testi-name { 
+  font-size: .9rem; font-weight: 700; 
+  color: var(--navy); font-family: 'DM Sans', sans-serif; 
+}
+.testi-role { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+/* ── CTA BANNER ── */
+.cta-band {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,.14) 0%, transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(224,122,45,.22) 0%, transparent 28%),
+    linear-gradient(140deg, #078CAC 0%, #06A8CA 50%, #1EC6E1 100%);
+  max-width: 1240px;
+  margin: 28px auto 64px;
+  border-radius: 28px;
+  padding: 92px 6% 84px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.32);
+  box-shadow: 0 24px 50px rgba(8,145,178,.2);
+}
+.cta-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 24%),
+    radial-gradient(ellipse 72% 100% at 72% 52%, rgba(224,122,45,.16) 0%, transparent 70%);
+}
+.cta-band h2 { 
+  font-size: clamp(2rem,4.5vw,2.8rem); 
+  color: #fff;
+  margin-bottom: 14px;
+  position: relative;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.cta-band p  { 
+  font-size: 1.08rem;
+  color: rgba(255,255,255,.9);
+  margin-bottom: 38px;
+  max-width: 620px; 
+  margin-left: auto; margin-right: auto; 
+  position: relative;
+  line-height: 1.72;
+}
+.cta-btns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+.cta-btns .btn {
+  min-width: 236px;
+  border-radius: 14px;
+}
+.cta-btns .btn-gold {
+  box-shadow: 0 10px 24px rgba(224,122,45,.36);
+}
+.cta-btns .btn-gold:hover {
+  transform: translateY(-3px);
+}
+.cta-btns .cta-call {
+  border: 2px solid rgba(255,255,255,.85);
+  color: #067B99;
+  background: linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(239,252,255,.92) 100%);
+  box-shadow: 0 10px 22px rgba(0,95,120,.22);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cta-btns .cta-call:hover {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+  color: #055F78;
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(0,95,120,.28);
+}
+
+/* Responsive */
+@media(max-width:1024px){ 
+  .notice-card-grid{grid-template-columns:1fr;} 
+  .stats-grid{grid-template-columns:repeat(3,1fr);} 
+  .features-row{grid-template-columns:repeat(2,1fr);} 
+  .hero-inner{gap:60px;}
+  .hero-shape-1, .hero-shape-2, .hero-shape-3{display:none;}
+}
+@media(max-width:768px){ 
+  .hero-inner{grid-template-columns:1fr; padding:100px 5% 80px;} 
+  .hero-card{display:none;} 
+  .hero h1{font-size:clamp(2.2rem,8vw,3.2rem);}
+  .hero-stats{gap:16px; flex-wrap: nowrap;}
+  .hstat-num{font-size:1.8rem;}
+  .hstat-lbl{font-size:.72rem;}
+  .hero-scroll{display:none;}
+  .testi-row{grid-template-columns:1fr;} 
+  .gallery-strip{grid-template-columns:1fr 1fr;grid-template-rows:auto;} 
+  .gallery-item:first-child{grid-row:auto;} 
+  .cta-band{margin:20px 4% 48px; padding:72px 6% 66px; border-radius:22px;}
+  .cta-btns .btn{min-width:200px;}
+}
+@media(max-width:560px){ 
+  .stats-grid{grid-template-columns:repeat(2,1fr);} 
+  .features-row{grid-template-columns:1fr 1fr;} 
+  .hero-stats{flex-direction:column; gap:16px;}
+  .hstat-div{display:none;}
+  .cta-band{margin:16px 4% 40px; padding:56px 6% 54px; border-radius:18px;}
+  .cta-btns{gap:10px;}
+  .cta-btns .btn{width:100%; min-width:0;}
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.text-center { text-align: center; }
+.mb-8 { margin-bottom: 48px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <span class="top-bar-item">📞 +880 2-9876543</span>
+    <span class="top-bar-item">✉ info@dhakahigh.edu.bd</span>
+    <span class="top-bar-item">📍 Road 4, Dhanmondi, Dhaka 1205</span>
+  </div>
+  <div class="top-bar-right">
+    <a href="school-results.html">Results</a>
+    <a href="school-notices.html">Notices</a>
+    <a href="school-admission.html">Admissions</a>
+    <button class="lang-btn">বাংলা</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="school-identity">
+      <div class="school-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <div class="school-name-wrap">
+        <div class="school-name">Dhaka High School</div>
+        <div class="school-tagline">Excellence in Education Since 1962</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link active">Home</a>
+      <a href="school-about.html"      class="nav-link">About</a>
+      <a href="school-notices.html"    class="nav-link">Notices</a>
+      <a href="school-admission.html"  class="nav-link">Admission</a>
+      <a href="school-results.html"    class="nav-link">Results</a>
+      <a href="school-contact.html"    class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="school-admission.html" class="btn-outline-nav">Apply Now</a>
+      <a href="auth/login.html"            class="btn-portal">🔐 Student Portal</a>
+    </div>
+    <button class="ham-btn" onclick="toggleMobileNav()">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-glow glow-1"></div>
+  <div class="hero-glow glow-2"></div>
+  <div class="hero-shape hero-shape-1"></div>
+  <div class="hero-shape hero-shape-2"></div>
+  <div class="hero-shape hero-shape-3"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">🇧🇩 Dhaka, Bangladesh · Est. 1962</div>
+      <h1>
+        Shaping Minds,<br>Building <em>Futures</em>
+      </h1>
+      <p class="hero-sub">
+        Dhaka High School has been Bangladesh's beacon of academic excellence for over six decades — nurturing curious minds from primary through higher secondary.
+      </p>
+      <div class="hero-btns">
+        <a href="school-admission.html" class="btn btn-gold btn-lg">✨ Apply for 2026 Admission</a>
+        <a href="school-about.html" class="btn btn-outline-navy btn-lg">Learn More →</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num">62+</div><div class="hstat-lbl">Years of Excellence</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num">1,248</div><div class="hstat-lbl">Current Students</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num">98.4%</div><div class="hstat-lbl">SSC Pass Rate 2024</div></div>
+        <div class="hstat-div"></div>
+        <div class="hstat"><div class="hstat-num">68</div><div class="hstat-lbl">Qualified Teachers</div></div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hcard-header">
+        <div class="hcard-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div>
+          <div class="hcard-name">Dhaka High School</div>
+          <div class="hcard-tag">dhaka-high.prathomik.edu.bd</div>
+        </div>
+      </div>
+      <div class="hcard-row">
+        <span class="hcard-icon">📋</span>
+        <span class="hcard-label">EIIN Number</span>
+        <span class="hcard-val">108765</span>
+      </div>
+      <div class="hcard-row">
+        <span class="hcard-icon">📚</span>
+        <span class="hcard-label">Level</span>
+        <span class="hcard-val">Class I – XII (SSC & HSC)</span>
+      </div>
+      <div class="hcard-row">
+        <span class="hcard-icon">🏛</span>
+        <span class="hcard-label">Board</span>
+        <span class="hcard-val">Dhaka Education Board</span>
+      </div>
+      <div class="hcard-row">
+        <span class="hcard-icon">👤</span>
+        <span class="hcard-label">Principal</span>
+        <span class="hcard-val">Mr. Abdur Rahman Molla</span>
+      </div>
+      <div class="hcard-row">
+        <span class="hcard-icon">🕐</span>
+        <span class="hcard-label">School Hours</span>
+        <span class="hcard-val">Sun–Thu · 7:30 AM – 1:30 PM</span>
+      </div>
+      <div class="hcard-live">
+        <span><span class="live-dot"></span>Portal Online — Students Active Now</span>
+        <span style="color:#10B981;font-weight:800;font-size:.9rem;">342 active</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hero-scroll" onclick="document.querySelector('.quick-strip').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll</span>
+    <div class="hero-scroll-icon"></div>
+  </div>
+</section>
+
+<!-- QUICK LINKS -->
+<div class="quick-strip">
+  <div class="quick-inner">
+    <a href="school-notices.html" class="quick-btn"><span class="quick-btn-icon">📢</span> Latest Notices</a>
+    <a href="school-results.html" class="quick-btn"><span class="quick-btn-icon">📝</span> Result Lookup</a>
+    <a href="school-admission.html" class="quick-btn"><span class="quick-btn-icon">📋</span> Admission 2026</a>
+    <a href="auth/login.html" class="quick-btn"><span class="quick-btn-icon">💳</span> Pay Fees Online</a>
+    <a href="school-notices.html?cat=exam" class="quick-btn"><span class="quick-btn-icon">🗓</span> Exam Schedule</a>
+    <a href="auth/login.html" class="quick-btn"><span class="quick-btn-icon">📊</span> My Dashboard</a>
+    <a href="school-contact.html" class="quick-btn"><span class="quick-btn-icon">📞</span> Contact Us</a>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <div class="ticker-item">🏆 SSC 2024 — 98.4% Pass Rate</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🥇 National Science Olympiad Winners — 3 Students</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">📚 Dhaka Board Position: 2nd in Dhaka District</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🎖 12 Students received GPA 5.00 in SSC 2024</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">⚽ Inter-School Football Champions 2024</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🌟 HSC 2024 — 96.7% Pass Rate</div><div class="ticker-sep">✦</div>
+    <!-- Duplicate for seamless loop -->
+    <div class="ticker-item">🏆 SSC 2024 — 98.4% Pass Rate</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🥇 National Science Olympiad Winners — 3 Students</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">📚 Dhaka Board Position: 2nd in Dhaka District</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🎖 12 Students received GPA 5.00 in SSC 2024</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">⚽ Inter-School Football Champions 2024</div><div class="ticker-sep">✦</div>
+    <div class="ticker-item">🌟 HSC 2024 — 96.7% Pass Rate</div><div class="ticker-sep">✦</div>
+  </div>
+</div>
+
+<!-- NOTICE BOARD + EVENTS -->
+<section class="section" style="background:var(--bg);">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="s-badge">📋 Latest Updates</div>
+        <h2 class="s-title">Notice Board & Events</h2>
+      </div>
+      <a href="school-notices.html" class="btn btn-outline-navy">View All Notices →</a>
+    </div>
+    <div class="notice-card-grid">
+
+      <!-- Notices panel -->
+      <div class="notices-panel">
+        <div class="panel-header">
+          <div class="panel-title">📢 School Notices</div>
+          <a href="school-notices.html" class="panel-link">View all →</a>
+        </div>
+        <div class="notice-tabs">
+          <button class="notice-tab on" onclick="filterNotice(this,'all')">All</button>
+          <button class="notice-tab" onclick="filterNotice(this,'exam')">Exam</button>
+          <button class="notice-tab" onclick="filterNotice(this,'fee')">Fees</button>
+          <button class="notice-tab" onclick="filterNotice(this,'holiday')">Holiday</button>
+          <button class="notice-tab" onclick="filterNotice(this,'admission')">Admission</button>
+        </div>
+        <div id="noticeList">
+          <div class="notice-item" data-cat="exam">
+            <div class="notice-dot" style="background:#EEF2FF;">📝</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="notice-title">Final Examination 2026 — Class 9 &amp; 10 Schedule Released</div>
+                <span class="badge badge-navy notice-tag" style="flex-shrink:0;">Exam</span>
+              </div>
+              <div class="notice-date">25 Feb 2026</div>
+              <div class="notice-preview">Final exams for Class 9 and 10 commence from 10 March. Admit cards available at admin office from 3 March.</div>
+            </div>
+          </div>
+          <div class="notice-item" data-cat="admission">
+            <div class="notice-dot" style="background:#FEF9EE;">📋</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="notice-title">Class I Admission 2026-27 — Application Open</div>
+                <span class="badge badge-gold notice-tag" style="flex-shrink:0;">Admission</span>
+              </div>
+              <div class="notice-date">20 Feb 2026</div>
+              <div class="notice-preview">Applications for Class I (2026-27) are now open. Last date: 15 March 2026. Online and offline forms available.</div>
+            </div>
+          </div>
+          <div class="notice-item" data-cat="fee">
+            <div class="notice-dot" style="background:#ECFDF5;">💰</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="notice-title">February Tuition Fee — Last Date 28 February</div>
+                <span class="badge badge-green notice-tag" style="flex-shrink:0;">Fee</span>
+              </div>
+              <div class="notice-date">18 Feb 2026</div>
+              <div class="notice-preview">Monthly tuition fee for February must be paid by 28 Feb. Late fee will be charged from 1 March.</div>
+            </div>
+          </div>
+          <div class="notice-item" data-cat="holiday">
+            <div class="notice-dot" style="background:#FFF7ED;">🗓</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="notice-title">Eid Holiday — 28 March to 6 April 2026</div>
+                <span class="badge badge-red notice-tag" style="flex-shrink:0;">Holiday</span>
+              </div>
+              <div class="notice-date">15 Feb 2026</div>
+              <div class="notice-preview">School will remain closed for Eid-ul-Fitr from 28 March to 6 April. Classes resume on 7 April 2026.</div>
+            </div>
+          </div>
+          <div class="notice-item" data-cat="exam">
+            <div class="notice-dot" style="background:#EEF2FF;">📊</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                <div class="notice-title">Half-Yearly Result Distribution — 5 March</div>
+                <span class="badge badge-navy notice-tag" style="flex-shrink:0;">Result</span>
+              </div>
+              <div class="notice-date">12 Feb 2026</div>
+              <div class="notice-preview">Half-yearly results will be distributed on 5 March. Parents must attend along with students to collect result sheets.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar-panels">
+
+        <!-- Upcoming events -->
+        <div class="sidebar-panel">
+          <div class="panel-header">
+            <div class="panel-title">📅 Upcoming Events</div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box"><div class="event-day">10</div><div class="event-mon">Mar</div></div>
+            <div><div class="event-name">Final Exam Starts</div><div class="event-desc">Class 9 &amp; 10 · All sections</div></div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box" style="background:var(--gold);"><div class="event-day">15</div><div class="event-mon">Mar</div></div>
+            <div><div class="event-name">Admission Deadline</div><div class="event-desc">Class I — 2026-27 Session</div></div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box"><div class="event-day">05</div><div class="event-mon">Apr</div></div>
+            <div><div class="event-name">Annual Sports Day</div><div class="event-desc">School ground · 8:00 AM</div></div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box"><div class="event-day">22</div><div class="event-mon">Apr</div></div>
+            <div><div class="event-name">Science Fair 2026</div><div class="event-desc">Open to all classes</div></div>
+          </div>
+        </div>
+
+        <!-- Principal message -->
+        <div class="principal-card">
+          <div class="principal-kicker">Principal's Message</div>
+          <div class="principal-photo">
+            <img src="https://media.licdn.com/dms/image/v2/C5603AQHZVYhYx56YrQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1642693752180?e=2147483647&amp;v=beta&amp;t=PPokrsw7BVA9LoiD0_i1nxvgx4fMXX9-r69RuenpTW4" alt="Principal photo">
+          </div>
+          <div class="principal-quote">
+            "We believe every child carries within them a unique spark of potential. Our duty as educators is to nurture that spark into a flame that illuminates their path forward."
+          </div>
+          <div class="principal-name">Abdur Rahman Molla</div>
+          <div class="principal-title">Principal, Dhaka High School</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stats-grid">
+    <div class="stat-block"><div class="stat-block-icon">🧑‍🎓</div><div class="stat-block-num">1,248</div><div class="stat-block-label">Current Students</div></div>
+    <div class="stat-block"><div class="stat-block-icon">👩‍🏫</div><div class="stat-block-num">68</div><div class="stat-block-label">Qualified Teachers</div></div>
+    <div class="stat-block"><div class="stat-block-icon">🏆</div><div class="stat-block-num">98.4%</div><div class="stat-block-label">SSC Pass Rate 2024</div></div>
+    <div class="stat-block"><div class="stat-block-icon">🎓</div><div class="stat-block-num">12</div><div class="stat-block-label">GPA 5.00 in SSC</div></div>
+    <div class="stat-block"><div class="stat-block-icon">🏅</div><div class="stat-block-num">24+</div><div class="stat-block-label">Awards This Year</div></div>
+  </div>
+</div>
+
+<!-- FACILITIES -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">🏫 Facilities</div>
+      <h2 class="s-title">A campus built for learning</h2>
+      <p class="s-sub" style="margin:0 auto;">Modern infrastructure designed to inspire students and support holistic development.</p>
+    </div>
+    <div class="features-row">
+      <div class="card feature-card">
+        <div class="feat-icon-box">🔬</div>
+        <div class="feat-name">Science Labs</div>
+        <div class="feat-desc">Fully equipped Physics, Chemistry and Biology labs with modern instruments.</div>
+      </div>
+      <div class="card feature-card">
+        <div class="feat-icon-box">💻</div>
+        <div class="feat-name">Computer Lab</div>
+        <div class="feat-desc">60-seat air-conditioned lab with fiber internet access for all students.</div>
+      </div>
+      <div class="card feature-card">
+        <div class="feat-icon-box">📚</div>
+        <div class="feat-name">Library</div>
+        <div class="feat-desc">10,000+ books, digital reading room, newspaper and magazine subscriptions.</div>
+      </div>
+      <div class="card feature-card">
+        <div class="feat-icon-box">⚽</div>
+        <div class="feat-name">Sports Ground</div>
+        <div class="feat-desc">Full cricket pitch, football field, badminton and basketball courts.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO GALLERY -->
+<section class="section-sm" style="background:var(--bg);">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="s-badge">📸 Gallery</div>
+        <h2 class="s-title">Life at Dhaka High School</h2>
+      </div>
+      <a href="#" class="btn btn-outline-navy">View All Photos →</a>
+    </div>
+    <div class="gallery-strip">
+      <a href="https://www.schoolbuildings.vic.gov.au/sites/default/files/2025-05/250514_PMP_Web-header_800x600.jpg?width=1536" class="gallery-item gallery-link" onclick="openLightbox(event, this.href)">
+        <img src="https://www.schoolbuildings.vic.gov.au/sites/default/files/2025-05/250514_PMP_Web-header_800x600.jpg?width=1536" alt="School Building" style="width:100%;height:100%;object-fit:cover;">
+        <div class="gallery-label">School Building</div>
+      </a>
+      <a href="https://www.ghsallahabad.org/wp-content/uploads/2019/04/science-lab.jpg" class="gallery-item gallery-link" onclick="openLightbox(event, this.href)">
+        <img src="https://www.ghsallahabad.org/wp-content/uploads/2019/04/science-lab.jpg" alt="Science Lab" style="width:100%;height:100%;object-fit:cover;">
+        <div class="gallery-label">Science Lab</div>
+      </a>
+      <a href="https://cdn.prod.website-files.com/604a97c70aee09eed25ce991/61897a35583a9b51db018d3e_MartinPublicSeating-97560-Importance-School-Library-blogbanner1.jpg" class="gallery-item gallery-link" onclick="openLightbox(event, this.href)">
+        <img src="https://cdn.prod.website-files.com/604a97c70aee09eed25ce991/61897a35583a9b51db018d3e_MartinPublicSeating-97560-Importance-School-Library-blogbanner1.jpg" alt="Library" style="width:100%;height:100%;object-fit:cover;">
+        <div class="gallery-label">Library</div>
+      </a>
+      <a href="https://5.imimg.com/data5/DJ/PV/GLADMIN-64970456/computer-lab-class.png" class="gallery-item gallery-link" onclick="openLightbox(event, this.href)">
+        <img src="https://5.imimg.com/data5/DJ/PV/GLADMIN-64970456/computer-lab-class.png" alt="Computer Lab" style="width:100%;height:100%;object-fit:cover;">
+        <div class="gallery-label">Computer Lab</div>
+      </a>
+      <a href="https://daijiworld.ap-south-1.linodeobjects.com/Linode/images3/cbse_090326_31.jpg" class="gallery-item gallery-link" onclick="openLightbox(event, this.href)">
+        <img src="https://daijiworld.ap-south-1.linodeobjects.com/Linode/images3/cbse_090326_31.jpg" alt="Prize Ceremony" style="width:100%;height:100%;object-fit:cover;">
+        <div class="gallery-label">Prize Ceremony</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-8">
+      <div class="s-badge" style="justify-content:center;">💬 Alumni & Parents</div>
+      <h2 class="s-title">What our community says</h2>
+    </div>
+    <div class="testi-row">
+      <div class="card testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"Dhaka High School gave my son not just academic knowledge but the discipline and values to succeed in life. He is now at BUET. Forever grateful."</div>
+        <div class="testi-person"><div class="testi-ava">👩</div><div><div class="testi-name">Mrs. Rahela Khanam</div><div class="testi-role">Parent · Class 10 Graduate 2022</div></div></div>
+      </div>
+      <div class="card testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"The teachers here are exceptional. They know every student personally and push them beyond their comfort zone. I owe my GPA 5.00 to them."</div>
+        <div class="testi-person"><div class="testi-ava">👦</div><div><div class="testi-name">Rahim Uddin</div><div class="testi-role">SSC 2024 — GPA 5.00</div></div></div>
+      </div>
+      <div class="card testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"25 years after graduating, I visited the school and it still felt like home. The values I learned here shaped who I am today as a professional."</div>
+        <div class="testi-person"><div class="testi-ava">👨</div><div><div class="testi-name">Dr. Farhan Ahmed</div><div class="testi-role">Alumni 1998 · Now a Physician</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-band">
+  <h2>Enroll Your Child at Dhaka High School</h2>
+  <p>Applications for 2026-27 are now open. Seats are limited — secure your child's future today.</p>
+  <div class="cta-btns">
+    <a href="school-admission.html" class="btn btn-gold btn-lg">Apply for Admission →</a>
+    <a href="tel:+88029876543" class="btn btn-outline-navy btn-lg cta-call"><span style="font-size:1.1rem;margin-right:4px;">☎</span>Call Now</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-school">
+      <div class="footer-logo-row">
+        <div class="footer-crest"><img src="https://upload.wikimedia.org/wikipedia/bn/2/2c/%E0%A6%A7%E0%A6%BE%E0%A6%A8%E0%A6%AE%E0%A6%A8%E0%A7%8D%E0%A6%A1%E0%A6%BF_%E0%A6%97%E0%A6%AD._%E0%A6%AC%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%9C_%E0%A6%B9%E0%A6%BE%E0%A6%87_%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A7%81%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%B2%E0%A7%8B%E0%A6%97%E0%A7%8B.png" alt="School Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+        <div class="footer-school-name">Dhaka High School</div>
+      </div>
+      <div class="footer-desc">Established in 1962, Dhaka High School has been a cornerstone of quality education in Bangladesh. We nurture curious, capable, and compassionate leaders of tomorrow.</div>
+      <div class="powered-by">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:36px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;"></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="school-about.html">About School</a>
+      <a href="school-notices.html">Notice Board</a>
+      <a href="school-admission.html">Admission</a>
+      <a href="school-results.html">Results</a>
+      <a href="school-contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Portals</h4>
+      <a href="auth/login.html">Student Portal</a>
+      <a href="auth/login.html">Teacher Portal</a>
+      <a href="auth/login.html">Parent Portal</a>
+      <a href="auth/login.html">Admin Login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="tel:+88029876543">+880 2-9876543</a>
+      <a href="mailto:info@dhakahigh.edu.bd">info@dhakahigh.edu.bd</a>
+      <a href="school-contact.html">Road 4, Dhanmondi<br>Dhaka 1205</a>
+      <a href="#">EIIN: 108765</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Dhaka High School. All rights reserved.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="https://eduos.net" style="display:inline-flex;align-items:center;gap:6px;">Powered by <img src="../assets/img/logo.png" alt="EduOS" style="height:30px;width:auto;filter:brightness(0) invert(1);vertical-align:middle;opacity:.7;"></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function filterNotice(btn, cat) {
+  document.querySelectorAll('.notice-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.notice-item').forEach(item => {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? 'flex' : 'none';
+  });
+}
+function toggleMobileNav() {
+  // Simple mobile nav toggle for demo
+  const links = document.querySelector('.nav-links');
+  const actions = document.querySelector('.nav-actions');
+  if (links) links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+}
+function openLightbox(e, imgSrc) {
+  e.preventDefault();
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  lightboxImg.src = imgSrc;
+  lightbox.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  lightbox.classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+</script>
+
+<!-- LIGHTBOX MODAL -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Gallery image">
+  </div>
+</div>
+
+<script src="../demo-nav.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Fee Default Predictor — Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root { --ai:#6366F1; --ai-2:#8B5CF6; }
+
+.ai-banner{
+  background:linear-gradient(135deg,#0F766E 0%,#0EA5E9 100%);
+  border-radius:16px;padding:22px 26px;color:#fff;
+  display:flex;align-items:center;gap:18px;margin-bottom:22px;position:relative;overflow:hidden;
+}
+.ai-banner::before{content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E");}
+.ai-banner-icon{width:54px;height:54px;border-radius:14px;flex-shrink:0;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;position:relative;z-index:1;}
+.ai-banner-txt{position:relative;z-index:1;flex:1;}
+.ai-banner-title{font-family:'Sora',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:3px;}
+.ai-banner-sub{font-size:.83rem;opacity:.9;}
+.ai-banner-model{position:relative;z-index:1;font-family:'JetBrains Mono',monospace;font-size:.68rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:6px;}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:aipulse 1.6s infinite;}
+@keyframes aipulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.btn-ai{background:linear-gradient(135deg,#0F766E,#0EA5E9);color:#fff;border:none;box-shadow:0 4px 16px rgba(14,165,233,.3);}
+.btn-ai:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ai:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+.ai-analyzing{display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;}
+.ai-analyzing.show{display:flex;}
+.ai-brain{width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#0F766E,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin-bottom:22px;box-shadow:0 10px 40px rgba(14,165,233,.4);animation:brainfloat 2s ease-in-out infinite;}
+@keyframes brainfloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-8px) scale(1.04);}}
+.ai-analyzing-title{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:8px;}
+.ai-step{font-size:.85rem;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:9px;opacity:.35;transition:opacity .3s;}
+.ai-step.active{opacity:1;color:#0EA5E9;font-weight:600;}
+.ai-step.done{opacity:1;color:var(--green);}
+.ai-step-ic{width:18px;text-align:center;}
+.ai-progress-track{width:280px;height:6px;background:var(--border);border-radius:3px;margin:18px 0 6px;overflow:hidden;}
+.ai-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#0F766E,#0EA5E9);border-radius:3px;transition:width .4s;}
+.ai-progress-pct{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#0EA5E9;font-weight:700;}
+
+.ai-results{display:none;}
+.ai-results.show{display:block;animation:fadein .5s ease both;}
+@keyframes fadein{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+.fee-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.fee-stat{border-radius:14px;padding:18px;border:1.5px solid;}
+.fee-stat-num{font-family:'Sora',sans-serif;font-size:1.7rem;font-weight:800;line-height:1;}
+.fee-stat-lbl{font-size:.74rem;font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:.04em;}
+.fs-high{background:#FEF2F2;border-color:#FECACA;}
+.fs-high .fee-stat-num{color:#DC2626;} .fs-high .fee-stat-lbl{color:#991B1B;}
+.fs-over{background:#FFFBEB;border-color:#FDE68A;}
+.fs-over .fee-stat-num{color:#D97706;} .fs-over .fee-stat-lbl{color:#92400E;}
+.fs-prev{background:#ECFDF5;border-color:#A7F3D0;}
+.fs-prev .fee-stat-num{color:#059669;} .fs-prev .fee-stat-lbl{color:#065F46;}
+.fs-acc{background:#ECFEFF;border-color:#A5F3FC;}
+.fs-acc .fee-stat-num{color:#0891B2;} .fs-acc .fee-stat-lbl{color:#155E75;}
+
+.fp-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+.fp-row:last-child{border-bottom:none;}
+.fp-row:hover{background:var(--bg);}
+.fp-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.82rem;}
+.fp-info{min-width:160px;}
+.fp-name{font-size:.88rem;font-weight:700;color:var(--ink-2);}
+.fp-meta{font-size:.73rem;color:var(--muted);margin-top:1px;}
+.fp-reason{flex:1;font-size:.78rem;color:var(--ink-3);}
+.fp-reason .fp-amt{font-weight:700;color:var(--ink-2);}
+.fp-track{width:120px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;flex-shrink:0;}
+.fp-fill{height:100%;border-radius:4px;width:0;transition:width 1s cubic-bezier(.22,.61,.36,1);}
+.fp-pct{font-family:'Sora',sans-serif;font-weight:800;font-size:1rem;width:54px;text-align:right;flex-shrink:0;}
+.fp-status{font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:20px;flex-shrink:0;width:88px;text-align:center;}
+.st-sent{background:#D1FAE5;color:#065F46;}
+.st-pending{background:#FEF3C7;color:#92400E;}
+.st-monitor{background:#E0E7FF;color:#3730A3;}
+.st-ok{background:#F1F5F9;color:#475569;}
+
+.ai-insight{background:linear-gradient(135deg,#ECFEFF,#EFF6FF);border:1.5px solid #A5F3FC;border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start;}
+.ai-insight-ic{font-size:1.4rem;flex-shrink:0;}
+.ai-insight-title{font-size:.84rem;font-weight:800;color:#155E75;margin-bottom:4px;}
+.ai-insight-txt{font-size:.84rem;color:#0E7490;line-height:1.6;}
+.ai-insight-txt strong{color:#164E63;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:11px 16px;border-radius:10px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:900px){ .fee-summary{grid-template-columns:1fr 1fr;} .fp-reason{display:none;} }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <div class="ai-banner">
+      <div class="ai-banner-icon">💰</div>
+      <div class="ai-banner-txt">
+        <div class="ai-banner-title">AI Fee Default Predictor</div>
+        <div class="ai-banner-sub">Forecast which families are likely to miss next month's fee — and act before they do.</div>
+      </div>
+      <div class="ai-banner-model"><span class="ai-dot"></span> EduOS-Finance v1.8 · Online</div>
+    </div>
+
+    <div class="card" style="padding:18px 22px;margin-bottom:22px;">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:.84rem;font-weight:700;color:var(--ink-2);margin-bottom:3px;">Run default forecast</div>
+          <div style="font-size:.78rem;color:var(--muted);">AI analyses 12-month payment history, sibling records &amp; seasonal patterns.</div>
+        </div>
+        <select id="monthSel" class="btn btn-outline btn-sm" style="cursor:pointer;">
+          <option value="June 2026">Forecast for June 2026</option>
+          <option value="July 2026">Forecast for July 2026</option>
+          <option value="August 2026">Forecast for August 2026</option>
+        </select>
+        <button class="btn btn-ai" id="runBtn" onclick="runForecast()">✨ Run AI Forecast</button>
+      </div>
+    </div>
+
+    <div class="card" id="emptyState" style="padding:0;">
+      <div style="padding:60px 20px;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:14px;opacity:.5;">📉</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1.05rem;font-weight:700;color:var(--ink-2);margin-bottom:6px;">No forecast run yet</div>
+        <div style="font-size:.85rem;color:var(--muted);max-width:390px;margin:0 auto;">Pick a month and click <strong>Run AI Forecast</strong>. The model scores each family's probability of defaulting on the next fee cycle.</div>
+      </div>
+    </div>
+
+    <div class="card ai-analyzing" id="analyzing" style="padding:0;">
+      <div class="ai-brain">💰</div>
+      <div class="ai-analyzing-title">AI is forecasting <span id="anMonth">June 2026</span>…</div>
+      <div style="margin:18px 0 4px;">
+        <div class="ai-step" id="step1"><span class="ai-step-ic">🗂️</span> Loading 12-month payment ledger</div>
+        <div class="ai-step" id="step2"><span class="ai-step-ic">👨‍👩‍👧</span> Linking sibling &amp; family accounts</div>
+        <div class="ai-step" id="step3"><span class="ai-step-ic">📅</span> Detecting seasonal late-payment patterns</div>
+        <div class="ai-step" id="step4"><span class="ai-step-ic">🧮</span> Scoring default probability (logistic model)</div>
+        <div class="ai-step" id="step5"><span class="ai-step-ic">✅</span> Drafting reminder recommendations</div>
+      </div>
+      <div class="ai-progress-track"><div class="ai-progress-fill" id="progFill"></div></div>
+      <div class="ai-progress-pct" id="progPct">0%</div>
+    </div>
+
+    <div class="ai-results" id="results">
+
+      <div class="fee-summary">
+        <div class="fee-stat fs-high"><div class="fee-stat-num" id="cHigh">0</div><div class="fee-stat-lbl">High Risk Families</div></div>
+        <div class="fee-stat fs-over"><div class="fee-stat-num" id="cOver">৳0</div><div class="fee-stat-lbl">Projected Overdue</div></div>
+        <div class="fee-stat fs-prev"><div class="fee-stat-num">৳19K</div><div class="fee-stat-lbl">Prevented Last Month</div></div>
+        <div class="fee-stat fs-acc"><div class="fee-stat-num">91%</div><div class="fee-stat-lbl">Model Confidence</div></div>
+      </div>
+
+      <div class="ai-insight">
+        <div class="ai-insight-ic">💡</div>
+        <div>
+          <div class="ai-insight-title">AI Recommendation</div>
+          <div class="ai-insight-txt" id="aiInsight">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="card-title">Default Probability — <span id="resMonth">June 2026</span></div>
+            <div class="card-sub">Sorted by risk · forecast generated just now by AI</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-danger btn-sm" id="remindBtn" onclick="sendReminders()">📲 Send Reminders</button>
+            <button class="btn btn-outline btn-sm" onclick="exportReport()">📊 Export Report</button>
+          </div>
+        </div>
+        <div id="feeList"></div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ── Demo family payment data per month ───────────────────────────
+const DATA = {
+  'June 2026': [
+    { name:'Karim Uddin',  child:'Rahim Ahmed · 9A',  due:2400, missed:3, late:2, lastPaid:1, reason:'Missed 3 of last 6 months', color:'#EF4444' },
+    { name:'Nasrin Begum', child:'Priya Das · 9A',    due:2400, missed:1, late:4, lastPaid:0, reason:'Usually pays late in June (last 3 yrs)', color:'#F59E0B' },
+    { name:'Sumon Islam',  child:'Sumon Islam · 9A',  due:2200, missed:2, late:1, lastPaid:2, reason:'Last payment 2 months ago', color:'#8B5CF6' },
+    { name:'Abdul Haque',  child:'Jahid Hasan · 9A',  due:2400, missed:1, late:2, lastPaid:1, reason:'Recent payment delays, 2 children', color:'#0EA5E9' },
+    { name:'Shahida Akter',child:'Fatima · 9A',       due:2200, missed:0, late:2, lastPaid:0, reason:'Occasional 1-week delay', color:'#EC4899' },
+    { name:'Rahim Ahmed Sr',child:'Nadia Hossain · 9A',due:2400,missed:0, late:0, lastPaid:0, reason:'Always pays on time', color:'#10B981' },
+  ],
+  'July 2026': [
+    { name:'Jalal Mia',    child:'Imran · 10A',  due:2600, missed:4, late:1, lastPaid:2, reason:'4 missed payments this year', color:'#EF4444' },
+    { name:'Roksana Khatun',child:'Nusrat · 10A',due:2600, missed:2, late:3, lastPaid:1, reason:'Inconsistent payment pattern', color:'#F59E0B' },
+    { name:'Forhad Hossain',child:'Arif · 10A',  due:2600, missed:1, late:2, lastPaid:0, reason:'Pays late after Eid holidays', color:'#8B5CF6' },
+    { name:'Bilkis Banu',  child:'Tania · 10A',  due:2400, missed:0, late:1, lastPaid:0, reason:'Reliable, rare delays', color:'#10B981' },
+  ],
+  'August 2026': [
+    { name:'Mosharraf H.', child:'Joy Barua · 8B',  due:2000, missed:3, late:2, lastPaid:1, reason:'Seasonal income drop in August', color:'#EF4444' },
+    { name:'Salma Begum',  child:'Mitu · 8B',       due:2000, missed:1, late:3, lastPaid:1, reason:'Multiple children, tight budget', color:'#F59E0B' },
+    { name:'Anwar Hossain',child:'Hasan · 8B',      due:2200, missed:0, late:1, lastPaid:0, reason:'Generally on time', color:'#10B981' },
+  ],
+};
+
+function computeRisk(f) {
+  // Weighted: missed 14pts each, late 6pts, recency 9pts each month
+  const score = f.missed * 14 + f.late * 6 + f.lastPaid * 9;
+  return Math.round(Math.min(94, Math.max(4, score)));
+}
+function statusFor(r) {
+  if (r >= 70) return { txt:'SMS sent ✓',     cls:'st-sent' };
+  if (r >= 55) return { txt:'Reminder pending',cls:'st-pending' };
+  if (r >= 30) return { txt:'Monitoring',       cls:'st-monitor' };
+  return { txt:'No action',     cls:'st-ok' };
+}
+function fillFor(r) {
+  if (r >= 70) return { f:'linear-gradient(90deg,#EF4444,#DC2626)', c:'#DC2626' };
+  if (r >= 45) return { f:'linear-gradient(90deg,#F59E0B,#D97706)', c:'#D97706' };
+  return { f:'linear-gradient(90deg,#10B981,#059669)', c:'#059669' };
+}
+
+const STEPS = ['step1','step2','step3','step4','step5'];
+let lastResults = [];
+
+function runForecast() {
+  const m = document.getElementById('monthSel').value;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('anMonth').textContent = m;
+
+  document.getElementById('analyzing').classList.add('show');
+  STEPS.forEach(id => document.getElementById(id).className = 'ai-step');
+  const fill = document.getElementById('progFill'), pct = document.getElementById('progPct');
+  fill.style.width = '0%'; pct.textContent = '0%';
+
+  let stepIdx = 0, progress = 0;
+  (function nextStep() {
+    if (stepIdx > 0) document.getElementById(STEPS[stepIdx-1]).className = 'ai-step done';
+    if (stepIdx < STEPS.length) {
+      document.getElementById(STEPS[stepIdx]).className = 'ai-step active';
+      stepIdx++;
+      setTimeout(nextStep, 520 + Math.random() * 280);
+    }
+  })();
+
+  const prog = setInterval(() => {
+    progress += Math.random() * 9 + 3;
+    if (progress >= 100) { progress = 100; clearInterval(prog); finish(m); }
+    fill.style.width = progress + '%';
+    pct.textContent = Math.round(progress) + '%';
+  }, 130);
+}
+
+function finish(m) {
+  setTimeout(() => {
+    document.getElementById('analyzing').classList.remove('show');
+    renderResults(m);
+    document.getElementById('results').classList.add('show');
+    document.getElementById('runBtn').disabled = false;
+    toast('AI forecast complete ✓', '💰');
+  }, 400);
+}
+
+function renderResults(m) {
+  const fams = DATA[m].map(f => ({ ...f, risk: computeRisk(f) })).sort((a,b) => b.risk - a.risk);
+  lastResults = fams;
+
+  let high = 0, overdue = 0;
+  fams.forEach(f => { if (f.risk >= 55) { high++; overdue += Math.round(f.due * f.risk / 100); } });
+
+  document.getElementById('cHigh').textContent = high;
+  document.getElementById('cOver').textContent = '৳' + (overdue >= 1000 ? (overdue/1000).toFixed(0)+'K' : overdue);
+  document.getElementById('resMonth').textContent = m;
+
+  const top = fams[0];
+  document.getElementById('aiInsight').innerHTML =
+    `<strong>${high} families</strong> show elevated default risk for ${m}, projecting <strong>৳${(overdue/1000).toFixed(0)}K</strong> in potential overdue fees. ` +
+    `<strong>${top.name}</strong> is highest at <strong>${top.risk}%</strong> — ${top.reason.toLowerCase()}. ` +
+    `Sending early SMS reminders now typically recovers <strong>~60%</strong> of at-risk fees before the due date.`;
+
+  const list = document.getElementById('feeList');
+  list.innerHTML = '';
+  fams.forEach((f, i) => {
+    const st = statusFor(f.risk), fl = fillFor(f.risk);
+    const init = f.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+    const row = document.createElement('div');
+    row.className = 'fp-row';
+    row.innerHTML = `
+      <div class="fp-av" style="background:${f.color}">${init}</div>
+      <div class="fp-info">
+        <div class="fp-name">${f.name}</div>
+        <div class="fp-meta">${f.child}</div>
+      </div>
+      <div class="fp-reason">${f.reason} · <span class="fp-amt">৳${f.due.toLocaleString()}</span> due</div>
+      <div class="fp-track"><div class="fp-fill" style="background:${fl.f}"></div></div>
+      <div class="fp-pct" style="color:${fl.c}">${f.risk}%</div>
+      <span class="fp-status ${st.cls}">${st.txt}</span>`;
+    list.appendChild(row);
+    setTimeout(() => { row.querySelector('.fp-fill').style.width = f.risk + '%'; }, 80 + i * 70);
+  });
+
+  document.getElementById('remindBtn').textContent = `📲 Send ${high} Reminder${high!==1?'s':''}`;
+}
+
+function sendReminders() {
+  const high = lastResults.filter(f => f.risk >= 55).length;
+  toast(`📲 Fee reminder SMS queued for ${high} famil${high!==1?'ies':'y'}`, '📲');
+}
+function exportReport() {
+  toast('📊 Generating fee forecast report…', '📊');
+  setTimeout(() => toast('Report downloaded ✓', '✅'), 1100);
+}
+
+function toast(msg, icon) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${icon||'✓'}</span> ${msg}`;
+  document.getElementById('toastStack').appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="admin-shell.js"></script>
+</body>
+</html>

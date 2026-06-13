@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+.profile-hero{background:linear-gradient(135deg,#1E0A3C 0%,#4C1D95 50%,#7C3AED 100%);border-radius:16px;padding:28px 32px;color:#fff;display:flex;align-items:center;gap:24px;margin-bottom:22px;position:relative;overflow:hidden;}
+.profile-hero::before{content:'';position:absolute;right:-30px;top:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);}
+.ph-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;border:3px solid rgba(255,255,255,.4);flex-shrink:0;}
+.ph-name{font-size:1.4rem;font-weight:900;margin-bottom:3px;}
+.ph-id{font-size:.8rem;opacity:.7;margin-bottom:10px;}
+.ph-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.ph-tag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 12px;font-size:.74rem;font-weight:700;}
+
+.info-row{display:flex;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-label{font-size:.78rem;font-weight:700;color:var(--muted);min-width:170px;flex-shrink:0;}
+.info-value{font-size:.86rem;font-weight:600;color:var(--ink-2);flex:1;}
+.info-edit{font-size:.75rem;color:var(--stu);font-weight:700;cursor:pointer;text-decoration:underline;}
+
+.stat-pill{background:var(--stu-pale);border:1.5px solid #DDD6FE;border-radius:12px;padding:14px 18px;text-align:center;}
+.sp-num{font-size:1.4rem;font-weight:900;color:var(--stu);font-family:'DM Mono',monospace;}
+.sp-lbl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:3px;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header" style="margin-bottom:18px;">
+      <div>
+        <div class="page-eyebrow">👤 Account</div>
+        <div class="page-title">My Profile</div>
+        <div class="page-sub">Your personal information, academic details, and parent contact.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--stu);" onclick="showToast('Profile saved','✅')">💾 Save Changes</button>
+      </div>
+    </div>
+
+    <!-- Profile hero -->
+    <div class="profile-hero anim-1">
+      <div class="ph-avatar">FI</div>
+      <div>
+        <div class="ph-name">Farhan Islam</div>
+        <div class="ph-id">Student ID: STU-2024-001 · Session 2026–27</div>
+        <div class="ph-tags">
+          <div class="ph-tag">📚 Class IX–A (Science)</div>
+          <div class="ph-tag">🏷️ Roll 001</div>
+          <div class="ph-tag">🏆 Class Rank #1</div>
+          <div class="ph-tag">✅ Active</div>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);" onclick="showToast('Photo upload coming soon','📷')">📷 Change Photo</button>
+        <button class="btn" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);" onclick="showToast('ID Card downloading…','🪪')">🪪 Download ID Card</button>
+      </div>
+    </div>
+
+    <!-- Stat pills -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;" class="anim-1">
+      <div class="stat-pill"><div class="sp-num">94%</div><div class="sp-lbl">Attendance</div></div>
+      <div class="stat-pill"><div class="sp-num">5.00</div><div class="sp-lbl">Latest GPA</div></div>
+      <div class="stat-pill"><div class="sp-num">#1</div><div class="sp-lbl">Class Rank</div></div>
+      <div class="stat-pill"><div class="sp-num">৳0</div><div class="sp-lbl">Due Balance</div></div>
+    </div>
+
+    <div class="grid-2 anim-2" style="gap:20px;align-items:start;">
+      <!-- Personal info -->
+      <div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title" style="margin-bottom:16px;">🧑 Personal Information</div>
+          <div class="info-row"><div class="info-label">Full Name</div><div class="info-value">Farhan Islam</div><div class="info-edit" onclick="showToast('Name update requires admin approval','ℹ️')">Request Change</div></div>
+          <div class="info-row"><div class="info-label">Date of Birth</div><div class="info-value">March 14, 2010</div><div class="info-edit" onclick="showToast('DOB change requires admin','ℹ️')">Request Change</div></div>
+          <div class="info-row"><div class="info-label">Gender</div><div class="info-value">Male</div></div>
+          <div class="info-row"><div class="info-label">Blood Group</div><div class="info-value"><select class="form-select" style="width:120px;padding:4px 8px;font-size:.82rem;"><option selected>B+</option><option>A+</option><option>O+</option><option>AB+</option></select></div></div>
+          <div class="info-row"><div class="info-label">Religion</div><div class="info-value">Islam</div></div>
+          <div class="info-row"><div class="info-label">Nationality</div><div class="info-value">Bangladeshi</div></div>
+          <div class="info-row"><div class="info-label">NID / Birth Cert.</div><div class="info-value">19100334512700012</div></div>
+        </div>
+
+        <div class="card" style="padding:20px 24px;margin-top:16px;">
+          <div class="card-title" style="margin-bottom:16px;">📍 Address & Contact</div>
+          <div class="info-row"><div class="info-label">Current Address</div><input type="text" class="form-input" value="42/3, Mirpur Road, Dhaka" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Permanent Address</div><input type="text" class="form-input" value="Village: Kaliganj, Gazipur" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Student Email</div><input type="email" class="form-input" value="farhan.islam@stu.dhaka-hs.edu.bd" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Phone (Self)</div><input type="text" class="form-input" value="+880-1711-000001" style="flex:1;font-size:.83rem;"></div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Academic info -->
+        <div class="card" style="padding:20px 24px;margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:16px;">📚 Academic Details</div>
+          <div class="info-row"><div class="info-label">Student ID</div><div class="info-value">STU-2024-001</div></div>
+          <div class="info-row"><div class="info-label">Class</div><div class="info-value">Class IX–A (Science)</div></div>
+          <div class="info-row"><div class="info-label">Roll Number</div><div class="info-value">001</div></div>
+          <div class="info-row"><div class="info-label">Section</div><div class="info-value">A</div></div>
+          <div class="info-row"><div class="info-label">Group</div><div class="info-value">Science</div></div>
+          <div class="info-row"><div class="info-label">Admission Date</div><div class="info-value">January 5, 2024</div></div>
+          <div class="info-row"><div class="info-label">Class Teacher</div><div class="info-value">Ms. Nasrin Begum</div></div>
+          <div class="info-row"><div class="info-label">Session</div><div class="info-value">2024–25</div></div>
+        </div>
+
+        <!-- Parent info -->
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title" style="margin-bottom:16px;">👨‍👩‍👧 Parent / Guardian</div>
+          <div class="info-row"><div class="info-label">Father's Name</div><div class="info-value">Md. Rezaul Islam</div></div>
+          <div class="info-row"><div class="info-label">Father's Phone</div><input type="text" class="form-input" value="+880-1712-000002" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Mother's Name</div><div class="info-value">Mrs. Rashida Begum</div></div>
+          <div class="info-row"><div class="info-label">Mother's Phone</div><input type="text" class="form-input" value="+880-1713-000003" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Parent Email</div><input type="email" class="form-input" value="rezaul.parent@gmail.com" style="flex:1;font-size:.83rem;"></div>
+          <div class="info-row"><div class="info-label">Occupation</div><div class="info-value">Business (Father) · Homemaker (Mother)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg, icon='✅') {
+  const s = document.getElementById('toastStack');
+  const t = document.createElement('div'); t.className = 'toast';
+  t.innerHTML = `<span>${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

@@ -1,0 +1,487 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contest Registration &middot; EduOS National Contest</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--con:#1D4ED8;--con-light:#DBEAFE;--con-pale:#EFF6FF;--con-dark:#1E3A8A;--gold:#F59E0B;}
+.sidebar{background:linear-gradient(180deg,#0F1E4A 0%,#1E3A8A 100%);}
+.sb-link.active{background:rgba(29,78,216,.3);color:#93C5FD;}
+.sb-link.active .sb-icon{background:rgba(29,78,216,.4);color:#60A5FA;}
+.sb-link:hover{background:rgba(255,255,255,.08);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--gold);}
+
+/* Step wizard */
+.wizard-bar{display:flex;align-items:center;padding:18px 28px;border-bottom:1px solid var(--border);background:var(--bg);gap:0;}
+.wz-step{display:flex;align-items:center;gap:8px;flex:1;}
+.wz-num{width:32px;height:32px;border-radius:50%;border:2.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;flex-shrink:0;transition:all .2s;background:var(--white);color:var(--muted);}
+.wz-num.done{background:var(--con);border-color:var(--con);color:#fff;}
+.wz-num.active{border-color:var(--con);color:var(--con);box-shadow:0 0 0 4px var(--con-light);}
+.wz-lbl{font-size:.78rem;font-weight:700;color:var(--muted);}
+.wz-lbl.active,.wz-lbl.done{color:var(--ink-2);}
+.wz-conn{flex:1;height:2px;background:var(--border);margin:0 8px;transition:background .2s;}
+.wz-conn.done{background:var(--con);}
+
+/* Contest picker card */
+.contest-pick-card{border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .15s;background:var(--white);display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+.contest-pick-card:hover{border-color:var(--con);background:var(--con-pale);}
+.contest-pick-card.sel{border-color:var(--con);background:var(--con-pale);box-shadow:0 0 0 3px var(--con-light);}
+.cpc-emoji{font-size:1.6rem;flex-shrink:0;}
+.cpc-title{font-size:.88rem;font-weight:800;color:var(--ink-2);}
+.cpc-org{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.cpc-deadline{font-size:.72rem;font-weight:700;color:var(--red);margin-top:4px;}
+.cpc-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:3px;transition:all .12s;display:flex;align-items:center;justify-content:center;}
+.contest-pick-card.sel .cpc-radio{border-color:var(--con);background:var(--con);}
+.contest-pick-card.sel .cpc-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:#fff;}
+
+/* Student entry row */
+.student-entry{border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--white);margin-bottom:10px;position:relative;}
+.student-entry.filled{border-color:var(--con);background:var(--con-pale);}
+.se-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.se-label{font-size:.8rem;font-weight:800;color:var(--ink-2);}
+.se-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:2px;transition:color .1s;}
+.se-remove:hover{color:var(--red);}
+.se-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.se-filled-preview{display:flex;align-items:center;gap:10px;}
+.se-av{width:32px;height:32px;border-radius:50%;background:var(--con);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;flex-shrink:0;}
+
+/* Add student btn */
+.add-student-btn{border:2px dashed var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;background:transparent;width:100%;font-size:.82rem;font-weight:700;color:var(--muted);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.add-student-btn:hover{border-color:var(--con);color:var(--con);background:var(--con-pale);}
+
+/* Consent checkbox area */
+.consent-box{background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.consent-item{display:flex;gap:10px;padding:6px 0;}
+.consent-cb{width:18px;height:18px;border-radius:4px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.consent-txt{font-size:.8rem;color:var(--ink-2);line-height:1.5;}
+
+/* Fee summary */
+.fee-box{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1.5px solid var(--con-light);border-radius:12px;padding:16px 18px;}
+.fee-row{display:flex;justify-content:space-between;font-size:.84rem;padding:5px 0;}
+.fee-row.total{font-size:.96rem;font-weight:900;padding-top:10px;border-top:2px solid var(--con-light);}
+
+/* Submit success overlay */
+.suc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;}
+.suc-overlay.show{display:flex;}
+.suc-box{background:var(--white);border-radius:20px;padding:40px 36px;max-width:460px;width:90%;text-align:center;animation:pop .3s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.suc-confetti{font-size:3.5rem;margin-bottom:14px;}
+
+/* Review section */
+.review-section{background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.review-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.review-row{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.review-row:last-child{border-bottom:none;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <!-- Wizard bar -->
+  <div class="wizard-bar">
+    <div class="wz-step"><div class="wz-num active" id="wn1">1</div><div class="wz-lbl active" id="wl1">Select Contest</div></div>
+    <div class="wz-conn" id="wc1"></div>
+    <div class="wz-step"><div class="wz-num" id="wn2">2</div><div class="wz-lbl" id="wl2">School Details</div></div>
+    <div class="wz-conn" id="wc2"></div>
+    <div class="wz-step"><div class="wz-num" id="wn3">3</div><div class="wz-lbl" id="wl3">Add Students</div></div>
+    <div class="wz-conn" id="wc3"></div>
+    <div class="wz-step"><div class="wz-num" id="wn4">4</div><div class="wz-lbl" id="wl4">Review &amp; Pay</div></div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Step 1: Select Contest -->
+    <div id="panel1">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div>
+          <div class="page-header" style="margin-bottom:18px;">
+            <div><div class="page-eyebrow">Step 1 of 4</div><div class="page-title">Select a Contest</div><div class="page-sub">Choose the competition you want to register Dhaka High School for.</div></div>
+          </div>
+          <div id="contestPickList"></div>
+        </div>
+        <div class="card anim-1" style="padding:16px 18px;">
+          <div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;"> Registration Guide</div>
+          <div style="font-size:.78rem;color:var(--ink-2);line-height:1.8;">
+            <div style="margin-bottom:6px;">Select a contest from the list</div>
+            <div style="margin-bottom:6px;">Verify your school details</div>
+            <div style="margin-bottom:6px;">Add eligible students (per contest rules)</div>
+            <div style="margin-bottom:6px;">Pay registration fee (if applicable)</div>
+            <div style="margin-bottom:6px;">Receive confirmation via email + SMS</div>
+          </div>
+          <div style="margin-top:14px;background:var(--gold-light,#FEF3C7);border-radius:8px;padding:10px 12px;font-size:.76rem;color:#92400E;line-height:1.6;border:1px solid #FDE68A;">
+            <strong>Note:</strong> Students must be enrolled in your school and meet the class eligibility criteria to participate.
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+        <button class="btn btn-primary" style="background:var(--con);border-color:var(--con);padding:10px 24px;" onclick="goWizard(2)">Continue &middot;</button>
+      </div>
+    </div>
+
+    <!-- Step 2: School Details -->
+    <div id="panel2" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title"> School Details</div><div class="card-sub">Verify your school information for the official registration certificate</div></div>
+          <div style="padding:20px 24px;">
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <label class="form-label">School Full Name</label>
+                <input type="text" class="form-input" value="Dhaka High School and College">
+              </div>
+              <div class="form-group">
+                <label class="form-label">EIIN Number</label>
+                <input type="text" class="form-input" value="108765" readonly style="background:var(--bg);cursor:not-allowed;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">District</label>
+                <select class="form-select"><option selected>Dhaka</option><option>Chattogram</option><option>Sylhet</option><option>Rajshahi</option><option>Khulna</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Division</label>
+                <select class="form-select"><option selected>Dhaka Division</option><option>Chattogram Division</option><option>Sylhet Division</option><option>Rajshahi Division</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">School Type</label>
+                <select class="form-select"><option selected>High School & College</option><option>High School</option><option>Junior School</option><option>Madrasah</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Principal Name</label>
+                <input type="text" class="form-input" value="Prof. Rahman Abdul">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Principal Phone</label>
+                <input type="text" class="form-input" value="01711-555000">
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">School Address</label>
+                <input type="text" class="form-input" value="Road 12, Dhanmondi, Dhaka-1205">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Teacher Name</label>
+                <input type="text" class="form-input" placeholder="Teacher coordinating this contest">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Teacher Phone</label>
+                <input type="text" class="form-input" placeholder="01XXXXXXXXX">
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-outline" onclick="goWizard(1)">Back</button>
+            <button class="btn btn-primary" style="background:var(--con);border-color:var(--con);" onclick="goWizard(3)">Continue &middot;</button>
+          </div>
+        </div>
+        <div id="sideContest" class="card anim-1" style="padding:16px 18px;"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Add Students -->
+    <div id="panel3" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div>
+          <div class="page-header" style="margin-bottom:16px;">
+            <div><div class="page-eyebrow">Step 3 of 4</div><div class="page-title">Add Participating Students</div><div id="slotsLabel" class="page-sub">Select up to 3 students from your school for this contest.</div></div>
+          </div>
+          <div id="studentSlots"></div>
+          <button class="add-student-btn" id="addStudentBtn" onclick="addStudentSlot()">+ Add Another Student</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div id="sideContest3" class="card anim-1" style="padding:16px 18px;"></div>
+          <div class="card anim-2" style="padding:14px 16px;background:var(--con-pale);border-color:var(--con-light);">
+            <div style="font-size:.76rem;font-weight:700;color:var(--con-dark);margin-bottom:8px;"> Eligibility Rules</div>
+            <div style="font-size:.76rem;color:var(--con-dark);line-height:1.8;" id="eligRules">Loading&middot;</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:18px;">
+        <button class="btn btn-outline" onclick="goWizard(2)">Back</button>
+        <button class="btn btn-primary" style="background:var(--con);border-color:var(--con);padding:10px 24px;" onclick="goWizard(4)">Continue to Review &middot;</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Review & Pay -->
+    <div id="panel4" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;">
+        <div class="card anim-1">
+          <div class="card-header"><div class="card-title">Review Registration</div><div class="card-sub">Please verify all details before submitting</div></div>
+          <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;">
+
+            <div class="review-section">
+              <div class="review-label"> Contest</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:1.4rem;" id="rev-emoji"></span>
+                <div><div style="font-size:.9rem;font-weight:800;color:var(--ink);" id="rev-name">National Science Olympiad</div>
+                <div style="font-size:.76rem;color:var(--muted);" id="rev-org">Bangladesh Academy of Sciences</div></div>
+              </div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-label"> School</div>
+              <div class="review-row"><span style="color:var(--muted);font-size:.8rem;min-width:120px;">Name</span><span style="font-size:.82rem;font-weight:700;">Dhaka High School and College</span></div>
+              <div class="review-row"><span style="color:var(--muted);font-size:.8rem;min-width:120px;">EIIN</span><span style="font-size:.82rem;font-weight:700;font-family:'DM Mono',monospace;">108765</span></div>
+              <div class="review-row"><span style="color:var(--muted);font-size:.8rem;min-width:120px;">District</span><span style="font-size:.82rem;font-weight:700;">Dhaka</span></div>
+              <div class="review-row"><span style="color:var(--muted);font-size:.8rem;min-width:120px;">Contact Teacher</span><span style="font-size:.82rem;font-weight:700;">Dr. Karim Hossain</span></div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-label"> Students (<span id="rev-count">2</span>)</div>
+              <div id="rev-students"></div>
+            </div>
+
+            <div class="consent-box">
+              <div class="consent-item">
+                <input type="checkbox" class="consent-cb" id="cb1" onchange="checkConsents()">
+                <div class="consent-txt">I confirm all student information is accurate and students have consent from their parents/guardians to participate.</div>
+              </div>
+              <div class="consent-item">
+                <input type="checkbox" class="consent-cb" id="cb2" onchange="checkConsents()">
+                <div class="consent-txt">I agree to the contest rules and code of conduct. Students found violating rules will be disqualified.</div>
+              </div>
+              <div class="consent-item">
+                <input type="checkbox" class="consent-cb" id="cb3" onchange="checkConsents()">
+                <div class="consent-txt">I acknowledge that photos and results may be published by the organising body for promotional purposes.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-outline" onclick="goWizard(3)">Back</button>
+            <button class="btn btn-primary" id="submitBtn" style="background:var(--border);border-color:var(--border);cursor:not-allowed;opacity:.6;" disabled onclick="submitRegistration()"> Submit Registration</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="fee-box anim-1">
+            <div style="font-size:.76rem;font-weight:700;color:var(--con-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">&#x1F4B0; Fee Summary</div>
+            <div class="fee-row"><span style="color:var(--muted);">Registration fee / student</span><span style="font-family:'DM Mono',monospace;font-weight:700;">200</span></div>
+            <div class="fee-row"><span style="color:var(--muted);">Students</span><span style="font-family:'DM Mono',monospace;font-weight:700;" id="rev-fee-count">2</span></div>
+            <div class="fee-row"><span style="color:var(--muted);">Processing fee</span><span style="font-family:'DM Mono',monospace;font-weight:700;">50</span></div>
+            <div class="fee-row total"><span>Total</span><span style="color:var(--con);font-family:'DM Mono',monospace;" id="rev-total">450</span></div>
+          </div>
+          <div class="card anim-2" style="padding:14px 16px;">
+            <div style="font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;"> Pay via</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--ink-2);">
+                <input type="radio" name="payway" value="bkash" checked>  bKash
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--ink-2);">
+                <input type="radio" name="payway" value="nagad">  Nagad
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--ink-2);">
+                <input type="radio" name="payway" value="bank">  Bank Transfer
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--ink-2);">
+                <input type="radio" name="payway" value="free"> Free Contest
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Success overlay -->
+<div class="suc-overlay" id="sucOverlay">
+  <div class="suc-box">
+    <div class="suc-confetti"></div>
+    <div style="font-size:1.4rem;font-weight:900;color:var(--ink);margin-bottom:6px;">Registration Successful!</div>
+    <div style="font-size:.86rem;color:var(--muted);margin-bottom:16px;">Dhaka High School has been registered for the contest.</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.82rem;background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+      Reg. No: <strong id="regNo">NSO-2025-DHA-108765</strong>
+    </div>
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:20px;">&#x26A0;&#xFE0F; Confirmation sent to principal@dhakahigh.edu.bd<br> SMS sent to 01711-555000</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <a href="contest-leaderboard.html" class="btn btn-primary" style="background:var(--con);border-color:var(--con);"> View Leaderboard</a>
+      <a href="contest-listing.html" class="btn btn-outline">Browse More Contests</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const contests=[
+  {id:'NSO25',name:'National Science Olympiad 2025',org:'Bangladesh Academy of Sciences',emoji:'',deadline:'Mar 5, 2025',daysLeft:9,prize:'৳2,00,000',slots:3,fee:200,rules:'Class VIII&middot;X only &middot; Science stream students &middot; Individual participation &middot; MCQ + Written rounds &middot; Max 3 students per school'},
+  {id:'BDM25',name:'BDMath Challenge 2025',org:'Bangladesh Mathematical Society',emoji:'',deadline:'Mar 6, 2025',daysLeft:10,prize:'৳1,50,000',slots:3,fee:200,rules:'Class VI&middot;XII &middot; Any stream &middot; Individual participation &middot; MCQ + Written &middot; Max 3 students per school'},
+  {id:'BDICS25',name:'National ICT Showcase 2025',org:'ICT Division, Bangladesh',emoji:'',deadline:'Mar 20, 2025',daysLeft:24,prize:'৳3,00,000',slots:5,fee:150,rules:'All classes eligible &middot; Team or individual &middot; Submit project prototype &middot; Max 5 entries per school'},
+  {id:'BDCHEM25',name:'Chemistry Quiz Bangladesh 2025',org:'Bangladesh Chemical Society',emoji:'',deadline:'Apr 22, 2025',daysLeft:57,prize:'৳90,000',slots:3,fee:200,rules:'Class IX&middot;XII only &middot; Science stream &middot; Written + lab practical &middot; Max 3 students per school'},
+];
+
+const schoolStudents=[
+  {id:1,name:'Farhan Islam',roll:'001',cls:'IX&middot;A',id_no:'STU-2024-001'},
+  {id:2,name:'Rahela Khatun',roll:'002',cls:'IX&middot;A',id_no:'STU-2024-002'},
+  {id:3,name:'Arif Hossain',roll:'003',cls:'IX&middot;A',id_no:'STU-2024-003'},
+  {id:4,name:'Sumaiya Begum',roll:'004',cls:'IX&middot;A',id_no:'STU-2024-004'},
+  {id:5,name:'Tanvir Ahmed',roll:'005',cls:'IX&middot;A',id_no:'STU-2024-005'},
+  {id:6,name:'Nusrat Jahan',roll:'001',cls:'X&middot;A',id_no:'STU-2023-001'},
+  {id:7,name:'Karim Uddin',roll:'002',cls:'X&middot;A',id_no:'STU-2023-002'},
+  {id:8,name:'Mithila Roy',roll:'003',cls:'X&middot;A',id_no:'STU-2023-003'},
+];
+
+let selectedContest='NSO25';
+let studentSlots=[{filled:false,student:null},{filled:true,student:schoolStudents[0]}];
+let currentStep=1;
+
+// Build contest picker
+document.getElementById('contestPickList').innerHTML=contests.map(c=>`
+  <div class="contest-pick-card ${c.id===selectedContest?'sel':''}" id="cpc-${c.id}" onclick="selectContest('${c.id}')">
+    <div class="cpc-radio" id="cpr-${c.id}"></div>
+    <div class="cpc-emoji">${c.emoji}</div>
+    <div style="flex:1;">
+      <div class="cpc-title">${c.name}</div>
+      <div class="cpc-org">${c.org}</div>
+      <div class="cpc-deadline">Closes ${c.deadline} (${c.daysLeft} days left)</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;">
+      <div style="font-size:.78rem;font-weight:800;color:var(--gold);">${c.prize}</div>
+      <div style="font-size:.68rem;color:var(--muted);">Max ${c.slots} students</div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--con);">Fee: ?${c.fee}/student</div>
+    </div>
+  </div>`).join('');
+
+function selectContest(id){
+  selectedContest=id;
+  document.querySelectorAll('.contest-pick-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('cpc-'+id).classList.add('sel');
+}
+
+function contestSideHTML(){
+  const c=contests.find(x=>x.id===selectedContest);
+  if(!c)return'';
+  return`<div style="font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Selected Contest</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:1.6rem;">${c.emoji}</span>
+      <div><div style="font-size:.88rem;font-weight:800;color:var(--ink);">${c.name}</div><div style="font-size:.72rem;color:var(--muted);">${c.org}</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.78rem;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Deadline</span><span style="font-weight:700;color:var(--red);">${c.deadline}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Max Students</span><span style="font-weight:700;">${c.slots}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Prize Pool</span><span style="font-weight:700;color:var(--gold);">${c.prize}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Fee / Student</span><span style="font-weight:700;">${c.fee}</span></div>
+    </div>`;
+}
+
+function goWizard(n){
+  currentStep=n;
+  [1,2,3,4].forEach(s=>{
+    document.getElementById('panel'+s).style.display=s===n?'block':'none';
+    const numEl=document.getElementById('wn'+s);
+    const lblEl=document.getElementById('wl'+s);
+    numEl.className='wz-num'+(s<n?' done':s===n?' active':'');
+    lblEl.className='wz-lbl'+(s<=n?' active':'');
+    if(s<n)numEl.textContent='&#x2705;';else numEl.textContent=s;
+    const con=document.getElementById('wc'+s);
+    if(con)con.className='wz-conn'+(s<n?' done':'');
+  });
+
+  const c=contests.find(x=>x.id===selectedContest)||contests[0];
+  if(n===2){
+    document.getElementById('sideContest').innerHTML=contestSideHTML();
+  }
+  if(n===3){
+    document.getElementById('sideContest3').innerHTML=contestSideHTML();
+    document.getElementById('slotsLabel').textContent=`Select up to ${c.slots} students from your school for this contest.`;
+    document.getElementById('eligRules').innerHTML=c.rules.split('&middot;').map(r=>`<div>${r.trim()}</div>`).join('');
+    renderStudentSlots();
+  }
+  if(n===4){
+    renderReview();
+    checkConsents();
+  }
+}
+
+function renderStudentSlots(){
+  const c=contests.find(x=>x.id===selectedContest)||contests[0];
+  const slotsHTML=studentSlots.map((slot,idx)=>`
+    <div class="student-entry ${slot.filled?'filled':''}" id="slot-${idx}">
+      <div class="se-header">
+        <div class="se-label">Student ${idx+1}</div>
+        ${idx>0?`<button class="se-remove" onclick="removeSlot(${idx})">Remove</button>`:''}
+      </div>
+      ${slot.filled
+        ?`<div class="se-filled-preview">
+            <div class="se-av" style="background:var(--con);">${slot.student.name[0]}</div>
+            <div><div style="font-size:.86rem;font-weight:800;color:var(--ink-2);">${slot.student.name}</div>
+            <div style="font-size:.72rem;color:var(--muted);">Class ${slot.student.cls} &middot; Roll ${slot.student.roll} &middot; ${slot.student.id_no}</div></div>
+            <button class="btn btn-sm btn-ghost" style="margin-left:auto;font-size:.72rem;" onclick="clearSlot(${idx})">Change</button>
+          </div>`
+        :`<div class="se-grid">
+            <select class="form-select span-3" style="grid-column:1/-1;" onchange="fillSlot(${idx},this.value)">
+              <option value="">&middot; Select student &middot;</option>
+              ${schoolStudents.map(s=>`<option value="${s.id}">${s.name} &middot; Class ${s.cls} &middot; Roll ${s.roll}</option>`).join('')}
+            </select>
+          </div>`
+      }
+    </div>`).join('');
+  document.getElementById('studentSlots').innerHTML=slotsHTML;
+  document.getElementById('addStudentBtn').style.display=studentSlots.length>=c.slots?'none':'flex';
+}
+
+function fillSlot(idx,val){
+  if(!val)return;
+  const s=schoolStudents.find(x=>x.id==val);
+  studentSlots[idx]={filled:true,student:s};
+  renderStudentSlots();
+}
+function clearSlot(idx){studentSlots[idx]={filled:false,student:null};renderStudentSlots();}
+function removeSlot(idx){studentSlots.splice(idx,1);renderStudentSlots();}
+function addStudentSlot(){studentSlots.push({filled:false,student:null});renderStudentSlots();}
+
+function renderReview(){
+  const c=contests.find(x=>x.id===selectedContest)||contests[0];
+  document.getElementById('rev-emoji').textContent=c.emoji;
+  document.getElementById('rev-name').textContent=c.name;
+  document.getElementById('rev-org').textContent=c.org;
+  const filled=studentSlots.filter(s=>s.filled);
+  document.getElementById('rev-count').textContent=filled.length;
+  document.getElementById('rev-fee-count').textContent=filled.length;
+  document.getElementById('rev-total').textContent=`? ${filled.length*c.fee+50}`;
+  document.getElementById('rev-students').innerHTML=filled.map(s=>`
+    <div class="review-row">
+      <span style="font-size:.8rem;font-weight:700;color:var(--ink-2);">${s.student.name}</span>
+      <span style="font-size:.72rem;color:var(--muted);">Class ${s.student.cls} &middot; ${s.student.id_no}</span>
+    </div>`).join('');
+}
+
+function checkConsents(){
+  const all=[...document.querySelectorAll('.consent-cb')].every(c=>c.checked);
+  const btn=document.getElementById('submitBtn');
+  if(all){
+    btn.disabled=false;btn.style.background='var(--con)';btn.style.borderColor='var(--con)';btn.style.opacity='1';btn.style.cursor='pointer';
+    btn.onclick=submitRegistration;
+  }else{
+    btn.disabled=true;btn.style.background='var(--border)';btn.style.borderColor='var(--border)';btn.style.opacity='.6';btn.style.cursor='not-allowed';
+  }
+}
+
+function submitRegistration(){
+  const c=contests.find(x=>x.id===selectedContest);
+  const regNo=`${c.id.slice(0,3)}-2025-DHA-108765`;
+  document.getElementById('regNo').textContent=regNo;
+  document.getElementById('sucOverlay').classList.add('show');
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

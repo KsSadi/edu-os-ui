@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Mind Map Generator — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* ── HERO ── */
+.mm-hero{
+  background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);
+  border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px;
+}
+.mm-hero::before{content:'🗺️';position:absolute;right:28px;top:50%;transform:translateY(-50%);font-size:7rem;opacity:.07;pointer-events:none;}
+.mmh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(139,92,246,.25);border:1px solid rgba(139,92,246,.4);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#C4B5FD;margin-bottom:8px;}
+.mmh-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.mmh-sub{font-size:.84rem;opacity:.65;line-height:1.65;max-width:560px;}
+
+/* ── INPUT BAR ── */
+.mm-input-bar{background:var(--white);border:2px solid var(--border);border-radius:18px;padding:20px 24px;margin-bottom:20px;transition:border-color .15s;}
+.mm-input-bar:focus-within{border-color:var(--ai-violet);box-shadow:0 0 0 4px rgba(139,92,246,.07);}
+.mm-input-row{display:flex;gap:12px;align-items:center;}
+.mm-input{flex:1;font-size:1rem;color:var(--ink);border:none;background:transparent;outline:none;padding:6px 0;font-family:inherit;font-weight:600;}
+.mm-input::placeholder{color:var(--muted);font-weight:400;font-size:.9rem;}
+.mm-gen-btn{padding:12px 26px;background:linear-gradient(135deg,#7C3AED,#06B6D4);border:none;color:#fff;font-size:.88rem;font-weight:800;border-radius:12px;cursor:pointer;transition:opacity .15s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.mm-gen-btn:hover{opacity:.88;}
+.mm-gen-btn:disabled{opacity:.45;cursor:not-allowed;}
+.mm-chips{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+.mm-chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.mm-chip:hover{border-color:var(--ai-violet);color:#7C3AED;background:#F5F3FF;}
+
+/* ── TOOLBAR ── */
+.mm-toolbar{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mm-tb-label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px;}
+.mm-tb-sep{width:1px;height:22px;background:var(--border);margin:0 4px;}
+.mm-tb-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);font-size:.75rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;}
+.mm-tb-btn:hover{border-color:var(--ai-violet);color:#7C3AED;background:#F5F3FF;}
+.mm-tb-btn.active{border-color:var(--ai-violet);background:#EDE9FE;color:#6D28D9;}
+.mm-tb-zoom{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.mm-tb-zoom span{font-size:.78rem;font-weight:800;color:var(--ink);min-width:38px;text-align:center;font-family:'DM Mono',monospace;}
+
+/* ── CANVAS AREA ── */
+.mm-canvas-wrap{
+  background:var(--white);border:1.5px solid var(--border);border-radius:18px;
+  overflow:hidden;position:relative;height:580px;margin-bottom:20px;
+}
+.mm-canvas-inner{width:100%;height:100%;overflow:hidden;cursor:grab;position:relative;}
+.mm-canvas-inner:active{cursor:grabbing;}
+#mmSvg{width:100%;height:100%;display:block;}
+
+/* Grid background */
+.mm-canvas-wrap::before{
+  content:'';position:absolute;inset:0;border-radius:18px;
+  background-image:radial-gradient(circle,#CBD5E1 1px,transparent 1px);
+  background-size:28px 28px;opacity:.45;pointer-events:none;
+}
+
+/* Generating overlay */
+.mm-generating{position:absolute;inset:0;background:rgba(248,250,252,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:18px;backdrop-filter:blur(4px);}
+.mm-gen-spinner{width:56px;height:56px;border-radius:50%;border:4px solid #EDE9FE;border-top-color:#7C3AED;animation:spin 1s linear infinite;margin-bottom:18px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.mm-gen-msg{font-size:.9rem;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.mm-gen-sub{font-size:.76rem;color:var(--muted);}
+.mm-gen-progress{width:200px;height:4px;background:var(--border);border-radius:3px;margin-top:14px;overflow:hidden;}
+.mm-gen-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,#7C3AED,#06B6D4);width:0%;transition:width .4s ease;}
+
+/* Empty state */
+.mm-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.mme-icon{font-size:4rem;margin-bottom:16px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.mme-title{font-size:1rem;font-weight:900;color:var(--ink);margin-bottom:8px;}
+.mme-sub{font-size:.78rem;color:var(--muted);line-height:1.65;text-align:center;max-width:320px;}
+
+/* ── BOTTOM ROW ── */
+.mm-bottom{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;}
+
+/* Node list panel */
+.node-panel{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.np-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.np-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.np-count{font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:8px;background:var(--ai-pale);color:var(--ai-dark);}
+.np-body{max-height:320px;overflow-y:auto;}
+.np-branch{border-bottom:1px solid var(--border);}
+.np-branch:last-child{border-bottom:none;}
+.np-branch-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .1s;}
+.np-branch-head:hover{background:var(--bg);}
+.np-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.np-name{font-size:.8rem;font-weight:800;color:var(--ink);flex:1;}
+.np-cnt{font-size:.68rem;color:var(--muted);font-weight:600;}
+.np-leaves{padding:4px 14px 8px 32px;display:flex;flex-direction:column;gap:3px;}
+.np-leaf{font-size:.74rem;color:var(--ink-2);padding:3px 0;border-left:2px solid var(--border);padding-left:10px;line-height:1.4;}
+
+/* Side card */
+.mm-side{display:flex;flex-direction:column;gap:12px;}
+.side-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.sdc-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;}
+.sdc-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.sdc-body{padding:14px 16px;}
+
+/* Preset topics */
+.preset-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .1s;border-radius:6px;}
+.preset-item:last-child{border-bottom:none;}
+.preset-item:hover{margin:0 -4px;padding:8px 4px;background:var(--bg);}
+.pi-icon{font-size:1.1rem;width:28px;text-align:center;flex-shrink:0;}
+.pi-name{flex:1;font-size:.78rem;font-weight:700;color:var(--ink-2);}
+.pi-subj{font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:5px;background:var(--bg);border:1px solid var(--border);color:var(--muted);}
+
+/* Export actions */
+.export-btn{display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-size:.76rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;width:100%;margin-bottom:6px;}
+.export-btn:last-child{margin-bottom:0;}
+.export-btn:hover{border-color:var(--ai-violet);color:#6D28D9;background:#F5F3FF;}
+
+/* Stats row */
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.76rem;}
+.stat-row:last-child{border-bottom:none;}
+.sr-lbl{color:var(--muted);font-weight:600;}
+.sr-val{font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;}
+
+/* ── COLOR THEMES ── */
+.theme-grid{display:flex;gap:7px;flex-wrap:wrap;}
+.theme-swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .12s;position:relative;}
+.theme-swatch.active{border-color:var(--ink);transform:scale(1.1);}
+.theme-swatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff;font-weight:900;opacity:0;}
+.theme-swatch.active::after{opacity:1;}
+
+/* ── ANIMATIONS ── */
+.anim-1{animation:fadeUp .35s ease both;}
+.anim-2{animation:fadeUp .35s .08s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ── TOAST ── */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.mm-bottom{grid-template-columns:1fr;}.mm-side{display:grid;grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.mm-side{grid-template-columns:1fr;}.mm-canvas-wrap{height:380px;}.mm-input-row{flex-wrap:wrap;}.mm-gen-btn{width:100%;justify-content:center;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar"></aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="mm-hero anim-1">
+      <div class="mmh-badge">🗺️ AI Mind Map · Visual Learning</div>
+      <div class="mmh-title">AI Mind Map Generator</div>
+      <div class="mmh-sub">Type any topic — AI instantly builds a beautiful interactive mind map with branches, sub-topics and connections. Perfect for revision, exam prep and deep understanding.</div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="mm-input-bar anim-1">
+      <div class="mm-input-row">
+        <input class="mm-input" id="topicInput" placeholder="Enter a topic… e.g. Photosynthesis, World War II, Newton's Laws…" onkeydown="if(event.key==='Enter')generateMap()">
+        <button class="mm-gen-btn" id="genBtn" onclick="generateMap()">🗺️ Generate Mind Map</button>
+      </div>
+      <div class="mm-chips">
+        <span class="mm-chip" onclick="quickTopic('Photosynthesis')">🌱 Photosynthesis</span>
+        <span class="mm-chip" onclick="quickTopic('Newton\'s Laws of Motion')">⚡ Newton's Laws</span>
+        <span class="mm-chip" onclick="quickTopic('The Water Cycle')">💧 Water Cycle</span>
+        <span class="mm-chip" onclick="quickTopic('World War II')">🌍 World War II</span>
+        <span class="mm-chip" onclick="quickTopic('Cell Division')">🧬 Cell Division</span>
+        <span class="mm-chip" onclick="quickTopic('Electricity & Circuits')">🔌 Electricity</span>
+        <span class="mm-chip" onclick="quickTopic('The Human Digestive System')">🫀 Digestive System</span>
+        <span class="mm-chip" onclick="quickTopic('Algebra Basics')">📐 Algebra</span>
+      </div>
+    </div>
+
+    <!-- Toolbar (shown when map exists) -->
+    <div class="mm-toolbar anim-1" id="toolbar" style="display:none;">
+      <span class="mm-tb-label">View</span>
+      <button class="mm-tb-btn active" id="btnRadial" onclick="setLayout('radial')">🔵 Radial</button>
+      <button class="mm-tb-btn" id="btnTree" onclick="setLayout('tree')">🌲 Tree</button>
+      <div class="mm-tb-sep"></div>
+      <span class="mm-tb-label">Theme</span>
+      <div class="theme-grid" id="themeGrid">
+        <div class="theme-swatch active" style="background:linear-gradient(135deg,#7C3AED,#06B6D4);" data-theme="purple" onclick="setTheme('purple',this)" title="Violet"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#059669,#06B6D4);" data-theme="green" onclick="setTheme('green',this)" title="Forest"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#D97706,#EF4444);" data-theme="amber" onclick="setTheme('amber',this)" title="Sunset"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#1647D4,#06B6D4);" data-theme="blue" onclick="setTheme('blue',this)" title="Ocean"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#DB2777,#8B5CF6);" data-theme="rose" onclick="setTheme('rose',this)" title="Rose"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#0F172A,#374151);" data-theme="dark" onclick="setTheme('dark',this)" title="Dark"></div>
+      </div>
+      <div class="mm-tb-sep"></div>
+      <div class="mm-tb-zoom">
+        <button class="mm-tb-btn" onclick="zoom(-0.1)">−</button>
+        <span id="zoomLabel">100%</span>
+        <button class="mm-tb-btn" onclick="zoom(0.1)">+</button>
+        <button class="mm-tb-btn" onclick="resetView()" title="Fit to screen">⊡ Fit</button>
+      </div>
+    </div>
+
+    <!-- SVG Canvas -->
+    <div class="mm-canvas-wrap anim-1" id="canvasWrap">
+      <!-- Empty state -->
+      <div class="mm-empty" id="emptyState">
+        <div class="mme-icon">🗺️</div>
+        <div class="mme-title">Your mind map will appear here</div>
+        <div class="mme-sub">Type any topic above and click "Generate Mind Map" — AI will create a visual map with branches and sub-topics in seconds.</div>
+      </div>
+      <!-- Generating overlay -->
+      <div class="mm-generating" id="genOverlay" style="display:none;">
+        <div class="mm-gen-spinner"></div>
+        <div class="mm-gen-msg" id="genMsg">Analysing topic…</div>
+        <div class="mm-gen-sub" id="genSub">Building branches and connections</div>
+        <div class="mm-gen-progress"><div class="mm-gen-bar" id="genBar"></div></div>
+      </div>
+      <!-- SVG map -->
+      <div class="mm-canvas-inner" id="canvasInner">
+        <svg id="mmSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="mm-bottom anim-2">
+
+      <!-- Node list -->
+      <div class="node-panel" id="nodePanel" style="display:none;">
+        <div class="np-head">
+          <span class="np-title">🌿 Map Branches</span>
+          <span class="np-count" id="nodeCount">0 nodes</span>
+        </div>
+        <div class="np-body" id="nodeList"></div>
+      </div>
+
+      <!-- Side panel -->
+      <div class="mm-side">
+
+        <!-- Export / Actions -->
+        <div class="side-card" id="exportCard" style="display:none;">
+          <div class="sdc-head"><span>💾</span><span class="sdc-title">Export & Share</span></div>
+          <div class="sdc-body">
+            <button class="export-btn" onclick="exportSVG()">🖼️ Download as SVG</button>
+            <button class="export-btn" onclick="exportPNG()">📸 Download as PNG</button>
+            <button class="export-btn" onclick="shareMap()">🔗 Copy Share Link</button>
+            <button class="export-btn" onclick="printMap()">🖨️ Print Mind Map</button>
+            <button class="export-btn" onclick="saveToFlashcards()">🃏 Save to Flashcards</button>
+          </div>
+        </div>
+
+        <!-- Preset topics -->
+        <div class="side-card">
+          <div class="sdc-head"><span>⚡</span><span class="sdc-title">Popular Topics</span></div>
+          <div class="sdc-body" style="padding:8px 0;">
+            <div class="preset-item" onclick="quickTopic('Photosynthesis')"><span class="pi-icon">🌱</span><span class="pi-name">Photosynthesis</span><span class="pi-subj">Biology</span></div>
+            <div class="preset-item" onclick="quickTopic('Newton\'s Laws of Motion')"><span class="pi-icon">⚡</span><span class="pi-name">Newton's Laws</span><span class="pi-subj">Physics</span></div>
+            <div class="preset-item" onclick="quickTopic('World War II')"><span class="pi-icon">🌍</span><span class="pi-name">World War II</span><span class="pi-subj">History</span></div>
+            <div class="preset-item" onclick="quickTopic('Cell Division')"><span class="pi-icon">🧬</span><span class="pi-name">Cell Division</span><span class="pi-subj">Biology</span></div>
+            <div class="preset-item" onclick="quickTopic('Electricity & Circuits')"><span class="pi-icon">🔌</span><span class="pi-name">Electricity</span><span class="pi-subj">Physics</span></div>
+            <div class="preset-item" onclick="quickTopic('Algebra Basics')"><span class="pi-icon">📐</span><span class="pi-name">Algebra Basics</span><span class="pi-subj">Math</span></div>
+          </div>
+        </div>
+
+        <!-- Map stats -->
+        <div class="side-card" id="statsCard" style="display:none;">
+          <div class="sdc-head"><span>📊</span><span class="sdc-title">Map Stats</span></div>
+          <div class="sdc-body">
+            <div class="stat-row"><span class="sr-lbl">Topic</span><span class="sr-val" id="statTopic">—</span></div>
+            <div class="stat-row"><span class="sr-lbl">Branches</span><span class="sr-val" id="statBranches">—</span></div>
+            <div class="stat-row"><span class="sr-lbl">Total Nodes</span><span class="sr-val" id="statNodes">—</span></div>
+            <div class="stat-row"><span class="sr-lbl">Depth</span><span class="sr-val" id="statDepth">—</span></div>
+            <div class="stat-row"><span class="sr-lbl">Generated</span><span class="sr-val" id="statTime">—</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /.page-body -->
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   MIND MAP DATA
+   ════════════════════════════════════════════════ */
+const MAPS = {
+  'Photosynthesis': {
+    branches: [
+      { label:'Inputs', icon:'📥', color:'#059669', leaves:['Carbon Dioxide (CO₂)','Water (H₂O)','Sunlight Energy','Chlorophyll'] },
+      { label:'Outputs', icon:'📤', color:'#06B6D4', leaves:['Glucose (C₆H₁₂O₆)','Oxygen (O₂)','ATP Energy','Water Vapour'] },
+      { label:'Location', icon:'📍', color:'#8B5CF6', leaves:['Chloroplast','Thylakoid Membrane','Stroma','Grana'] },
+      { label:'Light Reactions', icon:'☀️', color:'#D97706', leaves:['Photosystem I & II','Water Splitting','ATP Synthesis','NADPH Production'] },
+      { label:'Calvin Cycle', icon:'🔄', color:'#DB2777', leaves:['CO₂ Fixation','RuBisCO Enzyme','G3P Formation','Cycle Repeats'] },
+      { label:'Factors', icon:'🌡️', color:'#0891B2', leaves:['Temperature','Light Intensity','CO₂ Concentration','Water Availability'] },
+    ]
+  },
+  "Newton's Laws of Motion": {
+    branches: [
+      { label:'First Law', icon:'⚖️', color:'#7C3AED', leaves:['Law of Inertia','Object at Rest','Object in Motion','Net Force = 0'] },
+      { label:'Second Law', icon:'🏃', color:'#059669', leaves:['F = ma','Force & Acceleration','Mass & Inertia','Net Force'] },
+      { label:'Third Law', icon:'↔️', color:'#D97706', leaves:['Action & Reaction','Equal & Opposite','Rocket Propulsion','Walking Mechanics'] },
+      { label:'Applications', icon:'🚀', color:'#06B6D4', leaves:['Rockets & Jets','Car Safety','Sports Science','Planetary Motion'] },
+      { label:'Key Concepts', icon:'📖', color:'#DB2777', leaves:['Force (N)','Mass (kg)','Acceleration (m/s²)','Momentum (p=mv)'] },
+    ]
+  },
+  'The Water Cycle': {
+    branches: [
+      { label:'Evaporation', icon:'♨️', color:'#06B6D4', leaves:['Sun heats water','Liquid → Gas','Oceans & Lakes','Energy required'] },
+      { label:'Condensation', icon:'☁️', color:'#8B5CF6', leaves:['Water vapour cools','Forms clouds','Dew & frost','Temperature drops'] },
+      { label:'Precipitation', icon:'🌧️', color:'#1647D4', leaves:['Rain','Snow','Hail','Sleet'] },
+      { label:'Collection', icon:'🌊', color:'#059669', leaves:['Rivers & Lakes','Groundwater','Ocean runoff','Reservoirs'] },
+      { label:'Transpiration', icon:'🌿', color:'#D97706', leaves:['Plants release water','Leaf stomata','Increases humidity','Part of cycle'] },
+    ]
+  },
+  'World War II': {
+    branches: [
+      { label:'Causes', icon:'💥', color:'#EF4444', leaves:['Treaty of Versailles','Rise of Fascism','Great Depression','Appeasement Policy'] },
+      { label:'Major Powers', icon:'🌍', color:'#8B5CF6', leaves:['Allied: UK, USA, USSR','Axis: Germany, Italy, Japan','Neutral Nations','Colonial Forces'] },
+      { label:'Key Events', icon:'📅', color:'#D97706', leaves:['Invasion of Poland 1939','Battle of Britain','Pearl Harbor 1941','D-Day 1944'] },
+      { label:'Holocaust', icon:'✡️', color:'#6B7280', leaves:['Nazi Persecution','6 Million Jews','Concentration Camps','Nuremberg Trials'] },
+      { label:'Pacific Theatre', icon:'⛵', color:'#06B6D4', leaves:['Pearl Harbor','Island Hopping','Atomic Bombs','Japan Surrender'] },
+      { label:'Aftermath', icon:'🕊️', color:'#059669', leaves:['UN Formation','Cold War begins','Marshall Plan','State of Israel'] },
+    ]
+  },
+  'Cell Division': {
+    branches: [
+      { label:'Mitosis', icon:'🔬', color:'#059669', leaves:['Prophase','Metaphase','Anaphase','Telophase'] },
+      { label:'Meiosis', icon:'🧬', color:'#8B5CF6', leaves:['Meiosis I','Meiosis II','4 Haploid Cells','Genetic Variation'] },
+      { label:'Cell Cycle', icon:'🔄', color:'#06B6D4', leaves:['G1 Phase','S Phase (DNA copy)','G2 Phase','M Phase'] },
+      { label:'Purpose', icon:'🎯', color:'#D97706', leaves:['Growth & Repair','Sexual Reproduction','Genetic Diversity','Replace Dead Cells'] },
+      { label:'Key Structures', icon:'🏗️', color:'#DB2777', leaves:['Chromosomes','Spindle Fibres','Centromere','Nuclear Envelope'] },
+    ]
+  },
+  'Electricity & Circuits': {
+    branches: [
+      { label:'Basic Concepts', icon:'⚡', color:'#D97706', leaves:['Electric Charge','Current (A)','Voltage (V)','Resistance (Ω)'] },
+      { label:'Ohm\'s Law', icon:'📐', color:'#8B5CF6', leaves:['V = IR','Current & Voltage','Linear Relationship','Conductors vs Insulators'] },
+      { label:'Series Circuits', icon:'➡️', color:'#059669', leaves:['Same current','Voltages add up','One path','Break = all off'] },
+      { label:'Parallel Circuits', icon:'⑂', color:'#06B6D4', leaves:['Voltage same','Currents split','Multiple paths','Break = rest works'] },
+      { label:'Components', icon:'🔧', color:'#EF4444', leaves:['Resistor','Capacitor','Diode','Transistor'] },
+      { label:'Power', icon:'💡', color:'#1647D4', leaves:['P = IV','P = I²R','Watts (W)','Kilowatt-hour'] },
+    ]
+  },
+  'The Human Digestive System': {
+    branches: [
+      { label:'Mouth', icon:'👄', color:'#DB2777', leaves:['Chewing (mastication)','Saliva & amylase','Bolus formation','Tongue mixes food'] },
+      { label:'Stomach', icon:'🫁', color:'#EF4444', leaves:['Gastric acid (HCl)','Pepsin enzyme','Churning motion','Chyme produced'] },
+      { label:'Small Intestine', icon:'〰️', color:'#059669', leaves:['Villi absorption','Bile from liver','Pancreatic enzymes','Nutrients enter blood'] },
+      { label:'Large Intestine', icon:'🔵', color:'#06B6D4', leaves:['Water absorption','Gut bacteria','Waste compaction','Vitamin K production'] },
+      { label:'Liver & Pancreas', icon:'🏭', color:'#D97706', leaves:['Bile production','Glucose regulation','Insulin & glucagon','Detoxification'] },
+      { label:'Enzymes', icon:'⚗️', color:'#8B5CF6', leaves:['Amylase (starch)','Protease (protein)','Lipase (fat)','Optimal pH & temp'] },
+    ]
+  },
+  'Algebra Basics': {
+    branches: [
+      { label:'Variables', icon:'🔤', color:'#8B5CF6', leaves:['Letters represent values','x, y, z common','Unknown quantities','Can change'] },
+      { label:'Expressions', icon:'📝', color:'#06B6D4', leaves:['Combination of terms','No equals sign','e.g. 3x + 2','Simplifying'] },
+      { label:'Equations', icon:'⚖️', color:'#D97706', leaves:['Has equals sign','Solving for x','Linear equations','Quadratic equations'] },
+      { label:'Operations', icon:'➕', color:'#059669', leaves:['Addition & Subtraction','Multiplication','Division','Order of operations'] },
+      { label:'Factoring', icon:'✂️', color:'#DB2777', leaves:['Common factors','Difference of squares','Trinomials','Factor theorem'] },
+      { label:'Graphing', icon:'📊', color:'#EF4444', leaves:['Coordinate plane','Slope & intercept','y = mx + c','Plotting points'] },
+    ]
+  }
+};
+
+// Fallback generic map
+function genericMap(topic) {
+  return {
+    branches: [
+      { label:'Definition', icon:'📖', color:'#7C3AED', leaves:['Core meaning','Key terms','Origin','Scope'] },
+      { label:'Key Concepts', icon:'💡', color:'#06B6D4', leaves:['Main idea 1','Main idea 2','Main idea 3','Main idea 4'] },
+      { label:'Types / Forms', icon:'🗂️', color:'#059669', leaves:['Type A','Type B','Type C','Variations'] },
+      { label:'Examples', icon:'🔍', color:'#D97706', leaves:['Real-world example 1','Real-world example 2','Case study','Application'] },
+      { label:'Importance', icon:'⭐', color:'#DB2777', leaves:['Why it matters','Impact on society','Uses in daily life','Future relevance'] },
+      { label:'Related Topics', icon:'🔗', color:'#0891B2', leaves:['Connected concept 1','Connected concept 2','Sub-topic','Broader field'] },
+    ]
+  };
+}
+
+/* ════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════ */
+let currentMap = null;
+let currentTopic = '';
+let currentLayout = 'radial';
+let currentTheme = 'purple';
+let scale = 1;
+let offsetX = 0, offsetY = 0;
+let isDragging = false, dragStart = {x:0,y:0}, dragOffset = {x:0,y:0};
+
+const THEMES = {
+  purple: { center:'#4C1D95', line:'rgba(139,92,246,.5)', bg:'#F5F3FF' },
+  green:  { center:'#064E3B', line:'rgba(5,150,105,.5)',  bg:'#F0FDF4' },
+  amber:  { center:'#78350F', line:'rgba(217,119,6,.5)',  bg:'#FFFBEB' },
+  blue:   { center:'#1E3A8A', line:'rgba(22,71,212,.5)',  bg:'#EFF6FF' },
+  rose:   { center:'#881337', line:'rgba(219,39,119,.5)', bg:'#FFF1F2' },
+  dark:   { center:'#111827', line:'rgba(75,85,99,.6)',   bg:'#1F2937' },
+};
+
+/* ════════════════════════════════════════════════
+   GENERATE
+   ════════════════════════════════════════════════ */
+function quickTopic(t){ document.getElementById('topicInput').value=t; generateMap(); }
+
+function generateMap(){
+  const topic = document.getElementById('topicInput').value.trim();
+  if(!topic){ showToast('Please enter a topic first','⚠️'); return; }
+  currentTopic = topic;
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('canvasInner').style.display='none';
+
+  // Show generating overlay with progress
+  const overlay = document.getElementById('genOverlay');
+  overlay.style.display='flex';
+  const msgs=[
+    ['Analysing topic…','Extracting key concepts'],
+    ['Building branches…','Mapping relationships'],
+    ['Adding sub-topics…','Connecting ideas'],
+    ['Styling the map…','Almost ready!'],
+  ];
+  const bar = document.getElementById('genBar');
+  let step=0;
+  const iv = setInterval(()=>{
+    if(step>=msgs.length){clearInterval(iv);return;}
+    document.getElementById('genMsg').textContent=msgs[step][0];
+    document.getElementById('genSub').textContent=msgs[step][1];
+    bar.style.width=((step+1)/msgs.length*100)+'%';
+    step++;
+  },480);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    overlay.style.display='none';
+    document.getElementById('canvasInner').style.display='block';
+    btn.disabled=false;
+    // Find map data
+    const key = Object.keys(MAPS).find(k=>k.toLowerCase()===topic.toLowerCase()) || null;
+    currentMap = key ? MAPS[key] : genericMap(topic);
+    // replace leaf placeholders for generic
+    if(!key) {
+      currentMap.branches.forEach(b=>{ b.leaves=b.leaves.map(l=>l.replace(/Main idea \d|Type [A-C]|Real-world example \d/,l)); });
+    }
+    renderMap();
+    document.getElementById('toolbar').style.display='flex';
+    document.getElementById('nodePanel').style.display='block';
+    document.getElementById('exportCard').style.display='block';
+    document.getElementById('statsCard').style.display='block';
+    updateStats();
+    buildNodeList();
+    showToast('Mind map generated! ✨','🗺️');
+  }, 2200);
+}
+
+/* ════════════════════════════════════════════════
+   RENDER SVG
+   ════════════════════════════════════════════════ */
+function renderMap(){
+  const svg = document.getElementById('mmSvg');
+  const wrap = document.getElementById('canvasWrap');
+  const W = wrap.clientWidth || 900;
+  const H = wrap.clientHeight || 580;
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+  const theme = THEMES[currentTheme];
+  const branches = currentMap.branches;
+  const cx = W/2, cy = H/2;
+
+  // Defs
+  const defs = svgEl('defs');
+  branches.forEach((b,i)=>{
+    const g = svgEl('radialGradient',{id:`bg${i}`,cx:'50%',cy:'50%',r:'50%'});
+    g.appendChild(svgEl('stop',{offset:'0%','stop-color':b.color,'stop-opacity':'0.18'}));
+    g.appendChild(svgEl('stop',{offset:'100%','stop-color':b.color,'stop-opacity':'0.06'}));
+    defs.appendChild(g);
+    // Line gradient
+    const lg = svgEl('linearGradient',{id:`lg${i}`,x1:'0%',y1:'0%',x2:'100%',y2:'0%'});
+    lg.appendChild(svgEl('stop',{offset:'0%','stop-color':THEMES[currentTheme].center,'stop-opacity':'0.5'}));
+    lg.appendChild(svgEl('stop',{offset:'100%','stop-color':b.color,'stop-opacity':'0.8'}));
+    defs.appendChild(lg);
+  });
+  // Shadow filter
+  const flt = svgEl('filter',{id:'shadow',x:'-20%',y:'-20%',width:'140%',height:'140%'});
+  const fe = svgEl('feDropShadow',{dx:'0',dy:'2',stdDeviation:'4','flood-color':'rgba(0,0,0,0.12)'});
+  flt.appendChild(fe); defs.appendChild(flt);
+  svg.appendChild(defs);
+
+  const g = svgEl('g',{id:'mapGroup',transform:`translate(${offsetX},${offsetY}) scale(${scale})`});
+
+  if(currentLayout==='radial'){
+    renderRadial(g,branches,cx,cy,W,H,theme);
+  } else {
+    renderTree(g,branches,cx,cy,W,H,theme);
+  }
+
+  // Center node
+  const centerR = 52;
+  const cBg = svgEl('circle',{cx,cy,r:centerR+6,fill:theme.center,opacity:'0.15'});
+  g.appendChild(cBg);
+  const cCircle = svgEl('circle',{cx,cy,r:centerR,fill:theme.center,filter:'url(#shadow)'});
+  g.appendChild(cCircle);
+  // Center icon
+  const cIcon = svgEl('text',{x:cx,y:cy-10,fill:'#fff','text-anchor':'middle','dominant-baseline':'middle','font-size':'22',opacity:'0.9'});
+  cIcon.textContent = '🗺️';
+  g.appendChild(cIcon);
+  // Center label
+  const words = currentTopic.split(' ');
+  const line1 = words.slice(0,Math.ceil(words.length/2)).join(' ');
+  const line2 = words.slice(Math.ceil(words.length/2)).join(' ');
+  const cTxt1 = svgEl('text',{x:cx,y:cy+12,fill:'#fff','text-anchor':'middle','font-size':'11','font-weight':'800','font-family':'Plus Jakarta Sans, sans-serif'});
+  cTxt1.textContent = line1;
+  g.appendChild(cTxt1);
+  if(line2){
+    const cTxt2 = svgEl('text',{x:cx,y:cy+24,fill:'#fff','text-anchor':'middle','font-size':'11','font-weight':'800','font-family':'Plus Jakarta Sans, sans-serif'});
+    cTxt2.textContent = line2;
+    g.appendChild(cTxt2);
+  }
+
+  svg.appendChild(g);
+  setupPanZoom();
+}
+
+function renderRadial(g,branches,cx,cy,W,H,theme){
+  const n = branches.length;
+  const branchR = Math.min(W,H)*0.28;
+  const leafR   = Math.min(W,H)*0.46;
+
+  branches.forEach((b,i)=>{
+    const angle = (2*Math.PI/n)*i - Math.PI/2;
+    const bx = cx + branchR*Math.cos(angle);
+    const by = cy + branchR*Math.sin(angle);
+
+    // Curved line center → branch
+    const path = svgEl('path',{
+      d:`M${cx},${cy} Q${(cx+bx)/2+Math.sin(angle)*30},${(cy+by)/2-Math.cos(angle)*30} ${bx},${by}`,
+      fill:'none',stroke:b.color,'stroke-width':'2.5','stroke-opacity':'0.55',
+      'stroke-dasharray':'none'
+    });
+    g.appendChild(path);
+    animatePath(path,i*80);
+
+    // Branch node
+    const nodeW=110, nodeH=38;
+    const rect = svgEl('rect',{x:bx-nodeW/2,y:by-nodeH/2,width:nodeW,height:nodeH,rx:'12',
+      fill:b.color,filter:'url(#shadow)',opacity:'0'});
+    g.appendChild(rect);
+    animateEl(rect,i*80+100,'opacity','0','1');
+
+    const bIcon = svgEl('text',{x:bx-nodeW/2+14,y:by+1,fill:'#fff','dominant-baseline':'middle','font-size':'14'});
+    bIcon.textContent=b.icon; g.appendChild(bIcon);
+    animateEl(bIcon,i*80+150,'opacity','0','1');
+
+    const bTxt = svgEl('text',{x:bx-nodeW/2+30,y:by+1,fill:'#fff','dominant-baseline':'middle',
+      'font-size':'11','font-weight':'800','font-family':'Plus Jakarta Sans, sans-serif'});
+    bTxt.textContent=truncate(b.label,14); g.appendChild(bTxt);
+    animateEl(bTxt,i*80+150,'opacity','0','1');
+
+    // Leaves
+    const leafCount = b.leaves.length;
+    const spread = Math.PI/3.5;
+    b.leaves.forEach((leaf,j)=>{
+      const lAngle = angle + spread*(j/(leafCount-1||1) - 0.5);
+      const lx = cx + leafR*Math.cos(lAngle);
+      const ly = cy + leafR*Math.sin(lAngle);
+      const lw=120, lh=28;
+
+      // Line branch → leaf
+      const lPath = svgEl('path',{
+        d:`M${bx},${by} Q${(bx+lx)/2},${(by+ly)/2} ${lx},${ly}`,
+        fill:'none',stroke:b.color,'stroke-width':'1.5','stroke-opacity':'0.35',
+        'stroke-dasharray':'4,3'
+      });
+      g.appendChild(lPath);
+      animatePath(lPath,i*80+j*40+200);
+
+      const lRect = svgEl('rect',{x:lx-lw/2,y:ly-lh/2,width:lw,height:lh,rx:'9',
+        fill:`url(#bg${i})`,stroke:b.color,'stroke-width':'1.5','stroke-opacity':'0.55',opacity:'0'});
+      g.appendChild(lRect);
+      animateEl(lRect,i*80+j*40+280,'opacity','0','1');
+
+      const lTxt = svgEl('text',{x:lx,y:ly+1,fill:'#0F172A','text-anchor':'middle','dominant-baseline':'middle',
+        'font-size':'10','font-weight':'700','font-family':'Plus Jakarta Sans, sans-serif'});
+      lTxt.textContent=truncate(leaf,16); g.appendChild(lTxt);
+      animateEl(lTxt,i*80+j*40+290,'opacity','0','1');
+    });
+  });
+}
+
+function renderTree(g,branches,cx,cy,W,H,theme){
+  const startX = 80;
+  const hGap = (W-120)/(branches.length);
+  const topY = 110;
+  const leafGap = 52;
+
+  branches.forEach((b,i)=>{
+    const bx = startX + hGap*i + hGap/2;
+    const by = topY;
+
+    // Line center → branch
+    const path = svgEl('path',{
+      d:`M${cx},${cy} C${cx},${(cy+by)/2} ${bx},${(cy+by)/2} ${bx},${by}`,
+      fill:'none',stroke:b.color,'stroke-width':'2','stroke-opacity':'0.5'
+    });
+    g.insertBefore(path, g.firstChild);
+    animatePath(path,i*70);
+
+    // Branch node
+    const nW=100, nH=34;
+    const rect = svgEl('rect',{x:bx-nW/2,y:by-nH/2,width:nW,height:nH,rx:'10',
+      fill:b.color,filter:'url(#shadow)',opacity:'0'});
+    g.appendChild(rect);
+    animateEl(rect,i*70+100,'opacity','0','1');
+
+    const bTxt = svgEl('text',{x:bx,y:by+1,fill:'#fff','text-anchor':'middle','dominant-baseline':'middle',
+      'font-size':'10','font-weight':'800','font-family':'Plus Jakarta Sans, sans-serif'});
+    bTxt.textContent=b.icon+' '+truncate(b.label,11); g.appendChild(bTxt);
+
+    // Leaves going down
+    b.leaves.forEach((leaf,j)=>{
+      const ly = by + 46 + j*leafGap;
+      const lw=104, lh=26;
+
+      const lLine = svgEl('line',{x1:bx,y1:by+nH/2,x2:bx,y2:ly-lh/2,
+        stroke:b.color,'stroke-width':'1.5','stroke-opacity':'0.3','stroke-dasharray':'4,3'});
+      g.appendChild(lLine);
+
+      const lRect = svgEl('rect',{x:bx-lw/2,y:ly-lh/2,width:lw,height:lh,rx:'8',
+        fill:`url(#bg${i})`,stroke:b.color,'stroke-width':'1.2','stroke-opacity':'0.45',opacity:'0'});
+      g.appendChild(lRect);
+      animateEl(lRect,i*70+j*35+180,'opacity','0','1');
+
+      const lTxt = svgEl('text',{x:bx,y:ly+1,fill:'#0F172A','text-anchor':'middle','dominant-baseline':'middle',
+        'font-size':'9.5','font-weight':'700','font-family':'Plus Jakarta Sans, sans-serif'});
+      lTxt.textContent=truncate(leaf,15); g.appendChild(lTxt);
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════
+   SVG HELPERS
+   ════════════════════════════════════════════════ */
+function svgEl(tag,attrs={}){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+function truncate(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
+
+function animatePath(el,delay){
+  const len = 500;
+  el.style.strokeDasharray=len;
+  el.style.strokeDashoffset=len;
+  el.style.transition=`stroke-dashoffset 0.5s ease ${delay}ms`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.strokeDashoffset=0; }));
+}
+function animateEl(el,delay,prop,from,to){
+  el.style[prop]=from;
+  el.style.transition=`${prop} 0.3s ease ${delay}ms`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style[prop]=to; }));
+}
+
+/* ════════════════════════════════════════════════
+   LAYOUT / THEME / ZOOM
+   ════════════════════════════════════════════════ */
+function setLayout(l){
+  currentLayout=l;
+  document.getElementById('btnRadial').classList.toggle('active',l==='radial');
+  document.getElementById('btnTree').classList.toggle('active',l==='tree');
+  resetView();
+  if(currentMap) renderMap();
+}
+
+function setTheme(name,el){
+  currentTheme=name;
+  document.querySelectorAll('.theme-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  if(currentMap) renderMap();
+}
+
+function zoom(delta){
+  scale = Math.min(2.5, Math.max(0.35, scale+delta));
+  document.getElementById('zoomLabel').textContent=Math.round(scale*100)+'%';
+  const g=document.getElementById('mapGroup');
+  if(g) g.setAttribute('transform',`translate(${offsetX},${offsetY}) scale(${scale})`);
+}
+
+function resetView(){
+  scale=1; offsetX=0; offsetY=0;
+  document.getElementById('zoomLabel').textContent='100%';
+}
+
+/* ── Pan ── */
+function setupPanZoom(){
+  const inner = document.getElementById('canvasInner');
+  inner.onmousedown = e=>{ isDragging=true; dragStart={x:e.clientX,y:e.clientY}; dragOffset={x:offsetX,y:offsetY}; };
+  window.onmousemove = e=>{
+    if(!isDragging) return;
+    offsetX=dragOffset.x+(e.clientX-dragStart.x);
+    offsetY=dragOffset.y+(e.clientY-dragStart.y);
+    const g=document.getElementById('mapGroup');
+    if(g) g.setAttribute('transform',`translate(${offsetX},${offsetY}) scale(${scale})`);
+  };
+  window.onmouseup = ()=>{ isDragging=false; };
+  inner.onwheel = e=>{
+    e.preventDefault();
+    zoom(e.deltaY<0?0.08:-0.08);
+  };
+  // Touch
+  let lastTouch=null;
+  inner.ontouchstart=e=>{ if(e.touches.length===1){ lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY}; dragOffset={x:offsetX,y:offsetY}; } };
+  inner.ontouchmove=e=>{
+    if(e.touches.length===1&&lastTouch){
+      offsetX=dragOffset.x+(e.touches[0].clientX-lastTouch.x);
+      offsetY=dragOffset.y+(e.touches[0].clientY-lastTouch.y);
+      const g=document.getElementById('mapGroup');
+      if(g) g.setAttribute('transform',`translate(${offsetX},${offsetY}) scale(${scale})`);
+    }
+  };
+}
+
+/* ════════════════════════════════════════════════
+   SIDE PANELS
+   ════════════════════════════════════════════════ */
+function buildNodeList(){
+  const list = document.getElementById('nodeList');
+  const branches = currentMap.branches;
+  let total = branches.length;
+  branches.forEach(b=>total+=b.leaves.length);
+  document.getElementById('nodeCount').textContent = (total+1)+' nodes';
+
+  list.innerHTML = branches.map(b=>`
+    <div class="np-branch">
+      <div class="np-branch-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'">
+        <div class="np-dot" style="background:${b.color}"></div>
+        <span class="np-name">${b.icon} ${b.label}</span>
+        <span class="np-cnt">${b.leaves.length} sub-topics</span>
+      </div>
+      <div class="np-leaves">
+        ${b.leaves.map(l=>`<div class="np-leaf">${l}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateStats(){
+  const branches = currentMap.branches;
+  let leaves=0; branches.forEach(b=>leaves+=b.leaves.length);
+  document.getElementById('statTopic').textContent = currentTopic.length>16?currentTopic.slice(0,15)+'…':currentTopic;
+  document.getElementById('statBranches').textContent = branches.length;
+  document.getElementById('statNodes').textContent = branches.length+leaves+1;
+  document.getElementById('statDepth').textContent = '3 levels';
+  document.getElementById('statTime').textContent = 'Just now';
+}
+
+/* ════════════════════════════════════════════════
+   EXPORT
+   ════════════════════════════════════════════════ */
+function exportSVG(){
+  const svg = document.getElementById('mmSvg');
+  const blob = new Blob([svg.outerHTML],{type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=(currentTopic||'mindmap').replace(/\s+/g,'-')+'.svg';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('SVG downloaded!','🖼️');
+}
+
+function exportPNG(){
+  const svg = document.getElementById('mmSvg');
+  const canvas = document.createElement('canvas');
+  const W = svg.clientWidth*2; const H=svg.clientHeight*2;
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle=THEMES[currentTheme].dark?'#1F2937':'#ffffff';
+  ctx.fillRect(0,0,W,H);
+  const data = 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg.outerHTML)));
+  const img=new Image(); img.onload=()=>{
+    ctx.drawImage(img,0,0,W,H);
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download=(currentTopic||'mindmap').replace(/\s+/g,'-')+'.png';
+    a.click();
+    showToast('PNG downloaded!','📸');
+  }; img.src=data;
+}
+
+function shareMap(){ navigator.clipboard.writeText(window.location.href+'?topic='+encodeURIComponent(currentTopic)).catch(()=>{}); showToast('Link copied to clipboard!','🔗'); }
+function printMap(){ window.print(); }
+function saveToFlashcards(){ showToast('Saved to Flashcards! 🃏','🃏'); }
+
+/* ════════════════════════════════════════════════
+   TOAST
+   ════════════════════════════════════════════════ */
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+/* Auto-generate from URL param */
+window.addEventListener('DOMContentLoaded',()=>{
+  const p=new URLSearchParams(location.search).get('topic');
+  if(p){document.getElementById('topicInput').value=p;generateMap();}
+});
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Math Solver — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Hero */
+.ms-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.ms-hero::before{content:'🔢';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.msh-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.msh-title{font-size:1.6rem;font-weight:900;line-height:1.15;margin-bottom:6px;}
+.msh-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* Input bar */
+.ms-input-bar{background:var(--white);border:2px solid var(--border);border-radius:18px;padding:20px 24px;margin-bottom:24px;transition:border-color .15s;}
+.ms-input-bar:focus-within{border-color:var(--ai);box-shadow:0 0 0 4px rgba(6,182,212,.08);}
+.ms-input-row{display:flex;gap:12px;align-items:flex-end;}
+.ms-input{flex:1;font-family:'DM Mono',monospace;font-size:1.1rem;color:var(--ink);border:none;background:transparent;outline:none;padding:8px 0;letter-spacing:.02em;}
+.ms-input::placeholder{color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;}
+.solve-btn{padding:12px 28px;background:var(--ai-soft);border:none;color:#fff;font-size:.88rem;font-weight:800;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .15s;white-space:nowrap;}
+.solve-btn:hover{opacity:.88;}
+.solve-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ms-tools{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.ms-tool-btn{padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;font-family:'DM Mono',monospace;}
+.ms-tool-btn:hover{border-color:var(--ai);color:var(--ai);}
+
+/* Quick examples */
+.ms-examples{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.ms-ex-btn{padding:8px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:700;color:var(--ink-2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px;}
+.ms-ex-btn:hover{border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+.ms-ex-icon{font-size:.9rem;}
+
+/* Layout */
+.ms-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;}
+
+/* Solution area */
+.ms-solution{display:flex;flex-direction:column;gap:16px;}
+
+/* Step card */
+.step-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:all .15s;}
+.step-card:hover{border-color:rgba(6,182,212,.3);}
+.stc-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg);}
+.stc-num{width:30px;height:30px;border-radius:50%;background:var(--ai-soft);color:#fff;font-size:.76rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stc-title{font-size:.88rem;font-weight:900;color:var(--ink);}
+.stc-badge{margin-left:auto;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;}
+.stc-body{padding:16px 18px;}
+.stc-explanation{font-size:.82rem;color:var(--ink-2);line-height:1.75;margin-bottom:12px;}
+.stc-math{background:#050314;color:#67E8F9;border-radius:12px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:1rem;line-height:1.8;letter-spacing:.03em;overflow-x:auto;}
+.stc-math .highlight{color:#A78BFA;font-weight:700;}
+.stc-math .result{color:#34D399;font-weight:700;}
+.stc-note{margin-top:10px;background:var(--ai-pale);border-left:3px solid var(--ai);border-radius:6px;padding:8px 12px;font-size:.76rem;color:var(--ai-dark);font-weight:600;line-height:1.6;}
+
+/* Answer card */
+.answer-card{background:linear-gradient(135deg,#050314 0%,#0D0828 50%,#1A1040 100%);border-radius:18px;padding:24px;color:#fff;text-align:center;}
+.ans-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#67E8F9;margin-bottom:8px;}
+.ans-value{font-family:'DM Mono',monospace;font-size:2rem;font-weight:900;background:var(--ai-soft);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.ans-verify{font-size:.74rem;opacity:.5;display:flex;align-items:center;justify-content:center;gap:4px;}
+.ans-actions{display:flex;gap:8px;margin-top:14px;justify-content:center;}
+.ans-btn{padding:7px 16px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);font-size:.74rem;font-weight:700;color:rgba(255,255,255,.8);cursor:pointer;transition:all .12s;}
+.ans-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.35);}
+
+/* Side panel */
+.ms-side{display:flex;flex-direction:column;gap:14px;}
+.side-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.sdc-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;}
+.sdc-icon{font-size:1rem;}
+.sdc-title{font-size:.84rem;font-weight:900;color:var(--ink);}
+.sdc-body{padding:14px 16px;}
+
+/* Topic links */
+.topic-link{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.78rem;color:var(--ink-2);cursor:pointer;transition:color .1s;}
+.topic-link:last-child{border-bottom:none;}
+.topic-link:hover{color:var(--ai);}
+.tl-icon{font-size:.85rem;}
+
+/* History */
+.hist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.hist-item:last-child{border-bottom:none;}
+.hist-item:hover{background:var(--bg);margin:0 -16px;padding:8px 16px;}
+.hi-eq{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink);font-weight:600;flex:1;}
+.hi-time{font-size:.66rem;color:var(--muted);}
+
+/* Similar problems */
+.sim-prob{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Mono',monospace;font-size:.8rem;color:var(--ink-2);cursor:pointer;transition:all .12s;margin-bottom:6px;display:block;width:100%;text-align:left;background:var(--bg);}
+.sim-prob:hover{border-color:var(--ai);color:var(--ai-dark);}
+
+/* Empty state */
+.ms-empty{text-align:center;padding:60px 24px;background:var(--white);border:1.5px solid var(--border);border-radius:16px;}
+.mse-icon{font-size:4rem;margin-bottom:14px;}
+.mse-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.mse-sub{font-size:.8rem;color:var(--muted);line-height:1.65;max-width:340px;margin:0 auto;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1100px){.ms-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="ms-hero anim-1">
+      <div class="msh-badge">🔢 AI Math Solver</div>
+      <div class="msh-title">AI Math Solver</div>
+      <div class="msh-sub">Type any math equation or problem — AI will solve it step by step with clear explanations for every operation. Perfect for SSC/HSC preparation.</div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="ms-input-bar anim-1">
+      <div class="ms-input-row">
+        <input class="ms-input" id="mathInput" type="text" placeholder="Type your math problem… e.g. x² - 5x + 6 = 0" onkeydown="if(event.key==='Enter')solveMath()">
+        <button class="solve-btn" id="solveBtn" onclick="solveMath()">✨ Solve Step by Step</button>
+      </div>
+      <div class="ms-tools">
+        <button class="ms-tool-btn" onclick="insertSymbol('²')">x²</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('³')">x³</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('√')">√</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('π')">π</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('±')">±</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('÷')">÷</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('×')">×</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('≤')">≤</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('≥')">≥</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('≠')">≠</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('∞')">∞</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('θ')">θ</button>
+        <button class="ms-tool-btn" onclick="insertSymbol('Δ')">Δ</button>
+      </div>
+    </div>
+
+    <!-- Quick examples -->
+    <div class="ms-examples anim-1">
+      <span style="font-size:.78rem;font-weight:800;color:var(--muted);align-self:center;margin-right:4px;">Try:</span>
+      <button class="ms-ex-btn" onclick="loadExample('2x² - 7x + 3 = 0')"><span class="ms-ex-icon">📐</span> Quadratic Equation</button>
+      <button class="ms-ex-btn" onclick="loadExample('Find dy/dx if y = 3x³ + 2x² - 5x + 1')"><span class="ms-ex-icon">📈</span> Differentiation</button>
+      <button class="ms-ex-btn" onclick="loadExample('sin²θ + cos²θ = ?')"><span class="ms-ex-icon">📏</span> Trigonometry</button>
+      <button class="ms-ex-btn" onclick="loadExample('5! / (3! × 2!)')"><span class="ms-ex-icon">🔢</span> Permutation</button>
+      <button class="ms-ex-btn" onclick="loadExample('Simplify: (2x + 3)(x - 4)')"><span class="ms-ex-icon">✏️</span> Algebra</button>
+    </div>
+
+    <div class="ms-layout">
+
+      <!-- Solution area -->
+      <div class="ms-solution" id="solutionArea">
+        <div class="ms-empty" id="emptyState">
+          <div class="mse-icon">🔢</div>
+          <div class="mse-title">Type a Math Problem Above</div>
+          <div class="mse-sub">Enter any equation, expression, or word problem. AI will break it down into clear, numbered steps with explanations.</div>
+        </div>
+      </div>
+
+      <!-- Side panel -->
+      <div class="ms-side">
+        <!-- Recent problems -->
+        <div class="side-card">
+          <div class="sdc-head"><span class="sdc-icon">🕐</span><span class="sdc-title">Recent Problems</span></div>
+          <div class="sdc-body">
+            <div class="hist-item" onclick="loadExample('x² - 5x + 6 = 0')"><span class="hi-eq">x² - 5x + 6 = 0</span><span class="hi-time">10m ago</span></div>
+            <div class="hist-item" onclick="loadExample('3x + 7 = 22')"><span class="hi-eq">3x + 7 = 22</span><span class="hi-time">1h ago</span></div>
+            <div class="hist-item" onclick="loadExample('Find area of triangle with base 12cm, height 8cm')"><span class="hi-eq">Area of triangle</span><span class="hi-time">2h ago</span></div>
+            <div class="hist-item" onclick="loadExample('√(144) + √(169)')"><span class="hi-eq">√144 + √169</span><span class="hi-time">Yesterday</span></div>
+          </div>
+        </div>
+
+        <!-- Topics -->
+        <div class="side-card">
+          <div class="sdc-head"><span class="sdc-icon">📚</span><span class="sdc-title">Math Topics (SSC)</span></div>
+          <div class="sdc-body">
+            <div class="topic-link" onclick="loadExample('Solve: 2x + 3 = 11')"><span class="tl-icon">📐</span> Linear Equations</div>
+            <div class="topic-link" onclick="loadExample('x² - 9x + 20 = 0')"><span class="tl-icon">📈</span> Quadratic Equations</div>
+            <div class="topic-link" onclick="loadExample('If sinθ = 3/5, find cosθ and tanθ')"><span class="tl-icon">📏</span> Trigonometry</div>
+            <div class="topic-link" onclick="loadExample('Find the 10th term of AP: 3, 7, 11, 15...')"><span class="tl-icon">🔢</span> Sequences & Series</div>
+            <div class="topic-link" onclick="loadExample('Find the volume of a cylinder with radius 7cm and height 10cm')"><span class="tl-icon">📦</span> Mensuration</div>
+            <div class="topic-link" onclick="loadExample('In how many ways can 5 books be arranged on a shelf?')"><span class="tl-icon">🎲</span> Probability & Statistics</div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="side-card">
+          <div class="sdc-head"><span class="sdc-icon">💡</span><span class="sdc-title">Tips</span></div>
+          <div class="sdc-body" style="font-size:.76rem;color:var(--muted);line-height:1.7;">
+            <div style="margin-bottom:6px;">• Use <strong>x²</strong> for squared, <strong>x³</strong> for cubed</div>
+            <div style="margin-bottom:6px;">• Type word problems too: "Find the area of…"</div>
+            <div style="margin-bottom:6px;">• Use the symbol buttons for special characters</div>
+            <div>• Ask follow-ups in <a href="ai-chat.html" style="color:var(--ai);font-weight:700;">AI Chat</a></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let history = [];
+
+function insertSymbol(sym) {
+  const input = document.getElementById('mathInput');
+  const pos = input.selectionStart;
+  const val = input.value;
+  input.value = val.slice(0, pos) + sym + val.slice(pos);
+  input.focus();
+  input.setSelectionRange(pos + sym.length, pos + sym.length);
+}
+
+function loadExample(eq) {
+  document.getElementById('mathInput').value = eq;
+  solveMath();
+}
+
+async function solveMath() {
+  const input = document.getElementById('mathInput');
+  const problem = input.value.trim();
+  if (!problem) { showToast('Please enter a math problem', '⚠️'); return; }
+
+  const btn = document.getElementById('solveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Solving…';
+  const area = document.getElementById('solutionArea');
+  area.innerHTML = `<div class="ms-empty" style="padding:40px;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">⏳</div>
+    <div style="font-size:.88rem;font-weight:800;color:var(--ink-2);">AI is solving your problem…</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:4px;">Breaking down each step</div>
+  </div>`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: `You are an AI math tutor for a Class IX Bangladeshi SSC student. Solve the given math problem step by step. Return ONLY a JSON object with: "problem" (the problem restated), "topic" (e.g. "Quadratic Equations"), "steps" (array of {title, explanation, math, note?}), "answer" (final answer as string), "similar_problems" (array of 3 similar problems as strings). In each step, "math" should show the mathematical working and "explanation" should explain what's happening in simple words. Keep explanations clear and suitable for a Class IX student.`,
+        messages: [{ role: 'user', content: `Solve step by step: ${problem}` }]
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.[0]?.text || '';
+    const match = reply.match(/\{[\s\S]*\}/);
+    if (match) {
+      renderSolution(JSON.parse(match[0]), problem);
+    } else throw new Error('parse');
+  } catch (e) {
+    renderSolution(getDemoSolution(problem), problem);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Solve Step by Step';
+}
+
+function getDemoSolution(problem) {
+  if (problem.includes('²') && problem.includes('=')) {
+    return {
+      problem: problem,
+      topic: "Quadratic Equations",
+      steps: [
+        {
+          title: "Identify the equation",
+          explanation: "First, let's identify the coefficients a, b, and c in the standard form ax² + bx + c = 0.",
+          math: "2x² - 7x + 3 = 0\na = 2, b = -7, c = 3"
+        },
+        {
+          title: "Calculate the discriminant",
+          explanation: "The discriminant D = b² - 4ac tells us the nature of roots. If D > 0, we get two distinct real roots.",
+          math: "D = b² - 4ac\nD = (-7)² - 4(2)(3)\nD = 49 - 24\nD = 25",
+          note: "Since D = 25 > 0, there are two distinct real roots."
+        },
+        {
+          title: "Apply the quadratic formula",
+          explanation: "Using x = (-b ± √D) / 2a, we substitute our values.",
+          math: "x = (-(-7) ± √25) / 2(2)\nx = (7 ± 5) / 4"
+        },
+        {
+          title: "Find both roots",
+          explanation: "We solve for x using both + and - to get two answers.",
+          math: "x₁ = (7 + 5) / 4 = 12/4 = 3\nx₂ = (7 - 5) / 4 = 2/4 = 1/2"
+        },
+        {
+          title: "Verify the solution",
+          explanation: "Let's check x = 3: 2(3)² - 7(3) + 3 = 18 - 21 + 3 = 0 ✓",
+          math: "x = 3: 2(9) - 21 + 3 = 0 ✓\nx = 1/2: 2(1/4) - 7/2 + 3 = 0 ✓",
+          note: "Both roots satisfy the equation!"
+        }
+      ],
+      answer: "x = 3 or x = 1/2",
+      similar_problems: [
+        "x² - 5x + 6 = 0",
+        "3x² + 2x - 8 = 0",
+        "x² - 4x - 12 = 0"
+      ]
+    };
+  }
+  return {
+    problem: problem,
+    topic: "Algebra",
+    steps: [
+      {
+        title: "Understand the problem",
+        explanation: "Let's carefully read and identify what we need to find.",
+        math: problem
+      },
+      {
+        title: "Set up the equation",
+        explanation: "We organize the given information into a mathematical form we can work with.",
+        math: "Organizing the expression…"
+      },
+      {
+        title: "Simplify",
+        explanation: "Apply basic arithmetic or algebraic operations to simplify.",
+        math: "Simplifying step by step…",
+        note: "Remember to follow BODMAS/PEMDAS order of operations."
+      },
+      {
+        title: "Calculate the result",
+        explanation: "Perform the final calculation to get our answer.",
+        math: "Computing the final answer…"
+      }
+    ],
+    answer: "See steps above",
+    similar_problems: [
+      "Solve: 3x + 5 = 20",
+      "Simplify: (x + 2)(x - 3)",
+      "Find x if 2x² - 8 = 0"
+    ]
+  };
+}
+
+function renderSolution(data, problem) {
+  const area = document.getElementById('solutionArea');
+  let html = '';
+
+  // Step cards
+  data.steps.forEach((step, i) => {
+    const colors = ['#06B6D4', '#8B5CF6', '#F59E0B', '#10B981', '#EC4899'];
+    const color = colors[i % colors.length];
+    html += `<div class="step-card anim-1" style="animation-delay:${i * 0.08}s;">
+      <div class="stc-head">
+        <div class="stc-num" style="background:${color};">${i + 1}</div>
+        <div class="stc-title">${step.title}</div>
+        <span class="stc-badge" style="background:${color}15;color:${color};">Step ${i + 1} of ${data.steps.length}</span>
+      </div>
+      <div class="stc-body">
+        <div class="stc-explanation">${step.explanation}</div>
+        <div class="stc-math">${step.math.replace(/\n/g, '<br>')}</div>
+        ${step.note ? `<div class="stc-note">💡 ${step.note}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  // Answer card
+  html += `<div class="answer-card anim-1" style="animation-delay:${data.steps.length * 0.08}s;">
+    <div class="ans-label">✅ Final Answer</div>
+    <div class="ans-value">${data.answer}</div>
+    <div class="ans-verify">✓ Verified by AI · ${data.topic || 'Mathematics'}</div>
+    <div class="ans-actions">
+      <button class="ans-btn" onclick="copyAnswer('${data.answer.replace(/'/g,"\\'")}')">📋 Copy</button>
+      <button class="ans-btn" onclick="showToast('Saved to notes!','📌')">📌 Save</button>
+      <button class="ans-btn" onclick="window.location='ai-chat.html'">💬 Ask Follow-up</button>
+    </div>
+  </div>`;
+
+  // Similar problems
+  if (data.similar_problems && data.similar_problems.length) {
+    html += `<div class="step-card anim-1">
+      <div class="stc-head"><div class="stc-num" style="background:#7C3AED;">🎯</div><div class="stc-title">Try Similar Problems</div></div>
+      <div class="stc-body">
+        ${data.similar_problems.map(p => `<button class="sim-prob" onclick="loadExample('${p.replace(/'/g,"\\'")}')">${p}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  area.innerHTML = html;
+  showToast('Problem solved!', '✅');
+}
+
+function copyAnswer(ans) {
+  navigator.clipboard.writeText(ans).then(() => showToast('Answer copied!', '📋'));
+}
+
+function showToast(msg, icon = '✅') {
+  const s = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerHTML = `<span>${icon}</span>${msg}`;
+  s.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2400);
+  setTimeout(() => t.remove(), 2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

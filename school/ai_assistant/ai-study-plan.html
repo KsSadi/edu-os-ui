@@ -1,0 +1,355 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Study Plan Generator — EduOS</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ai:#06B6D4;--ai-light:#CFFAFE;--ai-pale:#ECFEFF;--ai-dark:#0E7490;
+  --ai-violet:#8B5CF6;--ai-soft:linear-gradient(135deg,#06B6D4,#8B5CF6);
+  --ai-glow:0 0 20px rgba(6,182,212,.2);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;}
+.sidebar{background:linear-gradient(180deg,#050314 0%,#0D0828 55%,#1A1040 100%);}
+.sb-link.active{background:rgba(6,182,212,.2);color:#67E8F9;}
+.sb-link.active .sb-icon{background:rgba(6,182,212,.25);color:#A5F3FC;}
+.sb-link:hover{background:rgba(255,255,255,.06);}
+.sb-section-label{color:rgba(255,255,255,.25);}
+.live-dot{background:var(--ai);}
+
+/* Hero */
+.sp-hero{background:linear-gradient(135deg,#050314 0%,#0D0828 40%,#1A1040 70%,#0A1F3A 100%);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;margin-bottom:24px;}
+.sp-hero::before{content:'🗓️';position:absolute;right:30px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;}
+.sph-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.35);border-radius:20px;padding:4px 12px;font-size:.67rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#67E8F9;margin-bottom:8px;}
+.sph-title{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+.sph-sub{font-size:.84rem;opacity:.65;line-height:1.65;}
+
+/* Layout */
+.sp-layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+
+/* Config panel */
+.config-panel{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:80px;}
+.cp-head{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg);}
+.cp-title{font-size:.9rem;font-weight:900;color:var(--ink);margin-bottom:2px;}
+.cp-sub{font-size:.72rem;color:var(--muted);}
+.cp-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+.cp-label{font-size:.72rem;font-weight:800;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.82rem;font-family:inherit;color:var(--ink-2);background:var(--white);outline:none;box-sizing:border-box;}
+.fg input:focus,.fg select:focus{border-color:var(--ai);}
+.subject-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.subj-check{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.76rem;font-weight:700;color:var(--ink-2);transition:all .12s;}
+.subj-check input{width:14px;height:14px;accent-color:var(--ai);}
+.subj-check:has(input:checked){border-color:var(--ai);background:var(--ai-pale);color:var(--ai-dark);}
+.hours-row{display:flex;gap:8px;}
+.hour-btn{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-size:.8rem;font-weight:800;color:var(--muted);cursor:pointer;text-align:center;transition:all .12s;}
+.hour-btn.on{background:var(--ai-pale);border-color:var(--ai);color:var(--ai-dark);}
+.gen-btn{width:100%;padding:13px;background:var(--ai-soft);border:none;color:#fff;font-size:.88rem;font-weight:800;border-radius:11px;cursor:pointer;transition:opacity .15s;}
+.gen-btn:hover{opacity:.88;}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Plan area */
+.plan-area{display:flex;flex-direction:column;gap:16px;}
+.plan-header{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.ph-title{font-size:1rem;font-weight:900;color:var(--ink);}
+.ph-meta{font-size:.76rem;color:var(--muted);}
+.ph-actions{display:flex;gap:8px;}
+.ph-btn{padding:7px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:800;color:var(--ink-2);cursor:pointer;transition:all .12s;}
+.ph-btn:hover{border-color:var(--ai);color:var(--ai);}
+
+/* Week blocks */
+.week-block{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.wb-head{padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.wb-week{font-size:.82rem;font-weight:900;color:var(--ink);}
+.wb-focus{font-size:.72rem;color:var(--muted);}
+.wb-progress{margin-left:auto;font-size:.68rem;font-weight:800;color:var(--ai);background:var(--ai-pale);padding:3px 9px;border-radius:8px;}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.day-col{border-right:1px solid var(--border);min-height:120px;}
+.day-col:last-child{border-right:none;}
+.day-header{padding:8px;text-align:center;border-bottom:1px solid var(--border);background:var(--bg);}
+.day-name{font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;}
+.day-date{font-size:.76rem;font-weight:900;color:var(--ink);margin-top:1px;}
+.day-tasks{padding:6px;}
+.task-chip{margin-bottom:5px;padding:5px 7px;border-radius:7px;font-size:.66rem;font-weight:800;line-height:1.3;cursor:pointer;transition:opacity .12s;}
+.task-chip:hover{opacity:.8;}
+.tc-blue{background:#DBEAFE;color:#1E40AF;}
+.tc-purple{background:#EDE9FE;color:#5B21B6;}
+.tc-green{background:#DCFCE7;color:#166534;}
+.tc-amber{background:#FEF3C7;color:#92400E;}
+.tc-red{background:#FEE2E2;color:#991B1B;}
+.tc-cyan{background:#CFFAFE;color:#0E7490;}
+.rest-day{display:flex;align-items:center;justify-content:center;height:80px;font-size:1.2rem;opacity:.25;}
+
+/* Tips card */
+.tips-card{background:linear-gradient(135deg,#050314,#0D0828);border-radius:14px;padding:18px 20px;color:#fff;}
+.tips-title{font-size:.82rem;font-weight:900;opacity:.7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.tip-row{display:flex;gap:8px;font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.5;padding:4px 0;}
+.tip-icon{font-size:.9rem;flex-shrink:0;}
+
+/* Empty state */
+.empty-plan{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:60px 24px;text-align:center;}
+.ep-icon{font-size:4rem;margin-bottom:16px;}
+.ep-title{font-size:1rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;}
+.ep-sub{font-size:.8rem;color:var(--muted);line-height:1.65;}
+
+.anim-1{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:1000px){.sp-layout{grid-template-columns:1fr;}.day-grid{grid-template-columns:repeat(4,1fr);}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <div class="sp-hero anim-1">
+      <div class="sph-badge">🗓️ AI Study Planner · Personalized</div>
+      <div class="sph-title">AI Study Plan Generator</div>
+      <div class="sph-sub">Tell the AI your exam date and subjects — it builds a smart, week-by-week study schedule tailored to your class level and daily available hours.</div>
+    </div>
+
+    <div class="sp-layout anim-1">
+
+      <!-- Config -->
+      <div class="config-panel">
+        <div class="cp-head">
+          <div class="cp-title">⚙️ Configure Your Plan</div>
+          <div class="cp-sub">Set your exam and preferences below</div>
+        </div>
+        <div class="cp-body">
+          <div>
+            <div class="cp-label">Target Exam</div>
+            <div class="fg"><select id="cfgExam">
+              <option>SSC Final Exam</option>
+              <option>HSC Final Exam</option>
+              <option>Half-Yearly Exam</option>
+              <option>Annual Exam</option>
+              <option>Unit Test / Class Test</option>
+            </select></div>
+          </div>
+          <div>
+            <div class="cp-label">Exam Date</div>
+            <div class="fg"><input type="date" id="cfgDate" value="2026-04-15"></div>
+          </div>
+          <div>
+            <div class="cp-label">Class Level</div>
+            <div class="fg"><select id="cfgLevel">
+              <option>Class VI–VIII</option>
+              <option selected>Class IX–X (SSC)</option>
+              <option>Class XI–XII (HSC)</option>
+            </select></div>
+          </div>
+          <div>
+            <div class="cp-label">Subjects to Cover</div>
+            <div class="subject-checks">
+              <label class="subj-check"><input type="checkbox" checked value="Mathematics"> 📐 Maths</label>
+              <label class="subj-check"><input type="checkbox" checked value="Physics"> ⚡ Physics</label>
+              <label class="subj-check"><input type="checkbox" checked value="Chemistry"> 🧪 Chemistry</label>
+              <label class="subj-check"><input type="checkbox" checked value="Biology"> 🌱 Biology</label>
+              <label class="subj-check"><input type="checkbox" value="English"> 📖 English</label>
+              <label class="subj-check"><input type="checkbox" value="Bangla"> ✍️ Bangla</label>
+              <label class="subj-check"><input type="checkbox" value="ICT"> 💻 ICT</label>
+              <label class="subj-check"><input type="checkbox" value="Social Studies"> 🌍 S. Studies</label>
+            </div>
+          </div>
+          <div>
+            <div class="cp-label">Daily Study Hours</div>
+            <div class="hours-row">
+              <div class="hour-btn" id="h2" onclick="setHours(2,this)">2h</div>
+              <div class="hour-btn on" id="h3" onclick="setHours(3,this)">3h</div>
+              <div class="hour-btn" id="h4" onclick="setHours(4,this)">4h</div>
+              <div class="hour-btn" id="h5" onclick="setHours(5,this)">5h+</div>
+            </div>
+          </div>
+          <div>
+            <div class="cp-label">Study Style</div>
+            <div class="fg"><select id="cfgStyle">
+              <option>Balanced (all subjects daily)</option>
+              <option>Subject Focus (deep dive per day)</option>
+              <option>Weak Subject Priority</option>
+              <option>Exam Simulation (timed practice)</option>
+            </select></div>
+          </div>
+          <div>
+            <div class="cp-label">Weak Areas (optional)</div>
+            <div class="fg"><input type="text" id="cfgWeak" placeholder="e.g. Trigonometry, Organic Chemistry"></div>
+          </div>
+          <button class="gen-btn" id="genBtn" onclick="generatePlan()">🤖 Generate Study Plan with AI</button>
+          <div style="font-size:.68rem;color:var(--muted);text-align:center;">Takes 10–20 seconds · Personalized to your needs</div>
+        </div>
+      </div>
+
+      <!-- Plan area -->
+      <div class="plan-area" id="planArea">
+        <div class="empty-plan">
+          <div class="ep-icon">🗓️</div>
+          <div class="ep-title">No plan generated yet</div>
+          <div class="ep-sub">Configure your exam details on the left and click <strong>"Generate Study Plan with AI"</strong> to get a personalized week-by-week study schedule.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+let dailyHours = 3;
+const COLORS = ['tc-blue','tc-purple','tc-green','tc-amber','tc-red','tc-cyan'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const SUBJ_COLORS = {Mathematics:'tc-blue',Physics:'tc-cyan',Chemistry:'tc-purple',Biology:'tc-green',English:'tc-amber',Bangla:'tc-red',ICT:'tc-blue','Social Studies':'tc-green'};
+
+function setHours(h, el){
+  dailyHours = h;
+  document.querySelectorAll('.hour-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function getSelectedSubjects(){
+  return [...document.querySelectorAll('.subject-checks input:checked')].map(i=>i.value);
+}
+
+async function generatePlan(){
+  const subjects = getSelectedSubjects();
+  if(!subjects.length){ showToast('Select at least one subject','⚠️'); return; }
+  const exam = document.getElementById('cfgExam').value;
+  const dateVal = document.getElementById('cfgDate').value;
+  const level = document.getElementById('cfgLevel').value;
+  const style = document.getElementById('cfgStyle').value;
+  const weak = document.getElementById('cfgWeak').value;
+  const btn = document.getElementById('genBtn');
+  btn.disabled=true; btn.textContent='🤖 Generating Plan…';
+
+  const examDate = new Date(dateVal);
+  const today = new Date();
+  const weeksLeft = Math.max(1, Math.round((examDate-today)/(1000*60*60*24*7)));
+  const planWeeks = Math.min(weeksLeft, 6);
+
+  document.getElementById('planArea').innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:40px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">⚙️</div>
+    <div style="font-size:.9rem;font-weight:800;color:var(--ink-2);margin-bottom:6px;">AI is building your study plan…</div>
+    <div style="font-size:.75rem;color:var(--muted);">${planWeeks} weeks · ${subjects.length} subjects · ${dailyHours}h/day</div>
+    <div style="background:var(--border);border-radius:4px;height:5px;margin-top:18px;max-width:300px;margin-left:auto;margin-right:auto;overflow:hidden;"><div id="loadFill" style="height:100%;width:5%;background:linear-gradient(135deg,#06B6D4,#8B5CF6);border-radius:4px;transition:width .5s;"></div></div>
+  </div>`;
+
+  let prog=5;
+  const pi=setInterval(()=>{prog=Math.min(prog+8,90);const f=document.getElementById('loadFill');if(f)f.style.width=prog+'%';},800);
+
+  const prompt=`You are an expert academic planner for Bangladeshi students. Create a ${planWeeks}-week study plan for:
+- Exam: ${exam}
+- Exam date: ${dateVal}
+- Level: ${level}
+- Subjects: ${subjects.join(', ')}
+- Daily study time: ${dailyHours} hours
+- Study style: ${style}
+- Weak areas: ${weak||'none specified'}
+
+Return ONLY a valid JSON array (no markdown) where each item is a week:
+[
+  {
+    "week": 1,
+    "focus": "One-sentence week focus/theme",
+    "days": [
+      {
+        "day": "Mon",
+        "tasks": [
+          {"subject": "Mathematics", "topic": "Chapter/topic name", "duration": "1.5h", "type": "study"},
+          {"subject": "Physics", "topic": "Topic", "duration": "1h", "type": "practice"}
+        ]
+      }
+    ]
+  }
+]
+Include all 7 days. For Sunday use type "rest" and fewer tasks. Mix "study", "practice", "revision", "mock-test" types.
+Distribute subjects evenly. Prioritize weak areas. Make topics specific to ${level} Bangladesh curriculum.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    let raw=data.content?.[0]?.text||'[]';
+    raw=raw.replace(/```json|```/g,'').trim();
+    clearInterval(pi);
+    try{ renderPlan(JSON.parse(raw), exam, dateVal, planWeeks, subjects); }
+    catch(e){ renderDemoPlan(exam, dateVal, planWeeks, subjects); }
+  }catch(e){
+    clearInterval(pi);
+    renderDemoPlan(exam, dateVal, planWeeks, subjects);
+  }
+  btn.disabled=false; btn.textContent='🤖 Generate Study Plan with AI';
+}
+
+function renderDemoPlan(exam, dateVal, planWeeks, subjects){
+  const topicMap={
+    Mathematics:['Algebra & Equations','Trigonometry','Geometry','Statistics','Calculus Intro','Quadratic Equations'],
+    Physics:['Newton\'s Laws','Electricity','Waves & Optics','Thermodynamics','Modern Physics','Mechanics'],
+    Chemistry:['Periodic Table','Chemical Bonding','Acids & Bases','Organic Chemistry','Reactions','Stoichiometry'],
+    Biology:['Cell Biology','Photosynthesis','Human Systems','Genetics','Ecology','Evolution'],
+    English:['Grammar','Essay Writing','Comprehension','Vocabulary','Literature','Speaking'],
+    Bangla:['ব্যাকরণ','রচনা','ব্যাকরণ','কবিতা বিশ্লেষণ','অনুচ্ছেদ','সন্ধি-বিচ্ছেদ'],
+    ICT:['Algorithms','Databases','Networking','Programming','Web Basics','Security'],
+  };
+  const plan = Array.from({length:planWeeks},(_,wi)=>({
+    week:wi+1, focus:`Week ${wi+1}: ${wi<planWeeks/2?'Foundation Building':'Intensive Revision & Practice'}`,
+    days:DAYS.map((day,di)=>({
+      day, tasks: di===6 ? [{subject:'Rest',topic:'Light review + self-assessment',duration:'1h',type:'rest'}] :
+        subjects.slice(0,(di%2)+2).map((s,si)=>({subject:s,topic:(topicMap[s]||['Study'])[wi%6],duration:(si===0?'1.5':'1')+'h',type:di>3?'practice':'study'}))
+    }))
+  }));
+  renderPlan(plan, exam, dateVal, planWeeks, subjects);
+}
+
+function renderPlan(weeks, exam, dateVal, planWeeks, subjects){
+  let html = `<div class="plan-header">
+    <div><div class="ph-title">📅 Your ${planWeeks}-Week Study Plan</div><div class="ph-meta">${exam} · ${new Date(dateVal).toLocaleDateString('en-BD',{day:'numeric',month:'long',year:'numeric'})} · ${subjects.join(', ')}</div></div>
+    <div class="ph-actions"><button class="ph-btn" onclick="showToast('Plan exported!','📄')">📄 Export</button><button class="ph-btn" onclick="showToast('Plan printed!','🖨️')">🖨️ Print</button></div>
+  </div>`;
+
+  weeks.forEach(w=>{
+    html+=`<div class="week-block">
+      <div class="wb-head"><span class="wb-week">Week ${w.week}</span><span class="wb-focus">${w.focus}</span><span class="wb-progress">${w.week}/${planWeeks}</span></div>
+      <div class="day-grid">`;
+    (w.days||DAYS.map(d=>({day:d,tasks:[]}))).forEach(day=>{
+      html+=`<div class="day-col"><div class="day-header"><div class="day-name">${day.day}</div></div><div class="day-tasks">`;
+      if(day.tasks && day.tasks.length){
+        day.tasks.forEach(t=>{
+          const col=SUBJ_COLORS[t.subject]||'tc-cyan';
+          if(t.type==='rest'){html+=`<div class="rest-day">😴</div>`;}
+          else{html+=`<div class="task-chip ${col}" title="${t.subject}: ${t.topic} (${t.duration})"><div style="font-weight:900;">${t.subject.substring(0,4)}</div><div style="font-weight:600;opacity:.8;">${t.topic.substring(0,18)}${t.topic.length>18?'…':''}</div><div style="font-size:.6rem;margin-top:2px;opacity:.7;">${t.duration}</div></div>`;}
+        });
+      }else{html+=`<div class="rest-day">—</div>`;}
+      html+=`</div></div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  html+=`<div class="tips-card">
+    <div class="tips-title">📌 Study Tips for Your Plan</div>
+    <div class="tip-row"><span class="tip-icon">⏱️</span><span>Use the Pomodoro technique: 25 minutes of focused study, then 5 minutes break.</span></div>
+    <div class="tip-row"><span class="tip-icon">📊</span><span>Review each day's topics briefly the next morning — spaced repetition dramatically improves memory.</span></div>
+    <div class="tip-row"><span class="tip-icon">📝</span><span>Do at least one past board paper per subject in the final 2 weeks before the exam.</span></div>
+    <div class="tip-row"><span class="tip-icon">🌙</span><span>Sleep at least 7–8 hours. Memory consolidation happens during sleep — don't sacrifice it.</span></div>
+  </div>`;
+
+  document.getElementById('planArea').innerHTML = html;
+  showToast('Study plan generated!','🗓️');
+}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');const t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="ai-shell.js"></script>
+</body>
+</html>

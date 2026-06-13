@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Results — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Exam selector tabs */
+.exam-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.es-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;transition:all .15s;flex-shrink:0;min-width:160px;background:var(--white);}
+.es-card:hover{border-color:var(--stu);background:var(--stu-pale);}
+.es-card.on{border-color:var(--stu);background:var(--stu-pale);}
+.es-name{font-size:.84rem;font-weight:800;color:var(--ink-2);}
+.es-date{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.es-gpa{font-family:'DM Mono',monospace;font-size:1rem;font-weight:900;margin-top:6px;}
+
+/* Result card header */
+.result-banner{background:linear-gradient(135deg,#1E0A3C 0%,#7C3AED 100%);border-radius:14px;padding:22px 26px;color:#fff;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.rb-left{}
+.rb-exam{font-size:.72rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.rb-title{font-size:1.1rem;font-weight:800;margin-bottom:2px;}
+.rb-sub{font-size:.78rem;opacity:.7;}
+.rb-stats{display:flex;gap:20px;}
+.rb-stat-num{font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;}
+.rb-stat-lbl{font-size:.65rem;opacity:.6;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:1px;}
+
+/* Subject score bars */
+.subj-bar-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.subj-bar-row:last-child{border-bottom:none;}
+.sbr-name{font-size:.84rem;font-weight:700;color:var(--ink-2);min-width:160px;flex-shrink:0;}
+.sbr-bar-out{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+.sbr-bar-in{height:100%;border-radius:5px;transition:width .8s ease;}
+.sbr-score{font-family:'DM Mono',monospace;font-weight:900;font-size:.88rem;min-width:40px;text-align:right;flex-shrink:0;}
+.sbr-grade{min-width:30px;text-align:center;flex-shrink:0;}
+.grade-badge-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:24px;border-radius:6px;font-size:.7rem;font-weight:800;}
+
+/* GPA history chart */
+.gpa-chart{display:flex;align-items:flex-end;gap:10px;height:100px;padding:0 4px;}
+.gpa-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.gpa-bar{width:100%;border-radius:6px 6px 0 0;transition:height .6s ease;cursor:pointer;}
+.gpa-bar-val{font-size:.72rem;font-weight:800;font-family:'DM Mono',monospace;}
+.gpa-bar-lbl{font-size:.68rem;color:var(--muted);font-weight:600;}
+
+/* Rank card */
+.rank-display{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;}
+.rank-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--stu),#A855F7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;font-weight:900;font-family:'DM Mono',monospace;margin:0 auto 10px;box-shadow:0 4px 16px rgba(124,58,237,.4);}
+
+/* Marksheet preview button */
+.ms-preview-btn{background:linear-gradient(135deg,var(--stu),#A855F7);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:.86rem;font-weight:800;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px;}
+.ms-preview-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(124,58,237,.4);}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📊 Academic Record</div>
+        <div class="page-title">My Results</div>
+        <div class="page-sub">All exam results, subject scores, GPA history, and class rank. Farhan Islam · STU-2024-001.</div>
+      </div>
+      <div class="page-actions">
+        <button class="ms-preview-btn" onclick="window.location='../admin_panel/admin-exam-marksheet.html'">🖨️ Download Marksheet</button>
+      </div>
+    </div>
+
+    <!-- Exam selector -->
+    <div class="exam-selector anim-1" id="examSelector"></div>
+
+    <!-- Result banner -->
+    <div class="result-banner anim-1" id="resultBanner" style="margin-top:18px;"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;">
+
+      <!-- Subject scores -->
+      <div class="card anim-2">
+        <div class="card-header">
+          <div><div class="card-title">📚 Subject-wise Scores</div><div id="subjectCardSub" class="card-sub">Annual Examination 2024</div></div>
+          <div class="page-actions">
+            <select class="form-select" style="width:130px;padding:6px 10px;font-size:.78rem;" onchange="showToast('Comparing with class avg','📊')">
+              <option>My Scores</option>
+              <option>vs Class Avg</option>
+              <option>vs Topper</option>
+            </select>
+          </div>
+        </div>
+        <div style="padding:14px 18px;" id="subjectBars"></div>
+        <div class="card-footer">
+          <span class="text-sm text-muted" id="footerSummary">Total: 769/800 · All subjects passed</span>
+          <span class="badge" style="background:var(--stu-light);color:var(--stu-dark);border:1px solid #DDD6FE;font-size:.7rem;">Class Rank: 1st 🏆</span>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Rank card -->
+        <div class="card anim-2">
+          <div class="rank-display">
+            <div class="rank-circle">1</div>
+            <div style="font-size:.96rem;font-weight:800;color:var(--ink);">Class Rank</div>
+            <div style="font-size:.76rem;color:var(--muted);margin-top:2px;">1st out of 42 students</div>
+            <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;">
+              <div style="text-align:center;"><div style="font-size:1.1rem;font-weight:900;color:var(--stu);font-family:'DM Mono',monospace;">5.00</div><div style="font-size:.66rem;color:var(--muted);font-weight:600;">GPA</div></div>
+              <div style="width:1px;background:var(--border);"></div>
+              <div style="text-align:center;"><div style="font-size:1.1rem;font-weight:900;color:var(--green);font-family:'DM Mono',monospace;">769</div><div style="font-size:.66rem;color:var(--muted);font-weight:600;">Total</div></div>
+              <div style="width:1px;background:var(--border);"></div>
+              <div style="text-align:center;"><div style="font-size:1.1rem;font-weight:900;color:var(--ink);font-family:'DM Mono',monospace;">A+</div><div style="font-size:.66rem;color:var(--muted);font-weight:600;">Grade</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GPA trend -->
+        <div class="card anim-2">
+          <div class="card-header" style="padding:14px 16px 0;"><div class="card-title" style="font-size:.86rem;">📈 GPA History</div></div>
+          <div style="padding:14px 16px;">
+            <div class="gpa-chart" id="gpaChart" style="border-bottom:2px solid var(--border);"></div>
+            <div style="display:flex;gap:10px;margin-top:6px;" id="gpaLabels"></div>
+          </div>
+        </div>
+
+        <!-- Grade breakdown -->
+        <div class="card anim-2" style="padding:14px 16px;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">🏷️ Grade Breakdown</div>
+          <div style="display:flex;flex-direction:column;gap:7px;" id="gradeBreakdown"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const exams=[
+  {id:'annual24',name:'Annual Examination 2024',date:'Dec 2024',gpa:5.00,grade:'A+',total:769,outOf:800,rank:1,
+    subjects:[
+      {name:'Bangla 1st Paper',score:92,max:100},{name:'Bangla 2nd Paper',score:94,max:100},
+      {name:'English 1st Paper',score:91,max:100},{name:'English 2nd Paper',score:96,max:100},
+      {name:'Mathematics',score:98,max:100},{name:'Physics',score:95,max:100},
+      {name:'Chemistry',score:93,max:100},{name:'Biology',score:90,max:100},
+    ]},
+  {id:'hy24',name:'Half-Yearly 2024',date:'Jun 2024',gpa:4.80,grade:'A+',total:742,outOf:800,rank:2,
+    subjects:[
+      {name:'Bangla 1st Paper',score:88,max:100},{name:'Bangla 2nd Paper',score:90,max:100},
+      {name:'English 1st Paper',score:84,max:100},{name:'English 2nd Paper',score:92,max:100},
+      {name:'Mathematics',score:96,max:100},{name:'Physics',score:94,max:100},
+      {name:'Chemistry',score:88,max:100},{name:'Biology',score:86,max:100},
+    ]},
+  {id:'ut24',name:'Unit Test — Mar 2024',date:'Mar 2024',gpa:4.60,grade:'A+',total:186,outOf:200,rank:1,
+    subjects:[
+      {name:'Bangla',score:44,max:50},{name:'English',score:47,max:50},{name:'Mathematics',score:49,max:50},{name:'Science',score:46,max:50},
+    ]},
+];
+const gpaHistory=[{lbl:'UT-1',gpa:4.2},{lbl:'T1',gpa:4.5},{lbl:'HY',gpa:4.8},{lbl:'UT-2',gpa:4.6},{lbl:'Annual',gpa:5.0}];
+let selectedExam=0;
+
+function getGrade(pct){if(pct>=80)return{g:'A+',cls:'g-aplus',col:'var(--green)'};if(pct>=70)return{g:'A',cls:'',col:'var(--blue)'};if(pct>=60)return{g:'A−',cls:'',col:'var(--purple)'};if(pct>=50)return{g:'B',cls:'',col:'var(--amber)'};return{g:'F',cls:'',col:'var(--red)'};}
+
+function buildSelector(){
+  document.getElementById('examSelector').innerHTML=exams.map((e,i)=>`
+    <div class="es-card ${i===selectedExam?'on':''}" onclick="selectExam(${i})">
+      <div class="es-name">${e.name}</div>
+      <div class="es-date">${e.date}</div>
+      <div class="es-gpa" style="color:${e.gpa>=5?'var(--green)':e.gpa>=4?'var(--stu)':'var(--amber)'};">${e.gpa.toFixed(2)} GPA · ${e.grade}</div>
+    </div>`).join('');
+}
+
+function buildBanner(e){
+  document.getElementById('resultBanner').innerHTML=`
+    <div class="rb-left">
+      <div class="rb-exam">Exam Result</div>
+      <div class="rb-title">${e.name}</div>
+      <div class="rb-sub">Farhan Islam · Class IX–A · Roll 001 · ${e.date}</div>
+    </div>
+    <div class="rb-stats">
+      <div><div class="rb-stat-num">${e.total}/${e.outOf}</div><div class="rb-stat-lbl">Total Score</div></div>
+      <div><div class="rb-stat-num" style="color:#C4B5FD;">${e.gpa.toFixed(2)}</div><div class="rb-stat-lbl">GPA</div></div>
+      <div><div class="rb-stat-num" style="color:#86EFAC;">${e.grade}</div><div class="rb-stat-lbl">Grade</div></div>
+      <div><div class="rb-stat-num">#${e.rank}</div><div class="rb-stat-lbl">Class Rank</div></div>
+    </div>`;
+}
+
+function buildSubjectBars(e){
+  document.getElementById('subjectCardSub').textContent=e.name;
+  document.getElementById('subjectBars').innerHTML=e.subjects.map(s=>{
+    const pct=Math.round(s.score/s.max*100);
+    const {g,col}=getGrade(pct);
+    const barColor=pct>=90?'var(--green)':pct>=75?'var(--stu)':pct>=60?'var(--amber)':'var(--red)';
+    return`<div class="subj-bar-row">
+      <div class="sbr-name">${s.name}</div>
+      <div class="sbr-bar-out"><div class="sbr-bar-in" style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="sbr-score" style="color:${barColor};">${s.score}</div>
+      <div class="sbr-grade"><div class="grade-badge-sm" style="background:${pct>=80?'#ECFDF5':'var(--stu-pale)'};color:${barColor};">${g}</div></div>
+    </div>`;
+  }).join('');
+  const total=e.subjects.reduce((a,s)=>a+s.score,0);
+  const outOf=e.subjects.reduce((a,s)=>a+s.max,0);
+  document.getElementById('footerSummary').textContent=`Total: ${total}/${outOf} · All subjects passed`;
+}
+
+function buildGpaChart(){
+  const max=5.0;
+  document.getElementById('gpaChart').innerHTML=gpaHistory.map((g,i)=>{
+    const h=Math.round(g.gpa/max*90);
+    const isCur=i===gpaHistory.length-1;
+    const col=g.gpa>=5?'var(--green)':g.gpa>=4.5?'var(--stu)':'var(--blue)';
+    return`<div class="gpa-bar-wrap">
+      <div class="gpa-bar-val" style="color:${col};font-size:.7rem;">${g.gpa}</div>
+      <div class="gpa-bar" style="height:${h}px;background:${isCur?'var(--stu)':col};opacity:${isCur?1:.65};" title="${g.lbl}: ${g.gpa}"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('gpaLabels').innerHTML=gpaHistory.map(g=>`<div style="flex:1;text-align:center;font-size:.68rem;color:var(--muted);font-weight:600;">${g.lbl}</div>`).join('');
+}
+
+function buildGradeBreakdown(e){
+  const grades={};
+  e.subjects.forEach(s=>{const pct=Math.round(s.score/s.max*100);const g=getGrade(pct).g;grades[g]=(grades[g]||0)+1;});
+  const order=['A+','A','A−','B','C','F'];
+  const colors={'A+':'var(--green)','A':'var(--blue)','A−':'var(--stu)','B':'var(--amber)','C':'var(--red)','F':'var(--muted)'};
+  document.getElementById('gradeBreakdown').innerHTML=order.filter(g=>grades[g]).map(g=>`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="grade-badge-sm" style="background:var(--bg);color:${colors[g]};">${g}</div>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${grades[g]/e.subjects.length*100}%;background:${colors[g]};border-radius:3px;"></div>
+      </div>
+      <div style="font-size:.74rem;font-weight:800;color:${colors[g]};min-width:16px;text-align:right;">${grades[g]}</div>
+    </div>`).join('');
+}
+
+function selectExam(i){selectedExam=i;const e=exams[i];buildSelector();buildBanner(e);buildSubjectBars(e);buildGradeBreakdown(e);}
+
+function showToast(msg,icon='✅'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildSelector();buildBanner(exams[0]);buildSubjectBars(exams[0]);buildGpaChart();buildGradeBreakdown(exams[0]);
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

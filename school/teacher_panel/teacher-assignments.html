@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assignments — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+
+.asgn-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+.asgn-row:hover{background:var(--bg);}
+.asgn-row:last-child{border:none;}
+.asgn-icon{width:42px;height:42px;border-radius:10px;background:var(--teacher-pale);color:var(--teacher);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.asgn-title{font-size:.875rem;font-weight:700;color:var(--ink-2);}
+.asgn-meta{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.asgn-due{font-size:.8rem;font-weight:600;}
+.asgn-actions{margin-left:auto;display:flex;gap:6px;}
+.progress-bar-wrap{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px;min-width:80px;}
+.progress-bar-fill{height:100%;border-radius:4px;background:var(--teacher);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">My Portal</div>
+        <div class="page-title">Assignments</div>
+        <div class="page-sub">Create and manage assignments for your classes.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);" onclick="document.getElementById('newAssignModal').classList.add('open')">+ New Assignment</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:0;">
+      <button class="btn btn-sm" id="tab-active" onclick="switchTab('active')" style="border-radius:8px 8px 0 0;background:var(--teacher);color:#fff;border-color:var(--teacher);">Active (4)</button>
+      <button class="btn btn-sm btn-secondary" id="tab-closed" onclick="switchTab('closed')" style="border-radius:8px 8px 0 0;">Closed (3)</button>
+      <button class="btn btn-sm btn-secondary" id="tab-draft" onclick="switchTab('draft')" style="border-radius:8px 8px 0 0;">Draft (2)</button>
+    </div>
+
+    <!-- Active -->
+    <div id="content-active">
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <div class="asgn-row">
+          <div class="asgn-icon">📐</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Algebra – Chapter 5 Practice Problems</div>
+            <div class="asgn-meta">Class 9-A &nbsp;·&nbsp; 25 marks &nbsp;·&nbsp; Due: 28 Feb 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:72%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">18/25 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:#D97706;">Due 3d</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 View</a>
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon">📊</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Statistics – Data Collection Exercise</div>
+            <div class="asgn-meta">Class 8-A &nbsp;·&nbsp; 20 marks &nbsp;·&nbsp; Due: 01 Mar 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:45%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">14/31 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:#16A34A;">5d left</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 View</a>
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon">📐</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Geometry – Area & Perimeter Assignment</div>
+            <div class="asgn-meta">Class 7-A &nbsp;·&nbsp; 30 marks &nbsp;·&nbsp; Due: 27 Feb 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:88%;background:#EF4444;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">30/34 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:#DC2626;">Overdue!</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 View</a>
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon">📝</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Trigonometry – Problem Set 3</div>
+            <div class="asgn-meta">Class 10-C &nbsp;·&nbsp; 40 marks &nbsp;·&nbsp; Due: 05 Mar 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:20%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">6/29 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:#16A34A;">8d left</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 View</a>
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Closed -->
+    <div id="content-closed" style="display:none;">
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <div class="asgn-row">
+          <div class="asgn-icon" style="background:#F0FDF4;color:#16A34A;">✅</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Chapter 3 – Linear Equations Worksheet</div>
+            <div class="asgn-meta">Class 9-A &nbsp;·&nbsp; 20 marks &nbsp;·&nbsp; Closed: 10 Jan 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:96%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">24/25 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:var(--muted);">Closed</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 Results</a>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon" style="background:#F0FDF4;color:#16A34A;">✅</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Probability – Basic Problems</div>
+            <div class="asgn-meta">Class 8-A &nbsp;·&nbsp; 15 marks &nbsp;·&nbsp; Closed: 15 Jan 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:100%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">31/31 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:var(--muted);">Closed</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 Results</a>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon" style="background:#F0FDF4;color:#16A34A;">✅</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Mensuration – Surface Area & Volume</div>
+            <div class="asgn-meta">Class 7-A &nbsp;·&nbsp; 25 marks &nbsp;·&nbsp; Closed: 20 Jan 2025</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-wrap" style="width:100px;"><div class="progress-bar-fill" style="width:82%;"></div></div>
+              <span style="font-size:.73rem;color:var(--muted);">28/34 submitted</span>
+            </div>
+          </div>
+          <span class="asgn-due" style="color:var(--muted);">Closed</span>
+          <div class="asgn-actions">
+            <a href="teacher-submission-view.html" class="btn btn-xs btn-secondary">📋 Results</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Draft -->
+    <div id="content-draft" style="display:none;">
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <div class="asgn-row">
+          <div class="asgn-icon" style="background:#FEF3C7;color:#D97706;">📄</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Calculus – Limits & Derivatives</div>
+            <div class="asgn-meta">Class 10-C &nbsp;·&nbsp; 50 marks &nbsp;·&nbsp; Not published yet</div>
+          </div>
+          <span class="asgn-due" style="color:#D97706;">Draft</span>
+          <div class="asgn-actions">
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+            <button class="btn btn-xs btn-primary" style="background:var(--teacher);border-color:var(--teacher);">🚀 Publish</button>
+          </div>
+        </div>
+        <div class="asgn-row">
+          <div class="asgn-icon" style="background:#FEF3C7;color:#D97706;">📄</div>
+          <div style="flex:1;">
+            <div class="asgn-title">Set Theory – Venn Diagram Problems</div>
+            <div class="asgn-meta">Class 9-B &nbsp;·&nbsp; 20 marks &nbsp;·&nbsp; Not published yet</div>
+          </div>
+          <span class="asgn-due" style="color:#D97706;">Draft</span>
+          <div class="asgn-actions">
+            <button class="btn btn-xs btn-secondary">✏️ Edit</button>
+            <button class="btn btn-xs btn-primary" style="background:var(--teacher);border-color:var(--teacher);">🚀 Publish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- New Assignment Modal -->
+    <div class="modal-overlay" id="newAssignModal">
+      <div class="modal" style="max-width:520px;width:100%;">
+        <div class="modal-header">
+          <div class="modal-title">📝 New Assignment</div>
+          <button class="modal-close" onclick="document.getElementById('newAssignModal').classList.remove('open')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" placeholder="Assignment title">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Class</label>
+              <select class="form-select">
+                <option>Class 7-A</option>
+                <option>Class 8-A</option>
+                <option>Class 8-B</option>
+                <option>Class 9-A</option>
+                <option>Class 9-B</option>
+                <option>Class 10-C</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Marks</label>
+              <input type="number" class="form-input" value="25">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Assign Date</label>
+              <input type="date" class="form-input" value="2025-02-25">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" class="form-input" value="2025-03-05">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description / Instructions</label>
+            <textarea class="form-textarea" rows="3" placeholder="Instructions for students..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attach File (optional)</label>
+            <input type="file" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="document.getElementById('newAssignModal').classList.remove('open')">Cancel</button>
+          <button class="btn btn-primary" style="background:var(--teacher);border-color:var(--teacher);">Create Assignment</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<script src="teacher-shell.js"></script>
+<script>
+function switchTab(name) {
+  ['active','closed','draft'].forEach(function(t) {
+    document.getElementById('content-' + t).style.display = t === name ? '' : 'none';
+    var btn = document.getElementById('tab-' + t);
+    if (t === name) {
+      btn.style.background = 'var(--teacher)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'var(--teacher)';
+      btn.classList.remove('btn-secondary');
+    } else {
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+      btn.classList.add('btn-secondary');
+    }
+  });
+}
+</script>
+</body>
+</html>

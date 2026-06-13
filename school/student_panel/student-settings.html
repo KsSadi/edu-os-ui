@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+.cfg-section{background:var(--white);border:1px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;}
+.cfg-section-head{background:var(--bg);padding:11px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+.cfg-section-title{font-size:.84rem;font-weight:800;color:var(--ink);}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);}
+.cfg-row:last-child{border-bottom:none;}
+.cfg-key{font-size:.84rem;font-weight:600;color:var(--ink-2);}
+.cfg-hint{font-size:.72rem;color:var(--muted);margin-top:2px;}
+
+.danger-zone{background:#FFF1F2;border:1.5px solid #FECACA;border-radius:14px;padding:20px 24px;}
+.dz-title{font-size:.9rem;font-weight:800;color:var(--red);margin-bottom:4px;}
+.dz-sub{font-size:.78rem;color:#991B1B;margin-bottom:16px;}
+
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+
+<main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header" style="margin-bottom:20px;">
+      <div>
+        <div class="page-eyebrow">⚙ Account</div>
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Manage your notification preferences, password, and privacy settings.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" style="background:var(--stu);" onclick="showToast('Settings saved','✅')">💾 Save Changes</button>
+      </div>
+    </div>
+
+    <div class="grid-2 anim-1" style="gap:20px;align-items:start;">
+      <div>
+        <!-- Notifications -->
+        <div class="cfg-section">
+          <div class="cfg-section-head"><span>🔔</span><div class="cfg-section-title">Notifications</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Fee due reminders</div><div class="cfg-hint">Alert 3 days before due date</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Exam schedule alerts</div><div class="cfg-hint">Notify when new schedule is published</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Result published</div><div class="cfg-hint">Alert when results are available</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">New notice board posts</div><div class="cfg-hint">School announcements</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">New messages from teachers</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">New study materials uploaded</div></div><label class="toggle"><input type="checkbox" onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Online exam reminders</div><div class="cfg-hint">1 hour before exam starts</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Preference updated','🔔')"><span class="toggle-slider"></span></label></div>
+        </div>
+
+        <!-- Notification channels -->
+        <div class="cfg-section">
+          <div class="cfg-section-head"><span>📲</span><div class="cfg-section-title">Notification Channels</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">SMS (to registered phone)</div><div class="cfg-hint">+880-1711-000001</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Channel updated','📱')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Email</div><div class="cfg-hint">farhan.islam@stu.dhaka-hs.edu.bd</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Channel updated','📧')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">In-app push notification</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Channel updated','🔔')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Also notify parent</div><div class="cfg-hint">CC fee & result alerts to parent</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Parent notification updated','👨‍👩‍👧')"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Security -->
+        <div class="cfg-section">
+          <div class="cfg-section-head"><span>🔐</span><div class="cfg-section-title">Password & Security</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Current Password</div></div><input type="password" class="form-input" placeholder="••••••••" style="width:180px;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">New Password</div></div><input type="password" class="form-input" placeholder="Min 8 characters" style="width:180px;"></div>
+          <div class="cfg-row"><div><div class="cfg-key">Confirm New Password</div></div><input type="password" class="form-input" placeholder="Re-enter password" style="width:180px;"></div>
+          <div class="cfg-row">
+            <div></div><button class="btn btn-primary" style="background:var(--stu);" onclick="showToast('Password updated','🔐')">Update Password</button>
+          </div>
+          <div class="cfg-row"><div><div class="cfg-key">Two-factor authentication</div><div class="cfg-hint">SMS OTP on login</div></div><label class="toggle"><input type="checkbox" onchange="showToast('2FA preference updated','🔐')"><span class="toggle-slider"></span></label></div>
+        </div>
+
+        <!-- Display -->
+        <div class="cfg-section">
+          <div class="cfg-section-head"><span>🎨</span><div class="cfg-section-title">Display & Language</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Language</div></div><select class="form-select" style="width:160px;" onchange="showToast('Language saved','🌐')"><option selected>English</option><option>বাংলা</option></select></div>
+          <div class="cfg-row"><div><div class="cfg-key">Theme</div></div><select class="form-select" style="width:160px;" onchange="showToast('Theme applied','🎨')"><option selected>Light</option><option>Dark</option><option>System Default</option></select></div>
+          <div class="cfg-row"><div><div class="cfg-key">Font size</div></div><select class="form-select" style="width:160px;" onchange="showToast('Font size saved','🔤')"><option>Small</option><option selected>Medium</option><option>Large</option></select></div>
+        </div>
+
+        <!-- Privacy -->
+        <div class="cfg-section">
+          <div class="cfg-section-head"><span>🔒</span><div class="cfg-section-title">Privacy</div></div>
+          <div class="cfg-row"><div><div class="cfg-key">Show profile to classmates</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Privacy updated','🔒')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Show rank on class leaderboard</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Privacy updated','🔒')"><span class="toggle-slider"></span></label></div>
+          <div class="cfg-row"><div><div class="cfg-key">Allow teachers to message me</div></div><label class="toggle"><input type="checkbox" checked onchange="showToast('Privacy updated','🔒')"><span class="toggle-slider"></span></label></div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-zone">
+          <div class="dz-title">⚠ Danger Zone</div>
+          <div class="dz-sub">These actions cannot be undone. Contact your school admin for account deletion.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn" style="background:#FEE2E2;color:var(--red);border:1.5px solid #FECACA;" onclick="showToast('Session cleared — please log in again','⏏')">⏏ Sign Out All Devices</button>
+            <button class="btn" style="background:#FEE2E2;color:var(--red);border:1.5px solid #FECACA;" onclick="showToast('Request sent to admin','🗑️')">🗑️ Request Account Deletion</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg, icon='✅') {
+  const s = document.getElementById('toastStack');
+  const t = document.createElement('div'); t.className = 'toast';
+  t.innerHTML = `<span>${icon}</span>${msg}`;
+  s.appendChild(t); setTimeout(()=>t.style.opacity='0',2400); setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="../demo-nav.js"></script>
+<script src="student-shell.js"></script>
+</body>

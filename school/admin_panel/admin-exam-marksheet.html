@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Marksheet &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Page layout */
+.ms-layout{display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start;}
+
+/* Student picker */
+.stu-picker-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.stu-picker-row:hover{background:var(--blue-pale);}
+.stu-picker-row.sel{background:var(--blue-pale);border-left:3px solid var(--blue);}
+.spr-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#fff;flex-shrink:0;}
+.spr-name{font-size:.83rem;font-weight:700;color:var(--ink-2);}
+.spr-meta{font-size:.68rem;color:var(--muted);}
+.spr-gpa{margin-left:auto;font-size:.78rem;font-weight:800;font-family:'DM Mono',monospace;}
+
+/* -- MARKSHEET PRINT LAYOUT -- */
+.marksheet{
+  background:#fff;
+  font-family:'Times New Roman',Times,serif;
+  padding:32px 40px;
+  border:1px solid #ccc;
+  border-radius:4px;
+  max-width:760px;
+  margin:0 auto;
+  box-shadow:0 2px 20px rgba(0,0,0,.1);
+  position:relative;
+}
+/* Watermark */
+.marksheet::before{
+  content:'DHAKA HIGH SCHOOL';
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);
+  font-size:3rem;font-weight:900;color:rgba(0,80,200,.04);
+  white-space:nowrap;pointer-events:none;letter-spacing:.1em;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.ms-header{text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #0C1B45;}
+.ms-school-name{font-size:1.3rem;font-weight:900;color:#0C1B45;letter-spacing:.02em;margin-bottom:2px;font-family:'Plus Jakarta Sans',sans-serif;}
+.ms-school-sub{font-size:.78rem;color:#444;margin-bottom:6px;}
+.ms-exam-title{font-size:.98rem;font-weight:700;color:#0C1B45;text-transform:uppercase;letter-spacing:.05em;background:#EFF6FF;padding:5px 16px;border-radius:4px;display:inline-block;}
+.ms-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;font-size:.84rem;}
+.ms-info-row{display:flex;gap:4px;}<br>
+.ms-info-label{color:#555;min-width:120px;flex-shrink:0;}
+.ms-info-val{font-weight:700;color:#111;}
+
+/* Marks table */
+.ms-table{border-collapse:collapse;width:100%;font-size:.84rem;margin:16px 0;}
+.ms-table th{border:1px solid #999;padding:7px 10px;background:#EFF6FF;font-weight:700;text-align:center;font-size:.78rem;font-family:'Plus Jakarta Sans',sans-serif;}
+.ms-table th:first-child{text-align:left;}
+.ms-table td{border:1px solid #ccc;padding:7px 10px;text-align:center;}
+.ms-table td:first-child{text-align:left;font-weight:600;}
+.ms-table tr:nth-child(even) td{background:#FAFAFA;}
+.ms-table tfoot td{background:#EFF6FF;font-weight:700;border-color:#999;}
+.ms-grade-row{background:#F0FDF4 !important;}
+.ms-grade-cell{font-weight:900;color:#065F46;}
+
+/* Result strip */
+.ms-result-strip{display:flex;justify-content:space-between;align-items:center;background:#0C1B45;color:#fff;border-radius:6px;padding:12px 20px;margin-top:16px;gap:20px;flex-wrap:wrap;}
+.ms-result-block{text-align:center;}
+.ms-result-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;}
+.ms-result-lbl{font-size:.68rem;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:.05em;}
+
+/* Signatures */
+.ms-signatures{display:flex;justify-content:space-between;margin-top:28px;padding-top:14px;border-top:1px solid #ccc;}
+.ms-sig{text-align:center;font-size:.75rem;color:#444;}
+.ms-sig-line{width:120px;border-bottom:1px solid #333;margin:0 auto 4px;}
+
+/* Print toolbar */
+.print-toolbar{display:flex;gap:10px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media print{
+  .sidebar,.topbar,.print-toolbar,.ms-layout .card:first-child,.page-header,.toast-stack{display:none!important;}
+  .main{margin:0!important;padding:0!important;}
+  .page-body{padding:0!important;}
+  .marksheet{box-shadow:none;border:none;padding:20px;}
+  @page{margin:1cm;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Marksheet</div>
+        <div class="page-title">Student Marksheet</div>
+        <div class="page-sub">Individual printable marksheet PDF preview. Select student preview print or download.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Printing all 42 marksheets&middot;','&#x2705;')"> Print All (42)</button>
+        <button class="btn btn-primary" onclick="window.print()"> Print This</button>
+      </div>
+    </div>
+
+    <div class="ms-layout anim-1">
+
+      <!-- Student list panel -->
+      <div class="card">
+        <div class="card-header" style="padding:12px 14px;">
+          <div class="card-title" style="font-size:.86rem;"> Select Student</div>
+          <select class="form-select" style="width:110px;padding:4px 8px;font-size:.76rem;">
+            <option>Annual 2024</option>
+            <option>Half-Yearly 2025</option>
+          </select>
+        </div>
+        <div style="padding:8px 14px;border-bottom:1px solid var(--border);">
+          <div class="search-bar" style="width:100%;">
+            <span class="sb-search-icon">&#x1F50D;</span>
+            <input type="text" placeholder="Search&middot;" oninput="filterStudents(this.value)">
+          </div>
+        </div>
+        <div id="stuPickerList" style="max-height:500px;overflow-y:auto;"></div>
+        <div class="card-footer"><span class="text-sm text-muted">42 students &middot; Class IX&middot;A</span></div>
+      </div>
+
+      <!-- Marksheet preview -->
+      <div>
+        <!-- Print toolbar -->
+        <div class="card" style="border-radius:14px 14px 0 0;border-bottom:none;">
+          <div class="print-toolbar">
+            <select class="form-select" style="width:220px;padding:7px 12px;font-size:.82rem;">
+              <option selected>Annual Examination 2024</option>
+              <option>Half-Yearly 2025</option>
+            </select>
+            <button class="btn btn-sm btn-outline" onclick="window.print()"> Print</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Downloading PDF&middot;','&#x2705;')"> Download PDF</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Sent via email to parent','&#x2705;')"> Email to Parent</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Sending via SMS&middot;','&#x2705;')"> SMS Link</button>
+            <button class="btn btn-sm btn-ghost" onclick="prevStudent()">&middot; Prev</button>
+            <button class="btn btn-sm btn-ghost" onclick="nextStudent()">Next &middot;</button>
+          </div>
+        </div>
+
+        <!-- The actual marksheet -->
+        <div class="card" style="border-radius:0 0 14px 14px;padding:28px;" id="marksheetWrap">
+          <div class="marksheet" id="marksheetDoc"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46','#9D174D'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Tahsin','Mahmud','Sumaiya','Nafisa','Tanvir','Roksana','Sabbir','Marium','Kamal','Rina','Jahir','Puja'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+const BN_NAMES=[' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '];
+
+const SUBJECTS=[
+  {name:'Bangla 1st Paper',code:'Ban-1',full:100,pass:33},
+  {name:'Bangla 2nd Paper',code:'Ban-2',full:100,pass:33},
+  {name:'English 1st Paper',code:'Eng-1',full:100,pass:33},
+  {name:'English 2nd Paper',code:'Eng-2',full:100,pass:33},
+  {name:'Mathematics',code:'Math',full:100,pass:33},
+  {name:'Physics',code:'Phy',full:100,pass:33},
+  {name:'Chemistry',code:'Chem',full:100,pass:33},
+  {name:'Biology',code:'Bio',full:100,pass:33},
+];
+
+function rnd(a,b){return Math.floor(a+Math.random()*(b-a+1));}
+function grade(t){if(t>=80)return'A+';if(t>=70)return'A';if(t>=60)return'A-';if(t>=50)return'B';if(t>=40)return'C';if(t>=33)return'D';return'F';}
+function gp(t){if(t>=80)return 5;if(t>=70)return 4;if(t>=60)return 3.5;if(t>=50)return 3;if(t>=40)return 2;if(t>=33)return 1;return 0;}
+function gradeLetter(gpa){if(gpa>=5)return'A+';if(gpa>=4)return'A';if(gpa>=3.5)return'A-';if(gpa>=3)return'B';if(gpa>=2)return'C';if(gpa>=1)return'D';return'F';}
+
+const students=Array.from({length:20},(_,i)=>{
+  const marks=SUBJECTS.map(()=>i===0?rnd(88,100):rnd(40,100));
+  const totals=marks;
+  const gpas=totals.map(t=>gp(t));
+  const avgGPA=parseFloat((gpas.reduce((a,b)=>a+b,0)/gpas.length).toFixed(2));
+  return{
+    idx:i,roll:String(i+1).padStart(3,'0'),
+    fn:FIRST[i%FIRST.length],ln:LAST[Math.floor(i*1.7)%LAST.length],
+    bn:BN_NAMES[i%BN_NAMES.length],
+    color:COLORS[i%COLORS.length],
+    dob:'2009-'+(String((i%12)+1).padStart(2,'0'))+'-'+(String((i%28)+1).padStart(2,'0')),
+    father:"Mohammad "+(FIRST[(i+5)%FIRST.length]),
+    id:`STU-2024-${String(i+1).padStart(3,'0')}`,
+    regNo:`DH-IX-${String(100+i)}`,
+    roll:String(i+1).padStart(3,'0'),
+    marks,totals,gpas,avgGPA,
+    total:totals.reduce((a,b)=>a+b,0),
+    passed:totals.every(t=>t>=33),
+    position:i+1,
+    attPct:rnd(85,99),
+  };
+});
+let selected=0;
+
+function buildPickerList(filter=''){
+  document.getElementById('stuPickerList').innerHTML=students
+    .filter(s=>!filter||(s.fn+' '+s.ln).toLowerCase().includes(filter.toLowerCase()))
+    .map(s=>`
+    <div class="stu-picker-row ${s.idx===selected?'sel':''}" onclick="selectStudent(${s.idx})" data-idx="${s.idx}">
+      <div class="spr-av" style="background:${s.color};">${s.fn[0]}${s.ln[0]}</div>
+      <div style="flex:1;min-width:0;"><div class="spr-name">${s.fn} ${s.ln}</div><div class="spr-meta">Roll ${s.roll} &middot; ${s.id}</div></div>
+      <div class="spr-gpa" style="color:${s.avgGPA>=4?'var(--green)':s.avgGPA>=3?'var(--blue)':'var(--amber)'};">${s.avgGPA.toFixed(2)}</div>
+    </div>`).join('');
+}
+
+function filterStudents(q){buildPickerList(q);}
+function selectStudent(idx){selected=idx;buildPickerList();renderMarksheet();}
+function prevStudent(){if(selected>0){selected--;buildPickerList();renderMarksheet();}}
+function nextStudent(){if(selected<students.length-1){selected++;buildPickerList();renderMarksheet();}}
+
+function renderMarksheet(){
+  const s=students[selected];
+  const dobDate=new Date(s.dob).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  const gradeDistRows=SUBJECTS.map((subj,i)=>{
+    const t=s.marks[i],g=grade(t),p=gp(t);
+    return`<tr>
+      <td style="text-align:left;">${subj.name}</td>
+      <td style="text-align:left;color:#666;font-size:.76rem;">${subj.code}</td>
+      <td>${subj.full}</td>
+      <td>${subj.pass}</td>
+      <td style="font-weight:700;">${t}</td>
+      <td style="font-weight:800;color:${t<33?'#DC2626':'#1D4ED8'};">${g}</td>
+      <td style="font-weight:800;font-family:monospace;">${p.toFixed(1)}</td>
+      <td>${t>=subj.pass?'<span style="color:green;font-weight:800;"></span>':'<span style="color:red;font-weight:800;"></span>'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('marksheetDoc').innerHTML=`
+    <!-- School header -->
+    <div class="ms-header">
+      <div class="ms-school-name"> Dhaka High School</div>
+      <div class="ms-school-sub">Dhaka, Bangladesh &middot; EIIN: 108765 &middot; Tel: 01711-123456<br>dhaka-high.prathomik.edu.bd</div>
+      <div class="ms-exam-title">Annual Examination 2024 &middot; Academic Transcript</div>
+    </div>
+
+    <!-- Student info -->
+    <div class="ms-info-grid">
+      <div>
+        <div class="ms-info-row"><span class="ms-info-label">Student Name:</span><span class="ms-info-val">${s.fn} ${s.ln}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label"> :</span><span class="ms-info-val" style="font-size:.9rem;">${s.bn}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Student ID:</span><span class="ms-info-val" style="font-family:monospace;">${s.id}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Registration No:</span><span class="ms-info-val" style="font-family:monospace;">${s.regNo}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Date of Birth:</span><span class="ms-info-val">${dobDate}</span></div>
+      </div>
+      <div>
+        <div class="ms-info-row"><span class="ms-info-label">Father's Name:</span><span class="ms-info-val">${s.father}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Class:</span><span class="ms-info-val">Class IX &middot; Section A (Science)</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Roll No:</span><span class="ms-info-val" style="font-family:monospace;">${s.roll}</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Session:</span><span class="ms-info-val">2024&#x2013;25</span></div>
+        <div class="ms-info-row"><span class="ms-info-label">Attendance:</span><span class="ms-info-val" style="color:${s.attPct>=85?'green':'orange'};">${s.attPct}%</span></div>
+      </div>
+    </div>
+
+    <!-- Marks table -->
+    <table class="ms-table">
+      <thead>
+        <tr><th>Subject</th><th>Code</th><th>Full Marks</th><th>Pass Marks</th><th>Obtained</th><th>Grade</th><th>GP</th><th>Pass/Fail</th></tr>
+      </thead>
+      <tbody>
+        ${gradeDistRows}
+      </tbody>
+      <tfoot>
+        <tr class="ms-grade-row">
+          <td colspan="4" style="text-align:right;font-weight:700;">Total Marks Obtained:</td>
+          <td class="ms-grade-cell">${s.total} / 800</td>
+          <td class="ms-grade-cell" colspan="2">GPA: ${s.avgGPA.toFixed(2)}</td>
+          <td class="ms-grade-cell">${s.passed?'PASSED':'FAILED'}</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align:right;font-weight:700;">Letter Grade:</td>
+          <td colspan="4" style="font-weight:900;font-size:.95rem;color:#0C1B45;">${gradeLetter(s.avgGPA)} &middot; ${s.avgGPA>=5?'Excellent':s.avgGPA>=4?'Very Good':s.avgGPA>=3?'Good':'Needs Improvement'}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Result strip -->
+    <div class="ms-result-strip">
+      <div class="ms-result-block">
+        <div class="ms-result-num">${s.total}</div>
+        <div class="ms-result-lbl">Total / 800</div>
+      </div>
+      <div class="ms-result-block">
+        <div class="ms-result-num">${s.avgGPA.toFixed(2)}</div>
+        <div class="ms-result-lbl">GPA (5.0 Scale)</div>
+      </div>
+      <div class="ms-result-block">
+        <div class="ms-result-num">${gradeLetter(s.avgGPA)}</div>
+        <div class="ms-result-lbl">Grade</div>
+      </div>
+      <div class="ms-result-block">
+        <div class="ms-result-num">${s.position}${['','st','nd','rd'][s.position]||'th'}</div>
+        <div class="ms-result-lbl">Class Position</div>
+      </div>
+      <div class="ms-result-block">
+        <div class="ms-result-num" style="color:${s.passed?'#4ADE80':'#F87171'};">${s.passed?'PASSED':'FAILED'}</div>
+        <div class="ms-result-lbl">Result</div>
+      </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="ms-signatures">
+      <div class="ms-sig"><div class="ms-sig-line"></div>Class Teacher</div>
+      <div class="ms-sig"><div class="ms-sig-line"></div>Exam Controller</div>
+      <div class="ms-sig"><div class="ms-sig-line"></div>Principal</div>
+    </div>
+
+    <div style="text-align:center;margin-top:14px;font-size:.7rem;color:#888;">
+      This is a computer-generated marksheet. Verify authenticity at dhaka-high.prathomik.edu.bd &middot; Issued: ${new Date().toLocaleDateString('en-GB')}
+    </div>`;
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildPickerList();renderMarksheet();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

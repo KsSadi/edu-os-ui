@@ -1,0 +1,482 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Support hero */
+.support-hero {
+  background:linear-gradient(135deg,#0F1623 0%,#1E2D4A 100%);
+  border-radius:16px; padding:32px 36px; margin-bottom:28px;
+  display:flex; align-items:center; gap:32px; flex-wrap:wrap;
+  position:relative; overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+}
+.support-hero::before { content:''; position:absolute; top:-80px; right:-80px; width:300px; height:300px; border-radius:50%; background:rgba(99,102,241,.08); }
+.sh-left { flex:1; min-width:200px; position:relative; z-index:1; }
+.sh-title { font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:6px; }
+.sh-sub   { font-size:.85rem; color:rgba(255,255,255,.55); line-height:1.6; margin-bottom:18px; }
+.sh-status-row { display:flex; gap:20px; flex-wrap:wrap; }
+.sh-stat { }
+.sh-stat-num   { font-size:1.3rem; font-weight:800; color:#fff; }
+.sh-stat-label { font-size:.7rem; color:rgba(255,255,255,.45); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+.sh-right { position:relative; z-index:1; }
+
+/* Quick contact cards */
+.contact-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
+.contact-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:14px; padding:20px 18px; text-align:center;
+  box-shadow:var(--shadow-sm); cursor:pointer;
+  transition:box-shadow .18s,transform .18s;
+}
+.contact-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.cc-icon { font-size:1.8rem; margin-bottom:10px; }
+.cc-title { font-size:.9rem; font-weight:800; color:var(--ink); margin-bottom:4px; }
+.cc-sub   { font-size:.76rem; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+.cc-status { display:inline-flex; align-items:center; gap:5px; font-size:.72rem; font-weight:700; }
+
+/* Support layout */
+.support-layout { display:grid; grid-template-columns:1fr 300px; gap:24px; }
+
+/* Ticket form */
+.ticket-form { }
+
+/* Category grid */
+.cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
+.cat-btn {
+  padding:10px 8px; border-radius:10px; border:1.5px solid var(--border);
+  background:var(--bg); font-family:inherit; font-size:.78rem; font-weight:700;
+  color:var(--ink-3); cursor:pointer; text-align:center; transition:all .15s;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.cat-btn.on { border-color:var(--indigo); background:var(--indigo-pale); color:var(--indigo); }
+.cat-btn:hover:not(.on) { border-color:var(--border-2); background:var(--white); }
+.cat-icon { font-size:1.1rem; }
+
+/* Priority indicator */
+.priority-row { display:flex; gap:8px; }
+.pri-btn {
+  flex:1; padding:8px; border-radius:8px; border:1.5px solid var(--border);
+  background:var(--bg); font-family:inherit; font-size:.77rem; font-weight:700;
+  cursor:pointer; text-align:center; transition:all .15s;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.pri-btn.on-low    { border-color:var(--green); background:#ECFDF5; color:var(--green); }
+.pri-btn.on-medium { border-color:var(--amber); background:#FFFBEB; color:var(--amber); }
+.pri-btn.on-high   { border-color:var(--red);   background:#FFF5F5; color:var(--red); }
+
+/* File attach preview */
+.attach-preview { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin-top:8px; }
+.attach-icon { font-size:1rem; }
+.attach-name { font-size:.8rem; font-weight:600; color:var(--ink-2); flex:1; }
+.attach-size { font-size:.72rem; color:var(--muted); }
+.attach-del  { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.8rem; }
+
+/* Ticket list items */
+.ticket-item {
+  display:flex; gap:14px; padding:14px 0;
+  border-bottom:1px solid var(--border); cursor:pointer;
+  transition:background .12s; align-items:flex-start;
+}
+.ticket-item:last-child { border:none; }
+.ticket-item:hover { margin:0 -22px; padding:14px 22px; background:var(--bg); }
+.ti-id    { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); min-width:72px; flex-shrink:0; padding-top:2px; }
+.ti-body  { flex:1; min-width:0; }
+.ti-title { font-size:.87rem; font-weight:700; color:var(--ink-2); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ti-meta  { font-size:.73rem; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
+.ti-right { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.ti-time  { font-size:.7rem; color:var(--muted-2); }
+
+/* Status badges */
+.s-open     { background:#DBEAFE; color:#1E40AF; }
+.s-progress { background:#FEF3C7; color:#92400E; }
+.s-resolved { background:#D1FAE5; color:#065F46; }
+.s-closed   { background:#F3F4F6; color:#374151; }
+
+/* FAQ accordion */
+.faq-item { border-bottom:1px solid var(--border); }
+.faq-item:last-child { border:none; }
+.faq-q { display:flex; align-items:center; justify-content:space-between; padding:14px 0; cursor:pointer; font-size:.87rem; font-weight:700; color:var(--ink-2); background:none; border:none; width:100%; text-align:left; font-family:inherit; gap:12px; }
+.faq-q:hover { color:var(--indigo); }
+.faq-chevron { font-size:.7rem; color:var(--muted); transition:transform .2s; flex-shrink:0; }
+.faq-item.open .faq-chevron { transform:rotate(180deg); }
+.faq-a { display:none; padding:0 0 14px; font-size:.83rem; color:var(--muted); line-height:1.7; }
+.faq-item.open .faq-a { display:block; }
+
+/* SLA row */
+.sla-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.sla-row:last-child { border:none; }
+.sla-priority { font-size:.75rem; font-weight:800; min-width:60px; }
+.sla-time { font-size:.82rem; color:var(--ink-3); flex:1; }
+.sla-avail { font-size:.72rem; color:var(--muted); }
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+@media(max-width:1100px){.support-layout{grid-template-columns:1fr;}}
+@media(max-width:760px){.contact-cards{grid-template-columns:1fr 1fr;} .cat-grid{grid-template-columns:1fr 1fr 1fr;}}
+@media(max-width:480px){.contact-cards{grid-template-columns:1fr;} .cat-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="support-hero anim-1">
+      <div class="sh-left">
+        <div class="sh-title"> How can we help you?</div>
+        <div class="sh-sub">Our support team is available Saturday&middot;Thursday, 9 AM &middot; 6 PM. Average response time under 2 hours for Standard plan.</div>
+        <div class="sh-status-row">
+          <div class="sh-stat"><div class="sh-stat-num">2</div><div class="sh-stat-label">Open Tickets</div></div>
+          <div class="sh-stat"><div class="sh-stat-num">1.8h</div><div class="sh-stat-label">Avg Response</div></div>
+          <div class="sh-stat"><div class="sh-stat-num">98%</div><div class="sh-stat-label">Satisfaction</div></div>
+        </div>
+      </div>
+      <div class="sh-right">
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:18px 22px;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div class="live-dot"></div>
+            <span style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.8);">Support Online</span>
+          </div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:14px;">Sat&middot;Thu &middot; 9:00 AM &middot; 6:00 PM<br>Response within 2 hours</div>
+          <button class="plan-btn-white" onclick="openModal('chatModal')" style="width:100%;background:#fff;color:#0F1623;font-weight:700;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:.82rem;">&#x1F4AC; Start Live Chat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact channels -->
+    <div class="contact-cards anim-2">
+      <div class="contact-card" onclick="openModal('ticketModal')">
+        <div class="cc-icon">&#x1F4E7;</div>
+        <div class="cc-title">Submit a Ticket</div>
+        <div class="cc-sub">Describe your issue and our team will respond via email. Best for detailed problems.</div>
+        <div class="cc-status"><span class="badge badge-green">Recommended</span></div>
+      </div>
+      <div class="contact-card" onclick="openModal('chatModal')">
+        <div class="cc-icon">&#x1F4E7;</div>
+        <div class="cc-title">Live Chat</div>
+        <div class="cc-sub">Chat with a support agent in real time. Available during business hours.</div>
+        <div class="cc-status"><div class="live-dot" style="width:8px;height:8px;"></div><span style="font-size:.75rem;font-weight:700;color:var(--green);">Online Now</span></div>
+      </div>
+      <div class="contact-card" onclick="showToast('Calling +880 1800 EDUOS&middot;','&#x2705;')">
+        <div class="cc-icon">&#x1F4E7;</div>
+        <div class="cc-title">Phone Support</div>
+        <div class="cc-sub">Call our dedicated school helpline. Pro plan customers get a priority queue.</div>
+        <div class="cc-status"><span style="font-size:.75rem;font-weight:700;color:var(--muted);">+880 1800 EDUOS</span></div>
+      </div>
+    </div>
+
+    <div class="support-layout">
+
+      <!-- LEFT: New ticket + past tickets -->
+      <div>
+
+        <!-- New ticket form -->
+        <div class="card anim-2 mb-6">
+          <div class="card-header"><div><div class="card-title"> Submit New Support Ticket</div><div class="card-sub">Please be as detailed as possible &middot; it helps us resolve faster.</div></div></div>
+          <div class="card-body">
+
+            <!-- Category -->
+            <div class="form-group mb-4">
+              <label class="form-label">Category <span class="required">*</span></label>
+              <div class="cat-grid">
+                <button class="cat-btn on" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>Bug / Error</button>
+                <button class="cat-btn" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>How-To</button>
+                <button class="cat-btn" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>Performance</button>
+                <button class="cat-btn" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>Billing</button>
+                <button class="cat-btn" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>Account / Access</button>
+                <button class="cat-btn" onclick="selectCat(this)"><span class="cat-icon">&#x1F41B;</span>Feature Request</button>
+              </div>
+            </div>
+
+            <!-- Subject + priority -->
+            <div class="form-grid form-grid-2 mb-4">
+              <div class="form-group">
+                <label class="form-label">Subject <span class="required">*</span></label>
+                <input type="text" class="form-input" id="ticketSubject" placeholder="Brief description of the issue">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <div class="priority-row">
+                  <button class="pri-btn on-low" id="pri-low" onclick="setPri('low')"> Low</button>
+                  <button class="pri-btn" id="pri-medium" onclick="setPri('medium')"> Medium</button>
+                  <button class="pri-btn" id="pri-high" onclick="setPri('high')"> High</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Affected module -->
+            <div class="form-group mb-4">
+              <label class="form-label">Affected Module</label>
+              <select class="form-select">
+                <option value="">Select module (optional)</option>
+                <option>Dashboard</option>
+                <option>Student Management</option>
+                <option>Fee Collection</option>
+                <option>Exam &amp; Results</option>
+                <option>Attendance</option>
+                <option>Notice Board</option>
+                <option>Billing</option>
+                <option>User Management</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group mb-4">
+              <label class="form-label">Description <span class="required">*</span></label>
+              <textarea class="form-textarea" id="ticketDesc" style="min-height:130px;" placeholder="Describe the issue in detail. Include:&#10;&middot; What you were trying to do&#10;&middot; What happened&#10;&middot; What you expected to happen&#10;&middot; Steps to reproduce (if applicable)"></textarea>
+            </div>
+
+            <!-- Attach screenshot -->
+            <div class="form-group mb-4">
+              <label class="form-label">Attachments <span class="form-hint">(screenshots help us a lot)</span></label>
+              <div class="upload-zone" onclick="simulateAttach()">
+                <div class="upload-zone-icon">&#x1F4CE;</div>
+                <div class="upload-zone-title">Click to attach or drag &amp; drop</div>
+                <div class="upload-zone-sub">PNG, JPG, PDF up to 10 MB</div>
+              </div>
+              <div id="attachList"></div>
+            </div>
+
+            <!-- Contact pref -->
+            <div class="form-group mb-6">
+              <label class="form-label">Preferred Response Channel</label>
+              <div style="display:flex;gap:10px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;cursor:pointer;padding:8px 14px;border:1.5px solid var(--indigo);border-radius:8px;background:var(--indigo-pale);"><input type="radio" name="resp" value="email" checked style="accent-color:var(--indigo);"> Email</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:.83rem;cursor:pointer;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;"><input type="radio" name="resp" value="phone" style="accent-color:var(--indigo);"> Phone</label>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-secondary" onclick="showToast('Draft saved','&#x2705;')">Save Draft</button>
+              <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="submitTicket()">&#x1F4E8; Submit Ticket</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- My tickets -->
+        <div class="card anim-3">
+          <div class="card-header">
+            <div><div class="card-title"> My Tickets</div><div class="card-sub">Track status of your submitted support requests</div></div>
+            <div style="display:flex;gap:6px;">
+              <span class="badge badge-blue">2 Open</span>
+              <span class="badge badge-gray">5 Total</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0 22px;">
+            <div class="ticket-item" onclick="openModal('ticketDetailModal')">
+              <span class="ti-id">#TKT-2108</span>
+              <div class="ti-body">
+                <div class="ti-title">Students not loading in Class IX attendance module</div>
+                <div class="ti-meta"><span> Bug</span><span>&middot;</span><span>Attendance Module</span><span>&middot;</span><span>Submitted 22 Feb</span></div>
+              </div>
+              <div class="ti-right"><span class="badge s-progress">In Progress</span><span class="ti-time">Updated 4h ago</span></div>
+            </div>
+            <div class="ticket-item" onclick="openModal('ticketDetailModal')">
+              <span class="ti-id">#TKT-2094</span>
+              <div class="ti-body">
+                <div class="ti-title">How to bulk import student data from Excel?</div>
+                <div class="ti-meta"><span>How-To</span><span>&middot;</span><span>Student Management</span><span>&middot;</span><span>Submitted 18 Feb</span></div>
+              </div>
+              <div class="ti-right"><span class="badge s-open">Open</span><span class="ti-time">1 day ago</span></div>
+            </div>
+            <div class="ticket-item">
+              <span class="ti-id">#TKT-2071</span>
+              <div class="ti-body">
+                <div class="ti-title">Fee report not generating correct totals for partial payments</div>
+                <div class="ti-meta"><span> Bug</span><span>&middot;</span><span>Fee Collection</span><span>&middot;</span><span>Submitted 10 Feb</span></div>
+              </div>
+              <div class="ti-right"><span class="badge s-resolved">Resolved</span><span class="ti-time">12 Feb</span></div>
+            </div>
+            <div class="ticket-item">
+              <span class="ti-id">#TKT-2044</span>
+              <div class="ti-body">
+                <div class="ti-title">Add ability to export notices as PDF</div>
+                <div class="ti-meta"><span>Feature</span><span>&middot;</span><span>Notice Board</span><span>&middot;</span><span>Submitted 1 Feb</span></div>
+              </div>
+              <div class="ti-right"><span class="badge s-closed">Closed</span><span class="ti-time">5 Feb</span></div>
+            </div>
+            <div class="ticket-item">
+              <span class="ti-id">#TKT-2010</span>
+              <div class="ti-body">
+                <div class="ti-title">SMS not delivered to bKash-registered numbers</div>
+                <div class="ti-meta"><span> Bug</span><span>&middot;</span><span>Notifications</span><span>&middot;</span><span>Submitted 20 Jan</span></div>
+              </div>
+              <div class="ti-right"><span class="badge s-resolved">Resolved</span><span class="ti-time">21 Jan</span></div>
+            </div>
+          </div>
+          <div class="card-footer"><span class="text-sm text-muted">5 tickets total &middot; 2 open</span><button class="btn btn-sm btn-outline" onclick="showToast('Loading all tickets&middot;','&#x2705;')">View All</button></div>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- RIGHT sidebar -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- SLA -->
+        <div class="card" style="padding:20px;">
+          <div class="card-title mb-4">Response Times (Standard Plan)</div>
+          <div class="sla-row"><span class="sla-priority" style="color:var(--red);"> Critical</span><span class="sla-time">Under 4 hours</span><span class="sla-avail">24/7</span></div>
+          <div class="sla-row"><span class="sla-priority" style="color:var(--amber);"> High</span><span class="sla-time">Under 8 hours</span><span class="sla-avail">Business hrs</span></div>
+          <div class="sla-row"><span class="sla-priority" style="color:var(--blue);"> Medium</span><span class="sla-time">1 business day</span><span class="sla-avail">Business hrs</span></div>
+          <div class="sla-row"><span class="sla-priority" style="color:var(--muted);">&#x26A0; Low</span><span class="sla-time">3 business days</span><span class="sla-avail">Business hrs</span></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);line-height:1.5;">
+            Upgrade to <a href="admin-billing.html" style="color:var(--indigo);font-weight:700;">Pro Plan</a> for 2-hour SLA on all priority levels.
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="card" style="padding:20px;">
+          <div class="card-title mb-4">Frequently Asked Questions</div>
+          <div id="faqList">
+            <div class="faq-item">
+              <button class="faq-q" onclick="toggleFaq(this)">How do I reset a student's password?<span class="faq-chevron">&#x203A;</span></button>
+              <div class="faq-a">Go to <strong>User Management Students</strong>, find the student, click and select "Reset Password". They'll receive an SMS with their new temporary password.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="toggleFaq(this)">Can I import students from an Excel file?<span class="faq-chevron">&#x203A;</span></button>
+              <div class="faq-a">Yes. Go to <strong>Students Import</strong> and download the Excel template. Fill it out and re-upload. The system will validate each row before importing.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="toggleFaq(this)">Why are SMS messages not delivering?<span class="faq-chevron">&#x203A;</span></button>
+              <div class="faq-a">Check your SMS credit balance under <strong>Billing</strong>. Also verify that the mobile numbers in student/parent profiles are correct 11-digit Bangladeshi numbers (01XXXXXXXXX format).</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="toggleFaq(this)">How do I switch to a new academic year?<span class="faq-chevron">&#x203A;</span></button>
+              <div class="faq-a">Go to <strong>Academic Year</strong> and click "Create New Year". You can then run the Student Promotion wizard to move students to the next class automatically.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="toggleFaq(this)">Can parents see their child's results online?<span class="faq-chevron">&#x203A;</span></button>
+              <div class="faq-a">Yes. Parents can log in at <strong>your-school.prathomik.edu.bd</strong> using their registered phone number. Results are visible after you publish them from the Exam module.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Docs links -->
+        <div class="card" style="padding:20px;">
+          <div class="card-title mb-4"> Documentation</div>
+          <a href="#" class="cf-item" style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:.82rem;color:var(--ink-3);border-bottom:1px solid var(--border);" onclick="showToast('Opening docs&middot;','&#x2705;')"> Getting Started Guide <span style="margin-left:auto;color:var(--muted);"></span></a>
+          <a href="#" style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:.82rem;color:var(--ink-3);border-bottom:1px solid var(--border);" onclick="showToast('Opening docs&middot;','&#x2705;')"> Video Tutorials <span style="margin-left:auto;color:var(--muted);"></span></a>
+          <a href="#" style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:.82rem;color:var(--ink-3);border-bottom:1px solid var(--border);" onclick="showToast('Opening docs&middot;','&#x2705;')"> API Reference <span style="margin-left:auto;color:var(--muted);"></span></a>
+          <a href="#" style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:.82rem;color:var(--ink-3);" onclick="showToast('Opening docs&middot;','&#x2705;')"> Release Notes <span style="margin-left:auto;color:var(--muted);"></span></a>
+        </div>
+
+      </div>
+    </div><!-- /layout -->
+  </div><!-- /page-body -->
+</main>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="modal-overlay" id="ticketDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <div><div class="modal-title">#TKT-2108 &middot; Students not loading in attendance module</div><div class="modal-sub">Submitted 22 Feb 2025 &middot; Bug &middot; Attendance</div></div>
+      <button class="modal-close" onclick="closeModal('ticketDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;"><span class="badge s-progress fw-bold">In Progress</span><span class="badge badge-amber"> High Priority</span><span class="badge badge-gray">Assigned: Rafi (EduOS Support)</span></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:.85rem;color:var(--ink-3);line-height:1.7;margin-bottom:16px;">
+        <strong>Original report:</strong> When I go to Attendance Class IX Mark Attendance, the student list doesn't load. It shows a loading spinner for a few seconds then shows "No students found" even though Class IX has 120 students enrolled.
+      </div>
+      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;"><span style="font-size:.8rem;font-weight:700;color:var(--muted);">CONVERSATION</span><span style="font-size:.72rem;color:var(--muted);">2 messages</span></div>
+        <div style="padding:16px;">
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),#818CF8);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">R</div>
+            <div style="background:var(--bg);border-radius:0 10px 10px 10px;padding:12px 14px;font-size:.83rem;color:var(--ink-3);line-height:1.65;flex:1;border:1px solid var(--border);">
+              <strong style="color:var(--ink);">Rafi &middot; EduOS Support</strong> &middot; <span style="color:var(--muted);font-size:.72rem;">23 Feb, 10:14 AM</span><br>
+              Thanks for reporting this. We've identified the issue &middot; it's related to a session ID mismatch when the academic year was recently switched. We're deploying a fix now. Should be resolved within 2 hours. In the meantime, try clearing your browser cache and re-logging in.
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-direction:row-reverse;">
+            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#D97706,#F59E0B);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">AR</div>
+            <div style="background:var(--indigo-pale);border-radius:10px 0 10px 10px;padding:12px 14px;font-size:.83rem;color:var(--ink-3);line-height:1.65;max-width:80%;border:1px solid #C7D2FE;">
+              <strong style="color:var(--ink);">You (Abdur Rahman)</strong> &middot; <span style="color:var(--muted);font-size:.72rem;">23 Feb, 11:00 AM</span><br>
+              Cache cleared but still the same issue. Will wait for the fix.
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);">
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="form-input" placeholder="Add a reply&middot;" style="flex:1;">
+            <button class="btn btn-primary" onclick="showToast('Reply sent!','&#x2705;')">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('ticketDetailModal')">Close</button><button class="btn btn-danger btn-sm" onclick="showToast('Ticket closed','&#x2705;');closeModal('ticketDetailModal')">Close Ticket</button></div>
+  </div>
+</div>
+
+<!-- Live Chat Modal -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><div><div class="modal-title"> Live Chat</div><div class="modal-sub"><div class="live-dot" style="display:inline-block;margin-right:5px;"></div>Rafi from EduOS Support is online</div></div><button class="modal-close" onclick="closeModal('chatModal')">&times;</button></div>
+    <div class="modal-body">
+      <div style="background:var(--bg);border-radius:10px;padding:16px;min-height:160px;margin-bottom:14px;font-size:.83rem;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px solid var(--border);">
+        <div style="font-size:1.5rem;"></div>
+        <div>Chat messages will appear here.<br>Average wait: &lt;2 minutes.</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="form-input" placeholder="Type your message&middot;" id="chatInput" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit ticket confirmation -->
+<div class="modal-overlay" id="ticketSuccessModal">
+  <div class="modal modal-sm">
+    <div class="modal-body" style="padding:36px;text-align:center;">
+      <div style="font-size:2.8rem;margin-bottom:14px;"></div>
+      <div class="modal-title mb-2">Ticket Submitted!</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:800;color:var(--indigo);margin-bottom:10px;">#TKT-2109</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">We'll respond to <strong>principal@dhakahigh.edu.bd</strong> within <strong>8 hours</strong> based on your priority level.</div>
+      <button class="btn btn-primary" onclick="closeModal('ticketSuccessModal')">Back to Support</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+function showToast(msg,icon='&#x2139;&#xFE0F;'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+function selectCat(btn){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function setPri(level){['low','medium','high'].forEach(l=>{const b=document.getElementById('pri-'+l);b.className='pri-btn'+(l===level?` on-${l}`:'');});}
+function toggleFaq(btn){const item=btn.parentElement;item.classList.toggle('open');}
+function simulateAttach(){const list=document.getElementById('attachList');const el=document.createElement('div');el.className='attach-preview';el.innerHTML=`<span class="attach-icon"></span><span class="attach-name">screenshot_${Date.now()}.png</span><span class="attach-size">248 KB</span><button class="attach-del" onclick="this.parentElement.remove()">&times;</button>`;list.appendChild(el);}
+function submitTicket(){
+  const s=document.getElementById('ticketSubject').value.trim();
+  const d=document.getElementById('ticketDesc').value.trim();
+  if(!s||!d){showToast('Please fill in subject and description','&#x2705;');return;}
+  document.getElementById('ticketSubject').value='';
+  document.getElementById('ticketDesc').value='';
+  openModal('ticketSuccessModal');
+}
+function sendChat(){const i=document.getElementById('chatInput');if(!i.value.trim())return;showToast('Message sent! Agent will respond shortly.','&#x2705;');i.value='';}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

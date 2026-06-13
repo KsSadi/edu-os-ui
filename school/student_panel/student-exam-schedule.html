@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Schedule — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Countdown banner */
+.countdown-banner{background:linear-gradient(135deg,#1E0A3C,#4C1D95,#7C3AED);border-radius:16px;padding:22px 28px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:22px;position:relative;overflow:hidden;}
+.countdown-banner::after{content:'';position:absolute;right:-20px;top:-20px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.05);}
+.cb-left{}
+.cb-eyebrow{font-size:.7rem;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.cb-title{font-size:1.15rem;font-weight:800;margin-bottom:2px;}
+.cb-sub{font-size:.8rem;opacity:.65;}
+.cb-timer{display:flex;gap:12px;position:relative;z-index:1;}
+.ct-box{background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;text-align:center;min-width:56px;}
+.ct-num{font-size:1.4rem;font-weight:900;font-family:'DM Mono',monospace;}
+.ct-lbl{font-size:.6rem;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* Exam tabs */
+.exam-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:0;}
+.et-btn{padding:9px 18px;border:none;background:none;font-size:.84rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s;}
+.et-btn.on{color:var(--stu);border-bottom-color:var(--stu);}
+
+/* Timetable */
+.timetable{width:100%;border-collapse:collapse;}
+.timetable th{background:var(--stu-pale);padding:10px 14px;font-size:.75rem;font-weight:700;color:var(--stu);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:2px solid var(--stu-light);}
+.timetable td{padding:12px 14px;font-size:.84rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.timetable tr:last-child td{border-bottom:none;}
+.timetable tr:hover td{background:var(--stu-pale);}
+.day-col{font-weight:800;color:var(--ink);min-width:80px;}
+.date-col{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--muted);min-width:100px;}
+.subj-col{font-weight:700;color:var(--ink-2);}
+.time-col{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted);}
+.marks-col{font-weight:800;font-family:'DM Mono',monospace;}
+.room-col{font-size:.78rem;color:var(--muted);}
+.status-soon{background:#FEF3C7;color:#92400E;padding:3px 8px;border-radius:12px;font-size:.7rem;font-weight:700;}
+.status-upcoming{background:#EDE9FE;color:#5B21B6;padding:3px 8px;border-radius:12px;font-size:.7rem;font-weight:700;}
+.status-done{background:#F1F5F9;color:#64748B;padding:3px 8px;border-radius:12px;font-size:.7rem;font-weight:700;}
+
+/* Class tests */
+.class-test-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.class-test-row:last-child{border-bottom:none;}
+.ct-icon{width:38px;height:38px;border-radius:10px;background:var(--stu-pale);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ct-subj{font-size:.88rem;font-weight:800;color:var(--ink-2);}
+.ct-date{font-size:.74rem;color:var(--muted);margin-top:2px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📅 Academics</div>
+        <div class="page-title">Exam Schedule</div>
+        <div class="page-sub">Full examination timetable for Farhan Islam · Class IX–A (Science) · Session 2026–27</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Downloading schedule as PDF…','📄')">📥 Download PDF</button>
+      </div>
+    </div>
+
+    <!-- Countdown banner -->
+    <div class="countdown-banner">
+      <div class="cb-left">
+        <div class="cb-eyebrow">⏳ Half-Yearly Examination</div>
+        <div class="cb-title">Exam Starts July 15, 2026</div>
+        <div class="cb-sub">Class IX–A (Science) · Dhaka High School</div>
+      </div>
+      <div class="cb-timer" id="cbTimer">
+        <div class="ct-box"><div class="ct-num" id="ctD">--</div><div class="ct-lbl">Days</div></div>
+        <div class="ct-box"><div class="ct-num" id="ctH">--</div><div class="ct-lbl">Hrs</div></div>
+        <div class="ct-box"><div class="ct-num" id="ctM">--</div><div class="ct-lbl">Min</div></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="exam-tabs">
+      <button class="et-btn on" onclick="switchExam('half',this)">Half-Yearly</button>
+      <button class="et-btn" onclick="switchExam('annual',this)">Annual</button>
+      <button class="et-btn" onclick="switchExam('class',this)">Class Tests</button>
+    </div>
+
+    <!-- Half-Yearly -->
+    <div id="exam-half">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Half-Yearly Examination 2026</div>
+            <div class="card-sub">Class IX–A · Hall: Block B · Roll: 001 · Seat: B-14</div>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="timetable">
+            <thead>
+              <tr><th>Day</th><th>Date</th><th>Subject</th><th>Time</th><th>Marks</th><th>Room</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="day-col">Tuesday</td><td class="date-col">Jul 15</td><td class="subj-col">Bangladesh & World Studies</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-soon">Soon</span></td></tr>
+              <tr><td class="day-col">Wednesday</td><td class="date-col">Jul 16</td><td class="subj-col">English (1st Paper)</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Thursday</td><td class="date-col">Jul 17</td><td class="subj-col">English (2nd Paper)</td><td class="time-col">10:00–12:00</td><td class="marks-col">75</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Saturday</td><td class="date-col">Jul 19</td><td class="subj-col">Mathematics</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Sunday</td><td class="date-col">Jul 20</td><td class="subj-col">Physics</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Monday</td><td class="date-col">Jul 21</td><td class="subj-col">Chemistry</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Tuesday</td><td class="date-col">Jul 22</td><td class="subj-col">Biology</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Wednesday</td><td class="date-col">Jul 23</td><td class="subj-col">ICT</td><td class="time-col">10:00–12:00</td><td class="marks-col">75</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Thursday</td><td class="date-col">Jul 24</td><td class="subj-col">Bangla (1st Paper)</td><td class="time-col">10:00–13:00</td><td class="marks-col">100</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+              <tr><td class="day-col">Saturday</td><td class="date-col">Jul 26</td><td class="subj-col">Bangla (2nd Paper)</td><td class="time-col">10:00–12:00</td><td class="marks-col">75</td><td class="room-col">B-14</td><td><span class="status-upcoming">Upcoming</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <div class="card-header"><div class="card-title">📚 Syllabus Summary</div><div class="card-sub">Key topics to focus on</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">📐 Mathematics</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Ch 1–5: Algebra<br>Ch 6–8: Geometry<br>Ch 9–10: Trigonometry<br>Ch 11: Statistics</div>
+            </div>
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">⚗️ Chemistry</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Ch 1–3: Matter & Atoms<br>Ch 4–5: Chemical Bonding<br>Ch 6–7: Reactions<br>Ch 8: Acids & Bases</div>
+            </div>
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">🔬 Biology</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Ch 1–2: Cell Biology<br>Ch 3–4: Plants & Animals<br>Ch 5–6: Human Body<br>Ch 7: Ecology</div>
+            </div>
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">⚡ Physics</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Ch 1–3: Mechanics<br>Ch 4–5: Waves & Sound<br>Ch 6–7: Electricity<br>Ch 8: Optics</div>
+            </div>
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">💻 ICT</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Ch 1: Digital Devices<br>Ch 2: Networks<br>Ch 3: Programming<br>Ch 4: Database</div>
+            </div>
+            <div style="background:var(--stu-pale);border-radius:12px;padding:14px;border:1px solid var(--stu-light);">
+              <div style="font-weight:800;color:var(--stu);font-size:.84rem;margin-bottom:8px;">✍️ English</div>
+              <div style="font-size:.76rem;color:var(--ink-2);line-height:1.6;">Prose: Ch 1–6<br>Grammar: All units<br>Composition & Letter<br>Reading Comprehension</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annual -->
+    <div id="exam-annual" style="display:none;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 Annual Examination 2026</div><div class="card-sub">Schedule will be published after Half-Yearly results</div></div>
+        <div class="card-body" style="padding:40px;text-align:center;">
+          <div style="font-size:2.5rem;margin-bottom:12px;">📅</div>
+          <div style="font-size:1rem;font-weight:800;color:var(--ink);">Expected: November 2026</div>
+          <div style="font-size:.82rem;color:var(--muted);margin-top:6px;">Annual exam schedule will be available here once published by school administration.</div>
+          <button class="btn btn-outline" style="margin-top:18px;" onclick="showToast('You will be notified when schedule is published.','🔔')">🔔 Notify Me</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Class Tests -->
+    <div id="exam-class" style="display:none;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📝 Class Tests — July 2026</div><div class="card-sub">Chapter-wise class tests · Class IX–A</div></div>
+        <div class="card-body" style="padding:0;">
+          <div class="class-test-row"><div class="ct-icon">📐</div><div class="flex-1"><div class="ct-subj">Mathematics — Ch. 9 Trigonometry</div><div class="ct-date">July 2, 2026 · 40 marks · 45 min</div></div><span class="status-done">Done</span></div>
+          <div class="class-test-row"><div class="ct-icon">⚡</div><div class="flex-1"><div class="ct-subj">Physics — Ch. 6 Electricity</div><div class="ct-date">July 5, 2026 · 40 marks · 45 min</div></div><span class="status-done">Done</span></div>
+          <div class="class-test-row"><div class="ct-icon">✍️</div><div class="flex-1"><div class="ct-subj">English — Reading Comprehension</div><div class="ct-date">July 8, 2026 · 30 marks · 40 min</div></div><span class="status-done">Done</span></div>
+          <div class="class-test-row"><div class="ct-icon">⚗️</div><div class="flex-1"><div class="ct-subj">Chemistry — Acids & Bases</div><div class="ct-date">July 10, 2026 · 40 marks · 45 min</div></div><span class="status-soon">Soon</span></div>
+          <div class="class-test-row"><div class="ct-icon">🔬</div><div class="flex-1"><div class="ct-subj">Biology — Human Body System</div><div class="ct-date">July 13, 2026 · 40 marks · 45 min</div></div><span class="status-upcoming">Upcoming</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function switchExam(tab, el) {
+  document.querySelectorAll('.et-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  ['half','annual','class'].forEach(t => document.getElementById('exam-'+t).style.display = 'none');
+  document.getElementById('exam-'+tab).style.display = '';
+}
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(),300); }, 3000);
+}
+// Countdown
+function updateCountdown() {
+  const target = new Date('2026-07-15T10:00:00');
+  const now = new Date();
+  const diff = target - now;
+  if (diff <= 0) { document.getElementById('cbTimer').innerHTML = '<div style="color:#86EFAC;font-weight:800;">Exam in progress!</div>'; return; }
+  const days = Math.floor(diff / 86400000);
+  const hrs  = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('ctD').textContent = String(days).padStart(2,'0');
+  document.getElementById('ctH').textContent = String(hrs).padStart(2,'0');
+  document.getElementById('ctM').textContent = String(mins).padStart(2,'0');
+}
+updateCountdown(); setInterval(updateCountdown, 60000);
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

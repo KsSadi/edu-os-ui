@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notices — Student Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--stu:#7C3AED;--stu-light:#EDE9FE;--stu-pale:#F5F3FF;--stu-dark:#5B21B6;}
+.sidebar{background:linear-gradient(180deg,#1E0A3C 0%,#2D1B69 100%);}
+.sb-link.active{background:rgba(124,58,237,.28);color:#C4B5FD;}
+.sb-link.active .sb-icon{background:rgba(124,58,237,.35);color:#A78BFA;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--stu);}
+
+/* Filter tabs */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.fb-btn{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;transition:.15s;}
+.fb-btn.on{border-color:var(--stu);background:var(--stu-pale);color:var(--stu);}
+
+/* Notice card */
+.notice-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;transition:box-shadow .15s;}
+.notice-card:hover{box-shadow:var(--shadow);}
+.nc-strip{width:4px;flex-shrink:0;border-radius:4px 0 0 4px;}
+.nc-body{flex:1;padding:16px 18px;}
+.nc-title{font-size:.92rem;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.nc-excerpt{font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:10px;}
+.nc-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nc-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700;}
+.nc-date{font-size:.72rem;color:var(--muted);margin-left:auto;}
+.nc-new{background:var(--stu-pale);color:var(--stu);font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:12px;border:1px solid var(--stu-light);}
+
+/* Modal */
+.notice-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;}
+.notice-modal.show{display:flex;}
+.nm-box{background:#fff;border-radius:16px;width:560px;max-width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.nm-head{background:linear-gradient(135deg,#1E0A3C,#7C3AED);padding:22px 24px;color:#fff;}
+.nm-tag{font-size:.7rem;font-weight:700;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:8px;}
+.nm-title{font-size:1.1rem;font-weight:800;}
+.nm-meta{font-size:.75rem;opacity:.65;margin-top:4px;}
+.nm-body{padding:22px 24px;font-size:.86rem;color:var(--ink-2);line-height:1.7;}
+.nm-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside>
+<main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">📢 School</div>
+        <div class="page-title">Notices Board</div>
+        <div class="page-sub">Official notices, circulars, and announcements from Dhaka High School.</div>
+      </div>
+      <div class="page-actions">
+        <span style="background:var(--stu-pale);color:var(--stu);font-weight:700;font-size:.8rem;padding:7px 14px;border-radius:20px;border:1.5px solid var(--stu-light);">3 New</span>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="fb-btn on" onclick="filterNotices('all',this)">All</button>
+      <button class="fb-btn" onclick="filterNotices('exam',this)">📅 Exams</button>
+      <button class="fb-btn" onclick="filterNotices('fee',this)">💳 Fee</button>
+      <button class="fb-btn" onclick="filterNotices('holiday',this)">🎉 Holiday</button>
+      <button class="fb-btn" onclick="filterNotices('general',this)">📋 General</button>
+    </div>
+
+    <!-- Notices list -->
+    <div id="noticeList"></div>
+
+  </div>
+</main>
+</div>
+
+<!-- Notice Modal -->
+<div class="notice-modal" id="noticeModal" onclick="if(event.target===this)closeNotice()">
+  <div class="nm-box">
+    <div class="nm-head">
+      <div class="nm-tag" id="nm-tag"></div>
+      <div class="nm-title" id="nm-title"></div>
+      <div class="nm-meta" id="nm-meta"></div>
+    </div>
+    <div class="nm-body" id="nm-body"></div>
+    <div class="nm-foot">
+      <button class="btn btn-outline" onclick="closeNotice()">Close</button>
+      <button class="btn" style="background:var(--stu);color:#fff;border-color:var(--stu);" onclick="showToast('Downloading notice…','📄');closeNotice()">📥 Download</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const NOTICES = [
+  {
+    id:1, tag:'exam', tagLabel:'📅 Exam', tagColor:'#EDE9FE', tagText:'#5B21B6',
+    title:'Half-Yearly Examination Schedule 2026',
+    excerpt:'The Half-Yearly Examination will commence on July 15, 2026. Students are advised to check their individual timetables and seat numbers.',
+    body:`<p>Dear Students,</p><p>The Half-Yearly Examination for Session 2026–27 will begin on <strong>July 15, 2026</strong> and conclude on <strong>July 26, 2026</strong>.</p><p><strong>Important Instructions:</strong></p><ul><li>Students must carry their Hall Ticket (Admit Card) to the exam hall.</li><li>No electronic devices allowed inside the exam hall.</li><li>Report to exam hall by 9:30 AM. Exam starts at 10:00 AM sharp.</li><li>Students found using unfair means will be expelled from the examination.</li></ul><p>For any queries, contact the Academic Section.</p>`,
+    date:'June 1, 2026', isNew:true, author:'Academic Section'
+  },
+  {
+    id:2, tag:'fee', tagLabel:'💳 Fee', tagColor:'#FFF7ED', tagText:'#92400E',
+    title:'July 2026 Fee Payment Notice',
+    excerpt:'Monthly tuition fee for July 2026 is due by July 10, 2026. Late payment will attract a fine of ৳50 per day.',
+    body:`<p>Dear Students and Parents,</p><p>This is to inform you that the Monthly Tuition Fee for <strong>July 2026</strong> must be paid on or before <strong>July 10, 2026</strong>.</p><p><strong>Payment Details:</strong></p><ul><li>Tuition Fee: ৳1,200 (Class IX)</li><li>Last Date: July 10, 2026</li><li>Late Fine: ৳50 per day after due date</li></ul><p><strong>Payment Methods:</strong> bKash: 01XXXXXXXXX · Nagad · Bank Transfer · Cash at School Office</p><p>Students with outstanding dues may not be allowed to sit for examinations.</p>`,
+    date:'June 1, 2026', isNew:true, author:'Accounts Section'
+  },
+  {
+    id:3, tag:'holiday', tagLabel:'🎉 Holiday', tagColor:'#F0FDF4', tagText:'#065F46',
+    title:'Public Holiday Notice — Eid ul-Adha 2026',
+    excerpt:'School will remain closed from June 15 to June 20, 2026 on account of Eid ul-Adha. Classes will resume on June 22, 2026.',
+    body:`<p>Dear Students,</p><p>School will remain closed from <strong>June 15 to June 20, 2026</strong> (Sunday to Friday) on account of <strong>Eid ul-Adha 2026</strong>.</p><p>Classes will resume on <strong>Monday, June 22, 2026</strong> as per the regular schedule.</p><p>Students are advised to continue their self-study during the holiday period, especially for the upcoming Half-Yearly Examination.</p><p>Eid Mubarak to all students and their families!</p>`,
+    date:'May 28, 2026', isNew:true, author:'Principal'
+  },
+  {
+    id:4, tag:'general', tagLabel:'📋 General', tagColor:'#F8FAFC', tagText:'#475569',
+    title:'Library Timings Update — Exam Period',
+    excerpt:'During the examination period (July 15–26), the school library will remain open from 8:00 AM to 6:00 PM on all working days.',
+    body:`<p>Dear Students,</p><p>To facilitate examination preparation, the School Library will operate with extended hours during the Half-Yearly Examination period.</p><p><strong>Library Schedule (July 1–26, 2026):</strong></p><ul><li>Monday to Friday: 8:00 AM – 6:00 PM</li><li>Saturday: 9:00 AM – 4:00 PM</li><li>Sunday: Closed</li></ul><p>Reference books, past exam papers, and study guides are available for borrowing. Students can borrow up to 3 books at a time for a period of 7 days.</p>`,
+    date:'May 25, 2026', isNew:false, author:'Library In-charge'
+  },
+  {
+    id:5, tag:'exam', tagLabel:'📅 Exam', tagColor:'#EDE9FE', tagText:'#5B21B6',
+    title:'Online Practice Test — June 2026',
+    excerpt:'Students can take free online practice tests for all subjects through the Student Portal. Tests are available for July exam preparation.',
+    body:`<p>Dear Students,</p><p>The school is providing <strong>free online practice tests</strong> through the Student Portal to help you prepare for the Half-Yearly Examination.</p><p><strong>Available Tests:</strong></p><ul><li>Mathematics (3 sets)</li><li>Physics (2 sets)</li><li>Chemistry (2 sets)</li><li>Biology (2 sets)</li><li>English (3 sets)</li></ul><p>Each test is 45 minutes and automatically graded. Results are available immediately after submission.</p><p>Access them from <strong>Student Portal → Online Exams</strong>.</p>`,
+    date:'May 20, 2026', isNew:false, author:'IT Department'
+  },
+  {
+    id:6, tag:'general', tagLabel:'📋 General', tagColor:'#F8FAFC', tagText:'#475569',
+    title:'Annual Sports Day — Registration Open',
+    excerpt:'Annual Sports Day 2026 is scheduled for July 28, 2026. Students interested in participating must register with their respective class teachers by July 5.',
+    body:`<p>Dear Students,</p><p>The <strong>Annual Sports Day 2026</strong> is scheduled for <strong>July 28, 2026</strong> at the school ground.</p><p><strong>Events:</strong> 100m Sprint, 400m Race, Long Jump, High Jump, Cricket, Football, Badminton, Chess</p><p><strong>Registration:</strong> Contact your Class Teacher by July 5, 2026 to register for your preferred events. Each student may participate in up to 2 events.</p><p>Winners will receive trophies and certificates. The best athlete trophy will be awarded at the Annual Prize Giving Ceremony.</p>`,
+    date:'May 15, 2026', isNew:false, author:'Sports Department'
+  },
+];
+
+let currentFilter = 'all';
+
+function filterNotices(tag, el) {
+  currentFilter = tag;
+  document.querySelectorAll('.fb-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  renderNotices();
+}
+
+function renderNotices() {
+  const list = currentFilter === 'all' ? NOTICES : NOTICES.filter(n => n.tag === currentFilter);
+  const el = document.getElementById('noticeList');
+  if (!list.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No notices in this category.</div>'; return; }
+  el.innerHTML = list.map(n => `
+    <div class="notice-card" style="display:flex;">
+      <div class="nc-strip" style="background:${n.tagText};"></div>
+      <div class="nc-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="nc-tag" style="background:${n.tagColor};color:${n.tagText};">${n.tagLabel}</span>
+          ${n.isNew ? '<span class="nc-new">NEW</span>' : ''}
+        </div>
+        <div class="nc-title">${n.title}</div>
+        <div class="nc-excerpt">${n.excerpt}</div>
+        <div class="nc-foot">
+          <span style="font-size:.72rem;color:var(--muted);">By ${n.author}</span>
+          <span class="nc-date">${n.date}</span>
+          <button class="btn btn-outline btn-sm" style="font-size:.75rem;" onclick="openNotice(${n.id})">Read More →</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openNotice(id) {
+  const n = NOTICES.find(x => x.id === id);
+  if (!n) return;
+  document.getElementById('nm-tag').innerHTML = n.tagLabel;
+  document.getElementById('nm-title').textContent = n.title;
+  document.getElementById('nm-meta').textContent = n.date + ' · ' + n.author;
+  document.getElementById('nm-body').innerHTML = n.body;
+  document.getElementById('noticeModal').classList.add('show');
+}
+function closeNotice() { document.getElementById('noticeModal').classList.remove('show'); }
+function showToast(msg, icon='✅') {
+  const d = document.createElement('div'); d.className = 'toast';
+  d.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastStack').appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(() => d.remove(),300); }, 3000);
+}
+
+renderNotices();
+</script>
+<script src="student-shell.js"></script>
+</body>
+</html>

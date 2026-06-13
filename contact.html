@@ -1,0 +1,350 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact & Book a Demo — EduOS</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.contact-layout {
+  display: grid; grid-template-columns: 1fr 1.3fr; gap: 64px;
+  max-width: 1200px; margin: 0 auto; padding: 96px 5%;
+  align-items: start;
+}
+.contact-left { padding-top: 12px; }
+.contact-left h1 { font-size: 2.4rem; font-weight: 800; color: var(--ink); margin-bottom: 14px; }
+.contact-left p { font-size: 1rem; color: var(--muted); line-height: 1.75; margin-bottom: 36px; }
+
+.contact-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 18px 0; border-bottom: 1px solid var(--border);
+}
+.contact-item:last-of-type { border: none; }
+.contact-icon-box {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--blue-light); display: flex; align-items: center;
+  justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.contact-item-title { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.contact-item-val { font-size: .88rem; color: var(--muted); }
+.contact-item-val a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+/* Why Demo section */
+.why-demo { margin-top: 36px; background: var(--blue-light); border-radius: 16px; padding: 24px; }
+.why-demo h3 { font-family:'Sora',sans-serif; font-size: .95rem; font-weight: 700; color: var(--blue); margin-bottom: 14px; }
+.why-item { display: flex; gap: 10px; font-size: .85rem; color: var(--ink-3); margin-bottom: 10px; align-items: flex-start; }
+.why-item::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+
+/* Form card */
+.form-card {
+  background: #fff; border-radius: 20px;
+  border: 1.5px solid var(--border); box-shadow: var(--card-shadow);
+  padding: 40px;
+}
+.form-card h2 { font-family:'Sora',sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+.form-card .form-sub { font-size: .88rem; color: var(--muted); margin-bottom: 28px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-section-title { font-family:'Sora',sans-serif; font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing:.06em; margin: 24px 0 12px; border-top: 1px solid var(--border); padding-top: 20px; }
+.form-section-title:first-of-type { border: none; padding-top: 0; margin-top: 0; }
+
+/* Time slot picker */
+.slot-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 8px; }
+.slot-btn {
+  padding: 10px 8px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--bg); font-size: .8rem; font-weight: 600; color: var(--ink-3);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.slot-btn:hover, .slot-btn.selected { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* Interest checkboxes */
+.checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.check-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--bg); cursor: pointer; font-size: .82rem; color: var(--ink-3);
+  transition: all .15s;
+}
+.check-item:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.check-item input { accent-color: var(--blue); }
+
+/* Success state */
+.success-state {
+  display: none; text-align: center; padding: 40px 20px;
+}
+.success-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.success-title { font-family:'Sora',sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; }
+.success-msg { font-size: .95rem; color: var(--muted); line-height: 1.7; }
+
+/* Stats row */
+.contact-stats {
+  background: var(--ink); padding: 48px 5%; margin-bottom: 0;
+}
+.stats-row { display: flex; justify-content: center; gap: 64px; flex-wrap: wrap; }
+.cstat { text-align: center; }
+.cstat-num { font-family:'Sora',sans-serif; font-size: 2rem; font-weight: 800; color: #fff; }
+.cstat-label { font-size: .82rem; color: #94A3B8; margin-top: 4px; }
+
+/* Teams row */
+.team-section { padding: 80px 5%; background: var(--bg); }
+.team-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; max-width: 1100px; margin: 40px auto 0; }
+.team-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 24px; text-align: center; }
+.team-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 12px; }
+.team-name { font-family:'Sora',sans-serif; font-size: .9rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.team-role { font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
+.team-dept { font-size: .72rem; background: var(--blue-light); color: var(--blue); padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+
+@media(max-width:900px){ .contact-layout{grid-template-columns:1fr;} }
+@media(max-width:640px){ .form-row{grid-template-columns:1fr;} .slot-grid{grid-template-columns:repeat(2,1fr);} .checkbox-grid{grid-template-columns:1fr;} .team-grid{grid-template-columns:1fr 1fr;} .stats-row{gap:32px;} }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="mainNav">
+  <a href="index.html" class="nav-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="features.html">Features</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="contact.html" class="active">Contact</a>
+    <a href="ai-features.html" style="color:#6366F1;font-weight:700;">✨ AI Features</a>
+  </div>
+  <div class="nav-cta">
+    <a href="contact.html" class="btn btn-outline btn-sm">📅 Book Demo</a>
+  </div>
+</nav>
+
+<div class="pt-nav" style="background:linear-gradient(145deg,#F0F5FF 0%,#fff 80%);">
+  <div class="contact-layout">
+
+    <!-- LEFT: Info -->
+    <div class="contact-left">
+      <div class="section-label">📅 Book a Demo</div>
+      <h1>See EduOS in action — live, with your questions</h1>
+      <p>Our team will walk you through the platform, show you how it works for your school type, and answer every question you have. No pressure. No sales pitch. Just a real demo.</p>
+
+      <div class="contact-item">
+        <div class="contact-icon-box">📞</div>
+        <div>
+          <div class="contact-item-title">Phone / WhatsApp</div>
+          <div class="contact-item-val"><a href="tel:+8801700000000">+880 1700-000000</a></div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon-box">📧</div>
+        <div>
+          <div class="contact-item-title">Email</div>
+          <div class="contact-item-val"><a href="mailto:hello@prathomik.edu.bd">hello@prathomik.edu.bd</a></div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon-box">📍</div>
+        <div>
+          <div class="contact-item-title">Office</div>
+          <div class="contact-item-val">House 12, Road 4, Banani, Dhaka 1213, Bangladesh</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon-box">🕐</div>
+        <div>
+          <div class="contact-item-title">Business Hours</div>
+          <div class="contact-item-val">Sunday – Thursday · 9:00 AM – 6:00 PM BST</div>
+        </div>
+      </div>
+
+      <div class="why-demo">
+        <h3>What happens in the demo?</h3>
+        <div class="why-item">We walk through all features relevant to your school type</div>
+        <div class="why-item">Live Q&A — ask anything about how the system works</div>
+        <div class="why-item">See real data from a demo school environment</div>
+        <div class="why-item">Get a personalized pricing quote on the spot</div>
+        <div class="why-item">30 minutes — we respect your time</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form -->
+    <div class="form-card">
+      <div id="formContent">
+        <h2>Book Your Free Demo</h2>
+        <p class="form-sub">Fill in your details and we'll confirm your slot within 2 hours (business days).</p>
+
+        <div class="form-section-title">Your Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Your Name *</label>
+            <input type="text" class="form-input" placeholder="Abdul Karim">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Designation *</label>
+            <input type="text" class="form-input" placeholder="Principal / Head Teacher">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="tel" class="form-input" placeholder="+880 17xx-xxxxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="principal@school.edu.bd">
+          </div>
+        </div>
+
+        <div class="form-section-title">School Details</div>
+        <div class="form-group">
+          <label class="form-label">School / College Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. Dhaka High School">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Institution Type *</label>
+            <select class="form-select">
+              <option value="">Select type...</option>
+              <option>Primary School (Class 1–5)</option>
+              <option>Secondary School (Class 6–10)</option>
+              <option>Higher Secondary College</option>
+              <option>School + College (Dual)</option>
+              <option>Madrasa</option>
+              <option>Vocational Institute</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Students</label>
+            <select class="form-select">
+              <option value="">Select range...</option>
+              <option>Under 100</option>
+              <option>100 – 300</option>
+              <option>300 – 800</option>
+              <option>800 – 2,500</option>
+              <option>2,500+</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <input type="text" class="form-input" placeholder="e.g. Dhaka, Chittagong...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Upazila / Area</label>
+            <input type="text" class="form-input" placeholder="e.g. Banani, Pahartali...">
+          </div>
+        </div>
+
+        <div class="form-section-title">Modules You're Interested In</div>
+        <div class="checkbox-grid">
+          <label class="check-item"><input type="checkbox"> 🧑‍🎓 Student Admission</label>
+          <label class="check-item"><input type="checkbox" checked> 📅 Attendance Tracking</label>
+          <label class="check-item"><input type="checkbox" checked> 💰 Fee Collection</label>
+          <label class="check-item"><input type="checkbox"> 📝 Results & GPA</label>
+          <label class="check-item"><input type="checkbox"> 🪪 ID Card Generator</label>
+          <label class="check-item"><input type="checkbox"> 👨‍👩‍👧 Parent Portal</label>
+          <label class="check-item"><input type="checkbox"> 💻 Online Exams</label>
+          <label class="check-item"><input type="checkbox"> 🛒 Marketplace</label>
+        </div>
+
+        <div class="form-section-title">Preferred Demo Time</div>
+        <div class="form-group">
+          <label class="form-label">Date (Any upcoming weekday)</label>
+          <input type="date" class="form-input">
+        </div>
+        <div class="form-label" style="margin-bottom:8px;">Time Slot (Bangladesh Standard Time)</div>
+        <div class="slot-grid">
+          <button class="slot-btn" onclick="selectSlot(this)">9:00 AM</button>
+          <button class="slot-btn" onclick="selectSlot(this)">10:30 AM</button>
+          <button class="slot-btn selected" onclick="selectSlot(this)">12:00 PM</button>
+          <button class="slot-btn" onclick="selectSlot(this)">2:00 PM</button>
+          <button class="slot-btn" onclick="selectSlot(this)">3:30 PM</button>
+          <button class="slot-btn" onclick="selectSlot(this)">5:00 PM</button>
+        </div>
+
+        <div class="form-group mt-6">
+          <label class="form-label">Any specific questions or requirements?</label>
+          <textarea class="form-textarea" placeholder="Tell us about your school's current challenges, what you're hoping to solve, or any specific features you'd like to see..."></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px;" onclick="submitForm()">
+          📅 Book My Free Demo
+        </button>
+        <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:10px;">We'll confirm within 2 business hours. No spam, ever.</p>
+      </div>
+
+      <!-- Success State -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Demo Booked Successfully!</div>
+        <div class="success-msg">
+          Thank you! We've received your request.<br><br>
+          Our team will call you within <strong>2 business hours</strong> to confirm your demo slot and send a calendar invite.<br><br>
+          <strong>In the meantime:</strong><br>
+          Explore our <a href="features.html" style="color:var(--blue);">features page</a> or check out <a href="pricing.html" style="color:var(--blue);">pricing plans</a>.
+        </div>
+        <a href="index.html" class="btn btn-primary btn-lg" style="margin-top:24px;">Back to Home</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="contact-stats">
+  <div class="stats-row">
+    <div class="cstat"><div class="cstat-num">500+</div><div class="cstat-label">Schools in pipeline</div></div>
+    <div class="cstat"><div class="cstat-num">< 2hrs</div><div class="cstat-label">Demo confirmation time</div></div>
+    <div class="cstat"><div class="cstat-num">30 min</div><div class="cstat-label">Average demo length</div></div>
+    <div class="cstat"><div class="cstat-num">Free</div><div class="cstat-label">30-day trial after demo</div></div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<section class="team-section">
+  <div class="container" style="text-align:center;margin-bottom:8px;">
+    <div class="section-label" style="justify-content:center;">👥 Our Team</div>
+    <h2 class="section-title">Who you'll be talking to</h2>
+    <p class="section-sub" style="margin:0 auto;">Real people, not bots. Our team understands Bangladesh's education system deeply.</p>
+  </div>
+  <div class="team-grid container">
+    <div class="team-card">
+      <div class="team-avatar">👨‍💼</div>
+      <div class="team-name">Arif Rahman</div>
+      <div class="team-role">Chief Executive Officer</div>
+      <div class="team-dept">Leadership</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">👩‍💻</div>
+      <div class="team-name">Nusrat Jahan</div>
+      <div class="team-role">Head of Product</div>
+      <div class="team-dept">Product</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">👨‍🎓</div>
+      <div class="team-name">Tanvir Hossain</div>
+      <div class="team-role">Sales Lead</div>
+      <div class="team-dept">Sales</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">👩‍🏫</div>
+      <div class="team-name">Shahana Begum</div>
+      <div class="team-role">Customer Success</div>
+      <div class="team-dept">Support</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-grid container">
+    <div><div class="footer-logo"><img src="assets/img/logo.png" alt="EduOS" style="height:44px;width:auto;vertical-align:middle;"></div><div class="footer-desc">Bangladesh's digital education platform.</div></div>
+    <div class="footer-col"><h4>Product</h4><a href="features.html">Features</a><a href="pricing.html">Pricing</a><a href="ai-features.html">✨ AI Features</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="#">About</a><a href="contact.html">Contact</a><a href="#">Blog</a></div>
+    <div class="footer-col"><h4>Support</h4><a href="#">Help</a><a href="#">Privacy</a><a href="admin/login.html" style="font-weight:700;">🔐 Admin Login</a></div>
+  </div>
+  <div class="footer-bottom container"><div>© 2026 EduOS. All rights reserved.</div><div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;background:#22C55E;border-radius:50%;display:inline-block;"></span> All systems operational</div></div>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>20);});
+function selectSlot(btn){document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');}
+function submitForm(){document.getElementById('formContent').style.display='none';document.getElementById('successState').style.display='block';}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

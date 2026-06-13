@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security & Audit � EduOS Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+.log-row{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);}
+.log-row:last-child{border:none;}
+.log-row:hover{background:var(--bg);}
+.log-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.log-actor{font-size:.83rem;font-weight:700;color:var(--ink-2);}
+.log-action{font-size:.8rem;color:var(--ink-3);margin-top:1px;}
+.log-time{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;margin-left:auto;flex-shrink:0;}
+.log-ip{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.threat-card{border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;border:1px solid;}
+.threat-card.red{background:#FFF5F5;border-color:#FECACA;}
+.threat-card.amber{background:#FFFBEB;border-color:#FDE68A;}
+.threat-card.green{background:#ECFDF5;border-color:#A7F3D0;}
+.threat-icon{font-size:1.3rem;flex-shrink:0;}
+.threat-title{font-size:.84rem;font-weight:800;margin-bottom:2px;}
+.threat-desc{font-size:.77rem;color:var(--muted);line-height:1.5;}
+.stat-mini{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);}
+.stat-mini:last-child{border:none;}
+.stat-mini-lbl{font-size:.82rem;color:var(--ink-3);flex:1;}
+.stat-mini-val{font-size:.88rem;font-weight:800;font-family:'DM Mono',monospace;}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link active"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Prathomik</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Security &amp; Audit</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>Monitoring Active</div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? Security</div>
+        <div class="page-title">Security &amp; Audit Log</div>
+        <div class="page-sub">Monitor login activity, suspicious events, access logs, and platform security threats in real time.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Exporting logs�','??')">?? Export Logs</button>
+        <button class="btn btn-primary" style="background:var(--sup);" onclick="showToast('Security scan started','??')">?? Full Security Scan</button>
+      </div>
+    </div>
+
+    <!-- Threat summary -->
+    <div class="grid-3" style="gap:16px;margin-bottom:24px;">
+      <div class="threat-card red anim-1">
+        <div class="threat-icon">??</div>
+        <div><div class="threat-title" style="color:#991B1B;">2 Active Threats</div><div class="threat-desc">Brute-force attempts detected on 2 tenant login endpoints. Rate limiting applied.</div><button class="btn btn-sm btn-danger mt-2" onclick="showToast('Threat blocked','???')">Block IPs</button></div>
+      </div>
+      <div class="threat-card amber anim-1">
+        <div class="threat-icon">??</div>
+        <div><div class="threat-title" style="color:#92400E;">8 Suspicious Logins</div><div class="threat-desc">Admin logins from new geolocation detected in last 24 hours. Review recommended.</div><button class="btn btn-sm" style="background:#FDE68A;border:none;color:#92400E;margin-top:8px;" onclick="showToast('Review initiated','??')">Review</button></div>
+      </div>
+      <div class="threat-card green anim-1">
+        <div class="threat-icon">?</div>
+        <div><div class="threat-title" style="color:#065F46;">All APIs Healthy</div><div class="threat-desc">No abnormal API patterns detected. All 48 endpoints responding within SLA thresholds.</div></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:20px;">
+      <!-- Security stats -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">?? Security Overview (24h)</div></div>
+        <div class="card-body">
+          <div class="stat-mini"><span class="stat-mini-lbl">Total Login Attempts</span><span class="stat-mini-val">84,291</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">Successful Logins</span><span class="stat-mini-val" style="color:var(--green);">83,944</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">Failed Logins</span><span class="stat-mini-val" style="color:var(--amber);">347</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">Blocked IPs</span><span class="stat-mini-val" style="color:var(--red);">12</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">2FA Enforced Tenants</span><span class="stat-mini-val">4,218 / 12,847</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">SSL Certificates Valid</span><span class="stat-mini-val" style="color:var(--green);">12,843 / 12,847</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">Expiring within 30 days</span><span class="stat-mini-val" style="color:var(--amber);">4</span></div>
+          <div class="stat-mini"><span class="stat-mini-lbl">API Keys Rotated (30d)</span><span class="stat-mini-val">128</span></div>
+        </div>
+      </div>
+
+      <!-- Audit log -->
+      <div class="card anim-2">
+        <div class="card-header"><div class="card-title">??? Live Audit Log</div><button class="btn btn-ghost btn-sm" onclick="showToast('Refreshing�','??')">?? Refresh</button></div>
+        <div style="padding:0;">
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--red);"></div>
+            <div><div class="log-actor">System Admin</div><div class="log-action">Blocked IP 103.88.21.44 � 50+ failed login attempts</div><div class="log-ip">IP: 103.88.21.44 � BD</div></div>
+            <div class="log-time">2m ago</div>
+          </div>
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--amber);"></div>
+            <div><div class="log-actor">Auto-scanner</div><div class="log-action">Suspicious login: System admin from new location (Sylhet)</div><div class="log-ip">IP: 203.76.12.9 � BD</div></div>
+            <div class="log-time">14m ago</div>
+          </div>
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--green);"></div>
+            <div><div class="log-actor">System Admin</div><div class="log-action">Super admin login successful</div><div class="log-ip">IP: 103.42.180.10 � BD</div></div>
+            <div class="log-time">1h ago</div>
+          </div>
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--blue);"></div>
+            <div><div class="log-actor">System Admin</div><div class="log-action">Feature flag "ai-grading" enabled for Enterprise tenants</div><div class="log-ip">via Super Admin Panel</div></div>
+            <div class="log-time">3h ago</div>
+          </div>
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--blue);"></div>
+            <div><div class="log-actor">System Admin</div><div class="log-action">Tenant #4821 (Rajshahi Collegiate) plan upgraded to Enterprise</div><div class="log-ip">via Super Admin Panel</div></div>
+            <div class="log-time">5h ago</div>
+          </div>
+          <div class="log-row">
+            <div class="log-dot" style="background:var(--red);"></div>
+            <div><div class="log-actor">Security Bot</div><div class="log-action">SSL cert expiry warning: 4 tenants (expiry in &lt;30 days)</div><div class="log-ip">Auto-detected</div></div>
+            <div class="log-time">8h ago</div>
+          </div>
+        </div>
+        <div class="card-footer"><span class="text-sm text-muted">Showing 6 of 12,491 events</span><button class="btn btn-ghost btn-sm">View All Logs</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="toast-icon">${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Schedule &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* Exam card */
+.exam-card{border:1.5px solid var(--border);border-radius:12px;padding:0;overflow:hidden;background:var(--white);transition:box-shadow .15s;}
+.exam-card:hover{box-shadow:var(--shadow);}
+.exam-card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.exam-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.exam-title{font-size:.9rem;font-weight:800;color:var(--ink);}
+.exam-sub{font-size:.74rem;color:var(--muted);margin-top:1px;}
+.exam-card-body{padding:14px 16px;}
+.exam-meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+.exam-meta{font-size:.77rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.exam-meta strong{color:var(--ink-2);font-weight:700;}
+.exam-progress-label{font-size:.72rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;}
+.exam-card-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
+
+/* Status badges inline */
+.exam-status{font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:700;}
+.exam-status.upcoming{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
+.exam-status.ongoing{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.exam-status.results{background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;}
+.exam-status.draft{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* Routine table */
+.routine-table{border-collapse:collapse;width:100%;font-size:.82rem;}
+.routine-table th{padding:8px 12px;background:var(--bg);font-size:.71rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:2px solid var(--border);}
+.routine-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.routine-table tr:last-child td{border-bottom:none;}
+.routine-table tr:hover td{background:var(--blue-pale);}
+.subj-pill{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.83rem;color:var(--ink-2);}
+.time-slot{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--blue);}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:540px;max-width:95vw;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:1rem;font-weight:800;color:var(--ink);}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:24px;}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow"> Exam Management</div>
+        <div class="page-title">Exam Schedule</div>
+        <div class="page-sub">Create, manage, and publish exam routines for all classes. Session 2024&#x2013;25.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Exporting routine PDF&middot;','&#x2705;')"> Export Routine</button>
+        <button class="btn btn-primary" onclick="openModal('createModal')">+ Create Exam</button>
+      </div>
+    </div>
+
+    <!-- Exam stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" class="anim-1">
+      <div class="card" style="padding:18px;"><div style="font-size:1.6rem;font-weight:800;color:var(--ink);">4</div><div style="font-size:.78rem;color:var(--muted);font-weight:600;margin-top:2px;">Total Exams This Session</div></div>
+      <div class="card" style="padding:18px;"><div style="font-size:1.6rem;font-weight:800;color:var(--green);">1</div><div style="font-size:.78rem;color:var(--muted);font-weight:600;margin-top:2px;">Currently Ongoing</div></div>
+      <div class="card" style="padding:18px;"><div style="font-size:1.6rem;font-weight:800;color:var(--blue);">1</div><div style="font-size:.78rem;color:var(--muted);font-weight:600;margin-top:2px;">Upcoming (Scheduled)</div></div>
+      <div class="card" style="padding:18px;"><div style="font-size:1.6rem;font-weight:800;color:var(--purple);">2</div><div style="font-size:.78rem;color:var(--muted);font-weight:600;margin-top:2px;">Results Published</div></div>
+    </div>
+
+    <!-- Exam cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;margin-bottom:24px;" class="anim-1">
+
+      <!-- Annual Exam -->
+      <div class="exam-card">
+        <div class="exam-card-head">
+          <div class="exam-type-dot" style="background:var(--blue);"></div>
+          <div style="flex:1;">
+            <div class="exam-title">Annual Examination 2024</div>
+            <div class="exam-sub">All Classes &middot; Written + MCQ</div>
+          </div>
+          <span class="exam-status results">Results Out</span>
+        </div>
+        <div class="exam-card-body">
+          <div class="exam-meta-row">
+            <div class="exam-meta"> <strong>Dec 1 &middot; Dec 22, 2024</strong></div>
+            <div class="exam-meta"> <strong>34 Classes</strong></div>
+            <div class="exam-meta"> <strong>8 Subjects</strong></div>
+          </div>
+          <div class="exam-meta-row">
+            <div class="exam-meta"> Written: <strong>80 marks</strong></div>
+            <div class="exam-meta"> MCQ: <strong>20 marks</strong></div>
+            <div class="exam-meta"> Total: <strong>100 marks</strong></div>
+          </div>
+          <div>
+            <div class="exam-progress-label"><span>Results entered</span><span>100%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--purple);"></div></div>
+          </div>
+        </div>
+        <div class="exam-card-foot">
+          <div style="font-size:.76rem;color:var(--muted);">Published Dec 28 &middot; 1,248 students</div>
+          <div class="page-actions" style="gap:6px;">
+            <button class="btn btn-sm btn-ghost" onclick="showToast('Opening routine&middot;','&#x2705;')"> Routine</button>
+            <button class="btn btn-sm btn-outline" onclick="window.location='admin-exam-result.html'">&#x1F4CA; Results</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Half-Yearly -->
+      <div class="exam-card">
+        <div class="exam-card-head">
+          <div class="exam-type-dot" style="background:var(--green);"></div>
+          <div style="flex:1;">
+            <div class="exam-title">Half-Yearly Examination 2025</div>
+            <div class="exam-sub">Class VI&middot;XII &middot; Morning Shift</div>
+          </div>
+          <span class="exam-status ongoing">Ongoing</span>
+        </div>
+        <div class="exam-card-body">
+          <div class="exam-meta-row">
+            <div class="exam-meta"> <strong>Feb 15 &middot; Mar 5, 2025</strong></div>
+            <div class="exam-meta"> <strong>28 Classes</strong></div>
+            <div class="exam-meta"> <strong>9 Subjects</strong></div>
+          </div>
+          <div class="exam-meta-row">
+            <div class="exam-meta"> Written: <strong>70 marks</strong></div>
+            <div class="exam-meta"> MCQ: <strong>30 marks</strong></div>
+            <div class="exam-meta"> Total: <strong>100 marks</strong></div>
+          </div>
+          <div>
+            <div class="exam-progress-label"><span>Subjects completed</span><span>4 of 9 (44%)</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:44%;background:var(--green);"></div></div>
+          </div>
+        </div>
+        <div class="exam-card-foot">
+          <div style="font-size:.76rem;color:var(--green);font-weight:700;">In progress &middot; Ends Mar 5</div>
+          <div class="page-actions" style="gap:6px;">
+            <button class="btn btn-sm btn-ghost" onclick="openRoutineModal()"> Routine</button>
+            <button class="btn btn-sm btn-primary" onclick="window.location='admin-exam-marks.html'"> Enter Marks</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Annual 2025 upcoming -->
+      <div class="exam-card">
+        <div class="exam-card-head">
+          <div class="exam-type-dot" style="background:var(--amber);"></div>
+          <div style="flex:1;">
+            <div class="exam-title">Annual Examination 2025</div>
+            <div class="exam-sub">All Classes &middot; Scheduled</div>
+          </div>
+          <span class="exam-status upcoming">Upcoming</span>
+        </div>
+        <div class="exam-card-body">
+          <div class="exam-meta-row">
+            <div class="exam-meta"> <strong>Nov 28 &middot; Dec 20, 2025</strong></div>
+            <div class="exam-meta"> <strong>34 Classes</strong></div>
+          </div>
+          <div class="exam-meta-row">
+            <div class="exam-meta"> Written: <strong>80 marks</strong></div>
+            <div class="exam-meta"> MCQ: <strong>20 marks</strong></div>
+          </div>
+          <div>
+            <div class="exam-progress-label"><span>Routine setup</span><span>30%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--amber);"></div></div>
+          </div>
+        </div>
+        <div class="exam-card-foot">
+          <div style="font-size:.76rem;color:var(--muted);">Draft &middot; Not yet published to parents</div>
+          <div class="page-actions" style="gap:6px;">
+            <button class="btn btn-sm btn-ghost">&#x270F;&#xFE0F; Edit</button>
+            <button class="btn btn-sm btn-outline" onclick="showToast('Routine published to parent portal!','&#x2705;')"> Publish</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Exam -->
+      <div class="exam-card" style="border-style:dashed;opacity:.65;">
+        <div class="exam-card-head">
+          <div class="exam-type-dot" style="background:var(--muted);"></div>
+          <div style="flex:1;">
+            <div class="exam-title" style="color:var(--muted);">Unit Test &middot; March 2025</div>
+            <div class="exam-sub">Class IX&middot;XII only &middot; Draft</div>
+          </div>
+          <span class="exam-status draft">Draft</span>
+        </div>
+        <div class="exam-card-body">
+          <div class="exam-meta-row">
+            <div class="exam-meta"> <strong>Mar 15&middot;20, 2025</strong></div>
+            <div class="exam-meta"> <strong>4 Subjects</strong></div>
+          </div>
+          <div>
+            <div class="exam-progress-label"><span>Setup</span><span>10%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--muted);"></div></div>
+          </div>
+        </div>
+        <div class="exam-card-foot">
+          <div style="font-size:.76rem;color:var(--muted);">Incomplete setup</div>
+          <div class="page-actions" style="gap:6px;">
+            <button class="btn btn-sm btn-ghost" onclick="openModal('createModal')">Continue Setup</button>
+            <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="showToast('Exam deleted','&#x2705;')"></button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- exam cards grid -->
+
+    <!-- Routine table for ongoing exam -->
+    <div class="card anim-2">
+      <div class="card-header">
+        <div>
+          <div class="card-title"> Exam Routine &middot; Half-Yearly 2025</div>
+          <div class="card-sub">Class IX&middot;A Science &middot; Feb 15 &middot; Mar 5, 2025</div>
+        </div>
+        <div class="page-actions">
+          <select class="form-select" style="width:120px;padding:6px 10px;font-size:.8rem;">
+            <option>Class IX&middot;A</option>
+            <option>Class IX&middot;B</option>
+            <option>Class X&middot;A</option>
+          </select>
+          <button class="btn btn-sm btn-outline" onclick="showToast('Routine PDF exported','&#x2705;')">&#x1F5A8;&#xFE0F; Print</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="routine-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Day</th><th>Subject</th><th>Time</th><th>Written</th><th>MCQ</th><th>Room</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="routineBody"></tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <span class="text-sm text-muted">9 subjects &middot; 18 school days</span>
+        <button class="btn btn-sm btn-outline" onclick="showToast('Routine sent to parents via SMS','&#x2705;')"> Send to Parents</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- Create Exam Modal -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title"> Create New Exam</div>
+      <button class="modal-close" onclick="closeModal('createModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Exam Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. Half-Yearly Examination 2025" value="">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Exam Type *</label>
+          <select class="form-select">
+            <option>Annual Examination</option>
+            <option>Half-Yearly Examination</option>
+            <option>Unit Test</option>
+            <option>Monthly Test</option>
+            <option>Pre-Board</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Academic Year *</label>
+          <select class="form-select">
+            <option selected>2024&#x2013;25</option>
+            <option>2024&#x2013;25</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date *</label>
+          <input type="date" class="form-input" value="2025-03-15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date *</label>
+          <input type="date" class="form-input" value="2025-03-20">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Written Marks</label>
+          <input type="number" class="form-input" value="80">
+        </div>
+        <div class="form-group">
+          <label class="form-label">MCQ Marks</label>
+          <input type="number" class="form-input" value="20">
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Apply to Classes</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;"><input type="checkbox" checked> All Classes</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;"><input type="checkbox"> Class VI&middot;VIII</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;"><input type="checkbox"> Class IX&middot;X</label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:.82rem;"><input type="checkbox"> Class XI&middot;XII</label>
+          </div>
+        </div>
+        <div class="form-group span-2">
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            <span style="font-size:.84rem;color:var(--ink-2);">Auto-publish routine to parent portal after setup</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('createModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('createModal');showToast('Exam created! Now set up the routine.','&#x2705;')">Create Exam &middot;</button>
+    </div>
+  </div>
+</div>
+
+<!-- Routine Modal -->
+<div class="modal-overlay" id="routineModal">
+  <div class="modal-box" style="width:680px;">
+    <div class="modal-head">
+      <div class="modal-title"> Exam Routine Detail &middot; Half-Yearly 2025</div>
+      <button class="modal-close" onclick="closeModal('routineModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div style="overflow-x:auto;max-height:450px;overflow-y:auto;">
+        <table class="routine-table">
+          <thead><tr><th>Date</th><th>Subject</th><th>Time</th><th>Full Marks</th><th>Room</th></tr></thead>
+          <tbody id="routineModalBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="showToast('PDF exported','&#x2705;')"> Export PDF</button>
+      <button class="btn btn-primary" onclick="closeModal('routineModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const subjects=[
+  {date:'Feb 15',day:'Sat',subj:'Bangla 1st Paper',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall A',done:true},
+  {date:'Feb 17',day:'Mon',subj:'Bangla 2nd Paper',time:'10:00 &middot; 12:00 PM',written:70,mcq:30,room:'Hall A',done:true},
+  {date:'Feb 19',day:'Wed',subj:'English 1st Paper',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall B',done:true},
+  {date:'Feb 22',day:'Sat',subj:'English 2nd Paper',time:'10:00 &middot; 12:00 PM',written:70,mcq:30,room:'Hall B',done:true},
+  {date:'Feb 24',day:'Mon',subj:'Mathematics',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall A',done:false,today:true},
+  {date:'Feb 26',day:'Wed',subj:'Physics',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall C',done:false},
+  {date:'Mar 1',day:'Sat',subj:'Chemistry',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall C',done:false},
+  {date:'Mar 3',day:'Mon',subj:'Biology',time:'10:00 &middot; 1:00 PM',written:70,mcq:30,room:'Hall A',done:false},
+  {date:'Mar 5',day:'Wed',subj:'ICT',time:'10:00 &middot; 12:00 PM',written:50,mcq:50,room:'Lab',done:false},
+];
+
+function buildRoutineTable(tbodyId){
+  document.getElementById(tbodyId).innerHTML=subjects.map(s=>`
+    <tr style="${s.today?'background:var(--blue-pale);font-weight:700;':''}${s.done?'opacity:.6;':''}">
+      <td style="white-space:nowrap;"><strong>${s.date}</strong></td>
+      <td style="color:var(--muted);font-size:.76rem;">${s.day}</td>
+      <td><div class="subj-pill">${s.subj}${s.today?' <span class="badge badge-green" style="font-size:.62rem;">Today</span>':''}</div></td>
+      <td><span class="time-slot">${s.time}</span></td>
+      <td style="text-align:center;">${s.written}</td>
+      <td style="text-align:center;">${s.mcq}</td>
+      <td style="font-size:.76rem;color:var(--muted);">${s.room}</td>
+      <td>${s.done?'<span class="badge" style="background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;font-size:.65rem;">Done</span>':s.today?'<span class="badge badge-blue" style="font-size:.65rem;">Active</span>':'<span style="font-size:.72rem;color:var(--muted);">Upcoming</span>'}</td>
+    </tr>`).join('');
+  document.getElementById('routineModalBody').innerHTML=subjects.map(s=>`
+    <tr><td><strong>${s.date}</strong></td><td>${s.subj}</td><td class="time-slot">${s.time}</td><td style="text-align:center;">${s.written+s.mcq}</td><td>${s.room}</td></tr>`).join('');
+}
+buildRoutineTable('routineBody');
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openRoutineModal(){openModal('routineModal');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+

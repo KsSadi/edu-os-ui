@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Pattern AI — EduOS Teacher Portal</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+
+:root{--teacher:#0D9488;--teacher-light:#CCFBF1;--teacher-pale:#F0FDFA;--teacher-dark:#0F766E;}
+.sidebar{background:linear-gradient(180deg,#0F2027 0%,#0D3528 100%);}
+.sb-link.active{background:rgba(13,148,136,.25);color:#5EEAD4;}
+.sb-link.active .sb-icon{background:rgba(13,148,136,.35);color:#2DD4BF;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.35);}
+.live-dot{background:var(--teacher);}
+
+/* Hero strip */
+.ai-hero-strip{background:linear-gradient(135deg,#0D3528 0%,#0F766E 60%,#134E4A 100%);border-radius:16px;padding:24px 28px;color:#fff;margin-bottom:24px;display:flex;align-items:center;gap:20px;}
+.ai-hero-strip-icon{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.ai-hero-strip-title{font-size:1.2rem;font-weight:800;margin-bottom:3px;}
+.ai-hero-strip-sub{font-size:.84rem;opacity:.7;}
+.ai-hero-strip-stats{margin-left:auto;display:flex;gap:24px;flex-shrink:0;}
+.ai-hero-strip-stat-num{font-size:1.4rem;font-weight:800;text-align:right;}
+.ai-hero-strip-stat-lbl{font-size:.65rem;opacity:.5;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+
+/* Summary cards */
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+.stat-card-num{font-size:1.8rem;font-weight:800;color:var(--ink-1);line-height:1;}
+.stat-card-lbl{font-size:.75rem;color:var(--muted);margin-top:5px;font-weight:600;}
+.stat-card-sub{font-size:.72rem;margin-top:6px;font-weight:700;}
+
+/* Student attendance rows */
+.att-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.att-row:hover{background:var(--bg);}
+.att-row:last-child{border:none;}
+.att-row.att-row-active{background:var(--teacher-pale);border-left:3px solid var(--teacher);}
+.att-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;flex-shrink:0;background:var(--teacher-pale);color:var(--teacher-dark);}
+.att-name{font-size:.875rem;font-weight:700;color:var(--ink-2);}
+.att-meta{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.att-pct{font-size:.9rem;font-weight:800;width:46px;text-align:right;flex-shrink:0;}
+
+/* Risk badge */
+.risk-badge{font-size:.65rem;font-weight:900;padding:3px 8px;border-radius:6px;flex-shrink:0;}
+.risk-critical{background:#FEE2E2;color:#B91C1C;}
+.risk-warning{background:#FEF3C7;color:#92400E;}
+.risk-good{background:#D1FAE5;color:#065F46;}
+
+/* Mini heatmap in list */
+.mini-heat{display:flex;gap:2px;flex-shrink:0;}
+.mini-cell{width:9px;height:16px;border-radius:2px;}
+.mini-present{background:#10B981;}
+.mini-absent{background:#EF4444;}
+.mini-late{background:#F59E0B;}
+.mini-holiday{background:#E5E7EB;}
+
+/* Detail panel */
+.detail-panel{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--white);}
+.detail-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.detail-av-lg{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;flex-shrink:0;background:var(--teacher-pale);color:var(--teacher-dark);}
+.detail-name{font-size:1rem;font-weight:800;color:var(--ink-1);}
+.detail-meta{font-size:.78rem;color:var(--muted);margin-top:3px;}
+
+/* Full heatmap */
+.heatmap-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:16px 20px;}
+.heatmap-day-lbl{font-size:.65rem;color:var(--muted);font-weight:700;text-align:center;padding:2px 0;}
+.heatmap-cell{height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;position:relative;cursor:default;}
+.heatmap-cell:hover::after{content:attr(title);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:.65rem;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:10;pointer-events:none;}
+.hc-present{background:#D1FAE5;color:#065F46;}
+.hc-absent{background:#FEE2E2;color:#B91C1C;}
+.hc-late{background:#FEF3C7;color:#92400E;}
+.hc-holiday{background:#F3F4F6;color:#9CA3AF;}
+
+/* AI insight box */
+.ai-insight{border-radius:12px;padding:14px 16px;margin:0 16px 14px;}
+.ai-insight-title{font-size:.75rem;font-weight:900;margin-bottom:6px;letter-spacing:.03em;}
+.ai-insight-text{font-size:.82rem;line-height:1.6;}
+.ai-insight.critical{background:#FEF2F2;border:1px solid #FECACA;}
+.ai-insight.critical .ai-insight-title{color:#DC2626;}
+.ai-insight.critical .ai-insight-text{color:#7F1D1D;}
+.ai-insight.warning{background:#FFFBEB;border:1px solid #FDE68A;}
+.ai-insight.warning .ai-insight-title{color:#D97706;}
+.ai-insight.warning .ai-insight-text{color:#78350F;}
+.ai-insight.good{background:#F0FDF4;border:1px solid #BBF7D0;}
+.ai-insight.good .ai-insight-title{color:#16A34A;}
+.ai-insight.good .ai-insight-text{color:#14532D;}
+
+/* Monthly chart bars */
+.month-bar-wrap{display:flex;align-items:flex-end;gap:3px;height:60px;}
+.month-bar{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:opacity .15s;cursor:default;position:relative;}
+.month-bar:hover{opacity:.8;}
+.month-bar:hover::after{content:attr(title);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:.62rem;padding:3px 7px;border-radius:5px;white-space:nowrap;z-index:10;pointer-events:none;}
+
+/* Tab filter */
+.filter-tab{padding:7px 16px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink-3);}
+.filter-tab.on{border-color:var(--teacher);background:var(--teacher-pale);color:var(--teacher-dark);}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+  <div class="page-body">
+
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">AI Tools</div>
+        <div class="page-title">📅 Attendance Pattern AI</div>
+        <div class="page-sub">Detect chronic absence patterns early and take action before students fall behind.</div>
+      </div>
+      <div class="page-actions">
+        <select class="form-select" id="selClass" onchange="renderAll()" style="width:140px;">
+          <option>Class 7-A</option>
+          <option>Class 8-A</option>
+          <option selected>Class 9-A</option>
+          <option>Class 9-B</option>
+          <option>Class 10-C</option>
+        </select>
+        <select class="form-select" id="selMonth" onchange="renderAll()" style="width:130px;">
+          <option>January 2026</option>
+          <option>February 2026</option>
+          <option>March 2026</option>
+          <option>April 2026</option>
+          <option selected>May 2026</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Hero strip -->
+    <div class="ai-hero-strip">
+      <div class="ai-hero-strip-icon">📅</div>
+      <div>
+        <div class="ai-hero-strip-title">Powered by EduOS AI</div>
+        <div class="ai-hero-strip-sub">Pattern detection: Monday absences, pre-exam skipping, post-holiday drops & chronic absenteeism alerts.</div>
+      </div>
+      <div class="ai-hero-strip-stats">
+        <div>
+          <div class="ai-hero-strip-stat-num" id="statTotal">15</div>
+          <div class="ai-hero-strip-stat-lbl">Total Students</div>
+        </div>
+        <div>
+          <div class="ai-hero-strip-stat-num" style="color:#EF4444;" id="statCritical">—</div>
+          <div class="ai-hero-strip-stat-lbl">Critical Risk</div>
+        </div>
+        <div>
+          <div class="ai-hero-strip-stat-num" style="color:#F59E0B;" id="statWarning">—</div>
+          <div class="ai-hero-strip-stat-lbl">Warning</div>
+        </div>
+        <div>
+          <div class="ai-hero-strip-stat-num" style="color:#10B981;" id="statGood">—</div>
+          <div class="ai-hero-strip-stat-lbl">On Track</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;" id="summaryCards">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
+
+      <!-- Left: Student List -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🧑‍🎓 Students — <span id="classLabel">Class 9-A</span></div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="filter-tab on" data-filter="all" onclick="setFilter(this)">All</button>
+              <button class="filter-tab" data-filter="critical" onclick="setFilter(this)">🔴 Critical</button>
+              <button class="filter-tab" data-filter="warning" onclick="setFilter(this)">🟡 Warning</button>
+              <button class="filter-tab" data-filter="good" onclick="setFilter(this)">🟢 Good</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;" id="studentListBody">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Detail Panel -->
+      <div>
+        <div class="detail-panel" id="detailPanel">
+          <div style="padding:40px;text-align:center;color:var(--muted);">
+            <div style="font-size:2.5rem;margin-bottom:10px;">📅</div>
+            <div style="font-size:.9rem;font-weight:600;">Select a student to view<br>their attendance analysis</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script src="teacher-shell.js"></script>
+<script>
+/* ─── STUDENT DATA ─────────────────────────────────────────────────────────── */
+/* attendance: array of 20 working days (4 weeks × 5 days).
+   Values: 'P'=present, 'A'=absent, 'L'=late, 'H'=holiday           */
+var STUDENTS = [
+  { id:1,  name:'Rahim Ahmed',       gender:'M', att:[
+    'A','P','P','P','P',
+    'A','P','A','P','P',
+    'A','L','P','P','A',
+    'A','P','P','L','P']
+  },
+  { id:2,  name:'Fatema Khanam',     gender:'F', att:[
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'P','P','P','P','P']
+  },
+  { id:3,  name:'Karim Uddin',       gender:'M', att:[
+    'A','A','P','A','P',
+    'A','P','A','A','P',
+    'A','P','A','P','A',
+    'A','A','P','A','P']
+  },
+  { id:4,  name:'Sharmin Akter',     gender:'F', att:[
+    'P','P','P','P','P',
+    'P','P','P','L','P',
+    'P','P','P','P','P',
+    'P','P','L','P','P']
+  },
+  { id:5,  name:'Rony Islam',        gender:'M', att:[
+    'A','A','A','P','P',
+    'A','A','P','A','A',
+    'A','P','A','A','P',
+    'A','A','A','P','A']
+  },
+  { id:6,  name:'Nasrin Begum',      gender:'F', att:[
+    'P','P','P','P','P',
+    'P','P','P','P','A',
+    'P','L','P','P','P',
+    'P','P','P','P','P']
+  },
+  { id:7,  name:'Tawhid Hassan',     gender:'M', att:[
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'L','P','P','P','P']
+  },
+  { id:8,  name:'Mitu Rani Das',     gender:'F', att:[
+    'P','P','P','A','P',
+    'P','P','A','P','P',
+    'P','P','P','A','P',
+    'P','P','P','P','A']
+  },
+  { id:9,  name:'Imran Hossain',     gender:'M', att:[
+    'A','P','A','P','A',
+    'A','P','P','A','P',
+    'A','P','A','P','P',
+    'A','P','A','P','A']
+  },
+  { id:10, name:'Anika Sultana',     gender:'F', att:[
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'P','L','P','P','P',
+    'P','P','P','P','P']
+  },
+  { id:11, name:'Rakib Mia',         gender:'M', att:[
+    'P','A','P','P','P',
+    'P','P','A','P','P',
+    'A','P','P','P','P',
+    'P','A','P','P','P']
+  },
+  { id:12, name:'Sonia Parvin',      gender:'F', att:[
+    'P','P','P','P','P',
+    'P','P','P','P','P',
+    'P','P','P','P','L',
+    'P','P','P','P','P']
+  },
+  { id:13, name:'Jahid Hasan',       gender:'M', att:[
+    'A','A','P','A','A',
+    'A','P','A','A','A',
+    'A','A','P','A','A',
+    'A','A','A','P','A']
+  },
+  { id:14, name:'Monika Chakraborty',gender:'F', att:[
+    'P','P','P','P','A',
+    'P','P','P','P','P',
+    'P','P','P','A','P',
+    'P','P','P','P','P']
+  },
+  { id:15, name:'Sabbir Rahman',     gender:'M', att:[
+    'P','P','A','P','P',
+    'P','P','P','A','P',
+    'P','P','P','P','P',
+    'P','P','P','P','P']
+  },
+];
+
+var DAY_LABELS  = ['Mon','Tue','Wed','Thu','Fri'];
+var WEEK_LABELS = ['Week 1','Week 2','Week 3','Week 4'];
+var MONTH_DAYS  = [
+  ['May 5','May 6','May 7','May 8','May 9'],
+  ['May 12','May 13','May 14','May 15','May 16'],
+  ['May 19','May 20','May 21','May 22','May 23'],
+  ['May 26','May 27','May 28','May 29','May 30'],
+];
+
+var currentFilter = 'all';
+var selectedStudentId = null;
+
+/* ─── CALCULATIONS ──────────────────────────────────────────────────────────── */
+function calcPct(att){
+  var working = att.filter(function(d){ return d !== 'H'; }).length;
+  var present = att.filter(function(d){ return d === 'P' || d === 'L'; }).length;
+  return working > 0 ? Math.round((present / working) * 100) : 100;
+}
+
+function detectPatterns(s){
+  var att = s.att;
+  var patterns = [];
+
+  /* Monday absences (index 0, 5, 10, 15) */
+  var monAbs = [0,5,10,15].filter(function(i){ return att[i] === 'A'; }).length;
+  if(monAbs >= 3) patterns.push({ type:'critical', msg:'🗓️ Monday Absence Pattern — absent ' + monAbs + '/4 Mondays. Possible recurring issue.' });
+  else if(monAbs === 2) patterns.push({ type:'warning', msg:'🗓️ Monday absences detected in 2 of 4 weeks. Monitor closely.' });
+
+  /* Consecutive absences */
+  var maxConsec = 0; var consec = 0;
+  att.forEach(function(d){ if(d==='A'){ consec++; maxConsec=Math.max(maxConsec,consec); } else { consec=0; } });
+  if(maxConsec >= 3) patterns.push({ type:'critical', msg:'📛 ' + maxConsec + ' consecutive absences detected. Immediate follow-up required.' });
+
+  /* Low attendance overall */
+  var pct = calcPct(att);
+  if(pct < 70) patterns.push({ type:'critical', msg:'⚠️ Attendance is critically low at ' + pct + '%. Risk of failing eligibility threshold (75%).' });
+  else if(pct < 80) patterns.push({ type:'warning', msg:'⚠️ Attendance at ' + pct + '% — below the 80% recommended level.' });
+
+  /* Late pattern */
+  var lateCount = att.filter(function(d){ return d==='L'; }).length;
+  if(lateCount >= 3) patterns.push({ type:'warning', msg:'⏰ Frequent late arrivals (' + lateCount + ' times). May indicate transport or home-routine issues.' });
+
+  if(patterns.length === 0){
+    patterns.push({ type:'good', msg:'✅ No concerning patterns detected. Attendance is healthy and consistent.' });
+  }
+  return patterns;
+}
+
+function riskLevel(s){
+  var pct = calcPct(s.att);
+  var patterns = detectPatterns(s);
+  if(pct < 75 || patterns.some(function(p){ return p.type==='critical'; })) return 'critical';
+  if(pct < 85 || patterns.some(function(p){ return p.type==='warning'; }))  return 'warning';
+  return 'good';
+}
+
+function initials(name){
+  var parts = name.trim().split(' ');
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+/* ─── MINI HEATMAP ──────────────────────────────────────────────────────────── */
+function miniHeat(att){
+  return '<div class="mini-heat">' + att.map(function(d){
+    var cls = d==='P'?'mini-present':d==='A'?'mini-absent':d==='L'?'mini-late':'mini-holiday';
+    return '<div class="mini-cell ' + cls + '"></div>';
+  }).join('') + '</div>';
+}
+
+/* ─── RENDER STUDENT LIST ───────────────────────────────────────────────────── */
+function renderList(){
+  var body = document.getElementById('studentListBody');
+  var list = STUDENTS.filter(function(s){
+    if(currentFilter === 'all') return true;
+    return riskLevel(s) === currentFilter;
+  });
+
+  if(list.length === 0){
+    body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);">No students in this category.</div>';
+    return;
+  }
+
+  body.innerHTML = list.map(function(s){
+    var pct   = calcPct(s.att);
+    var risk  = riskLevel(s);
+    var badgeCls = 'risk-' + risk;
+    var badgeTxt = risk==='critical' ? 'At Risk' : risk==='warning' ? 'Warning' : 'Good';
+    var pctColor = risk==='critical' ? '#DC2626' : risk==='warning' ? '#D97706' : '#059669';
+    var active   = s.id === selectedStudentId ? ' att-row-active' : '';
+
+    return '<div class="att-row' + active + '" onclick="selectStudent(' + s.id + ')">'
+      + '<div class="att-av">' + initials(s.name) + '</div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div class="att-name">' + s.name + '</div>'
+      + '<div class="att-meta" style="margin-top:4px;">' + miniHeat(s.att) + '</div>'
+      + '</div>'
+      + '<span class="risk-badge ' + badgeCls + '">' + badgeTxt + '</span>'
+      + '<div class="att-pct" style="color:' + pctColor + ';">' + pct + '%</div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ─── RENDER DETAIL PANEL ───────────────────────────────────────────────────── */
+function renderDetail(id){
+  var s = STUDENTS.find(function(s){ return s.id===id; });
+  if(!s){ document.getElementById('detailPanel').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">Select a student.</div>'; return; }
+
+  var pct       = calcPct(s.att);
+  var risk      = riskLevel(s);
+  var patterns  = detectPatterns(s);
+  var pctColor  = risk==='critical' ? '#DC2626' : risk==='warning' ? '#D97706' : '#059669';
+  var presentN  = s.att.filter(function(d){ return d==='P'; }).length;
+  var absentN   = s.att.filter(function(d){ return d==='A'; }).length;
+  var lateN     = s.att.filter(function(d){ return d==='L'; }).length;
+
+  /* Heatmap cells */
+  var heatCells = '<div class="heatmap-grid">'
+    + DAY_LABELS.map(function(d){ return '<div class="heatmap-day-lbl">' + d + '</div>'; }).join('');
+
+  s.att.forEach(function(d, i){
+    var weekIdx = Math.floor(i/5);
+    var dayIdx  = i % 5;
+    var dateStr = MONTH_DAYS[weekIdx][dayIdx];
+    var cls = d==='P'?'hc-present':d==='A'?'hc-absent':d==='L'?'hc-late':'hc-holiday';
+    var lbl = d==='P'?'Present':d==='A'?'Absent':d==='L'?'Late':'Holiday';
+    heatCells += '<div class="heatmap-cell ' + cls + '" title="' + dateStr + ': ' + lbl + '">' + d + '</div>';
+  });
+  heatCells += '</div>';
+
+  /* Monthly bar chart (Mon-Fri columns showing weekly attendance) */
+  var weeklyPcts = [0,1,2,3].map(function(w){
+    var week = s.att.slice(w*5, w*5+5);
+    var p = week.filter(function(d){ return d==='P'||d==='L'; }).length;
+    return Math.round((p/5)*100);
+  });
+  var maxH = 60;
+  var bars = weeklyPcts.map(function(p, i){
+    var h  = Math.round((p/100) * maxH);
+    var clr = p >= 80 ? '#10B981' : p >= 60 ? '#F59E0B' : '#EF4444';
+    return '<div class="month-bar" style="height:' + h + 'px;background:' + clr + ';" title="Week ' + (i+1) + ': ' + p + '%"></div>';
+  });
+
+  /* AI insights */
+  var insightsHtml = patterns.map(function(p){
+    return '<div class="ai-insight ' + p.type + '"><div class="ai-insight-title">🤖 AI Insight</div><div class="ai-insight-text">' + p.msg + '</div></div>';
+  }).join('');
+
+  document.getElementById('detailPanel').innerHTML =
+    '<div class="detail-header">'
+    + '<div class="detail-av-lg">' + initials(s.name) + '</div>'
+    + '<div><div class="detail-name">' + s.name + '</div>'
+    + '<div class="detail-meta">Class 9-A &nbsp;·&nbsp; May 2026</div></div>'
+    + '<div style="margin-left:auto;text-align:right;">'
+    + '<div style="font-size:1.6rem;font-weight:800;color:' + pctColor + ';">' + pct + '%</div>'
+    + '<div style="font-size:.7rem;color:var(--muted);font-weight:600;">Attendance</div>'
+    + '</div>'
+    + '</div>'
+
+    /* Mini stats */
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border);">'
+    + '<div style="padding:12px 16px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.2rem;font-weight:800;color:#10B981;">' + presentN + '</div><div style="font-size:.65rem;color:var(--muted);font-weight:600;">Present</div></div>'
+    + '<div style="padding:12px 16px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:1.2rem;font-weight:800;color:#EF4444;">' + absentN + '</div><div style="font-size:.65rem;color:var(--muted);font-weight:600;">Absent</div></div>'
+    + '<div style="padding:12px 16px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;color:#F59E0B;">' + lateN + '</div><div style="font-size:.65rem;color:var(--muted);font-weight:600;">Late</div></div>'
+    + '</div>'
+
+    /* Heatmap */
+    + '<div style="padding:14px 16px 4px;"><div style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Weekly Attendance Heatmap — May 2026</div></div>'
+    + heatCells
+
+    /* Legend */
+    + '<div style="display:flex;gap:12px;padding:0 16px 14px;flex-wrap:wrap;">'
+    + ['#D1FAE5:Present','#FEE2E2:Absent','#FEF3C7:Late'].map(function(s){ var p=s.split(':'); return '<span style="font-size:.65rem;color:var(--muted);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:' + p[0] + ';display:inline-block;"></span>' + p[1] + '</span>'; }).join('')
+    + '</div>'
+
+    /* Weekly trend bars */
+    + '<div style="padding:0 16px 14px;">'
+    + '<div style="font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Weekly Trend</div>'
+    + '<div style="display:flex;align-items:flex-end;gap:3px;height:70px;">' + bars.join('') + '</div>'
+    + '<div style="display:flex;gap:3px;margin-top:4px;">' + weeklyPcts.map(function(p,i){ return '<div style="flex:1;text-align:center;font-size:.6rem;color:var(--muted);">W' + (i+1) + '<br><b>' + p + '%</b></div>'; }).join('') + '</div>'
+    + '</div>'
+
+    /* AI Insights */
+    + '<div style="padding:0 0 0 0;">' + insightsHtml + '</div>'
+
+    /* Action buttons */
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px;">'
+    + '<button class="btn btn-sm" style="background:#FEF2F2;color:#DC2626;border-color:#FECACA;font-weight:700;" onclick="alertParent(\'' + s.name + '\')">📲 Alert Parent</button>'
+    + '<button class="btn btn-sm" style="background:#EEF2FF;color:#4338CA;border-color:#C7D2FE;font-weight:700;" onclick="counsellorNote(\'' + s.name + '\')">📋 Counsellor Note</button>'
+    + '</div>';
+}
+
+function selectStudent(id){
+  selectedStudentId = id;
+  renderList();
+  renderDetail(id);
+}
+
+function setFilter(btn){
+  document.querySelectorAll('.filter-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  currentFilter = btn.dataset.filter;
+  renderList();
+}
+
+function alertParent(name){
+  alert('📲 Alert sent to parent of ' + name + ' via SMS and app notification.');
+}
+function counsellorNote(name){
+  alert('📋 Counsellor referral note generated for ' + name + ' and sent to the school counsellor.');
+}
+
+/* ─── SUMMARY CARDS ─────────────────────────────────────────────────────────── */
+function renderSummaryCards(){
+  var total   = STUDENTS.length;
+  var critical = STUDENTS.filter(function(s){ return riskLevel(s)==='critical'; }).length;
+  var warning  = STUDENTS.filter(function(s){ return riskLevel(s)==='warning';  }).length;
+  var good     = STUDENTS.filter(function(s){ return riskLevel(s)==='good';     }).length;
+  var avgPct   = Math.round(STUDENTS.reduce(function(acc,s){ return acc + calcPct(s.att); }, 0) / total);
+
+  document.getElementById('statCritical').textContent = critical;
+  document.getElementById('statWarning').textContent  = warning;
+  document.getElementById('statGood').textContent     = good;
+
+  document.getElementById('summaryCards').innerHTML =
+    '<div class="stat-card"><div class="stat-card-num" style="color:#0D9488;">' + avgPct + '%</div><div class="stat-card-lbl">Class Avg Attendance</div><div class="stat-card-sub" style="color:' + (avgPct>=85?'#059669':'#D97706') + ';">' + (avgPct>=85?'✅ Healthy':'⚠️ Below target') + '</div></div>'
+  + '<div class="stat-card"><div class="stat-card-num" style="color:#DC2626;">' + critical + '</div><div class="stat-card-lbl">Students at Critical Risk</div><div class="stat-card-sub" style="color:#DC2626;">' + (critical>0?'⚠️ Action required':'✅ None') + '</div></div>'
+  + '<div class="stat-card"><div class="stat-card-num" style="color:#D97706;">' + warning + '</div><div class="stat-card-lbl">Students with Warnings</div><div class="stat-card-sub" style="color:#D97706;">' + (warning>0?'Monitor closely':'✅ None') + '</div></div>'
+  + '<div class="stat-card"><div class="stat-card-num" style="color:#059669;">' + good + '</div><div class="stat-card-lbl">Students On Track</div><div class="stat-card-sub" style="color:#059669;">✅ ' + Math.round((good/total)*100) + '% of class</div></div>';
+}
+
+function renderAll(){
+  document.getElementById('classLabel').textContent = document.getElementById('selClass').value;
+  renderSummaryCards();
+  renderList();
+  if(selectedStudentId) renderDetail(selectedStudentId);
+}
+
+/* Init */
+renderAll();
+</script>
+</body>
+</html>

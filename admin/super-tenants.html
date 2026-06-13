@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Management � Super Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+:root{--sup:#BE123C;--sup-light:#FFE4E6;--sup-pale:#FFF1F2;--sup-dark:#9F1239;}
+.sidebar{background:linear-gradient(180deg,#06040E 0%,#0F0A1E 60%,#1A0F2E 100%);}
+.sb-link.active{background:rgba(190,18,60,.3);color:#FCA5A5;}
+.sb-link.active .sb-icon{background:rgba(190,18,60,.4);color:#F87171;}
+.sb-link:hover{background:rgba(255,255,255,.07);}
+.sb-section-label{color:rgba(255,255,255,.32);}
+.live-dot{background:var(--sup);}
+
+/* Stats strip */
+.sts-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:22px;}
+.sts-block{background:var(--white);padding:14px 16px;}
+.sts-num{font-size:1.3rem;font-weight:900;font-family:'DM Mono',monospace;}
+.sts-lbl{font-size:.7rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Filter bar */
+.filter-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.plan-pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;user-select:none;}
+.plan-pill:hover{border-color:var(--sup);color:var(--sup);}
+.plan-pill.on{background:var(--sup);border-color:var(--sup);color:#fff;}
+
+/* Tenant table */
+.tn-table{width:100%;border-collapse:collapse;}
+.tn-table th{padding:10px 14px;text-align:left;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--bg);white-space:nowrap;}
+.tn-table th.sortable{cursor:pointer;}
+.tn-table th.sortable:hover{color:var(--ink);}
+.tn-table td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:.84rem;vertical-align:middle;}
+.tn-table tr:hover td{background:var(--bg);}
+.tn-table tr.selected td{background:var(--sup-pale);}
+
+/* School avatar cell */
+.sch-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+.sch-name{font-size:.86rem;font-weight:800;color:var(--ink-2);}
+.sch-domain{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* Status badge */
+.status-badge{font-size:.66rem;font-weight:900;padding:3px 9px;border-radius:8px;white-space:nowrap;}
+.status-active{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.status-trial{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;}
+.status-suspended{background:#FFF5F5;color:var(--red);border:1px solid #FECACA;}
+.status-churned{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* Plan badge */
+.plan-badge{font-size:.64rem;font-weight:900;padding:2px 8px;border-radius:8px;}
+.plan-enterprise{background:#F3E8FF;color:#5B21B6;border:1px solid #DDD6FE;}
+.plan-pro{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
+.plan-basic{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.plan-trial{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;}
+
+/* Usage bar */
+.usage-mini{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:3px;}
+.usage-mini-in{height:100%;border-radius:3px;}
+
+/* Action buttons */
+.tbl-action-btn{padding:4px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .12s;color:var(--muted);}
+.tbl-action-btn:hover{border-color:var(--con);color:var(--con);}
+.tbl-action-btn.danger:hover{border-color:var(--red);color:var(--red);}
+.tbl-action-btn.success{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* Bulk actions bar */
+.bulk-bar{background:var(--sup);border-radius:10px;padding:10px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px;display:none;}
+.bulk-bar.show{display:flex;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;width:420px;max-width:90%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:pop .25s ease;}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-body{padding:18px 22px;flex:1;min-height:0;overflow-y:auto;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+<script src="auth.js"></script><script>AdminAuth.requireAuth();</script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="sb-header"><div class="sb-brand"><img src="../assets/img/logo.png" alt="EduOS"><span class="sb-panel-badge">Super Admin</span></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Overview</div>
+    <a href="super-dashboard.html" class="sb-link"><span class="sb-icon">??</span> Dashboard</a>
+    <a href="super-tenants.html" class="sb-link active"><span class="sb-icon">??</span> Tenant Management</a>
+    <a href="super-analytics.html" class="sb-link"><span class="sb-icon">??</span> Platform Analytics</a>
+    <div class="sb-section-label">AI Intelligence</div>
+    <a href="super-ai-insights.html" class="sb-link"><span class="sb-icon">??</span> AI Insights <span class="sb-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;">NEW</span></a>
+    <div class="sb-section-label">Operations</div>
+    <a href="super-billing.html" class="sb-link"><span class="sb-icon">??</span> Billing &amp; Revenue</a>
+    <a href="super-security.html" class="sb-link"><span class="sb-icon">??</span> Security &amp; Audit</a>
+    <a href="super-feature-flags.html" class="sb-link"><span class="sb-icon">??</span> Feature Flags</a>
+    <a href="super-announcements.html" class="sb-link"><span class="sb-icon">??</span> Announcements</a>
+    <div class="sb-section-label">Platform</div>
+    <a href="super-system-config.html" class="sb-link"><span class="sb-icon">?</span> System Config</a>
+    <a href="super-db-monitor.html" class="sb-link"><span class="sb-icon">???</span> DB Monitor</a>
+    <a href="super-alerts.html" class="sb-link"><span class="sb-icon">??</span> Alerts <span class="sb-badge" style="background:var(--sup);color:#fff;">3</span></a>
+    <div class="sb-section-label">Support</div>
+    <a href="super-helpdesk.html" class="sb-link"><span class="sb-icon">??</span> Help Desk <span class="sb-badge">12</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user"><div class="sb-avatar" style="background:var(--sup);">SA</div><div><div class="sb-user-name">System Admin</div><div class="sb-user-role">Super Admin � Anthropic</div></div><span class="sb-logout" onclick="adminLogout()" title="Sign out" style="cursor:pointer;">?</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-breadcrumb"><span>Super Admin</span><span class="breadcrumb-sep">�</span><span class="current">Tenant Management</span></div></div>
+    <div class="topbar-right">
+      <div class="topbar-school-badge"><div class="live-dot"></div>12,847 tenants</div>
+      <div class="search-bar" style="width:220px;">
+        <span class="sb-search-icon">??</span>
+        <input type="text" placeholder="Search school, EIIN, domain�" oninput="searchTenants(this.value)" id="searchInput">
+      </div>
+      <div class="profile-dropdown-wrap" id="pdWrap">
+  <div class="topbar-avatar" style="background:var(--sup);" onclick="togglePD()" title="Account">SA</div>
+  <div class="profile-dropdown" id="pdMenu">
+    <div class="pd-header">
+      <div class="pd-avatar" style="background:var(--sup);">SA</div>
+      <div class="pd-info">
+        <div class="pd-name">System Admin</div>
+        <div class="pd-role">Super Admin · EduOS</div>
+      </div>
+    </div>
+    <div class="pd-divider"></div>
+    <button class="pd-item pd-logout" onclick="adminLogout()">? &nbsp;Sign Out</button>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">?? All Schools</div>
+        <div class="page-title">Tenant Management</div>
+        <div class="page-sub">View, manage, suspend and activate all school tenants on the platform.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Exporting tenant list�','??')">?? Export CSV</button>
+        <button class="btn btn-primary" style="background:var(--sup);border-color:var(--sup);" onclick="openAddModal()">+ Add School</button>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="sts-strip anim-1">
+      <div class="sts-block"><div class="sts-num" style="color:var(--ink);">12,847</div><div class="sts-lbl">Total Tenants</div></div>
+      <div class="sts-block"><div class="sts-num" style="color:var(--green);">11,204</div><div class="sts-lbl">Active</div></div>
+      <div class="sts-block"><div class="sts-num" style="color:var(--amber);">1,198</div><div class="sts-lbl">Trial</div></div>
+      <div class="sts-block"><div class="sts-num" style="color:var(--red);">312</div><div class="sts-lbl">Suspended</div></div>
+      <div class="sts-block"><div class="sts-num" style="color:var(--muted);">133</div><div class="sts-lbl">Churned</div></div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-row anim-1">
+      <div class="plan-pill on" onclick="filterPlan('all',this)">All (12,847)</div>
+      <div class="plan-pill" onclick="filterPlan('Enterprise',this)">?? Enterprise (842)</div>
+      <div class="plan-pill" onclick="filterPlan('Pro',this)">?? Pro (4,210)</div>
+      <div class="plan-pill" onclick="filterPlan('Basic',this)">?? Basic (6,152)</div>
+      <div class="plan-pill" onclick="filterPlan('Trial',this)">?? Trial (1,198)</div>
+      <div class="plan-pill" onclick="filterPlan('suspended',this)" style="border-color:#FECACA;color:var(--red);">?? Suspended (312)</div>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <select class="form-select" style="padding:6px 12px;font-size:.78rem;width:140px;" onchange="filterDivision(this.value)" id="divFilter">
+          <option value="">All Divisions</option>
+          <option>Dhaka</option><option>Chattogram</option><option>Sylhet</option>
+          <option>Rajshahi</option><option>Khulna</option><option>Barishal</option>
+          <option>Mymensingh</option><option>Rangpur</option>
+        </select>
+        <select class="form-select" style="padding:6px 12px;font-size:.78rem;width:140px;" onchange="sortTable(this.value)">
+          <option value="mrr">Sort: MRR High</option>
+          <option value="students">Sort: Students</option>
+          <option value="date">Sort: Newest</option>
+          <option value="az">Sort: A�Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-bar" id="bulkBar">
+      <span style="color:#fff;font-size:.82rem;font-weight:700;" id="bulkCount">0 selected</span>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:.76rem;" onclick="bulkAction('email')">?? Send Email</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:.76rem;" onclick="bulkAction('suspend')">? Suspend</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.2);border:none;color:#fff;font-size:.76rem;" onclick="bulkAction('activate')">? Activate</button>
+      <button class="btn btn-sm" style="background:rgba(0,0,0,.3);border:none;color:#fff;font-size:.76rem;" onclick="clearSelection()">? Clear</button>
+    </div>
+
+    <!-- Table -->
+    <div class="card anim-1" style="overflow:hidden;padding:0;">
+      <div style="overflow-x:auto;">
+        <table class="tn-table">
+          <thead><tr>
+            <th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+            <th class="sortable" onclick="sortTable('az')">School ?</th>
+            <th>EIIN</th>
+            <th>Division</th>
+            <th>Plan</th>
+            <th class="sortable" onclick="sortTable('students')">Students ?</th>
+            <th class="sortable" onclick="sortTable('mrr')">MRR ?</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="tenantTbody"></tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);">
+        <div style="font-size:.78rem;color:var(--muted);" id="paginLabel">Showing 1�20 of 12,847</div>
+        <div style="display:flex;gap:5px;">
+          <button class="pg-btn on">1</button>
+          <button class="pg-btn" onclick="showToast('Page 2 loaded','??')">2</button>
+          <button class="pg-btn" onclick="showToast('Page 3 loaded','??')">3</button>
+          <span style="padding:6px;color:var(--muted);">�</span>
+          <button class="pg-btn" onclick="showToast('Page 643 loaded','??')">643</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Add School Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box">
+    <div class="modal-head"><div style="font-size:.96rem;font-weight:800;color:var(--ink);">? Add New School</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);" onclick="document.getElementById('addModal').classList.remove('show')">?</button></div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group span-2"><label class="form-label">School Full Name</label><input type="text" class="form-input" placeholder="e.g. Chattogram Model High School"></div>
+        <div class="form-group"><label class="form-label">EIIN Number</label><input type="text" class="form-input" placeholder="6-digit EIIN"></div>
+        <div class="form-group"><label class="form-label">Division</label><select class="form-select"><option>Dhaka</option><option>Chattogram</option><option>Sylhet</option><option>Rajshahi</option><option>Khulna</option></select></div>
+        <div class="form-group"><label class="form-label">Plan</label><select class="form-select"><option>Trial</option><option>Basic</option><option>Pro</option><option>Enterprise</option></select></div>
+        <div class="form-group"><label class="form-label">Principal Email</label><input type="email" class="form-input" placeholder="principal@school.edu.bd"></div>
+        <!-- Domain type toggle -->
+        <div class="form-group span-2">
+          <label class="form-label">Domain Setup</label>
+          <div style="display:flex;gap:0;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px;">
+            <button type="button" id="btnSubdomain" onclick="switchDomain('sub')"
+              style="flex:1;padding:8px 14px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--sup);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;">
+              ?? Use EduOS Subdomain
+            </button>
+            <button type="button" id="btnCustom" onclick="switchDomain('custom')"
+              style="flex:1;padding:8px 14px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--bg);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;">
+              ?? Use Own Domain
+            </button>
+          </div>
+
+          <!-- Subdomain input -->
+          <div id="domainSubPanel">
+            <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;">
+              <span style="padding:8px 12px;background:var(--bg);font-size:.8rem;color:var(--muted);border-right:1px solid var(--border);">https://</span>
+              <input type="text" id="subdomainInput" style="flex:1;border:none;outline:none;padding:8px 10px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;" placeholder="school-name">
+              <span style="padding:8px 12px;background:var(--bg);font-size:.8rem;color:var(--muted);border-left:1px solid var(--border);">.prathomik.edu.bd</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:5px;">Your portal will be accessible at <strong>school-name.prathomik.edu.bd</strong></div>
+          </div>
+
+          <!-- Custom domain input -->
+          <div id="domainCustomPanel" style="display:none;">
+            <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;">
+              <span style="padding:8px 12px;background:var(--bg);font-size:.8rem;color:var(--muted);border-right:1px solid var(--border);">https://</span>
+              <input type="text" id="customDomainInput" style="flex:1;border:none;outline:none;padding:8px 10px;font-size:.84rem;font-family:'Plus Jakarta Sans',sans-serif;" placeholder="school.yourdomain.com">
+            </div>
+            <div style="margin-top:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;font-size:.75rem;color:#92400E;line-height:1.6;">
+              <div style="font-weight:700;margin-bottom:3px;">? DNS Configuration Required</div>
+              Point your domain's <strong>CNAME</strong> record to <code style="background:#FEF3C7;padding:1px 5px;border-radius:4px;">tenant.prathomik.edu.bd</code> before activating.
+              SSL certificate will be auto-provisioned within 24 hours after DNS propagation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="document.getElementById('addModal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" style="background:var(--sup);border-color:var(--sup);" onclick="addSchool()">Create Tenant</button>
+    </div>
+  </div>
+</div>
+
+<!-- Suspend/Action Modal -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal-box">
+    <div class="modal-head"><div style="font-size:.96rem;font-weight:800;color:var(--ink);" id="actionModalTitle">Suspend School</div><button style="background:none;border:none;cursor:pointer;color:var(--muted);" onclick="document.getElementById('actionModal').classList.remove('show')">?</button></div>
+    <div class="modal-body" id="actionModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="document.getElementById('actionModal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" id="actionModalBtn" style="background:var(--red);border-color:var(--red);" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const allTenants=[
+  {id:1,name:'Viqarunnisa Noon School',eiin:'108001',div:'Dhaka',plan:'Enterprise',students:4200,mrr:42000,joined:'Mar 2022',status:'active',col:'#7C3AED'},
+  {id:2,name:'Rajshahi Collegiate School',eiin:'320412',div:'Rajshahi',plan:'Enterprise',students:2840,mrr:28000,joined:'Apr 2022',status:'active',col:'#1D4ED8'},
+  {id:3,name:'BAF Shaheen College Dhaka',eiin:'109220',div:'Dhaka',plan:'Pro',students:1850,mrr:14400,joined:'Jun 2022',status:'active',col:'#059669'},
+  {id:4,name:'RAJUK Uttara Model College',eiin:'108845',div:'Dhaka',plan:'Pro',students:2100,mrr:16200,joined:'May 2022',status:'active',col:'#D97706'},
+  {id:5,name:'Notre Dame High School',eiin:'108550',div:'Dhaka',plan:'Pro',students:1620,mrr:12400,joined:'Aug 2022',status:'active',col:'#0891B2'},
+  {id:6,name:'Dhaka High School',eiin:'108765',div:'Dhaka',plan:'Basic',students:890,mrr:4800,joined:'Sep 2022',status:'active',col:'#4F46E5'},
+  {id:7,name:'Sylhet Government High School',eiin:'601021',div:'Sylhet',plan:'Pro',students:1540,mrr:11800,joined:'Oct 2022',status:'active',col:'#059669'},
+  {id:8,name:'Mymensingh Zilla School',eiin:'410088',div:'Mymensingh',plan:'Basic',students:1240,mrr:6400,joined:'Nov 2022',status:'trial',col:'#9333EA'},
+  {id:9,name:'Khulna Zilla School',eiin:'512010',div:'Khulna',plan:'Basic',students:980,mrr:4200,joined:'Dec 2022',status:'active',col:'#D97706'},
+  {id:10,name:'Comilla Zilla School',eiin:'300118',div:'Chattogram',plan:'Basic',students:1100,mrr:5400,joined:'Jan 2023',status:'active',col:'#1D4ED8'},
+  {id:11,name:'Chattogram Collegiate School',eiin:'400220',div:'Chattogram',plan:'Pro',students:1780,mrr:13600,joined:'Feb 2023',status:'active',col:'#059669'},
+  {id:12,name:'Gaibandha Model School',eiin:'770092',div:'Rangpur',plan:'Basic',students:420,mrr:0,joined:'Mar 2023',status:'suspended',col:'#9F1239'},
+  {id:13,name:'Narayanganj High School',eiin:'108990',div:'Dhaka',plan:'Basic',students:740,mrr:3600,joined:'Apr 2023',status:'active',col:'#0891B2'},
+  {id:14,name:'Noakhali Zilla School',eiin:'301445',div:'Chattogram',plan:'Basic',students:860,mrr:4000,joined:'May 2023',status:'trial',col:'#D97706'},
+  {id:15,name:'Bogura Zilla School',eiin:'380110',div:'Rajshahi',plan:'Basic',students:920,mrr:4400,joined:'Jun 2023',status:'active',col:'#7C3AED'},
+  {id:16,name:'Barishal Govt High School',eiin:'602018',div:'Barishal',plan:'Basic',students:1020,mrr:4800,joined:'Jul 2023',status:'active',col:'#059669'},
+  {id:17,name:'Dinajpur Zilla School',eiin:'550039',div:'Rangpur',plan:'Trial',students:680,mrr:0,joined:'Jan 2025',status:'trial',col:'#1D4ED8'},
+  {id:18,name:'Pirojpur Model School',eiin:'620048',div:'Barishal',plan:'Trial',students:310,mrr:0,joined:'Feb 2025',status:'trial',col:'#D97706'},
+  {id:19,name:'Sirajganj High School',eiin:'430077',div:'Rajshahi',plan:'Basic',students:780,mrr:3800,joined:'Oct 2023',status:'suspended',col:'#9F1239'},
+  {id:20,name:'Jessore Zilla School',eiin:'520022',div:'Khulna',plan:'Basic',students:940,mrr:4200,joined:'Sep 2023',status:'active',col:'#059669'},
+];
+
+let filtered=[...allTenants],selected=new Set(),activePlan='all',searchQ='',pendingAction=null;
+
+function buildTable(){
+  document.getElementById('paginLabel').textContent=`Showing 1�${Math.min(20,filtered.length)} of ${filtered.length.toLocaleString()} tenants`;
+  document.getElementById('tenantTbody').innerHTML=filtered.slice(0,20).map(t=>{
+    const planCls={Enterprise:'plan-enterprise',Pro:'plan-pro',Basic:'plan-basic',Trial:'plan-trial'}[t.plan]||'plan-trial';
+    const statusCls={active:'status-active',trial:'status-trial',suspended:'status-suspended',churned:'status-churned'}[t.status];
+    const usagePct=Math.min(100,Math.round(t.students/50));
+    return`<tr class="${selected.has(t.id)?'selected':''}" id="tr-${t.id}">
+      <td><input type="checkbox" ${selected.has(t.id)?'checked':''} onchange="toggleRow(${t.id},this)"></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="sch-av" style="background:${t.col};">${t.name[0]}</div>
+          <div>
+            <div class="sch-name"><a href="super-tenant-detail.html" style="color:inherit;text-decoration:none;">${t.name}</a></div>
+            <div class="sch-domain">${t.name.toLowerCase().replace(/\s+/g,'-').slice(0,20)}.prathomik.edu.bd</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--muted);">${t.eiin}</span></td>
+      <td style="font-size:.82rem;color:var(--ink-2);">${t.div}</td>
+      <td><span class="plan-badge ${planCls}">${t.plan}</span></td>
+      <td style="text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.84rem;font-weight:800;">${t.students.toLocaleString()}</div>
+        <div class="usage-mini"><div class="usage-mini-in" style="width:${usagePct}%;background:${usagePct>80?'var(--red)':usagePct>60?'var(--amber)':'var(--green)'}"></div></div>
+      </td>
+      <td style="font-family:'DM Mono',monospace;font-weight:800;color:${t.mrr>0?'var(--green)':'var(--red)'};">${t.mrr>0?'?'+t.mrr.toLocaleString():'�'}</td>
+      <td style="font-size:.78rem;color:var(--muted);">${t.joined}</td>
+      <td><span class="status-badge ${statusCls}">${t.status.toUpperCase()}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:nowrap;">
+          <a href="super-tenant-detail.html" class="tbl-action-btn">View</a>
+          ${t.status==='suspended'
+            ?`<button class="tbl-action-btn success" onclick="event.stopPropagation();openAction('activate',${t.id})">Activate</button>`
+            :`<button class="tbl-action-btn danger" onclick="event.stopPropagation();openAction('suspend',${t.id})">Suspend</button>`}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterPlan(plan,el){
+  activePlan=plan;
+  document.querySelectorAll('.plan-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  applyFilters();
+}
+function filterDivision(div){applyFilters();}
+function searchTenants(q){searchQ=q.toLowerCase();applyFilters();}
+function applyFilters(){
+  const div=document.getElementById('divFilter').value;
+  filtered=allTenants.filter(t=>{
+    const planOk=activePlan==='all'||t.plan===activePlan||(activePlan==='suspended'&&t.status==='suspended');
+    const divOk=!div||t.div===div;
+    const searchOk=!searchQ||t.name.toLowerCase().includes(searchQ)||t.eiin.includes(searchQ);
+    return planOk&&divOk&&searchOk;
+  });
+  buildTable();
+}
+function sortTable(by){
+  const sorts={az:(a,b)=>a.name.localeCompare(b.name),students:(a,b)=>b.students-a.students,mrr:(a,b)=>b.mrr-a.mrr,date:(a,b)=>b.id-a.id};
+  filtered.sort(sorts[by]||sorts.mrr);
+  buildTable();
+}
+
+function toggleRow(id,cb){if(cb.checked)selected.add(id);else selected.delete(id);updateBulkBar();document.getElementById(`tr-${id}`).classList.toggle('selected',cb.checked);}
+function toggleAll(cb){allTenants.slice(0,20).forEach(t=>{if(cb.checked)selected.add(t.id);else selected.delete(t.id);});updateBulkBar();buildTable();}
+function clearSelection(){selected.clear();updateBulkBar();buildTable();}
+function updateBulkBar(){const bar=document.getElementById('bulkBar');bar.classList.toggle('show',selected.size>0);document.getElementById('bulkCount').textContent=`${selected.size} selected`;}
+
+function openAction(type,id){
+  const t=allTenants.find(x=>x.id===id);
+  pendingAction={type,id};
+  const isSusp=type==='suspend';
+  document.getElementById('actionModalTitle').textContent=isSusp?`? Suspend: ${t.name}`:`? Activate: ${t.name}`;
+  document.getElementById('actionModalBody').innerHTML=`<div style="font-size:.88rem;color:var(--ink-2);line-height:1.7;margin-bottom:12px;">${isSusp?`<strong>${t.name}</strong> will lose access to all platform features immediately. Their data is preserved.`:`<strong>${t.name}</strong> will have full platform access restored.`}</div>${isSusp?'<div class="form-group"><label class="form-label">Reason for suspension</label><select class="form-select"><option>Non-payment (3+ months overdue)</option><option>Terms of Service violation</option><option>Request by school</option><option>Other</option></select></div>':''}`;
+  const btn=document.getElementById('actionModalBtn');
+  btn.style.background=isSusp?'var(--red)':'var(--green)';btn.style.borderColor=btn.style.background;
+  btn.textContent=isSusp?'Confirm Suspension':'Confirm Activation';
+  document.getElementById('actionModal').classList.add('show');
+}
+function confirmAction(){
+  const t=allTenants.find(x=>x.id===pendingAction.id);
+  if(t)t.status=pendingAction.type==='suspend'?'suspended':'active';
+  document.getElementById('actionModal').classList.remove('show');
+  showToast(`${t.name} ${pendingAction.type==='suspend'?'suspended':'activated'} ?`,pendingAction.type==='suspend'?'?':'?');
+  buildTable();
+}
+
+function openAddModal(){document.getElementById('addModal').classList.add('show');}
+function switchDomain(type){
+  const isSub = type === 'sub';
+  document.getElementById('domainSubPanel').style.display = isSub ? 'block' : 'none';
+  document.getElementById('domainCustomPanel').style.display = isSub ? 'none' : 'block';
+  const sup = getComputedStyle(document.documentElement).getPropertyValue('--sup').trim();
+  document.getElementById('btnSubdomain').style.background = isSub ? 'var(--sup)' : 'var(--bg)';
+  document.getElementById('btnSubdomain').style.color = isSub ? '#fff' : 'var(--muted)';
+  document.getElementById('btnCustom').style.background = isSub ? 'var(--bg)' : 'var(--sup)';
+  document.getElementById('btnCustom').style.color = isSub ? 'var(--muted)' : '#fff';
+}
+function addSchool(){document.getElementById('addModal').classList.remove('show');showToast('New school tenant created','?');}
+function bulkAction(type){showToast(`${type} applied to ${selected.size} schools`,type==='suspend'?'?':'?');clearSelection();}
+
+function showToast(msg,icon='?'){const s=document.getElementById('toastStack');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${icon}</span>${msg}`;s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);}
+buildTable();
+</script>
+<script src="../demo-nav.js"></script>
+</body>
+</html>

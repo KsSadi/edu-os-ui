@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fee Report &middot; Dhaka High School Admin</title>
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+/* View tabs */
+.view-tabs{display:flex;border-bottom:1.5px solid var(--border);padding:0 18px;}
+.vt{padding:10px 16px;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;font-size:.84rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .12s;}
+.vt.on{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* Fee row */
+.fee-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);transition:background .1s;}
+.fee-row:hover{background:var(--blue-pale);}
+.fee-row:last-child{border-bottom:none;}
+.fr-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0;}
+.fr-name{flex:1;min-width:0;}
+.fr-name-en{font-size:.86rem;font-weight:700;color:var(--ink-2);}
+.fr-meta{font-size:.73rem;color:var(--muted);}
+.fr-months{display:flex;gap:2px;flex-shrink:0;}
+.month-dot{width:14px;height:14px;border-radius:3px;cursor:help;}
+.md-paid{background:var(--green);}
+.md-due{background:var(--amber-light);border:1px solid #FDE68A;}
+.md-over{background:var(--red);}
+.md-na{background:var(--bg);}
+.fr-balance{font-family:'DM Mono',monospace;font-weight:800;font-size:.88rem;flex-shrink:0;min-width:80px;text-align:right;}
+.fr-actions{flex-shrink:0;display:flex;gap:4px;}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:24px;}
+.ks-block{background:var(--white);padding:14px 18px;}
+.ks-num{font-size:1.3rem;font-weight:800;}
+.ks-lbl{font-size:.72rem;color:var(--muted);font-weight:600;margin-top:2px;}
+
+/* Class summary table */
+.cls-fee-table{border-collapse:collapse;width:100%;}
+.cls-fee-table th{padding:8px 12px;background:var(--bg);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:2px solid var(--border);}
+.cls-fee-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.83rem;}
+.cls-fee-table tr:hover td{background:var(--blue-pale);}
+.cls-fee-table tr:last-child td{border-bottom:none;}
+.pct-bar-cell{width:120px;}
+.pct-bar-cell .bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:3px;}
+.pct-bar-cell .fill{height:100%;border-radius:4px;}
+
+/* Toast */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1F2937;color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:toast-in .25s ease both;transition:opacity .3s;}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@media(max-width:900px){.kpi-strip{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+
+<aside class="sidebar"></aside><main class="main">
+  <div class="topbar"></div>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">&#x1F4B0; Finance</div>
+        <div class="page-title">Fee Report / Dues List</div>
+        <div class="page-sub">Track who has paid, who hasn't, and outstanding balances across all classes.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" onclick="showToast('Sending bulk SMS to defaulters&middot;','&#x2705;')"> SMS Defaulters</button>
+        <button class="btn btn-outline" onclick="showToast('Exporting Excel&middot;','&#x2705;')">Export</button>
+        <button class="btn btn-primary" onclick="showToast('PDF report generated','&#x2705;')"> PDF Report</button>
+      </div>
+    </div>
+
+    <!-- KPI strip -->
+    <div class="kpi-strip anim-1">
+      <div class="ks-block"><div class="ks-num" style="color:var(--green);">8.4M</div><div class="ks-lbl">Collected &middot; Feb 2025</div></div>
+      <div class="ks-block"><div class="ks-num" style="color:var(--red);">1.2M</div><div class="ks-lbl">Outstanding Dues</div></div>
+      <div class="ks-block"><div class="ks-num" style="color:var(--amber);">184</div><div class="ks-lbl">Defaulters</div></div>
+      <div class="ks-block"><div class="ks-num" style="color:var(--blue);">87.6%</div><div class="ks-lbl">Collection Rate</div></div>
+      <div class="ks-block"><div class="ks-num" style="color:var(--ink);">44,200</div><div class="ks-lbl">Late Fines Collected</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;" class="anim-1">
+      <select class="form-select" style="width:130px;padding:8px 10px;" id="classFilter" onchange="buildTable()">
+        <option value="">All Classes</option>
+        <option value="IX-A" selected>Class IX&middot;A</option>
+        <option value="IX-B">Class IX&middot;B</option>
+        <option value="X-A">Class X&middot;A</option>
+      </select>
+      <select class="form-select" style="width:130px;padding:8px 10px;" id="statusFilter" onchange="buildTable()">
+        <option value="">All Students</option>
+        <option value="due">Has Dues</option>
+        <option value="overdue">Overdue 2+ mo</option>
+        <option value="paid">Fully Paid</option>
+      </select>
+      <select class="form-select" style="width:130px;padding:8px 10px;">
+        <option>Feb 2025</option>
+        <option>Jan 2025</option>
+        <option>YTD 2024&#x2013;25</option>
+      </select>
+      <div class="search-bar" style="width:200px;">
+        <span class="sb-search-icon">&#x1F50D;</span>
+        <input type="text" placeholder="Search student&middot;" oninput="searchTable(this.value)">
+      </div>
+      <span style="font-size:.8rem;color:var(--muted);margin-left:auto;" id="showingCount"></span>
+    </div>
+
+    <!-- Main card with tabs -->
+    <div class="card anim-2">
+      <div class="view-tabs">
+        <div class="vt on" onclick="switchView(this,'student')"> Per Student</div>
+        <div class="vt" onclick="switchView(this,'class')"> Per Class</div>
+        <div class="vt" onclick="switchView(this,'trend')"> Monthly Trend</div>
+      </div>
+
+      <!-- Per student view -->
+      <div id="view-student">
+        <!-- Header row -->
+        <div style="display:flex;align-items:center;gap:12px;padding:9px 18px;background:var(--bg);border-bottom:2px solid var(--border);font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">
+          <div style="width:32px;flex-shrink:0;"></div>
+          <div style="flex:1;">Student</div>
+          <div style="flex-shrink:0;width:140px;display:flex;gap:2px;align-items:center;">
+            <span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span>
+          </div>
+          <div style="min-width:80px;text-align:right;">Balance</div>
+          <div style="flex-shrink:0;width:70px;text-align:center;">Action</div>
+        </div>
+        <div id="feeTableBody"></div>
+        <div class="card-footer">
+          <span class="text-sm text-muted" id="footerCount">Showing 20 of 42 students &middot; Class IX&middot;A</span>
+          <div class="pagination">
+            <button class="pg-btn on">1</button>
+            <button class="pg-btn" onclick="showToast('Page 2')">2</button>
+            <button class="pg-btn" onclick="showToast('Page 3')">3</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per class view -->
+      <div id="view-class" style="display:none;">
+        <table class="cls-fee-table">
+          <thead><tr><th>Class</th><th>Class Teacher</th><th>Students</th><th>Collected</th><th>Outstanding</th><th>Collection Rate</th><th>Defaulters</th></tr></thead>
+          <tbody id="classTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Monthly trend view -->
+      <div id="view-trend" style="display:none;padding:24px;">
+        <div style="margin-bottom:14px;font-size:.88rem;font-weight:700;color:var(--ink-2);">Monthly Fee Collection &middot; Session 2024&#x2013;25 (in Lakhs)</div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:160px;border-bottom:2px solid var(--border);" id="trendBars"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;" id="trendLabels"></div>
+        <div style="margin-top:20px;display:flex;gap:14px;flex-wrap:wrap;">
+          <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--green);">9.2L</div><div style="font-size:.73rem;color:#065F46;font-weight:600;">Best Month (Oct)</div></div>
+          <div style="background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--red);">6.8L</div><div style="font-size:.73rem;color:#991B1B;font-weight:600;">Lowest Month (Dec)</div></div>
+          <div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:10px;padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--blue);">8.1L</div><div style="font-size:.73rem;color:var(--blue-dark);font-weight:600;">Monthly Average</div></div>
+          <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px 18px;"><div style="font-size:1.2rem;font-weight:800;color:var(--purple);">56.4L</div><div style="font-size:.73rem;color:#5B21B6;font-weight:600;">YTD Total Collected</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script>
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#0891B2','#E11D48','#4338CA','#065F46'];
+const FIRST=['Farhan','Rahela','Imran','Tasnim','Saif','Sanjida','Nilufar','Riyaz','Tahsin','Mahmud','Sumaiya','Nafisa','Tanvir','Roksana','Sabbir','Marium','Kamal','Rina','Jahir','Puja'];
+const LAST=['Islam','Hossain','Rahman','Akter','Ahmed','Begum','Khan','Khatun','Mia','Noor'];
+const MONTHS=['Aug','Sep','Oct','Nov','Dec','Jan','Feb'];
+
+// Generate student fee data
+const students=Array.from({length:20},(_,i)=>{
+  const fn=FIRST[i],ln=LAST[i%LAST.length];
+  // P=paid, D=due, O=overdue, N=na(upcoming)
+  const statuses=MONTHS.map((m,mi)=>{
+    if(mi>=MONTHS.length-1)return Math.random()<.6?'D':'P'; // Feb: some paid, some due
+    const r=Math.random();
+    return r<.78?'P':r<.9?'O':'D';
+  });
+  const balance=statuses.filter(s=>s==='D').length*800+statuses.filter(s=>s==='O').length*(800+80);
+  return{fn,ln,id:`STU-24-${String(i+1).padStart(3,'0')}`,cls:'IX&middot;A',roll:String(i+1).padStart(3,'0'),color:COLORS[i%COLORS.length],statuses,balance};
+});
+
+function buildTable(){
+  const statusFilter=document.getElementById('statusFilter').value;
+  let rows=students;
+  if(statusFilter==='due')rows=students.filter(s=>s.balance>0);
+  if(statusFilter==='overdue')rows=students.filter(s=>s.statuses.filter(st=>st==='O').length>=2);
+  if(statusFilter==='paid')rows=students.filter(s=>s.balance===0);
+  document.getElementById('showingCount').textContent=`${rows.length} students`;
+  document.getElementById('feeTableBody').innerHTML=rows.map(s=>`
+    <div class="fee-row" data-name="${(s.fn+' '+s.ln).toLowerCase()}">
+      <div class="fr-av" style="background:${s.color};">${s.fn[0]}${s.ln[0]}</div>
+      <div class="fr-name"><div class="fr-name-en">${s.fn} ${s.ln}</div><div class="fr-meta">Roll ${s.roll} &middot; ${s.id}</div></div>
+      <div class="fr-months">
+        ${s.statuses.map((st,mi)=>`<div class="month-dot ${st==='P'?'md-paid':st==='O'?'md-over':st==='D'?'md-due':'md-na'}" title="${MONTHS[mi]}: ${st==='P'?'Paid':st==='O'?'Overdue':st==='D'?'Due':'&middot;'}"></div>`).join('')}
+      </div>
+      <div class="fr-balance" style="color:${s.balance>0?(s.statuses.some(st=>st==='O')?'var(--red)':'var(--amber)'):'var(--green)'};">${s.balance>0?`&#x09F3; ${s.balance}`:'Clear'}</div>
+      <div class="fr-actions">
+        ${s.balance>0?`<a href="admin-fee-collect.html" class="btn btn-sm btn-outline" style="font-size:.7rem;border-color:var(--green);color:var(--green);">Pay</a>`:''}
+        <a href="admin-fee-receipt.html" class="btn btn-sm btn-ghost" style="font-size:.7rem;"></a>
+      </div>
+    </div>`).join('');
+}
+
+function searchTable(q){
+  document.querySelectorAll('.fee-row').forEach(r=>{r.style.display=(!q||r.dataset.name?.includes(q.toLowerCase()))?'':'none';});
+}
+
+function switchView(btn,name){
+  document.querySelectorAll('.vt').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['student','class','trend'].forEach(v=>document.getElementById('view-'+v).style.display=(v===name?'':'none'));
+  if(name==='class')buildClassTable();
+  if(name==='trend')buildTrend();
+}
+
+// Class summary table
+const classData=[
+  {name:'IX&middot;A',teacher:'Dr. Karim Hossain',students:42,collected:33600,outstanding:4800,defaulters:6},
+  {name:'IX&middot;B',teacher:'Ms. Nasrin Khatun',students:40,collected:31200,outstanding:6400,defaulters:8},
+  {name:'X&middot;A',teacher:'Mr. Shahed Alam',students:38,collected:34200,outstanding:2700,defaulters:3},
+  {name:'X&middot;B',teacher:'Ms. Roksana Parvin',students:36,collected:27200,outstanding:7200,defaulters:9},
+  {name:'VI&middot;A',teacher:'Mr. Tanvir Ahmed',students:45,collected:27000,outstanding:4200,defaulters:7},
+  {name:'VI&middot;B',teacher:'Ms. Fatema Begum',students:43,collected:22150,outstanding:8600,defaulters:12},
+  {name:'XI&middot;A',teacher:'Mr. Kamrul Islam',students:35,collected:35000,outstanding:1000,defaulters:1},
+  {name:'XI&middot;B',teacher:'Ms. Sumaiya Islam',students:32,collected:28800,outstanding:3200,defaulters:4},
+];
+function buildClassTable(){
+  document.getElementById('classTableBody').innerHTML=classData.map(c=>{
+    const pct=Math.round(c.collected/(c.collected+c.outstanding)*100);
+    const col=pct>=90?'var(--green)':pct>=75?'var(--amber)':'var(--red)';
+    return`<tr>
+      <td><span class="badge badge-blue" style="font-size:.74rem;">Class ${c.name}</span></td>
+      <td style="color:var(--muted);font-size:.82rem;">${c.teacher}</td>
+      <td style="text-align:center;">${c.students}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green);">${c.collected.toLocaleString()}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);">${c.outstanding.toLocaleString()}</td>
+      <td class="pct-bar-cell">
+        <span style="font-weight:800;font-size:.82rem;color:${col};">${pct}%</span>
+        <div class="bar"><div class="fill" style="width:${pct}%;background:${col};"></div></div>
+      </td>
+      <td style="text-align:center;"><span class="badge badge-amber" style="font-size:.7rem;">${c.defaulters}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function buildTrend(){
+  const data=[{m:'Aug',v:8.4},{m:'Sep',v:8.9},{m:'Oct',v:9.2},{m:'Nov',v:8.6},{m:'Dec',v:6.8},{m:'Jan',v:8.2},{m:'Feb',v:8.4}];
+  const max=9.5;
+  document.getElementById('trendBars').innerHTML=data.map((d,i)=>{
+    const h=Math.round(d.v/max*148);
+    const isCur=i===data.length-1;
+    const col=d.v>=8.5?'var(--green)':d.v>=7?'var(--blue)':'var(--amber)';
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+      <div style="font-size:.72rem;font-weight:800;color:${col};">${d.v}L</div>
+      <div style="height:${h}px;background:${col};border-radius:6px 6px 0 0;width:100%;opacity:${isCur?.85:.6};min-width:24px;"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('trendLabels').innerHTML=data.map(d=>`<div style="flex:1;text-align:center;font-size:.72rem;color:var(--muted);font-weight:600;">${d.m}</div>`).join('');
+}
+
+function showToast(msg,icon='&#x2139;&#xFE0F;'){
+  const s=document.getElementById('toastStack');
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<span>${icon}</span>${msg}`;
+  s.appendChild(t);setTimeout(()=>t.style.opacity='0',2400);setTimeout(()=>t.remove(),2700);
+}
+
+buildTable();
+</script>
+<script src="admin-shell.js"></script></body>
+</html>
+
+
+
+
